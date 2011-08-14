@@ -128,13 +128,13 @@
       height: 24px;
     }
     .shortcut-mouse-middle {
-      background: url('shortcut-mouse-middle24x24.png');
+      background: url('static/images/shortcut-mouse-middle24x24.png');
     }
     .shortcut-mouse-right {
-      background: url('shortcut-mouse-right24x24.png');
+      background: url('static/images/shortcut-mouse-right24x24.png');
     }
     .shortcut-mouse-scroll {
-      background: url('shortcut-mouse-scroll24x24.png');
+      background: url('static/images/shortcut-mouse-scroll24x24.png');
     }
     #main-view-help {
       position: absolute;
@@ -212,8 +212,19 @@
           </canvas>
         </div>
       </div>
+
+      <div id='main-view-keys'>
+        <div class='shortcut'><div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Rotate the view</span></div>
+        <div class='shortcut'><div class='shortcut-key'>Shift</div>+<div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Pan the view</span></div>
+        <div class='shortcut'><div class='shortcut-mouse-scroll'></div><span class='shortcut-description'>Zoom in and out</span></div>
+        <div class='shortcut'><div class='shortcut-mouse-right'></div><span class='shortcut-description'>Context menu</span></div>
+        <div class='shortcut'><div class='shortcut-key'>spacebar</div><span class='shortcut-description'>Fullscreen mode</span></div>
+      </div>
+
     </div>
   </div>
+
+
 
   <!-- Disable text selection -->
 
