@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang='en'>
+<!--
+      BIMserver WebGL viewer 
+-->
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+  <title>BIMserver Viewer</title>
+
+  <!-- Framework -->
+
+  <link type='text/css' href='static/lib/jquery/jquery-ui-1.8.14.custom.css' rel='stylesheet' />	
+  <script type='text/javascript' src='static/lib/jquery/jquery-1.5.1.min.js'></script>
+  <script type='text/javascript' src='static/lib/jquery/jquery-ui-1.8.14.custom.min.js'></script>
+  <!--<script type='text/javascript' src='static/lib/scenejs-2.0.0.0/scenejs.min.js'></script>-->
+  <script type='text/javascript' src='static/lib/scenejs-2.0.0.0/scenejs.js'></script>
+
+  <!-- Stylesheet -->
+
+  <style type='text/css' media='screen'>
+    * {
+      margin: 0;
+      padding: 0;
+      color: #444;
+      font-family: sans;
+    }
+    body { 
+      background: rgb(245,245,245); 
+    }
+    h2 {
+      font-size: 20px;
+    }
+    h3 {
+      font-size: 17px;
+      margin: 0 0 4px 15px;
+    }
+    #top-menu {
+      background: #2d2d2d;
+      border-bottom: 1px solid black;
+      color: white;
+      padding: 5px 50px;
+      text-align: right;
+    }
+    #main-menu {
+      position: absolute;
+      z-index: 1;
+      border-bottom: 1px solid #ddd;
+      height: 120px;
+      width: 100%;
+    }
+    #main-menu div {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    #main-menu-logo {
+      background: url('static/images/main-menu-logo.png');
+      height: 85px;
+      width: 276px;
+      margin: 0px 10px;
+    } 
+    .main-menu-panel {
+      padding:10px;
+      margin: 7px 10px;
+      width: 200px;
+    }
+    #main-layout {
+      width: 100%;
+    }
+    #main-view {
+      background: rgb(255,255,255); /* Old browsers */
+      background: -moz-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(225,225,225,1) 100%); /* FF3.6+ */
+      background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(60%,rgba(255,255,255,1)), color-stop(100%,rgba(235,235,235,1))); /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* Chrome10+,Safari5.1+ */
+      float: left;
+      height: 100%;            
+      position: relative;
+      height: 700px;
+      width: 100%;
+    }
+    #viewport {
+      position: absolute;
+      top: 120px;
+      left: 120px;
+      width: 600px;
+      height: 500px;
+    }
+    #main-view-controls {
+      position: relative;
+      top: 140px;
+      width: 200px;
+      font-size: 13px;
+      margin-left: 10px;
+    }
+    #main-view-keys {
+      position: absolute;
+      bottom: 60px;
+      right: 0;
+      font-size: 13px;
+    }
+    .shortcut {
+      position: relative;
+      display: block;
+      width: 260px;
+      padding: 3px 0;
+    }
+    .shortcut div {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .shortcut-key {
+      color: #555;
+      font-size: 12px;
+      padding: 3px 5px;
+      border: solid 1px #aaa;
+      background: #eee;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .shortcut-description {
+      position: absolute;
+      right: 0;
+      padding: 4px 0;
+      width: 170px;
+    }
+    .shortcut-mouse-middle,
+    .shortcut-mouse-right,
+    .shortcut-mouse-scroll {
+      width: 24px;
+      height: 24px;
+    }
+    .shortcut-mouse-middle {
+      background: url('shortcut-mouse-middle24x24.png');
+    }
+    .shortcut-mouse-right {
+      background: url('shortcut-mouse-right24x24.png');
+    }
+    .shortcut-mouse-scroll {
+      background: url('shortcut-mouse-scroll24x24.png');
+    }
+    #main-view-help {
+      position: absolute;
+      display: box;
+      bottom: 30px;
+      color: #777;
+      font-size: 13px;
+      text-align: center;
+      width: 100%;
+    }
+    #snapshot-divider  {
+      background: -webkit-linear-gradient(right, rgba(245,245,245,1) 0%, rgba(245,245,245,1) 80%, rgba(211,211,211,1) 100%); /* Chrome10+,Safari5.1+ */
+      float: left;
+      height: 700px;
+      padding: 0 0 0 40px;
+      //background: #eee;
+    }
+    #snapshot-thumb  {
+      border: 1px solid #444;
+      color: #444;
+      margin-right: 10px;
+      margin-top: 10px;
+      padding: 50px 30px;
+    }
+    #snapshot-placeholder  {
+      border: 1px dashed #444;
+      color: #444;
+
+      font-size: 13px;
+      margin-right: 10px;
+      margin-top: 10px;
+      padding: 40px 20px;
+    }
+  </style>
+
+  <!-- Controls -->
+
+	<script type='text/javascript'>
+		$(function(){
+			$('#controls-accordion').accordion({ header: 'h3' });			
+		});
+	</script>
+
+</head>
+<body>
+
+  <!-- Screen layout -->
+
+  <div id='scenejsLog'></div>
+
+  <div id='pagecontents'>
+    <div id='top-menu'></div>
+
+    <div id='main-menu'>
+      <div id='main-menu-logo'></div>
+      <div class='main-menu-panel ui-widget-content'>
+        <h3>Controls</h3>
+        <p>+ Select Element<p>
+        <p>+ Arcball<p>
+        <p>+ Annotate<p>
+      </div>
+      <div class='main-menu-panel ui-widget-content'>
+        <h3>Views</h3>
+        <p>+ 4 Views<p>
+        <p>+ Orthogonal<p>
+        <p>+ First person<p>
+      </div>
+    </div>
+
+    <div id='main-layout'>
+      <div id='main-view'>
+        <div id='viewport'>
+          <canvas id='scenejsCanvas' width='800' height='800'>
+            <p>This application requires a browser that supports the<a href='http://www.w3.org/html/wg/html5/'>HTML5</a>&lt;canvas&gt; feature.</p>
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disable text selection -->
+
+  <script type="application/javascript">
+    var pageElement = document.getElementById("pagecontents");
+    pageElement.style.MozUserSelect="none";
+    pageElement.onmousedown=function(){return false};
+  </script>
+
+  <!-- Resources -->
+
+  <script type='text/javascript' src='static/models/urban.js'></script>
+
+
+  <!-- Application logic -->
+
+  <script type='text/javascript'>
+    var scene = SceneJS.scene('Scene');
+    scene.start();
+  </script>
+</body>
+</html>
