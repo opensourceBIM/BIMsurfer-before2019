@@ -164,8 +164,8 @@
       background: -moz-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* FF3.6+ */
       background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(211,211,211,1)), color-stop(20%,rgba(245,245,245,1)), color-stop(100%,rgba(245,245,245,1))); /* Chrome,Safari4+ */
       background: -webkit-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* Chrome10+,Safari5.1+ */
-      padding: 0 0 0 40px;
-      width: 140px;
+      padding: 0 0 0 30px;
+      width: 150px;
       vertical-align: top;
     }
     #snapshot-thumb  {
@@ -173,16 +173,24 @@
       color: #444;
       margin-right: 10px;
       margin-top: 10px;
-      padding: 50px 30px;
+      width: 120px;
+      height: 100px;
     }
     #snapshot-placeholder  {
+      display: block;
       border: 1px dashed #444;
       color: #444;
-
       font-size: 13px;
       margin-right: 10px;
       margin-top: 10px;
-      padding: 40px 20px;
+      width: 120px;
+      height: 100px;
+      line-height: 100px;
+      text-align: center;
+    }
+    #snapshot-placeholder div {
+      //margin: auto auto;
+      //display: inline-block;
     }
     #snapshot-export {
       float: right;
@@ -265,9 +273,9 @@
         </div>
         <div id='snapshot-thumb'>
         </div>
-        <div id='snapshot-placeholder'>
-          <a>+ Snapshot</a>
-        </div>
+        <a href='#' id='snapshot-placeholder'>
+          + Snapshot
+        </a>
         <div id='snapshot-export'>
           <a href='#'>Export</a>
           <ul id='snapshot-export-menu'>
