@@ -169,6 +169,17 @@
       width: 140px;
       vertical-align: top;
     }
+    #snapshot-export {
+      float: right;
+    }
+    #snapshot-export ul {
+      display: none;
+      background: rgb(245,245,245);
+      border: 1px solid #444;
+    }
+    #snapshot-export:hover > ul {
+      display: block;
+    }
     #snapshot-thumb  {
       border: 1px solid #444;
       color: #444;
@@ -257,6 +268,13 @@
       </div>
       <div id='snapshot-divider' class='main-layout-cell'>
         <h2>Snapshots</h2>
+        <div id='snapshot-export'>
+          <a href='#'>Export</a>
+          <ul id='snapshot-export-menu'>
+            <li><a href='#'>PDF</a></li>
+          </ul>
+        </div>
+        <a id='snapshot-play' href='#'>Play &gt;</a>
         <div id='snapshot-animframe'>
         </div>
         <div id='snapshot-thumb'>
