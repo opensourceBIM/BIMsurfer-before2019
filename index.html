@@ -7,17 +7,12 @@
   <meta charset='utf-8'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
   <title>BIMserver Viewer</title>
-
-  <!-- Framework -->
-
-  <link type='text/css' href='static/lib/jquery/jquery-ui-1.8.15.custom.css' rel='stylesheet' />	
-  <script type='text/javascript' src='static/lib/jquery/jquery-1.5.1.min.js'></script>
-  <script type='text/javascript' src='static/lib/jquery/jquery-ui-1.8.15.custom.min.js'></script>
-  <!--<script type='text/javascript' src='static/lib/scenejs-2.0.0.0/scenejs.min.js'></script>-->
-  <script type='text/javascript' src='static/lib/scenejs-2.0.0.0/scenejs.js'></script>
+  <meta name='description' content='A sleek WebGL viewer for Building Information Models'>
+  <meta name='author' content='Rehno Lindeque'>
 
   <!-- Stylesheet -->
 
+  <link type='text/css' href='static/lib/jquery/jquery-ui-1.8.15.custom.css' rel='stylesheet' />	
   <style type='text/css' media='screen'>
     * {
       margin: 0;
@@ -197,15 +192,6 @@
       padding: 40px 20px;
     }
   </style>
-
-  <!-- Controls -->
-
-	<script type='text/javascript'>
-		$(function(){
-			$('#controls-accordion').accordion({ header: 'h3' });			
-		});
-	</script>
-
 </head>
 <body>
 
@@ -245,7 +231,7 @@
           <div class='shortcut'><div class='shortcut-mouse-scroll'></div><span class='shortcut-description'>Zoom in and out</span></div>
           <div class='shortcut'><div class='shortcut-key'>spacebar</div><span class='shortcut-description'>Fullscreen mode</span></div>
         </div>
-        <div id='main-view-controls'>
+        <div id='main-view-controls' style='visibility: hidden;'>
           <div id='controls-accordion'>
             <h3><a href='#'>Objects</a></h3>
             <div></div>
@@ -288,19 +274,38 @@
 
   <!-- Disable text selection -->
 
-  <script type="application/javascript">
-    var pageElement = document.getElementById("pagecontents");
-    pageElement.style.MozUserSelect="none";
+  <script type='application/javascript'>
+    var pageElement = document.getElementById('page-contents');
+    pageElement.style.MozUserSelect='none';
     pageElement.onmousedown=function(){return false};
   </script>
 
+  <!-- Framework -->
+
+  <script src='//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'></script>
+  <script>window.jQuery || document.write("<script src='static/lib/jquery/jquery-1.6.2.min.js'><\/script>")</script>
+  <script src='//ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js'></script>
+  <script>window.jQuery.ui || document.write("<script src='static/lib/jquery/jquery-ui-1.8.15.custom.min.js'><\/script>")</script>
+
+  <!--<script type='text/javascript' src='static/lib/scenejs-2.0.0.0/scenejs.min.js'></script>-->
+  <script src='static/lib/scenejs-2.0.0.0/scenejs.js'></script>
+
   <!-- Resources -->
 
-  <script type='text/javascript' src='static/models/urban.js'></script>
+  <script src='static/models/urban.js'></script>
+
+  <!-- Controls -->
+
+	<script>
+		$(function(){
+			$('#controls-accordion').accordion({ header: 'h3' });			
+      //$('#main-view-controls').show();
+		});
+	</script>
 
   <!-- Application logic -->
 
-  <script type='text/javascript'>
+  <script>
     var scene = SceneJS.scene('Scene');
     scene.start();
   </script>
