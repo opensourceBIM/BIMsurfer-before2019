@@ -159,7 +159,10 @@
       width: 100%;
     }
     #snapshot-divider  {
-      background: -webkit-linear-gradient(right, rgba(245,245,245,1) 0%, rgba(245,245,245,1) 80%, rgba(211,211,211,1) 100%); /* Chrome10+,Safari5.1+ */
+      background: rgb(245,245,245); /* Old browsers */
+      background: -moz-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* FF3.6+ */
+      background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(211,211,211,1)), color-stop(20%,rgba(245,245,245,1)), color-stop(100%,rgba(245,245,245,1))); /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* Chrome10+,Safari5.1+ */
       padding: 0 0 0 40px;
       width: 140px;
       vertical-align: top;
