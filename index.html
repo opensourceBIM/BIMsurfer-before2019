@@ -14,14 +14,114 @@
 
   <link type='text/css' href='static/lib/jquery/jquery-ui-1.8.15.custom.css' rel='stylesheet' />	
   <style type='text/css' media='screen'>
+    /* Resets */
     * {
       margin: 0;
       padding: 0;
+    }
+    a {
+      text-decoration: none;
+      outline: none;
+    }
+    ul {
+      list-style: none;
+      list-style-image: none;
+    }
+
+    /* Normalization (taken from http://necolas.github.com/normalize.css/ and a little bit from html5 boilerplate) */
+    html {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    abbr[title] {
+      border-bottom: 1px dotted;
+    }
+    b, 
+    strong { 
+      font-weight: bold; 
+    }
+    blockquote {
+      margin: 1em 40px;
+    }
+    dfn {
+      font-style: italic;
+    }
+    pre {
+      white-space: pre;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    pre, 
+    code, 
+    kbd,
+    samp { 
+      font-family: monospace, monospace; 
+      font-size: 1em; 
+    }
+    small {
+      font-size: 75%;
+    }
+    sub,
+    sup {
+      font-size: 75%;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+    }
+    sup {
+      top: -0.5em;
+    }
+    sub {
+      bottom: -0.25em;
+    }
+    button,
+    input,
+    select,
+    textarea {
+      vertical-align: baseline;
+    }
+    button,
+    html input[type="button"],
+    input[type="reset"],
+    input[type="submit"] {
+      cursor: pointer;
+      -webkit-appearance: button;
+    }
+    input[type="search"] {
+      -webkit-appearance: textfield;
+      -moz-box-sizing: content-box;
+      -webkit-box-sizing: content-box;
+      box-sizing: content-box;
+    }
+    input[type="search"]::-webkit-search-decoration {
+      -webkit-appearance: none;
+    }
+    button::-moz-focus-inner, 
+    input::-moz-focus-inner { 
+      border: 0;
+    }
+    textarea {
+      vertical-align: top;
+    }
+    table {
+      border-collapse: collapse;
+      border-spacing: 0;
+    }
+    img {
+      border: 0;
+      vertical-align: middle; 
+    }
+    label { 
+      cursor: pointer; 
+    }
+    /* General styling */
+    * {
       color: #444;
       font-family: sans;
     }
     html {
       height: 100%;
+      //overflow: hidden;
     }
     body { 
       background: rgb(245,245,245); 
@@ -34,6 +134,11 @@
       font-size: 17px;
       margin: 0 0 4px 15px;
     }
+    textarea {
+      resize: vertical;
+    }
+
+    /* Application styling */
     #page-contents {
       height: 100%;
     }
@@ -48,6 +153,9 @@
       width: 100%;
     }
     #main-layout {
+      -moz-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
       display: table;
       width: 100%;
       height: 100%;
@@ -59,6 +167,7 @@
     }
     .main-layout-cell {
       display: table-cell;
+      height: 100%;
     }
     #main-menu {
       position: absolute;
@@ -90,7 +199,6 @@
       float: left;
       position: relative;
       width: 100%;
-      height: 100%;
     }
     #viewport {
       position: absolute;
@@ -167,6 +275,7 @@
       padding: 0 0 0 30px;
       width: 150px;
       vertical-align: top;
+      //overflow-y: auto;
     }
     #snapshot-thumb  {
       border: 1px solid #444;
@@ -178,8 +287,8 @@
     }
     #snapshot-placeholder  {
       display: block;
-      border: 1px dashed #444;
-      color: #444;
+      border: 1px dashed #44e;
+      color: #44e;
       font-size: 13px;
       margin-right: 10px;
       margin-top: 10px;
