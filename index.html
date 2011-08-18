@@ -25,8 +25,12 @@
       color: #444;
       font-family: sans;
     }
+    html {
+      height: 100%;
+    }
     body { 
       background: rgb(245,245,245); 
+      height: 100%;
     }
     h2 {
       font-size: 20px;
@@ -35,12 +39,30 @@
       font-size: 17px;
       margin: 0 0 4px 15px;
     }
+    #page-contents {
+      height: 100%;
+    }
     #top-menu {
+      position: absolute;
       background: #2d2d2d;
       border-bottom: 1px solid black;
       color: white;
-      padding: 5px 50px;
+      padding: 5px 0;
       text-align: right;
+      height: 15px;
+      width: 100%;
+    }
+    #main-layout {
+      display: table;
+      width: 100%;
+      height: 100%;
+      padding-top: 26px;
+    }
+    #main-layout-row {
+      display: table-row;
+    }
+    .main-layout-cell {
+      display: table-cell;
     }
     #main-menu {
       position: absolute;
@@ -64,18 +86,14 @@
       margin: 7px 10px;
       width: 200px;
     }
-    #main-layout {
-      width: 100%;
-    }
     #main-view {
       background: rgb(255,255,255); /* Old browsers */
       background: -moz-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(225,225,225,1) 100%); /* FF3.6+ */
       background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(60%,rgba(255,255,255,1)), color-stop(100%,rgba(235,235,235,1))); /* Chrome,Safari4+ */
       background: -webkit-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* Chrome10+,Safari5.1+ */
       float: left;
-      height: 100%;            
+      height: 100%;
       position: relative;
-      height: 700px;
       width: 100%;
     }
     #viewport {
@@ -147,10 +165,9 @@
     }
     #snapshot-divider  {
       background: -webkit-linear-gradient(right, rgba(245,245,245,1) 0%, rgba(245,245,245,1) 80%, rgba(211,211,211,1) 100%); /* Chrome10+,Safari5.1+ */
-      float: left;
-      height: 700px;
       padding: 0 0 0 40px;
-      //background: #eee;
+      width: 140px;
+      vertical-align: top;
     }
     #snapshot-thumb  {
       border: 1px solid #444;
@@ -185,45 +202,71 @@
 
   <div id='scenejsLog'></div>
 
-  <div id='pagecontents'>
+  <div id='page-contents'>
     <div id='top-menu'></div>
-
-    <div id='main-menu'>
-      <div id='main-menu-logo'></div>
-      <div class='main-menu-panel ui-widget-content'>
-        <h3>Controls</h3>
-        <p>+ Select Element<p>
-        <p>+ Arcball<p>
-        <p>+ Annotate<p>
-      </div>
-      <div class='main-menu-panel ui-widget-content'>
-        <h3>Views</h3>
-        <p>+ 4 Views<p>
-        <p>+ Orthogonal<p>
-        <p>+ First person<p>
-      </div>
-    </div>
-
-    <div id='main-layout'>
-      <div id='main-view'>
+    <div id='main-layout'><div id='main-layout-row'>
+      <div id='main-view' class='main-layout-cell'>
+        <div id='main-menu'>
+          <div id='main-menu-logo'></div>
+          <div class='main-menu-panel ui-widget-content'>
+            <h3>Controls</h3>
+            <p>+ Select Element<p>
+            <p>+ Arcball<p>
+            <p>+ Annotate<p>
+          </div>
+          <div class='main-menu-panel ui-widget-content'>
+            <h3>Views</h3>
+            <p>+ 4 Views<p>
+            <p>+ Orthogonal<p>
+            <p>+ First person<p>
+          </div>
+        </div>
         <div id='viewport'>
+          <!-- -->
           <canvas id='scenejsCanvas' width='512' height='512'>
             <p>This application requires a browser that supports the<a href='http://www.w3.org/html/wg/html5/'>HTML5</a>&lt;canvas&gt; feature.</p>
           </canvas>
+          <!-- -->
+        </div>
+        <div id='main-view-keys'>
+          <div class='shortcut'><div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Rotate the view</span></div>
+          <div class='shortcut'><div class='shortcut-key'>Shift</div>+<div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Pan the view</span></div>
+          <div class='shortcut'><div class='shortcut-mouse-scroll'></div><span class='shortcut-description'>Zoom in and out</span></div>
+          <div class='shortcut'><div class='shortcut-key'>spacebar</div><span class='shortcut-description'>Fullscreen mode</span></div>
+        </div>
+        <div id='main-view-controls'>
+          <div id='controls-accordion'>
+            <h3><a href='#'>Objects</a></h3>
+            <div></div>
+            <h3><a href='#'>Properties</a></h3>
+            <div></div>
+            <h3><a href='#'>Layers</a></h3>
+            <div><form id='layers'>
+              <div><input type='checkbox'> Walls</div>
+              <div><input type='checkbox'> Doors</div>
+              <div><input type='checkbox'> Windows</div>
+              <div><input type='checkbox'> Columns</div>
+              <div><input type='checkbox'> Roofs</div>
+              <div><input type='checkbox'> Floors</div>
+            </form></div>
+            <h3><a href='#'>Annotations</a></h3>
+            <div></div>
+          </div>
+        </div>
+        <div id='main-view-help'></div>
+      </div>
+      <div id='snapshot-divider' class='main-layout-cell'>
+        <h2>Snapshots</h2>
+        <div id='snapshot-animframe'>
+        </div>
+        <div id='snapshot-thumb'>
+        </div>
+        <div id='snapshot-placeholder'>
+          <a>+ Snapshot</a>
         </div>
       </div>
-
-      <div id='main-view-keys'>
-        <div class='shortcut'><div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Rotate the view</span></div>
-        <div class='shortcut'><div class='shortcut-key'>Shift</div>+<div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Pan the view</span></div>
-        <div class='shortcut'><div class='shortcut-mouse-scroll'></div><span class='shortcut-description'>Zoom in and out</span></div>
-        <div class='shortcut'><div class='shortcut-key'>spacebar</div><span class='shortcut-description'>Fullscreen mode</span></div>
-      </div>
-
-    </div>
+    </div></div>
   </div>
-
-
 
   <!-- Disable text selection -->
 
@@ -236,7 +279,6 @@
   <!-- Resources -->
 
   <script type='text/javascript' src='static/models/urban.js'></script>
-
 
   <!-- Application logic -->
 
