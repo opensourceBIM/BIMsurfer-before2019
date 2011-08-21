@@ -400,7 +400,6 @@ SceneJS._Node = function(cfg, scene) {
     if (cfg) {
         this.attr.id = cfg.id;
         this.attr.type = cfg.type || "node";
-        this.attr.layer = cfg.layer;
         this.attr.data = cfg.data;
         this.attr.enabled = cfg.enabled === false ? false : true;
         this.attr.sid = cfg.sid;
@@ -589,9 +588,6 @@ SceneJS._Node.prototype._compileNodes = function() { // Selected children - usef
  * Wraps _compile to fire built-in events either side of rendering.
  * @private */
 SceneJS._Node.prototype._compileWithEvents = function() {
-    if (this.attr.layer) {
-        SceneJS_layerModule.pushLayer(this.attr.layer);
-    }
 
     /* As scene is traversed, SceneJS_loadStatusModule will track the counts
      * of nodes that are still initialising
@@ -608,9 +604,7 @@ SceneJS._Node.prototype._compileWithEvents = function() {
     if (this.listeners["loading-status"]) { // Report diff of loading stats that occurred while rending this tree
         this._fireEvent("loading-status", SceneJS_loadStatusModule.diffStatus(loadStatusSnapshot));
     }
-    if (this.attr.layer) {
-        SceneJS_layerModule.popLayer();
-    }
+
 };
 
 /**
@@ -651,24 +645,6 @@ SceneJS._Node.prototype.getData = function() {
 SceneJS._Node.prototype.setData = function(data) {
     this.attr.data = data;
     return this;
-};
-
-/**
- * Assigns this node to a layer, in order to control the order in which the geometries within it are rendered.
- * http://scenejs.wikispaces.com/Layers
- * @param {string} layer The layer name
- */
-SceneJS._Node.prototype.setLayer = function(layer) {
-    this.attr.layer = layer;
-};
-
-/**
- * Returns the name of the layer this node is assigned to.
- * http://scenejs.wikispaces.com/Layers
- * @return {string} layer The layer name
- */
-SceneJS._Node.prototype.getLayer = function() {
-    return this.attr.layer;
 };
 
 /**
@@ -5495,7 +5471,7 @@ var SceneJS_compileCfg = new (function() {
         /* Configs for base node type overrides configs for subtypes
          */
         "node": {
-           
+
             "add" : {
                 attr: {
                     "node": {
@@ -5513,10 +5489,10 @@ var SceneJS_compileCfg = new (function() {
             "remove" : {
                 attr: {
                     "node" : {
-                        level: this.COMPILE_SCENE
+                        level: this.RESORT
                     },
                     "nodes" : {
-                        level: this.COMPILE_SCENE
+                        level: this.RESORT
                     }
                 },
                 level: this.COMPILE_SCENE
@@ -5582,13 +5558,6 @@ var SceneJS_compileCfg = new (function() {
             },
             "start" : {
                 level: this.COMPILE_SCENE
-            },
-            "set" : {
-                attr: {
-                    "layers": {
-                        level: this.RESORT
-                    }
-                }
             }
         },
 
@@ -5740,7 +5709,7 @@ var SceneJS_compileCfg = new (function() {
             "set" : {
                 attr: {
                     "flags": {
-                        level: this.REDRAW
+                        level: this.RESORT
                     }
                 }
             },
@@ -5754,8 +5723,21 @@ var SceneJS_compileCfg = new (function() {
 
                         attr: {
 
-                             level: this.REDRAW
+                            level: this.RESORT
                         }
+                    }
+                }
+            }
+        },
+
+        "layer": {
+            "set" : {
+                attr: {
+                    "priority": {
+                        level: this.RESORT
+                    },
+                    "enabled": {
+                        level: this.RESORT
                     }
                 }
             }
@@ -6528,139 +6510,72 @@ var SceneJS_errorModule = new (function() {
         });
     };
 })();
-/**
- * Backend that tracks the current node render priority as a scene is traversed. Each node that has a "priority"
- * attribute pushes and pops its priority value before and after the node is rendered. Then, when a geometry is
- * being ordered within GL state sorting, the priority for that geometry can be be obtained from here in order
- * to set its explicit render order.
- *
- * On an architectural note, see how we isolate this kind of state tracking into a singleton module instead of monkey
- * patching it onto node objects - a more obvious design with less surprises.
- *
- * @private
- */
 var SceneJS_layerModule = new (function() {
 
     this.DEFAULT_LAYER_NAME = "___default";
 
-    var enabledLayers;
-    var layerMap;
-    var layerOrder;
-
     var layerStack = [];
+    var idStack = [];
     var stackLen = 0;
 
-    var self = this;
+    var dirty = true;
 
     SceneJS_eventModule.addListener(
             SceneJS_eventModule.SCENE_COMPILING,
             function() {
-                self.setActiveLayers(null);
                 stackLen = 0;
             });
 
-    this.setActiveLayers = function(layers) {
-        enabledLayers = {};
-        layerMap = {};
-        layerOrder = [
-            {
-                name: this.DEFAULT_LAYER_NAME, // Default layer - implicitly enabled
-                priority: 0
-            }
-        ];
-        if (layers) {
-            if (SceneJS._isArray(layers)) {
-
-                /* Array of layer names - no sorting
-                 */
-                for (var i = 0, len = layers.length; i < len; i++) {
-                    appendLayer(layers[i], 0);
-                }
-            } else {
-
-                /* Map of layer names - do sorting
-                 */
-                var priority;
-                for (var layerName in layers) {
-                    if (layers.hasOwnProperty(layerName)) {
-                        priority = layers[layerName];
-                        insertLayer(layerName, priority);
+    SceneJS_eventModule.addListener(
+            SceneJS_eventModule.SCENE_RENDERING,
+            function() {
+                if (dirty) {
+                    if (stackLen > 0) {
+                        SceneJS_DrawList.setLayer(idStack[stackLen - 1], layerStack[stackLen - 1]);
+                    } else {
+                        SceneJS_DrawList.setLayer();
                     }
+                    dirty = false;
                 }
-            }
+            });
+
+    var Layer = SceneJS.createNodeType("layer");
+
+    Layer.prototype._init = function(params) {
+        if (this.core._nodeCount == 1) { // This node defines the resource
+            this.core.priority = params.priority || 0;
+            this.core.enabled = params.enabled !== false; 
         }
     };
 
-    /* Append layer for when sorting not done
-     */
-    function appendLayer(layerName, priority) {
-        enabledLayers[layerName] = true;
-        var newLayer = {
-            name: layerName,
-            priority: priority
-        };
-        layerMap[layerName] = newLayer;
-        layerOrder.push(newLayer);
-    }
-
-    /* Insert layer for when sorting is done
-     */
-    function insertLayer(layerName, priority) {
-        enabledLayers[layerName] = true;
-        var newLayer = {
-            name: layerName,
-            priority: priority
-        };
-        layerMap[layerName] = newLayer;
-        var layer;
-        for (var i = layerOrder.length - 1; i >= 0; i--) {
-            layer = layerOrder[i];
-            if (layer.priority > priority) {
-                layerOrder.splice(i, 0, newLayer);
-                return;
-            }
-        }
-        /* Insert at front
-         */
-        layerOrder.push(newLayer);
-    }
-
-    /**
-     * Get the priority of an enabled layer.
-     * Returns null if layer undefined or disabled.
-     */
-    this.getLayerPriority = function(layerName) {
-        if (!enabledLayers[layerName]) {
-            return null;
-        }
-        return layerMap[layerName].priority;
+    Layer.prototype.setPriority = function(priority) {
+        this.core.priority = priority;
     };
 
-    this.getOrderedLayerNames = function() {
-        return layerOrder;
+    Layer.prototype.getPriority = function() {
+        return this.core.priority;
     };
 
-    this.getEnabledLayers = function() {
-        return enabledLayers;
+    Layer.prototype.setEnabled = function(enabled) {
+        this.core.enabled = enabled;
     };
 
-    this.layerEnabled = function(layer) {
-        return (layerOrder.length == 0)  // All layers are enabled by default
-                || (enabledLayers[layer] === true);
+    Layer.prototype.getEnabled = function() {
+        return this.core.enabled;
     };
 
-    this.pushLayer = function(layer) {
-        layerStack[stackLen++] = layer;
-    };
+    Layer.prototype._compile = function() {
+        layerStack[stackLen] = this.core;
+        idStack[stackLen] = this.attr.id;
+        stackLen++;
 
-    this.getLayer = function() {
-        return stackLen == 0 ? undefined : layerStack[stackLen - 1];
-    };
+        dirty = true;
 
-    this.popLayer = function() {
+        this._compileNodes();
+
         stackLen--;
+        dirty = true;
     };
-
 })();
 
 (function() {    
@@ -6832,8 +6747,7 @@ new (function() {
         this._destroyed = false;
         this.scene = this;
         this.nodeMap = new SceneJS_Map(); // Can auto-generate IDs when not supplied
-        this._layers = params.layers || {};
-
+        
         this.canvas = findCanvas(params.canvasId, params.contextAttr); // canvasId can be null
 
         var sceneId = this.attr.id;
@@ -6872,23 +6786,6 @@ new (function() {
         }
         var context = this.canvas.context;
         return context.getParameter(context.DEPTH_BITS)
-    };
-
-    /**
-     Sets which layers are included in the each render of the scene, along with their priorities (default priority is 0)
-     */
-    Scene.prototype.setLayers = function(layers) {
-        if (this._destroyed) {
-            throw SceneJS_errorModule.fatalError(SceneJS.errors.NODE_ILLEGAL_STATE, "Scene has been destroyed");
-        }
-        this._layers = layers || {};
-    };
-
-    /**
-     Gets which layers are included in the each render of this scene, along with their priorities (default priority is 0)
-     */
-    Scene.prototype.getLayers = function() {
-        return this._layers;
     };
 
     window.requestAnimFrame = (function() {
@@ -6939,7 +6836,6 @@ new (function() {
                         self._compileWithEvents();
                         sleeping = false;
                         SceneJS_compileModule.finishSceneCompile();
-                        SceneJS_layerModule.setActiveLayers(self._layers);   // TODO: needed for display list redraw when scene node not compiled - need to tidy up placementof this
 
                         SceneJS_DrawList.renderFrame({ profileFunc: cfg.profileFunc });
 
@@ -7025,7 +6921,6 @@ new (function() {
         SceneJS_eventModule.fireEvent(SceneJS_eventModule.SCENE_COMPILING, { sceneId: sceneId, nodeId: sceneId, canvas : scene.canvas });
 
         if (SceneJS_compileModule.preVisitNode(this)) {
-            SceneJS_layerModule.setActiveLayers(this._layers);  // Activate selected layers - all layers active when undefined
             this._compileNodes();
         }
         SceneJS_compileModule.postVisitNode(this);
@@ -7261,20 +7156,21 @@ var SceneJS_DrawList = new (function() {
     this._CLIPS = 1;
     this._COLORTRANS = 2;
     this._FLAGS = 3;
-    this._FOG = 4;
-    this._IMAGEBUF = 5;
-    this._LIGHTS = 6;
-    this._MATERIAL = 7;
-    this._MORPH = 8;
-    this._PICKCOLOR = 9;
-    this._TEXTURE = 10;
-    this._RENDERER = 11;
-    this._MODEL_TRANSFORM = 12;
-    this._PROJ_TRANSFORM = 13;
-    this._VIEW_TRANSFORM = 14;
-    this._PICK_LISTENERS = 15;
-    this._RENDER_LISTENERS = 16;
-    this._SHADER = 17;
+    this._LAYER = 4;
+    this._FOG = 5;
+    this._IMAGEBUF = 6;
+    this._LIGHTS = 7;
+    this._MATERIAL = 8;
+    this._MORPH = 9;
+    this._PICKCOLOR = 10;
+    this._TEXTURE = 11;
+    this._RENDERER = 12;
+    this._MODEL_TRANSFORM = 13;
+    this._PROJ_TRANSFORM = 14;
+    this._VIEW_TRANSFORM = 15;
+    this._PICK_LISTENERS = 16;
+    this._RENDER_LISTENERS = 17;
+    this._SHADER = 18;
 
     /*----------------------------------------------------------------------
      * Default state values
@@ -7321,6 +7217,13 @@ var SceneJS_DrawList = new (function() {
             transparent: false,     // Node transparent - works in conjunction with matarial alpha properties
             backfaces: true,        // Show backfaces
             frontface: "ccw"        // Default vertex winding for front face
+        }
+    });
+
+    this._DEFAULT_LAYER_STATE = createState({
+        core: {
+            priority : 0,
+            enabled: true
         }
     });
 
@@ -7427,6 +7330,7 @@ var SceneJS_DrawList = new (function() {
     /* Currently exported states
      */
     var flagsState;
+    var layerState;
     var rendererState;
     var lightState;
     var colortransState;
@@ -7551,6 +7455,7 @@ var SceneJS_DrawList = new (function() {
             clipState = this._DEFAULT_CLIP_STATE;
             colortransState = this._DEFAULT_COLORTRANS_STATE;
             flagsState = this._DEFAULT_FLAGS_STATE;
+            layerState = this._DEFAULT_LAYER_STATE;
             fogState = this._DEFAULT_FOG_STATE;
             imageBufState = this._DEFAULT_IMAGEBUF_STATE;
             lightState = this._DEFAULT_LIGHTS_STATE;
@@ -7709,6 +7614,16 @@ var SceneJS_DrawList = new (function() {
         flagsState = this._getState(this._FLAGS, id);
         flags = flags || this._DEFAULT_FLAGS_STATE.flags;
         flagsState.flags = flags || this._DEFAULT_FLAGS_STATE.flags;
+        this._states.lenEnabledBin = 0;
+    };
+
+    this.setLayer = function(id, core) {
+        if (arguments.length == 0) {
+            layerState = this._DEFAULT_LAYER_STATE;
+            return;
+        }
+        layerState = this._getState(this._LAYER, id);
+        layerState.core = core;
         this._states.lenEnabledBin = 0;
     };
 
@@ -7997,6 +7912,7 @@ var SceneJS_DrawList = new (function() {
 
         geoState._nodeCount++;
         flagsState._nodeCount++;
+        layerState._nodeCount++;
         rendererState._nodeCount++;
         lightState._nodeCount++;
         colortransState._nodeCount++;
@@ -8024,6 +7940,7 @@ var SceneJS_DrawList = new (function() {
             program : program,
 
             geoState:               geoState,
+            layerState:             layerState,
             flagsState:             flagsState,
             rendererState:          rendererState,
             lightState:             lightState,
@@ -8040,9 +7957,7 @@ var SceneJS_DrawList = new (function() {
             morphState :            morphState,
             pickListenersState:     pickListenersState,
             renderListenersState:   renderListenersState,
-            shaderState:            shaderState,
-
-            layerName:SceneJS_layerModule.getLayer()
+            shaderState:            shaderState
         };
 
         this._states.nodeMap[id] = node;
@@ -8088,6 +8003,7 @@ var SceneJS_DrawList = new (function() {
             this._releaseProgram(node.program);
             this._releaseState(node.geoState);
             this._releaseState(node.flagsState);
+            this._releaseState(node.layerState);
             this._releaseState(node.rendererState);
             this._releaseState(node.lightState);
             this._releaseState(node.colortransState);
@@ -8096,7 +8012,7 @@ var SceneJS_DrawList = new (function() {
             this._releaseState(node.modelXFormState);
             this._releaseState(node.viewXFormState);
             this._releaseState(node.projXFormState);
-            this._releaseState(node.texState)
+            this._releaseState(node.texState);
             this._releaseState(node.pickColorState);
             this._releaseState(node.imageBufState);
             this._releaseState(node.clipState);
@@ -8120,12 +8036,7 @@ var SceneJS_DrawList = new (function() {
             var layerPriority;
             for (var i = 0, len = bin.length; i < len; i++) {
                 node = bin[i];
-                if (node.layerName) {
-                    layerPriority = SceneJS_layerModule.getLayerPriority(node.layerName) || 0;
-                    node.sortId = (layerPriority * 100000) + node.program.id;
-                } else {
-                    node.sortId = node.program.id;
-                }
+                node.sortId = (node.layerState.core.priority * 100000) + node.program.id;
             }
             this._states.needSortIds = false;
         }
@@ -8206,7 +8117,7 @@ var SceneJS_DrawList = new (function() {
          * with Human dental implant animation
          *--------------------------------------------*/
 
-        var drawListFilter = false;
+        var drawListFilter = true;
         if (drawListFilter && lenEnabledBin > 0) {
             for (var i = 0; i < lenEnabledBin; i++) {
                 node = enabledBin[i];
@@ -8225,7 +8136,6 @@ var SceneJS_DrawList = new (function() {
 
             var bin = states.bin;
 
-            var enabledLayers = SceneJS_layerModule.getEnabledLayers();
             var node;
             var countDestroyed = 0;
             var flags;
@@ -8237,10 +8147,6 @@ var SceneJS_DrawList = new (function() {
              */
             for (var i = 0, len = states.lenBin; i < len; i++) {
                 node = bin[i];
-
-//                if (!node) { // HACK
-//                    continue;
-//                }
 
                 if (node.destroyed) {
                     if (i < len) {
@@ -8260,19 +8166,19 @@ var SceneJS_DrawList = new (function() {
                     continue;
                 }
 
-                if (node.layerName && !enabledLayers[node.layerName]) {     // Skip disabled layers
+                if (!node.layerState.core.enabled) {                        // Skip disabled layers
                     continue;
                 }
 
-                if (_picking && flags.picking === false) {                   // When picking, skip unpickable node
+                if (_picking && flags.picking === false) {                  // When picking, skip unpickable node
                     continue;
                 }
 
-                if (!_picking && flags.transparent === true) {               // Buffer transparent node when not picking
+                if (!_picking && flags.transparent === true) {              // Buffer transparent node when not picking
                     _transparentBin[nTransparent++] = node;
 
                 } else {
-                    nodeRenderer.renderNode(node);                   // Render node if opaque or in picking mode
+                    nodeRenderer.renderNode(node);                          // Render node if opaque or in picking mode
                     if (drawListFilter) {
                         enabledBin[states.lenEnabledBin++] = node;
                     }
@@ -20360,7 +20266,7 @@ var SceneJS_modelTransformModule = new (function() {
                     "Matrix elements should number 16");
         }
         if (!this.core.mat) {
-            this.core.mat = SceneJS_math_identityMat4();
+            this.core.mat = elements;
         } else {
             for (var i = 0; i < 16; i++) {
                 this.core.mat[i] = elements[i];
