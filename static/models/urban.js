@@ -104,9 +104,10 @@ SceneJS.createScene({
                                 },
                             clearColor:
                                 {
-                                    r: 0.4,
-                                    b: 0.4,
-                                    g: 0.4,
+                                    r: 0.0,
+                                    b: 0.0,
+                                    g: 0.0,
+                                    a: 0.0
                                 },
                             nodes: [
                                 {
