@@ -56,8 +56,8 @@
     code, 
     kbd,
     samp { 
-      font-family: monospace, monospace; 
-      font-size: 1em; 
+      font-family: monospace, monospace;
+      font-size: 1em;
     }
     small {
       font-size: 75%;
@@ -143,15 +143,32 @@
     #page-contents {
       height: 100%;
     }
-    #top-menu {
+    #top-menu {     
       position: absolute;
       background: #2d2d2d;
-      border-bottom: 1px solid black;
-      color: white;
-      padding: 5px 0;
       text-align: right;
-      height: 15px;
       width: 100%;
+      padding-top: 3px;
+      height:21px;
+      border-bottom: 1px solid black;
+    }
+    #top-menu li {
+      display: inline-block;
+      margin: 0 5px;
+    }
+    #top-menu a {
+      color: #ddd;
+      margin: 0 13px;
+      font-size: 13px;
+    }
+    .top-menu-activated {
+      background: #ddd;
+      border-radius: 7px;
+      -moz-border-radius: 7px;
+      -webkit-border-radius: 7px;
+    }
+    #top-menu .top-menu-activated a {
+      color: #222;
     }
     #main-layout {
       -moz-box-sizing: border-box;
@@ -202,12 +219,12 @@
       width: 100%;
     }
     #viewport {
-      position: absolute;
-      top: 120px;
-      left: 240px;
+      margin: 120px auto 0 auto;
+      width: 512px;
+      height: 512px;
     }
     #main-view-controls {
-      position: relative;
+      position: absolute;
       top: 140px;
       width: 200px;
       font-size: 13px;
@@ -324,7 +341,12 @@
   <div id='scenejsLog'></div>
 
   <div id='page-contents'>
-    <div id='top-menu'></div>
+    <nav id='top-menu'>
+      <ul>
+        <li><a href='#'>About</a></li>
+        <li class='top-menu-activated'><a href='#'>Help</a></li>
+      </ul>
+	</nav>
     <div id='main-layout'><div id='main-layout-row'>
       <div id='main-view' class='main-layout-cell'>
         <div id='main-menu'>
