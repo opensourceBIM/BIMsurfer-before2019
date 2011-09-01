@@ -1,6 +1,10 @@
 # Eventful code comes here
 # Program state should not be manipulated outside this file
 
+# Start rendering as soon as possible
+state.scene.start();
+
+# Mouse events
 mouseDown = (event) ->
   state.mouse.lastX = event.clientX
   state.mouse.lastY = event.clientY

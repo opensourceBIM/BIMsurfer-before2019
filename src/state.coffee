@@ -2,6 +2,7 @@
 # No global state is allowed to exist outside of this structure
 
 state =
+  scene: SceneJS.scene 'Scene'
   viewport:
     selectedElement: null
     mouse:
@@ -9,5 +10,4 @@ state =
       lastY: 0
       leftDragging: false
       middleDragging: false
-
 
