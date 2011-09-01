@@ -61,3 +61,15 @@ task 'minify', 'Minify the resulting application file after build', ->
         throw err if err
         console.log stdout + stderr
         console.log 'Done.'
+
+task 'clean', 'Cleanup all build files and distribution files', ->
+  exec 'rm -rf build;rm static/lib/app.js;rm static/lib/app.min.js', (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+    console.log 'Done.'
+
+task 'remove:tools', 'Remove all tools from the tools directory', ->
+  exec 'rm -rf tools', (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+    console.log 'Done.'
