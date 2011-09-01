@@ -4,4 +4,10 @@
 state =
   viewport:
     selectedElement: null
+    mouse:
+      lastX: 0
+      lastY: 0
+      leftDragging: false
+      middleDragging: false
+
 
