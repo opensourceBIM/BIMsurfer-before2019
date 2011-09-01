@@ -35,7 +35,7 @@ task 'fetch:npm', 'Fetch the npm package manager', ->
     console.log 'Done.'
 
 task 'fetch:uglifyjs', 'Fetch the UglifyJS minification tool', ->
-  exec 'curl http://npmjs.org/install.sh | sudo sh', (err, stdout, stderr) ->
+  exec 'npm install uglify-js', (err, stdout, stderr) ->
     throw err if err
     console.log stdout + stderr
     console.log 'Done.'
