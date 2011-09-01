@@ -50,14 +50,16 @@ task 'fetch:uglifyjs', 'Fetch the UglifyJS minification tool', ->
   #      console.log 'Done.'
 
 task 'minify', 'Minify the resulting application file after build', ->
-  path.exists 'tools/UglifyJS', (exists) ->
+  #path.exists 'tools/UglifyJS', (exists) ->
+  path.exists 'node_modules/.bin/uglifyjs', (exists) ->
     if exists
-      exec 'tools/UglifyJS/bin/uglifyjs static/lib/app.js > static/lib/app.min.js', (err, stdout, stderr) ->
+      #exec 'tools/UglifyJS/bin/uglifyjs static/lib/app.js > static/lib/app.min.js', (err, stdout, stderr) ->
+      exec 'node_modules/.bin/uglifyjs static/lib/app.js > static/lib/app.min.js', (err, stdout, stderr) ->
         throw err if err
         console.log stdout + stderr
         console.log 'Done.'
     else
-      exec 'uglifyjs static/lib/app.js', (err, stdout, stderr) ->
+      exec 'uglifyjs static/lib/app.js > static/lib/app.min.js', (err, stdout, stderr) ->
         throw err if err
         console.log stdout + stderr
         console.log 'Done.'
