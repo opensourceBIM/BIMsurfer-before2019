@@ -168,6 +168,7 @@ SceneJS.createScene({
     },
     {
       type: 'lookAt',
+      id: 'main-lookAt',
       eye: {
         x: -2700.0,
         y: 100.0,
@@ -186,6 +187,7 @@ SceneJS.createScene({
       nodes: [
         {
           type: 'camera',
+          id: 'main-camera',
           optics: {
             type: 'perspective',
             far: 14724.13,
@@ -196,6 +198,7 @@ SceneJS.createScene({
           nodes: [
             {
               type: 'renderer',
+              id: 'main-renderer',
               clear: {
                 color: true,
                 depth: true,
@@ -210,7 +213,7 @@ SceneJS.createScene({
               nodes: [
                 {
                   type: 'light',
-                  id: 'sunlight',
+                  id: 'sun-light',
                   mode: 'dir',
                   color: {
                     r: 1.0,
