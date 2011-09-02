@@ -1,11 +1,11 @@
 # Orbit camera model for manipulating the SceneJS lookat node
 orbitLookAt = (dAngles, lookAt) ->
-  # TODO: Include 'target' in the calculation
+  # TODO: Include the 'look' target in the calculation
   # NOTE: This would probably be more elegant with quaternions, but the scenejs camera is already in a matrix-like format
 
-  eye0 = recordToVec3 
-  target = recordToVec3 lookAtNode.get 'target'
-  up0 = recordToVec3 lookAtNode.get 'up'
+  eye0 = recordToVec3 lookAt.eye
+  up0 = recordToVec3 lookAt.up
+  look = recordToVec3 lookAt.look
 
   # Create an axis-angle rotation transformation
   eyeLen = SceneJS_math_lenVec3 eye0
@@ -40,7 +40,7 @@ orbitLookAt = (dAngles, lookAt) ->
     up: vec3ToRecord up1
 
 orbitLookAtNode = (dAngles, node) ->
-  orbitLookAt 
+  orbitLookAt dAngles,
     eye: node.get 'eye'
-    target: node.get 'target'
+    look: node.get 'look'
     up: node.get 'up'
