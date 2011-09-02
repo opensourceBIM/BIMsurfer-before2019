@@ -3,11 +3,11 @@
 
 state =
   scene: SceneJS.scene 'Scene'
+  canvas: document.getElementById 'scenejsCanvas'
   viewport:
     selectedElement: null
     mouse:
-      lastX: 0
-      lastY: 0
+      last: [0, 0]
       leftDragging: false
       middleDragging: false
 
