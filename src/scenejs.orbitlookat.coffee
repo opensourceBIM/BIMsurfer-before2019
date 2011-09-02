@@ -3,6 +3,9 @@ orbitLookAt = (dAngles, lookAt) ->
   # TODO: Include the 'look' target in the calculation
   # NOTE: This would probably be more elegant with quaternions, but the scenejs camera is already in a matrix-like format
 
+  if dAngles[0] == 0.0 and dAngles[1] == 0.0
+    return { eye: lookAt.eye, up: lookAt.up }
+
   eye0 = recordToVec3 lookAt.eye
   up0 = recordToVec3 lookAt.up
   look = recordToVec3 lookAt.look
@@ -20,7 +23,11 @@ orbitLookAt = (dAngles, lookAt) ->
   #SceneJS_math_cross3Vec3 eye0norm, tangent0norm, up0norm
 
   # (Transform axis out of the local space of the lookat)
-  axis = [tangent0norm[0] * dAngles[0] + tangent0norm[1] * dAngles[0], eye0norm[0] * dAngles[1] + eye0norm[1] * dAngles[1]]
+  axis = [
+    tangent0norm[0] * dAngles[0] + eye0norm[0] * dAngles[1]
+    tangent0norm[1] * dAngles[0] + eye0norm[1] * dAngles[1]
+    tangent0norm[2] * dAngles[0] + eye0norm[2] * dAngles[1]
+  ]
   dAngle = SceneJS_math_lenVec2 dAngles
   rotMat = SceneJS_math_rotationMat4v dAngle, axis
 
@@ -40,7 +47,12 @@ orbitLookAt = (dAngles, lookAt) ->
     up: vec3ToRecord up1
 
 orbitLookAtNode = (dAngles, node) ->
-  orbitLookAt dAngles,
+  console.log "eye", node.get 'eye'
+  console.log "look", node.get 'look'
+  console.log "up", node.get 'up'
+  node.set orbitLookAt dAngles, {
     eye: node.get 'eye'
     look: node.get 'look'
     up: node.get 'up'
+  }
+
