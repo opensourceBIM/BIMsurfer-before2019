@@ -13,3 +13,5 @@ Third party libraries used in this project:
 * SceneJS
   Licenses: licenses/LICENSE-scenejs-mit, licenses/LICENSE-scenejs-gpl
 
+* glMatrix
+  Licenses: See the inline license in static/lib/scenejs/scenejs.math.js
