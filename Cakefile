@@ -8,6 +8,7 @@ appFiles  = [
   'scenejs.orbitlookat'
   'main'
   'constants'
+  'math'
   'state'
   'events'
 ]
