@@ -19,14 +19,14 @@ orbitLookAt = (dAngles, lookAt) ->
   SceneJS_math_cross3Vec3 up0, eye0, tangent0
   tangent0norm = SceneJS_math_normalizeVec3 tangent0
 
-  #up0norm = [0.0,0.0,0.0]
-  #SceneJS_math_cross3Vec3 eye0norm, tangent0norm, up0norm
+  up0norm = [0.0,0.0,0.0]
+  SceneJS_math_cross3Vec3 eye0norm, tangent0norm, up0norm
 
   # (Transform axis out of the local space of the lookat)
   axis = [
-    tangent0norm[0] * dAngles[0] + eye0norm[0] * dAngles[1]
-    tangent0norm[1] * dAngles[0] + eye0norm[1] * dAngles[1]
-    tangent0norm[2] * dAngles[0] + eye0norm[2] * dAngles[1]
+    tangent0norm[0] * -dAngles[1] + up0norm[0] * -dAngles[0]
+    tangent0norm[1] * -dAngles[1] + up0norm[1] * -dAngles[0]
+    tangent0norm[2] * -dAngles[1] + up0norm[2] * -dAngles[0]
   ]
   dAngle = SceneJS_math_lenVec2 dAngles
   rotMat = SceneJS_math_rotationMat4v dAngle, axis
