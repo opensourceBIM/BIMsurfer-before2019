@@ -2086,3 +2086,4 @@ var SceneJS_math_angleAxisFromQuaternion = function(q) {
         };
     }
 };
+
