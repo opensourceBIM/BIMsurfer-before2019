@@ -41,7 +41,7 @@ mouseMove = (event) ->
   state.viewport.mouse.last = [event.clientX, event.clientY]
 
 # Register document events
-state.canvas.addEventListener 'mousedown', mouseDown, true
-state.canvas.addEventListener 'mouseup', mouseUp, true
-state.canvas.addEventListener 'mousemove', mouseMove, true
+state.viewport.domElement.addEventListener 'mousedown', mouseDown, true
+state.viewport.domElement.addEventListener 'mouseup', mouseUp, true
+state.viewport.domElement.addEventListener 'mousemove', mouseMove, true
 

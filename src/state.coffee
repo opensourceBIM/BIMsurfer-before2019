@@ -4,7 +4,8 @@
 state =
   scene: SceneJS.scene 'Scene'
   canvas: document.getElementById 'scenejsCanvas'
-  viewport:
+  viewport: 
+    domElement: document.getElementById 'viewport'
     selectedElement: null
     mouse:
       last: [0, 0]
