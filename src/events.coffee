@@ -1,8 +1,15 @@
 # Eventful code comes here
 # Program state should not be manipulated outside this file
 
+sceneInit = () ->
+  (state.scene.findNode 'main-camera').set 
+    optics: 
+      type: 'perspective', 
+      aspect: state.canvas.width / state.canvas.height
+
 # Start rendering as soon as possible
-state.scene.start();
+sceneInit()
+state.scene.start()
 
 # Mouse events
 mouseDown = (event) ->
@@ -36,7 +43,7 @@ mouseMove = (event) ->
       Math.clamp orbitAngles[1], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed
     ]
 
-    lookAtNode = state.scene.findNode("main-lookAt")
+    lookAtNode = state.scene.findNode 'main-lookAt'
     orbitLookAtNode orbitAngles, lookAtNode
   state.viewport.mouse.last = [event.clientX, event.clientY]
 
