@@ -22,10 +22,22 @@ mouseUp = (event) ->
   # alert "Nothing picked"
 
 mouseMove = (event) ->
+  # TODO: Get an accurate time measurement since the last mouseMove event
   if state.viewport.mouse.middleDragging
-    delta = [event.clientX - state.viewport.mouse.last[0], event.clientY - state.viewport.mouse.last[0]]
+    # Get the delta position of the mouse over this frame
+    delta = [event.clientX - state.viewport.mouse.last[0], event.clientY - state.viewport.mouse.last[1]]
+    deltaLength = SceneJS_math_lenVec2 delta
+
+    # Calculate the orbit angle to apply to the lookAt
+    orbitAngles = [0.0,0.0]
+    SceneJS_math_mulVec2Scalar delta, constants.camera.orbitSpeedFactor / deltaLength, orbitAngles
+    orbitAngles = [
+      Math.clamp orbitAngles[0], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed
+      Math.clamp orbitAngles[1], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed
+    ]
+
     lookAtNode = state.scene.findNode("main-lookAt")
-    #alert orbitLookAtNode delta, lookAtNode
+    orbitLookAtNode orbitAngles, lookAtNode
   state.viewport.mouse.last = [event.clientX, event.clientY]
 
 # Register document events
