@@ -1,3 +1,9 @@
+/*
+ * BIM Viewer
+ * Copyright 2011, Bimserver.org.
+ */
+"use strict";
+
 (function() {
   var constants, mouseDown, mouseMove, mouseUp, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, state, vec3ToRecord, vec4ToRecord;
   recordToVec3 = function(record) {
@@ -58,10 +64,6 @@
       up: node.get('up')
     }));
   };
-  /*
-  BIM Viewer
-  Copyright 2011, Bimserver.org.
-  */
   constants = {
     camera: {
       maxOrbitSpeed: Math.PI * 0.1,
