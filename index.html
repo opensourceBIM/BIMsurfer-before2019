@@ -269,11 +269,15 @@
       padding: 4px 0;
       width: 170px;
     }
+    .shortcut-mouse-left,
     .shortcut-mouse-middle,
     .shortcut-mouse-right,
     .shortcut-mouse-scroll {
       width: 24px;
       height: 24px;
+    }
+    .shortcut-mouse-left {
+      background: url('static/images/shortcut-mouse-left24x24.png');
     }
     .shortcut-mouse-middle {
       background: url('static/images/shortcut-mouse-middle24x24.png');
@@ -382,6 +386,7 @@
           <!-- -->
         </div>
         <div id='main-view-keys'>
+          <div class='shortcut'><div class='shortcut-mouse-left'></div><span class='shortcut-description'>Select an element</span></div>
           <div class='shortcut'><div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Rotate the view</span></div>
           <div class='shortcut'><div class='shortcut-key'>Shift</div>+<div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Pan the view</span></div>
           <div class='shortcut'><div class='shortcut-mouse-scroll'></div><span class='shortcut-description'>Zoom in and out</span></div>
