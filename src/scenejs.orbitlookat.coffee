@@ -16,7 +16,7 @@ orbitLookAt = (dAngles, lookAt) ->
   SceneJS_math_mulVec3Scalar eye0, 1.0 / eyeLen, eye0norm
 
   tangent0 = [0.0,0.0,0.0]
-  SceneJS_math_cross3Vec3 eye0, up0, tangent0
+  SceneJS_math_cross3Vec3 up0, eye0, tangent0
   tangent0norm = SceneJS_math_normalizeVec3 tangent0
 
   #up0norm = [0.0,0.0,0.0]
@@ -47,9 +47,9 @@ orbitLookAt = (dAngles, lookAt) ->
     up: vec3ToRecord up1
 
 orbitLookAtNode = (dAngles, node) ->
-  console.log "eye", node.get 'eye'
-  console.log "look", node.get 'look'
-  console.log "up", node.get 'up'
+  #console.log "eye", node.get 'eye'
+  #console.log "look", node.get 'look'
+  #console.log "up", node.get 'up'
   node.set orbitLookAt dAngles, {
     eye: node.get 'eye'
     look: node.get 'look'
