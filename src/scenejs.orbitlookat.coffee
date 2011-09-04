@@ -1,5 +1,5 @@
 # Orbit camera model for manipulating the SceneJS lookat node
-orbitLookAt = (dAngles, lookAt) ->
+orbitLookAt = (dAngles, orbitUp, lookAt) ->
   # TODO: Include the 'look' target in the calculation
   # NOTE: This would probably be more elegant with quaternions, but the scenejs camera is already in a matrix-like format
 
@@ -35,8 +35,11 @@ orbitLookAt = (dAngles, lookAt) ->
   eye1 = SceneJS_math_transformVector3 rotMat, eye0
 
   # Transform the tangent vector of the lookat and then correct for drift
+  # (Drift is the deviation of the tangent vector from the plane that forms an orthogonal complement to the orbitUp vector)
   tangent1 = SceneJS_math_transformVector3 rotMat, tangent0
-  tangent1[1] = 0.0   # (Drift is the deviation of the tangent vector from the XZ plane)
+  tangentError = [0.0,0.0,0.0]
+  SceneJS_math_mulVec3 tangent1, orbitUp, tangentError
+  SceneJS_math_subVec3 tangent1, tangentError
 
   # Transform the up vector using the corrected tangent
   up1 = [0.0,0.0,0.0]
@@ -46,11 +49,8 @@ orbitLookAt = (dAngles, lookAt) ->
     eye: vec3ToRecord eye1
     up: vec3ToRecord up1
 
-orbitLookAtNode = (dAngles, node) ->
-  #console.log "eye", node.get 'eye'
-  #console.log "look", node.get 'look'
-  #console.log "up", node.get 'up'
-  node.set orbitLookAt dAngles, {
+orbitLookAtNode = (dAngles, orbitUp, node) ->
+  node.set orbitLookAt dAngles, orbitUp, {
     eye: node.get 'eye'
     look: node.get 'look'
     up: node.get 'up'

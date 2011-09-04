@@ -44,7 +44,7 @@ mouseMove = (event) ->
     ]
 
     lookAtNode = state.scene.findNode 'main-lookAt'
-    orbitLookAtNode orbitAngles, lookAtNode
+    orbitLookAtNode orbitAngles, [0.0,0.0,1.0], lookAtNode
   state.viewport.mouse.last = [event.clientX, event.clientY]
 
 # Register document events

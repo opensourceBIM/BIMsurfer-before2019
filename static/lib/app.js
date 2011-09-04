@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var constants, mouseDown, mouseMove, mouseUp, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, state, vec3ToRecord, vec4ToRecord;
+  var constants, mouseDown, mouseMove, mouseUp, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, sceneInit, state, vec3ToRecord, vec4ToRecord;
   recordToVec3 = function(record) {
     return [record.x, record.y, record.z];
   };
@@ -27,8 +27,8 @@
       w: vec[3]
     };
   };
-  orbitLookAt = function(dAngles, lookAt) {
-    var axis, dAngle, eye0, eye0norm, eye1, eyeLen, look, result, rotMat, tangent0, tangent0norm, tangent1, up0, up1;
+  orbitLookAt = function(dAngles, orbitUp, lookAt) {
+    var axis, dAngle, eye0, eye0norm, eye1, eyeLen, look, result, rotMat, tangent0, tangent0norm, tangent1, tangentError, up0, up0norm, up1;
     if (dAngles[0] === 0.0 && dAngles[1] === 0.0) {
       return {
         eye: lookAt.eye,
@@ -44,12 +44,16 @@
     tangent0 = [0.0, 0.0, 0.0];
     SceneJS_math_cross3Vec3(up0, eye0, tangent0);
     tangent0norm = SceneJS_math_normalizeVec3(tangent0);
-    axis = [tangent0norm[0] * dAngles[0] + eye0norm[0] * dAngles[1], tangent0norm[1] * dAngles[0] + eye0norm[1] * dAngles[1], tangent0norm[2] * dAngles[0] + eye0norm[2] * dAngles[1]];
+    up0norm = [0.0, 0.0, 0.0];
+    SceneJS_math_cross3Vec3(eye0norm, tangent0norm, up0norm);
+    axis = [tangent0norm[0] * -dAngles[1] + up0norm[0] * -dAngles[0], tangent0norm[1] * -dAngles[1] + up0norm[1] * -dAngles[0], tangent0norm[2] * -dAngles[1] + up0norm[2] * -dAngles[0]];
     dAngle = SceneJS_math_lenVec2(dAngles);
     rotMat = SceneJS_math_rotationMat4v(dAngle, axis);
     eye1 = SceneJS_math_transformVector3(rotMat, eye0);
     tangent1 = SceneJS_math_transformVector3(rotMat, tangent0);
-    tangent1[1] = 0.0;
+    tangentError = [0.0, 0.0, 0.0];
+    SceneJS_math_mulVec3(tangent1, orbitUp, tangentError);
+    SceneJS_math_subVec3(tangent1, tangentError);
     up1 = [0.0, 0.0, 0.0];
     SceneJS_math_cross3Vec3(eye1, tangent1, up1);
     return result = {
@@ -57,8 +61,8 @@
       up: vec3ToRecord(up1)
     };
   };
-  orbitLookAtNode = function(dAngles, node) {
-    return node.set(orbitLookAt(dAngles, {
+  orbitLookAtNode = function(dAngles, orbitUp, node) {
+    return node.set(orbitLookAt(dAngles, orbitUp, {
       eye: node.get('eye'),
       look: node.get('look'),
       up: node.get('up')
@@ -77,6 +81,7 @@
     scene: SceneJS.scene('Scene'),
     canvas: document.getElementById('scenejsCanvas'),
     viewport: {
+      domElement: document.getElementById('viewport'),
       selectedElement: null,
       mouse: {
         last: [0, 0],
@@ -85,6 +90,15 @@
       }
     }
   };
+  sceneInit = function() {
+    return (state.scene.findNode('main-camera')).set({
+      optics: {
+        type: 'perspective',
+        aspect: state.canvas.width / state.canvas.height
+      }
+    });
+  };
+  sceneInit();
   state.scene.start();
   mouseDown = function(event) {
     state.viewport.mouse.last = [event.clientX, event.clientY];
@@ -107,12 +121,12 @@
       orbitAngles = [0.0, 0.0];
       SceneJS_math_mulVec2Scalar(delta, constants.camera.orbitSpeedFactor / deltaLength, orbitAngles);
       orbitAngles = [Math.clamp(orbitAngles[0], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed), Math.clamp(orbitAngles[1], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed)];
-      lookAtNode = state.scene.findNode("main-lookAt");
-      orbitLookAtNode(orbitAngles, lookAtNode);
+      lookAtNode = state.scene.findNode('main-lookAt');
+      orbitLookAtNode(orbitAngles, [0.0, 0.0, 1.0], lookAtNode);
     }
     return state.viewport.mouse.last = [event.clientX, event.clientY];
   };
-  state.canvas.addEventListener('mousedown', mouseDown, true);
-  state.canvas.addEventListener('mouseup', mouseUp, true);
-  state.canvas.addEventListener('mousemove', mouseMove, true);
+  state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
+  state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
+  state.viewport.domElement.addEventListener('mousemove', mouseMove, true);
 }).call(this);
