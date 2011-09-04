@@ -2,7 +2,7 @@
 # Program state should not be manipulated outside this file
 
 sceneInit = () ->
-  modifySubAttr 'main-camera', 'optics', 'aspect', state.canvas.width / state.canvas.height
+  modifySubAttr (state.scene.findNode 'main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height
 
 # Start rendering as soon as possible
 sceneInit()
@@ -39,9 +39,7 @@ mouseMove = (event) ->
       Math.clamp orbitAngles[0], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed
       Math.clamp orbitAngles[1], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed
     ]
-
-    lookAtNode = state.scene.findNode 'main-lookAt'
-    orbitLookAtNode orbitAngles, [0.0,0.0,1.0], lookAtNode
+    orbitLookAtNode (state.scene.findNode 'main-lookAt'), orbitAngles, [0.0,0.0,1.0]
   state.viewport.mouse.last = [event.clientX, event.clientY]
 
 # Register document events

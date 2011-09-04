@@ -6,9 +6,8 @@
 
 (function() {
   var constants, modifySubAttr, mouseDown, mouseMove, mouseUp, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, sceneInit, state, vec3ToRecord, vec4ToRecord;
-  modifySubAttr = function(nodeId, attr, subAttr, value) {
-    var attrRecord, node;
-    node = state.scene.findNode(nodeId);
+  modifySubAttr = function(node, attr, subAttr, value) {
+    var attrRecord;
     attrRecord = node.get(attr);
     attrRecord[subAttr] = value;
     return node.set(attr, attrRecord);
@@ -68,7 +67,7 @@
       up: vec3ToRecord(up1)
     };
   };
-  orbitLookAtNode = function(dAngles, orbitUp, node) {
+  orbitLookAtNode = function(node, dAngles, orbitUp) {
     return node.set(orbitLookAt(dAngles, orbitUp, {
       eye: node.get('eye'),
       look: node.get('look'),
@@ -98,7 +97,7 @@
     }
   };
   sceneInit = function() {
-    return modifySubAttr('main-camera', 'optics', 'aspect', state.canvas.width / state.canvas.height);
+    return modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
   };
   sceneInit();
   state.scene.start();
@@ -116,15 +115,14 @@
     return state.viewport.mouse.middleDragging = false;
   };
   mouseMove = function(event) {
-    var delta, deltaLength, lookAtNode, orbitAngles;
+    var delta, deltaLength, orbitAngles;
     if (state.viewport.mouse.middleDragging) {
       delta = [event.clientX - state.viewport.mouse.last[0], event.clientY - state.viewport.mouse.last[1]];
       deltaLength = SceneJS_math_lenVec2(delta);
       orbitAngles = [0.0, 0.0];
       SceneJS_math_mulVec2Scalar(delta, constants.camera.orbitSpeedFactor / deltaLength, orbitAngles);
       orbitAngles = [Math.clamp(orbitAngles[0], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed), Math.clamp(orbitAngles[1], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed)];
-      lookAtNode = state.scene.findNode('main-lookAt');
-      orbitLookAtNode(orbitAngles, [0.0, 0.0, 1.0], lookAtNode);
+      orbitLookAtNode(state.scene.findNode('main-lookAt'), orbitAngles, [0.0, 0.0, 1.0]);
     }
     return state.viewport.mouse.last = [event.clientX, event.clientY];
   };

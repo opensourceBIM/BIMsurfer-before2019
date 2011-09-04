@@ -49,7 +49,7 @@ orbitLookAt = (dAngles, orbitUp, lookAt) ->
     eye: vec3ToRecord eye1
     up: vec3ToRecord up1
 
-orbitLookAtNode = (dAngles, orbitUp, node) ->
+orbitLookAtNode = (node, dAngles, orbitUp) ->
   node.set orbitLookAt dAngles, orbitUp, {
     eye: node.get 'eye'
     look: node.get 'look'
