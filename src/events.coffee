@@ -2,10 +2,7 @@
 # Program state should not be manipulated outside this file
 
 sceneInit = () ->
-  (state.scene.findNode 'main-camera').set 
-    optics: 
-      type: 'perspective', 
-      aspect: state.canvas.width / state.canvas.height
+  modifySubAttr 'main-camera', 'optics', 'aspect', state.canvas.width / state.canvas.height
 
 # Start rendering as soon as possible
 sceneInit()

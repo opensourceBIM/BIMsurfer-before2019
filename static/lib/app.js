@@ -5,7 +5,14 @@
 "use strict";
 
 (function() {
-  var constants, mouseDown, mouseMove, mouseUp, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, sceneInit, state, vec3ToRecord, vec4ToRecord;
+  var constants, modifySubAttr, mouseDown, mouseMove, mouseUp, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, sceneInit, state, vec3ToRecord, vec4ToRecord;
+  modifySubAttr = function(nodeId, attr, subAttr, value) {
+    var attrRecord, node;
+    node = state.scene.findNode(nodeId);
+    attrRecord = node.get(attr);
+    attrRecord[subAttr] = value;
+    return node.set(attr, attrRecord);
+  };
   recordToVec3 = function(record) {
     return [record.x, record.y, record.z];
   };
@@ -91,12 +98,7 @@
     }
   };
   sceneInit = function() {
-    return (state.scene.findNode('main-camera')).set({
-      optics: {
-        type: 'perspective',
-        aspect: state.canvas.width / state.canvas.height
-      }
-    });
+    return modifySubAttr('main-camera', 'optics', 'aspect', state.canvas.width / state.canvas.height);
   };
   sceneInit();
   state.scene.start();
