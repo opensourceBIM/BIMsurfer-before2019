@@ -1202,9 +1202,9 @@ SceneJS.createScene({
       type: 'lookAt',
       id: 'main-lookAt',
       eye: {
-        x: -48.715267,
-        y: 80.51583,
-        z: 23.699667,
+        x: 36.53645,
+        y: 60.38687,
+        z: 17.77475,
       },
       look: {
         x: 0.0,
@@ -1213,8 +1213,8 @@ SceneJS.createScene({
       },
       up: {
         x: 0.0,
-        y: 1.0,
-        z: 0.0,
+        y: 0.0,
+        z: 1.0,
       },
       nodes: [
         {
@@ -1253,9 +1253,9 @@ SceneJS.createScene({
                     b: 1.0,
                   },
                   dir: {
-                    x: 0.3,
-                    y:-1.0,
-                    z: 0.3,
+                    x:-0.5,
+                    y:-0.5,
+                    z:-1.0,
                   },
                   diffuse: true,
                   specular: true,

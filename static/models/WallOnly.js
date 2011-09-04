@@ -170,9 +170,9 @@ SceneJS.createScene({
       type: 'lookAt',
       id: 'main-lookAt',
       eye: {
-        x: -2700.0,
-        y: 100.0,
-        z: 2500.0,
+        x: 8100.0,
+        y: 300.0,
+        z: 7500.0,
       },
       look: {
         x: 0.0,
@@ -181,8 +181,8 @@ SceneJS.createScene({
       },
       up: {
         x: 0.0,
-        y: 1.0,
-        z: 0.0,
+        y: 0.0,
+        z: 1.0,
       },
       nodes: [
         {
@@ -190,10 +190,10 @@ SceneJS.createScene({
           id: 'main-camera',
           optics: {
             type: 'perspective',
-            far: 14724.13,
+            far: 44172.39,
             near: 7.3620653,
             aspect: 1.0,
-            fovy: 27.6380627952,
+            fovy: 37.8493,
           },
           nodes: [
             {
@@ -221,9 +221,9 @@ SceneJS.createScene({
                     b: 1.0,
                   },
                   dir: {
-                    x: 0.3,
-                    y:-1.0,
-                    z: 0.3,
+                    x:-0.5,
+                    y:-0.5,
+                    z:-1.0,
                   },
                   diffuse: true,
                   specular: true,
