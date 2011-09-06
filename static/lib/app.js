@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var constants, modifySubAttr, mouseDown, mouseMove, mouseUp, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, sceneInit, state, vec3ToRecord, vec4ToRecord;
+  var constants, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   modifySubAttr = function(node, attr, subAttr, value) {
     var attrRecord;
     attrRecord = node.get(attr);
@@ -34,7 +34,7 @@
     };
   };
   orbitLookAt = function(dAngles, orbitUp, lookAt) {
-    var axis, dAngle, eye0, eye0norm, eye1, eyeLen, look, result, rotMat, tangent0, tangent0norm, tangent1, tangentError, up0, up0norm, up1;
+    var axis, dAngle, eye0, eye0len, eye0norm, eye1, look, result, rotMat, tangent0, tangent0norm, tangent1, tangentError, up0, up0norm, up1;
     if (dAngles[0] === 0.0 && dAngles[1] === 0.0) {
       return {
         eye: lookAt.eye,
@@ -44,9 +44,9 @@
     eye0 = recordToVec3(lookAt.eye);
     up0 = recordToVec3(lookAt.up);
     look = recordToVec3(lookAt.look);
-    eyeLen = SceneJS_math_lenVec3(eye0);
+    eye0len = SceneJS_math_lenVec3(eye0);
     eye0norm = [0.0, 0.0, 0.0];
-    SceneJS_math_mulVec3Scalar(eye0, 1.0 / eyeLen, eye0norm);
+    SceneJS_math_mulVec3Scalar(eye0, 1.0 / eye0len, eye0norm);
     tangent0 = [0.0, 0.0, 0.0];
     SceneJS_math_cross3Vec3(up0, eye0, tangent0);
     tangent0norm = SceneJS_math_normalizeVec3(tangent0);
@@ -64,6 +64,7 @@
     SceneJS_math_cross3Vec3(eye1, tangent1, up1);
     return result = {
       eye: vec3ToRecord(eye1),
+      look: lookAt.look,
       up: vec3ToRecord(up1)
     };
   };
@@ -74,10 +75,32 @@
       up: node.get('up')
     }));
   };
+  zoomLookAt = function(distance, limits, lookAt) {
+    var eye0, eye0len, eye1, eye1len, look, result;
+    eye0 = recordToVec3(lookAt.eye);
+    look = recordToVec3(lookAt.look);
+    eye0len = SceneJS_math_lenVec3(eye0);
+    eye1len = Math.clamp(eye0len + distance, limits[0], limits[1]);
+    eye1 = [0.0, 0.0, 0.0];
+    SceneJS_math_mulVec3Scalar(eye0, eye1len / eye0len, eye1);
+    return result = {
+      eye: vec3ToRecord(eye1),
+      look: lookAt.look,
+      up: lookAt.up
+    };
+  };
+  zoomLookAtNode = function(node, distance, limits) {
+    return node.set(zoomLookAt(distance, limits, {
+      eye: node.get('eye'),
+      look: node.get('look'),
+      up: node.get('up')
+    }));
+  };
   constants = {
     camera: {
       maxOrbitSpeed: Math.PI * 0.1,
-      orbitSpeedFactor: 0.01
+      orbitSpeedFactor: 0.01,
+      zoomSpeedFactor: 0.05
     }
   };
   Math.clamp = function(s, min, max) {
@@ -94,10 +117,17 @@
         leftDragging: false,
         middleDragging: false
       }
+    },
+    camera: {
+      distanceLimits: [0.0, 0.0]
     }
   };
   sceneInit = function() {
-    return modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
+    var sceneData, sceneDiameter;
+    modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
+    sceneData = state.scene.data();
+    sceneDiameter = SceneJS_math_lenVec3(sceneData.bounds);
+    return state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0];
   };
   sceneInit();
   state.scene.start();
@@ -126,7 +156,17 @@
     }
     return state.viewport.mouse.last = [event.clientX, event.clientY];
   };
-  state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
-  state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
-  state.viewport.domElement.addEventListener('mousemove', mouseMove, true);
+  mouseWheel = function(event) {
+    var zoomDistance;
+    zoomDistance = event.wheelDelta / -120.0 * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
+    return zoomLookAtNode(state.scene.findNode('main-lookAt'), zoomDistance, state.camera.distanceLimits);
+  };
+  registerDOMEvents = function() {
+    state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
+    state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
+    state.viewport.domElement.addEventListener('mousemove', mouseMove, true);
+    state.viewport.domElement.addEventListener('mousewheel', mouseWheel, true);
+    return state.viewport.domElement.addEventListener('DOMMouseScroll', mouseWheel, true);
+  };
+  registerDOMEvents();
 }).call(this);

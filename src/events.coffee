@@ -2,7 +2,12 @@
 # Program state should not be manipulated outside this file
 
 sceneInit = () ->
+  # Set the correct aspect ratio
   modifySubAttr (state.scene.findNode 'main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height
+  # Calculate camera attributes
+  sceneData = state.scene.data()
+  sceneDiameter = SceneJS_math_lenVec3 sceneData.bounds
+  state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0]
 
 # Start rendering as soon as possible
 sceneInit()
@@ -42,8 +47,16 @@ mouseMove = (event) ->
     orbitLookAtNode (state.scene.findNode 'main-lookAt'), orbitAngles, [0.0,0.0,1.0]
   state.viewport.mouse.last = [event.clientX, event.clientY]
 
-# Register document events
-state.viewport.domElement.addEventListener 'mousedown', mouseDown, true
-state.viewport.domElement.addEventListener 'mouseup', mouseUp, true
-state.viewport.domElement.addEventListener 'mousemove', mouseMove, true
+mouseWheel = (event) ->
+  # TODO: When the camera projection mode is ortho then this will need to scale the view
+  zoomDistance = event.wheelDelta / -120.0 * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor
+  zoomLookAtNode (state.scene.findNode 'main-lookAt'), zoomDistance, state.camera.distanceLimits
 
+# Register document events
+registerDOMEvents = () ->
+  state.viewport.domElement.addEventListener 'mousedown', mouseDown, true
+  state.viewport.domElement.addEventListener 'mouseup', mouseUp, true
+  state.viewport.domElement.addEventListener 'mousemove', mouseMove, true
+  state.viewport.domElement.addEventListener 'mousewheel', mouseWheel, true
+  state.viewport.domElement.addEventListener 'DOMMouseScroll', mouseWheel, true
+registerDOMEvents()

@@ -11,4 +11,6 @@ state =
       last: [0, 0]
       leftDragging: false
       middleDragging: false
+  camera:
+    distanceLimits: [0.0, 0.0]    # Min / Max limits
 

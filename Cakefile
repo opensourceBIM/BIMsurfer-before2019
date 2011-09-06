@@ -7,6 +7,7 @@ appFiles  = [
   'scenejs.nodeattr'
   'scenejs.conversion'
   'scenejs.orbitlookat'
+  'scenejs.zoomlookat'
   'constants'
   'math'
   'state'

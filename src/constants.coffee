@@ -8,4 +8,5 @@ constants =
   camera:
     maxOrbitSpeed: Math.PI * 0.1
     orbitSpeedFactor: 0.01
+    zoomSpeedFactor: 0.05
 

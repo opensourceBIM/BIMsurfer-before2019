@@ -11,9 +11,9 @@ orbitLookAt = (dAngles, orbitUp, lookAt) ->
   look = recordToVec3 lookAt.look
 
   # Create an axis-angle rotation transformation
-  eyeLen = SceneJS_math_lenVec3 eye0
+  eye0len = SceneJS_math_lenVec3 eye0
   eye0norm = [0.0,0.0,0.0]
-  SceneJS_math_mulVec3Scalar eye0, 1.0 / eyeLen, eye0norm
+  SceneJS_math_mulVec3Scalar eye0, 1.0 / eye0len, eye0norm
 
   tangent0 = [0.0,0.0,0.0]
   SceneJS_math_cross3Vec3 up0, eye0, tangent0
@@ -47,6 +47,7 @@ orbitLookAt = (dAngles, orbitUp, lookAt) ->
   
   result =
     eye: vec3ToRecord eye1
+    look: lookAt.look
     up: vec3ToRecord up1
 
 orbitLookAtNode = (node, dAngles, orbitUp) ->
