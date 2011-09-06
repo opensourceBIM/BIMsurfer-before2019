@@ -1437,7 +1437,7 @@ SceneJS.Services = new (function() {
 
     NodeSelector.prototype.numNodes = function() {
         return this._targetNode.children.length;
-    };   
+    };
 
     /** Sets an attribute of the selected node
      */
@@ -1513,7 +1513,7 @@ SceneJS.Services = new (function() {
      */
     NodeSelector.prototype.get = function(attr) {
         if (!attr) {
-            return this._targetNode.getJSON();
+            return this._targetNode.getJSON(); 
         }
         var funcName = "get" + attr.substr(0, 1).toUpperCase() + attr.substr(1);
         var func = this._targetNode[funcName];
@@ -1604,21 +1604,9 @@ SceneJS.Services = new (function() {
         if (this._targetNode.attr.type != "scene") {
             throw SceneJS_errorModule.fatalError("pick attempted on node that is not a \"scene\" type: '" + this._targetNode.attr.id + "'");
         }
-        this._targetNode.pick(offsetX, offsetY, options);
-        return this;
+        return this._targetNode.pick(offsetX, offsetY, options);        
     };
-
-    /**
-     * Renders the selected scene node, which must be a scene.
-     */
-    NodeSelector.prototype.render = function () {
-        if (this._targetNode.attr.type != "scene") {
-            throw SceneJS_errorModule.fatalError("render attempted on node that is not a \"scene\" type: '" + this._targetNode.attr.id + "'");
-        }
-        this._targetNode.render();
-        return this;
-    };
-
+    
     /**
      * Starts the selected scene node, which must be a scene.
      */
@@ -5558,6 +5546,13 @@ var SceneJS_compileCfg = new (function() {
             },
             "start" : {
                 level: this.COMPILE_SCENE
+            },
+            set: {
+                attr: {
+                    "tagMask": {
+                        level: this.REDRAW
+                    }
+                }
             }
         },
 
@@ -5932,7 +5927,7 @@ var SceneJS_compileModule = new (function() {
             SceneJS_eventModule.INIT,
             function() {
                 self._debugCfg = SceneJS_debugModule.getConfigs("compilation");
-                self._enableCompiler = !!self._debugCfg.enabled;
+            //    self._enableCompiler = !!self._debugCfg.enabled;
             });
 
     SceneJS_eventModule.addListener(
@@ -6747,7 +6742,11 @@ new (function() {
         this._destroyed = false;
         this.scene = this;
         this.nodeMap = new SceneJS_Map(); // Can auto-generate IDs when not supplied
-        
+
+        if (params.tagMask) {
+            this.setTagMask(params.tagMask);
+        }
+
         this.canvas = findCanvas(params.canvasId, params.contextAttr); // canvasId can be null
 
         var sceneId = this.attr.id;
@@ -6799,6 +6798,22 @@ new (function() {
                 };
     })();
 
+    /** Sets regular expression to select "tag" nodes to included in render passes
+     */
+    Scene.prototype.setTagMask = function(tagMask) {
+        if (!this.tagSelector) {
+            this.tagSelector = {};
+        }
+        this.tagSelector.mask = tagMask;
+        this.tagSelector.regex = tagMask ? new RegExp(tagMask) : null
+    };
+
+    /** Gets regular expression that selects "tag" nodes to include in render passes
+     */
+    Scene.prototype.getTagMask = function() {
+        return this.tagSelector ? this.tagSelector.mask : null;
+    };
+
     /**
      * Starts the render loop for this scene
      */
@@ -6837,7 +6852,10 @@ new (function() {
                         sleeping = false;
                         SceneJS_compileModule.finishSceneCompile();
 
-                        SceneJS_DrawList.renderFrame({ profileFunc: cfg.profileFunc });
+                        SceneJS_DrawList.renderFrame({
+                            profileFunc: cfg.profileFunc,
+                            tagSelector: self.tagSelector
+                        });
 
                         if (cfg.frameFunc) {
                             cfg.frameFunc({
@@ -6903,12 +6921,11 @@ new (function() {
         if (this._destroyed) {
             throw SceneJS_errorModule.fatalError(SceneJS.errors.NODE_ILLEGAL_STATE, "Scene has been destroyed");
         }
-        if (!SceneJS_DrawList.pick({
+        var nodeId = SceneJS_DrawList.pick({
             sceneId: this.attr.id,
             canvasX : canvasX,
-            canvasY : canvasY }, options)) {
-            this._fireEvent("notpicked", { }, options);
-        }
+            canvasY : canvasY }, options);
+        return nodeId ? { nodeId : nodeId, canvasX: canvasX, canvasY: canvasY } : null;
     };
 
     Scene.prototype._compile = function() {
@@ -7169,8 +7186,10 @@ var SceneJS_DrawList = new (function() {
     this._PROJ_TRANSFORM = 14;
     this._VIEW_TRANSFORM = 15;
     this._PICK_LISTENERS = 16;
-    this._RENDER_LISTENERS = 17;
-    this._SHADER = 18;
+    this._NAME = 17;
+    this._TAG = 18;
+    this._RENDER_LISTENERS = 19;
+    this._SHADER = 20;
 
     /*----------------------------------------------------------------------
      * Default state values
@@ -7267,6 +7286,14 @@ var SceneJS_DrawList = new (function() {
         listeners : []
     });
 
+    this._DEFAULT_NAME_STATE = createState({
+        core : null
+    });
+
+    this._DEFAULT_TAG_STATE = createState({
+        core : null
+    });
+
     this._DEFAULT_TEXTURE_STATE = createState({
         hash: ""
     });
@@ -7346,6 +7373,8 @@ var SceneJS_DrawList = new (function() {
     var clipState;
     var morphState;
     var pickListenersState;
+    var nameState;
+    var tagState;
     var renderListenersState;
     var shaderState;
 
@@ -7468,6 +7497,8 @@ var SceneJS_DrawList = new (function() {
             projXFormState = this._DEFAULT_PROJ_TRANSFORM_STATE;
             viewXFormState = this._DEFAULT_VIEW_TRANSFORM_STATE;
             pickListenersState = this._DEFAULT_PICK_LISTENERS_STATE;
+            nameState = this._DEFAULT_NAME_STATE;
+            tagState = this._DEFAULT_TAG_STATE;
             renderListenersState = this._DEFAULT_RENDER_LISTENERS_STATE;
             shaderState = this._DEFAULT_SHADER_STATE;
 
@@ -7708,16 +7739,16 @@ var SceneJS_DrawList = new (function() {
         morphState.morph = morph;
     };
 
-    this.setPickColor = function(id, pickColor) {
-        if (arguments.length == 0) {
-            pickColorState = this._DEFAULT_PICK_COLOR_STATE;
-            this._stateHash = null;
-            return;
-        }
-        pickColorState = this._getState(this._PICKCOLOR, id);
-        pickColorState.pickColor = pickColor;
-        this._stateHash = null;
-    };
+    //    this.setPickColor = function(id, pickColor) {
+    //        if (arguments.length == 0) {
+    //            pickColorState = this._DEFAULT_PICK_COLOR_STATE;
+    //            this._stateHash = null;
+    //            return;
+    //        }
+    //        pickColorState = this._getState(this._PICKCOLOR, id);
+    //        pickColorState.pickColor = pickColor;
+    //        this._stateHash = null;
+    //    };
 
     this.setTexture = function(id, core) {
         if (arguments.length == 0) {
@@ -7801,6 +7832,25 @@ var SceneJS_DrawList = new (function() {
         pickListenersState = this._getState(this._PICK_LISTENERS, id);
         pickListenersState.listeners = listeners || [];
     };
+
+    this.setName = function(id, name) {
+        if (arguments.length == 0) {
+            nameState = this._DEFAULT_NAME_STATE;
+            return;
+        }
+        nameState = this._getState(this._NAME, id);
+        nameState.name = name;             // Can be null
+    };
+
+    this.setTag = function(id, core) {
+        if (arguments.length == 0) {
+            tagState = this._DEFAULT_TAG_STATE;
+            return;
+        }
+        tagState = this._getState(this._TAG, id);
+        tagState.core = core;             // Can be null
+    };
+
 
     this.setRenderListeners = function(id, listeners) {
         if (arguments.length == 0) {
@@ -7927,6 +7977,8 @@ var SceneJS_DrawList = new (function() {
         clipState._nodeCount++;
         morphState._nodeCount++;
         pickListenersState._nodeCount++;
+        nameState._nodeCount++;
+        tagState._nodeCount++;
         renderListenersState._nodeCount++;
         shaderState._nodeCount++;
 
@@ -7956,6 +8008,8 @@ var SceneJS_DrawList = new (function() {
             clipState :             clipState,
             morphState :            morphState,
             pickListenersState:     pickListenersState,
+            nameState:              nameState,
+            tagState:              tagState,
             renderListenersState:   renderListenersState,
             shaderState:            shaderState
         };
@@ -8018,6 +8072,8 @@ var SceneJS_DrawList = new (function() {
             this._releaseState(node.clipState);
             this._releaseState(node.morphState);
             this._releaseState(node.pickListenersState);
+            this._releaseState(node.nameState);
+            this._releaseState(node.tagState);
             this._releaseState(node.renderListenersState);
             this._releaseState(node.shaderState);
         }
@@ -8094,7 +8150,7 @@ var SceneJS_DrawList = new (function() {
         var doProfile = params.profileFunc ? true : false;
         var nodeRenderer = this._states.nodeRenderer;
         nodeRenderer.init({ doProfile: doProfile });
-        this._renderBin(this._states, false, false); //Not picking
+        this._renderBin(this._states, false, params.tagSelector); //Not picking
         nodeRenderer.cleanup();
         this._states = null;
         if (doProfile) {
@@ -8102,7 +8158,7 @@ var SceneJS_DrawList = new (function() {
         }
     };
 
-    this._renderBin = function(states, picking, zPick) {
+    this._renderBin = function(states, picking, tagSelector) {
 
         var context = states.canvas.context;
 
@@ -8112,12 +8168,7 @@ var SceneJS_DrawList = new (function() {
         var nTransparent = 0;
         var _transparentBin = transparentBin;
 
-        /*---------------------------------------------
-         * TODO: get this working - makes objects vanish
-         * with Human dental implant animation
-         *--------------------------------------------*/
-
-        var drawListFilter = true;
+        var drawListFilter = false;  // TODO: breaks picking of transparent objects in BDS Human
         if (drawListFilter && lenEnabledBin > 0) {
             for (var i = 0; i < lenEnabledBin; i++) {
                 node = enabledBin[i];
@@ -8139,7 +8190,17 @@ var SceneJS_DrawList = new (function() {
             var node;
             var countDestroyed = 0;
             var flags;
+            var tagCore;
             var _picking = picking;
+
+            /* Tag matching
+             */
+            var tagMask;
+            var tagRegex;
+            if (tagSelector) {
+                tagMask = tagSelector.mask;
+                tagRegex = tagSelector.regex;
+            }
 
             /* Render opaque nodes while buffering transparent nodes.
              * Layer order is preserved independently within opaque and transparent bins.
@@ -8164,6 +8225,21 @@ var SceneJS_DrawList = new (function() {
 
                 if (flags.enabled === false) {                              // Skip disabled node
                     continue;
+                }
+
+                /* Skip unmatched tags
+                 */
+                if (tagMask) {
+                    tagCore = node.tagState.core;
+                    if (tagCore) {
+                        if (tagCore.mask != tagMask) { // Scene tag mask was updated since last render
+                            tagCore.mask = tagMask;
+                            tagCore.matches = tagRegex.test(tagCore.tag);
+                        }
+                        if (!tagCore.matches) {
+                            continue;
+                        }
+                    }
                 }
 
                 if (!node.layerState.core.enabled) {                        // Skip disabled layers
@@ -8243,27 +8319,27 @@ var SceneJS_DrawList = new (function() {
         var pickedNodeIndex = pix[0] + pix[1] * 256 + pix[2] * 65536;
         var pickIndex = (pickedNodeIndex >= 1) ? pickedNodeIndex - 1 : -1;
 
-        var wasPicked = false;
-        var pickListeners = states.nodeRenderer.pickListeners[pickIndex];
-        if (pickListeners) {
-            var listeners = pickListeners.listeners;
-
-            var canvasZ = (options.zPick) ? this._zPick(states, canvasX, canvasY, pickListeners._stateId) : undefined;
-
-            for (var i = listeners.length - 1; i >= 0; i--) {
-                wasPicked = true;
-                listeners[i]({
-                    canvasX: canvasX,
-                    canvasY: canvasY,
-                    canvasZ: canvasZ
-                }, options);
-            }
-
-        }
+        //        var wasPicked = false;
+        //        var pickListeners = states.nodeRenderer.pickListeners[pickIndex];
+        //        if (pickListeners) {
+        //            var listeners = pickListeners.listeners;
+        //
+        //            var canvasZ = (options.zPick) ? this._zPick(states, canvasX, canvasY, pickListeners._stateId) : undefined;
+        //
+        //            for (var i = listeners.length - 1; i >= 0; i--) {
+        //                wasPicked = true;
+        //                listeners[i]({
+        //                    canvasX: canvasX,
+        //                    canvasY: canvasY,
+        //                    canvasZ: canvasZ
+        //                }, options);
+        //            }
+        //
+        //        }
 
         pickBuf.unbind();
 
-        return wasPicked;
+        return states.nodeRenderer.pickNames[pickIndex];
     };
 
     this._zPick = function(states, canvasX, canvasY, pickListenersStateId) {
@@ -8829,8 +8905,7 @@ var SceneJS_DrawList = new (function() {
             src.push("uniform vec3 SCENEJS_uEye;");             // World-space eye position
 
             src.push("attribute vec3 SCENEJS_aNormal;");        // Normal vectors
-            src.push("uniform   mat4 SCENEJS_uMNMatrix;");      // Model normal matrix
-            src.push("uniform   mat4 SCENEJS_uVNMatrix;");      // View normal matrix
+            src.push("uniform   mat4 SCENEJS_uMNMatrix;");      // Model normal matrix         
 
             src.push("varying   vec3 SCENEJS_vNormal;");        // Output world-space vertex normal vector
             src.push("varying   vec3 SCENEJS_vEyeVec;");        // Output world-space eye vector
@@ -9452,6 +9527,8 @@ var SceneJS_NodeRenderer = function(cfg) {
 
     this.pickListeners = [];
 
+    this.pickNames = [];
+
     /** Facade to support node state queries while node rendering
      */
 
@@ -9548,7 +9625,7 @@ var SceneJS_NodeRenderer = function(cfg) {
         this._zPicking = params.zPick;
         this._program = null;
         this._lastRendererState = null;
-        this._lastImageBufState = null;
+        this._lastImagebufState = null;
         this._lastRenderListenersState = null;
         this._pickIndex = 0;
         this.profile = params.doProfile ? {
@@ -9631,7 +9708,7 @@ var SceneJS_NodeRenderer = function(cfg) {
             this._lastModelXFormStateId = -1;
             this._lastProjXFormStateId = -1;
             this._lastPickStateId = -1;
-            this._lastImageBufStateId = -1;
+            this._lastImagebufStateId = -1;
             this._lastFogStateId = -1;
             this._lastPickListenersStateId = -1;
             this._lastRenderListenersStateId = -1;
@@ -9643,18 +9720,18 @@ var SceneJS_NodeRenderer = function(cfg) {
 
 
         /*----------------------------------------------------------------------------------------------------------
-         * imagebuf
+         * imageBuf
          *--------------------------------------------------------------------------------------------------------*/
 
-        if (! this._lastImageBufState || node.imageBufState._stateId != this._lastImageBufState._stateId) {
-            if (this._lastImageBufState && this._lastImageBufState.imageBuf) {
-                gl.finish(); // Force imagebuf to complete
-                this._lastImageBufState.imageBuf.unbind();
+        if (! this._lastImagebufState || node.imageBufState._stateId != this._lastImagebufState._stateId) {
+            if (this._lastImagebufState && this._lastImagebufState.imageBuf) {
+                gl.finish(); // Force imageBuf to complete
+                this._lastImagebufState.imageBuf.unbind();
             }
             if (node.imageBufState.imageBuf) {
                 node.imageBufState.imageBuf.bind();
             }
-            this._lastImageBufState = node.imageBufState;
+            this._lastImagebufState = node.imageBufState;
         }
 
         /*----------------------------------------------------------------------------------------------------------
@@ -9806,7 +9883,6 @@ var SceneJS_NodeRenderer = function(cfg) {
 
         if (node.viewXFormState._stateId != this._lastViewXFormStateId) {
             program.setUniform("SCENEJS_uVMatrix", node.viewXFormState.mat);
-            //  program.setUniform("SCENEJS_uVNMatrix", node.viewXFormState.normalMat);
             program.setUniform("SCENEJS_uEye", node.viewXFormState.lookAt.eye);
             this._lastViewXFormStateId = node.viewXFormState._stateId;
         }
@@ -9999,15 +10075,26 @@ var SceneJS_NodeRenderer = function(cfg) {
          *--------------------------------------------------------------------------------------------------------*/
 
         if (this._picking) {
-            if (! this._lastPickListenersState || node.pickListenersState._stateId != this._lastPickListenersState._stateId) {
-                if (node.pickListenersState.listeners.length > 0) {
-                    this.pickListeners[this._pickIndex++] = node.pickListenersState;
+//            if (! this._lastPickListenersState || node.pickListenersState._stateId != this._lastPickListenersState._stateId) {
+//                if (node.pickListenersState.listeners.length > 0) {
+//                    this.pickListeners[this._pickIndex++] = node.pickListenersState;
+//                    var b = this._pickIndex >> 16 & 0xFF;
+//                    var g = this._pickIndex >> 8 & 0xFF;
+//                    var r = this._pickIndex & 0xFF;
+//                    program.setUniform("SCENEJS_uPickColor", [r / 255,g / 255,b / 255]);
+//                }
+//                this._lastPickListenersState = node.pickListenersState;
+//            }
+
+            if (! this._lastNameState || node.nameState._stateId != this._lastNameState._stateId) {
+                if (node.nameState.name) {
+                    this.pickNames[this._pickIndex++] = node.nameState.name;
                     var b = this._pickIndex >> 16 & 0xFF;
                     var g = this._pickIndex >> 8 & 0xFF;
                     var r = this._pickIndex & 0xFF;
                     program.setUniform("SCENEJS_uPickColor", [r / 255,g / 255,b / 255]);
                 }
-                this._lastPickListenersState = node.pickListenersState;
+                this._lastNameState = node.nameState;
             }
         }
 
@@ -10152,9 +10239,9 @@ var SceneJS_NodeRenderer = function(cfg) {
         //                this._lastRendererState.props.restoreProps(canvas.context);
         //            }
 
-        if (this._lastImageBufState && this._lastImageBufState.imageBuf) {
-            this._lastImageBufState.imageBuf.unbind();
-            this._lastImageBufState = null;
+        if (this._lastImagebufState && this._lastImagebufState.imageBuf) {
+            this._lastImagebufState.imageBuf.unbind();
+            this._lastImagebufState = null;
         }
 
         if (this._program) {
@@ -10983,37 +11070,12 @@ new (function() {
  * to switch things on/of with minimal overhead.
  *
  */
-var SceneJS_flagsModule = new (function() {
+(function() {
 
     var idStack = [];
     var flagStack = [];
     var stackLen = 0;
     var dirty;
-
-    /**
-     * Maps renderer node properties to WebGL context enums
-     * @private
-     */
-    var glEnum = function(context, name) {
-        if (!name) {
-            throw SceneJS_errorModule.fatalError(
-                    SceneJS.errors.ILLEGAL_NODE_CONFIG,
-                    "Null SceneJS.renderer node config: \"" + name + "\"");
-        }
-        var result = SceneJS_webgl_enumMap[name];
-        if (!result) {
-            throw SceneJS_errorModule.fatalError(
-                    SceneJS.errors.ILLEGAL_NODE_CONFIG,
-                    "Unrecognised SceneJS.renderer node config value: \"" + name + "\"");
-        }
-        var value = context[result];
-        if (!value) {
-            throw SceneJS_errorModule.fatalError(
-                    SceneJS.errors.ILLEGAL_NODE_CONFIG,
-                    "This browser's WebGL does not support renderer node config value: \"" + name + "\"");
-        }
-        return value;
-    };
 
     SceneJS_eventModule.addListener(
             SceneJS_eventModule.SCENE_COMPILING,
@@ -11066,6 +11128,71 @@ var SceneJS_flagsModule = new (function() {
     Flags.prototype._compile = function() {
         idStack[stackLen] = this.attr.id;
         flagStack[stackLen] = this.core.flags;
+        stackLen++;
+        dirty = true;
+
+        this._compileNodes();
+
+        stackLen--;
+        dirty = true;
+    };
+})();
+(function() {
+
+    var idStack = [];
+    var tagStack = [];
+    var stackLen = 0;
+    var dirty;
+
+    SceneJS_eventModule.addListener(
+            SceneJS_eventModule.SCENE_COMPILING,
+            function() {
+                stackLen = 0;
+                dirty = true;
+            });
+
+    SceneJS_eventModule.addListener(
+            SceneJS_eventModule.SCENE_RENDERING,
+            function(params) {
+                if (dirty) {
+                    if (stackLen > 0) {
+                        SceneJS_DrawList.setTag(idStack[stackLen - 1], tagStack[stackLen - 1]);
+                    } else {
+                        SceneJS_DrawList.setTag();
+                    }
+                    dirty = false;
+                }
+            });
+
+    var Tag = SceneJS.createNodeType("tag");
+
+    Tag.prototype._init = function(params) {
+        if (this.core._nodeCount == 1) { // This node defines the resource
+            if (!params.tag) {
+                throw SceneJS_errorModule.fatalError(
+                        SceneJS.errors.NODE_CONFIG_EXPECTED,
+                        "tag node attribute missing : 'tag'");
+            }
+            this.core.tag = "enabled";
+            this.setTag(params.tag);
+        }
+    };
+
+    Tag.prototype.setTag = function(tag) {
+        var core = this.core;
+        core.tag = tag;
+        core.pattern = null;
+        core.matched = false;
+
+    };
+
+    Tag.prototype.getTag = function() {
+        return this.core.tag;
+    };
+
+    Tag.prototype._compile = function() {
+        idStack[stackLen] = this.attr.id;
+        tagStack[stackLen] = this.core;
         stackLen++;
         dirty = true;
 
@@ -21680,7 +21807,7 @@ var SceneJS_textureModule = new (function() {
                 if (!layerParam.uri && !layerParam.imageBuf && !layerParam.image && !layerParam.canvasId) {
                     throw SceneJS_errorModule.fatalError(
                             SceneJS.errors.NODE_CONFIG_EXPECTED,
-                            "Texture.layers[" + i + "] has no uri, imageBuf or canvasId specified");
+                            "texture layer " + i + "  has no uri, imageBuf or canvasId specified");
                 }
                 if (layerParam.applyFrom) {
                     if (layerParam.applyFrom != "uv" &&
@@ -21689,7 +21816,7 @@ var SceneJS_textureModule = new (function() {
                         layerParam.applyFrom != "geometry") {
                         throw SceneJS_errorModule.fatalError(
                                 SceneJS.errors.NODE_CONFIG_EXPECTED,
-                                "Texture.layers[" + i + "].applyFrom value is unsupported - " +
+                                "texture layer " + i + "  applyFrom value is unsupported - " +
                                 "should be either 'uv', 'uv2', 'normal' or 'geometry'");
                     }
                 }
@@ -21702,11 +21829,18 @@ var SceneJS_textureModule = new (function() {
                         layerParam.applyTo != "normals") {
                         throw SceneJS_errorModule.fatalError(
                                 SceneJS.errors.NODE_CONFIG_EXPECTED,
-                                "Texture.layers[" + i + "].applyTo value is unsupported - " +
+                                "texture layer " + i + " applyTo value is unsupported - " +
                                 "should be either 'baseColor', 'specular' or 'normals'");
                     }
                 }
-
+                if (layerParam.blendMode) {
+                    if (layerParam.blendMode != "add" || layerParam.blendMode != "multiply") {
+                        throw SceneJS_errorModule.fatalError(
+                                SceneJS.errors.NODE_CONFIG_EXPECTED,
+                                "texture layer " + i + " blendMode value is unsupported - " +
+                                "should be either 'add' or 'multiply'");
+                    }
+                }
                 var layer = {
                     image : null,                       // Initialised when state == IMAGE_LOADED
                     creationParams: layerParam,         // Create texture using this
@@ -21726,7 +21860,7 @@ var SceneJS_textureModule = new (function() {
                 this._setLayerTransform(layerParam, layer);
 
                 if (layer.creationParams.imageBuf) {
-                    layer.texture = SceneJS._compilationStates.getState("imagebuf", this.scene.attr.id, layer.creationParams.imageBuf);
+                    layer.texture = SceneJS._compilationStates.getState("imageBuf", this.scene.attr.id, layer.creationParams.imageBuf);
                 } else {
                     var self = this;
                     layer.texture = createTexture(
@@ -21747,12 +21881,12 @@ var SceneJS_textureModule = new (function() {
         if (cfg.index == undefined || cfg.index == null) {
             throw SceneJS_errorModule.fatalError(
                     SceneJS.errors.ILLEGAL_NODE_CONFIG,
-                    "Invalid Texture#setLayerConfig argument: index null or undefined");
+                    "Invalid texture set layer argument: index null or undefined");
         }
         if (cfg.index < 0 || cfg.index >= this.core.layers.length) {
             throw SceneJS_errorModule.fatalError(
                     SceneJS.errors.ILLEGAL_NODE_CONFIG,
-                    "Invalid Texture#setLayer argument: index out of range (" + this.core.layers.length + " layers defined)");
+                    "Invalid texture set layer argument: index out of range (" + this.core.layers.length + " layers defined)");
         }
         this._setLayer(parseInt(cfg.index), cfg);
     };
@@ -21766,7 +21900,7 @@ var SceneJS_textureModule = new (function() {
                     if (indexNum < 0 || indexNum >= this.core.layers.length) {
                         throw SceneJS_errorModule.fatalError(
                                 SceneJS.errors.ILLEGAL_NODE_CONFIG,
-                                "Invalid Texture#setLayer argument: index out of range (" + this.core.layers.length + " layers defined)");
+                                "Invalid texture set layer argument: index out of range (" + this.core.layers.length + " layers defined)");
                     }
                     this._setLayer(indexNum, layers[index] || {});
                 }
@@ -22590,6 +22724,51 @@ var SceneJS_pickingModule = new (function() {
     };
 })();
 
+(function() {
+
+    var idStack = [];
+    var nameStack = [];
+    var stackLen = 0;
+    var dirty;
+
+    SceneJS_eventModule.addListener(
+            SceneJS_eventModule.SCENE_COMPILING,
+            function() {
+                stackLen = 0;
+                dirty = true;
+            });
+
+    SceneJS_eventModule.addListener(
+            SceneJS_eventModule.SCENE_RENDERING,
+            function(params) {
+                if (dirty) {
+                    if (stackLen > 0) {
+                        SceneJS_DrawList.setName(idStack[stackLen - 1], nameStack[stackLen - 1]);
+                    } else {
+                        SceneJS_DrawList.setName();
+                    }
+                    dirty = false;
+                }
+            });
+
+    var Name = SceneJS.createNodeType("name");
+
+    Name.prototype._init = function(params) {
+    };
+
+    Name.prototype._compile = function() {
+        var id = this.attr.id;
+        idStack[stackLen] = id;
+        nameStack[stackLen] = id;
+        stackLen++;
+        dirty = true;
+
+        this._compileNodes();
+
+        stackLen--;
+        dirty = true;
+    };
+})();
 new (function() {
 
     var sceneBufs = {};
@@ -22752,7 +22931,7 @@ new (function() {
 
     }
 
-    SceneJS._compilationStates.setSupplier("imagebuf", {
+    SceneJS._compilationStates.setSupplier("imageBuf", {
         get: function(sceneId, id) {
             var bufs = sceneBufs[sceneId];
             return {
