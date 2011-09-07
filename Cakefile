@@ -11,7 +11,9 @@ appFiles  = [
   'constants'
   'math'
   'state'
-  'events'
+  'events.init'
+  'events.mouse'
+  'events.register'
 ]
 
 task 'build', "Build single application file from source files", ->
