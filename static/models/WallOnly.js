@@ -205,9 +205,9 @@ SceneJS.createScene({
                 stencil: false,
               },
               clearColor: {
-                r: 0.0,
-                g: 0.0,
-                b: 0.0,
+                r: 0.2,
+                g: 0.2,
+                b: 0.2,
                 a: 0.0,
               },
               nodes: [
@@ -216,9 +216,9 @@ SceneJS.createScene({
                   id: 'sun-light',
                   mode: 'dir',
                   color: {
-                    r: 1.0,
-                    g: 1.0,
-                    b: 1.0,
+                    r: 0.8,
+                    g: 0.8,
+                    b: 0.8,
                   },
                   dir: {
                     x:-0.5,
@@ -229,12 +229,18 @@ SceneJS.createScene({
                   specular: true,
                 },
                 {
-                  type: 'material',
-                  coreId: 'WallMaterial',
+                  type: 'tag',
+                  tag: 'Wall',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '3Ep4r0uuX5ywPYOUG2H2A4',
+                      type: 'material',
+                      coreId: 'WallMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '3Ep4r0uuX5ywPYOUG2H2A4',
+                        },
+                      ],
                     },
                   ],
                 },

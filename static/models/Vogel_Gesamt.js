@@ -1237,9 +1237,9 @@ SceneJS.createScene({
                 stencil: false,
               },
               clearColor: {
-                r: 0.0,
-                g: 0.0,
-                b: 0.0,
+                r: 0.2,
+                g: 0.2,
+                b: 0.2,
                 a: 0.0,
               },
               nodes: [
@@ -1248,9 +1248,9 @@ SceneJS.createScene({
                   id: 'sun-light',
                   mode: 'dir',
                   color: {
-                    r: 1.0,
-                    g: 1.0,
-                    b: 1.0,
+                    r: 0.8,
+                    g: 0.8,
+                    b: 0.8,
                   },
                   dir: {
                     x:-0.5,
@@ -1261,582 +1261,642 @@ SceneJS.createScene({
                   specular: true,
                 },
                 {
-                  type: 'material',
-                  coreId: 'WallStandardCaseMaterial',
+                  type: 'tag',
+                  tag: 'WallStandardCase',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '2m6pmoQYr1O92-b0TIlEaO',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0pwgDz1bT6qvDWQF6MQ7yz',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3u1T26-fzEpgg4WdmSavc8',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0zIvMWG1LEKuSk5LwW79d6',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0SU7IhLE93WubvFgjq05TA',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3_buJ90hDDigz_MboE32AI',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0nO4A91nz7e8B2Z7u6l0-d',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '34smNELsj1Dv9ZX10SRaSc',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2PNZFUX-LFuungam3j4mMH',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3woj_wQY18GO9Lxqr0EpjL',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1ZI4cZjsz2PuY0IPWQvup2',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '247uQaMFX6xRujZiBXjmmW',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3ddBxrdnz1m94m_La95SOP',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2ZRDJc2EnF8f-Mb3XGFNKB',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0M9cf7ZZj5AxoranjZdxDc',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2J7tlJMGH1ROUb1JtNskG8',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1fi3VO3-XApvJgLv3b5Zxe',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2OF680fOP2Nugkohjrv5CX',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3fibx4ihD3CQIqrTdsvi9g',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1ehbPqfpXCbBwQ2L07V2eq',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '068NRKKj53NPaj-uMtcWay',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1erluvDiDBohywHdrQv9TC',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1mTnfCjmXA0AoSpBs8UuhL',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1wwmhDTkr7hxFCaCZ1QIqk',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1wV55spIf3aun_hM1dXNq0',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3ogkeiy518XOjD9Uc2xJZE',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2oWoewqV11W98Srb4Gffpa',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3HgIyCcnv1eAICmgzfhP19',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3qidxPYJX3Y8oizTfaC8HK',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1l8USw90vAHAahsAo3TNmL',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2vNF8M7QP5Yw4haf24tdRm',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1CbjLp0W92mg9SxitEBT5q',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2MrYn-x5L5sBRul7M8ox_-',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '29ykd_Rvb20gyo3mJw9RN9',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2EdonmFNP97uvJFw_lqwHS',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3Hy1azZ21BghzXLxuRySaM',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3w_URGu-1FgPgbvU-_Nubj',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1IQ4mWMBTAPxQ8HH0kyJ11',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1yLbOteST1axD5i_6Dr8bN',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3morB0pVvELvTrPpnUQmaG',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '38xbA34hvDV9Nond24foS-',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2Lbdh1EZn4ExVsgrR0qHJC',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0RjcgOAqzApf_Oj1tAiOEJ',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2zNxAUL5XCC9aCP8AxQLDN',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3B_lhPfCjF0BPzvy4HKqtj',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3K2U6yd5L1MxhxQD4lgLh0',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0RsrgGh4H4zhQjfuKoObEa',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0GcDvkWf1E6PLP0OQE0UNg',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1IvwC9cRT2FuL4kmH5-PXQ',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3bmfKPwwL669io4O8J_Kuo',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0CqTELMBf53Rg98XtD2dQy',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1-jDliaFf0_94qp7RmI7tR',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3bv9ZuWj1EsxnEqhcbZR0R',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3id7lnRxj1ruKtCcKtJMAb',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0wOLjEu9DEOPlpkKGhQrcO',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1RT6AqpcL19RRvVRYxdbM_',
+                      type: 'material',
+                      coreId: 'WallStandardCaseMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '2m6pmoQYr1O92-b0TIlEaO',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0pwgDz1bT6qvDWQF6MQ7yz',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3u1T26-fzEpgg4WdmSavc8',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0zIvMWG1LEKuSk5LwW79d6',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0SU7IhLE93WubvFgjq05TA',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3_buJ90hDDigz_MboE32AI',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0nO4A91nz7e8B2Z7u6l0-d',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '34smNELsj1Dv9ZX10SRaSc',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2PNZFUX-LFuungam3j4mMH',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3woj_wQY18GO9Lxqr0EpjL',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1ZI4cZjsz2PuY0IPWQvup2',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '247uQaMFX6xRujZiBXjmmW',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3ddBxrdnz1m94m_La95SOP',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2ZRDJc2EnF8f-Mb3XGFNKB',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0M9cf7ZZj5AxoranjZdxDc',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2J7tlJMGH1ROUb1JtNskG8',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1fi3VO3-XApvJgLv3b5Zxe',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2OF680fOP2Nugkohjrv5CX',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3fibx4ihD3CQIqrTdsvi9g',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1ehbPqfpXCbBwQ2L07V2eq',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '068NRKKj53NPaj-uMtcWay',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1erluvDiDBohywHdrQv9TC',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1mTnfCjmXA0AoSpBs8UuhL',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1wwmhDTkr7hxFCaCZ1QIqk',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1wV55spIf3aun_hM1dXNq0',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3ogkeiy518XOjD9Uc2xJZE',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2oWoewqV11W98Srb4Gffpa',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3HgIyCcnv1eAICmgzfhP19',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3qidxPYJX3Y8oizTfaC8HK',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1l8USw90vAHAahsAo3TNmL',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2vNF8M7QP5Yw4haf24tdRm',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1CbjLp0W92mg9SxitEBT5q',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2MrYn-x5L5sBRul7M8ox_-',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '29ykd_Rvb20gyo3mJw9RN9',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2EdonmFNP97uvJFw_lqwHS',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3Hy1azZ21BghzXLxuRySaM',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3w_URGu-1FgPgbvU-_Nubj',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1IQ4mWMBTAPxQ8HH0kyJ11',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1yLbOteST1axD5i_6Dr8bN',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3morB0pVvELvTrPpnUQmaG',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '38xbA34hvDV9Nond24foS-',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2Lbdh1EZn4ExVsgrR0qHJC',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0RjcgOAqzApf_Oj1tAiOEJ',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2zNxAUL5XCC9aCP8AxQLDN',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3B_lhPfCjF0BPzvy4HKqtj',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3K2U6yd5L1MxhxQD4lgLh0',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0RsrgGh4H4zhQjfuKoObEa',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0GcDvkWf1E6PLP0OQE0UNg',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1IvwC9cRT2FuL4kmH5-PXQ',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3bmfKPwwL669io4O8J_Kuo',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0CqTELMBf53Rg98XtD2dQy',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1-jDliaFf0_94qp7RmI7tR',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3bv9ZuWj1EsxnEqhcbZR0R',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3id7lnRxj1ruKtCcKtJMAb',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0wOLjEu9DEOPlpkKGhQrcO',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1RT6AqpcL19RRvVRYxdbM_',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'WallMaterial',
+                  type: 'tag',
+                  tag: 'Wall',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '1CYkSY1Q96ivPJD1ZydrPv',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '15-xMDyN51cAGKHB1EP_Yn',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0n6-Y3zsj6vOr_XYIL8Q3Y',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0NxoRHk2vFiPN0pVqA34vs',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3y_DZRPXz9x84aM4EoxNiq',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2u6GPlksH2NRf4TcTwl5Sb',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1Jcs3_Zaj2yPPxH1fwCT5G',
+                      type: 'material',
+                      coreId: 'WallMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '1CYkSY1Q96ivPJD1ZydrPv',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '15-xMDyN51cAGKHB1EP_Yn',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0n6-Y3zsj6vOr_XYIL8Q3Y',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0NxoRHk2vFiPN0pVqA34vs',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3y_DZRPXz9x84aM4EoxNiq',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2u6GPlksH2NRf4TcTwl5Sb',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1Jcs3_Zaj2yPPxH1fwCT5G',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'DoorMaterial',
+                  type: 'tag',
+                  tag: 'Door',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '0qAnfHRmnAyuXYyLQrTfNg',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3f2PbcIlb8EBgeUKNxvJyk',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '28xPEsoRn1Duwj0tMygige',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1-TezpWNXDjecTkbzGW4MY',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2w42Qn0qD6pOgjKyXQVKP5',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '05JUUfY51Cpf5_w0mHap3T',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '128s1Bd09E68ToTGCOwwfI',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0jPrau6Jj1F9X96ngO2HGe',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1RBu6kRyzFMh7iFbgW8lm3',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2r1fvqY0P6zh9vQ2VkwuTW',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '17ee42beHAIuEb1Yh_Irw7',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1RE56UFvz7gBpzwyyv4SBu',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2qqomPoOTEZwNLUKDQ3hqA',
+                      type: 'material',
+                      coreId: 'DoorMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '0qAnfHRmnAyuXYyLQrTfNg',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3f2PbcIlb8EBgeUKNxvJyk',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '28xPEsoRn1Duwj0tMygige',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1-TezpWNXDjecTkbzGW4MY',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2w42Qn0qD6pOgjKyXQVKP5',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '05JUUfY51Cpf5_w0mHap3T',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '128s1Bd09E68ToTGCOwwfI',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0jPrau6Jj1F9X96ngO2HGe',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1RBu6kRyzFMh7iFbgW8lm3',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2r1fvqY0P6zh9vQ2VkwuTW',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '17ee42beHAIuEb1Yh_Irw7',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1RE56UFvz7gBpzwyyv4SBu',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2qqomPoOTEZwNLUKDQ3hqA',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'SlabMaterial',
+                  type: 'tag',
+                  tag: 'Slab',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '3DfPIv6yr4Sg7Yztx0FEIg',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2QolRCVe92kg3ozJfbAOUM',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0aPeoxafL6HhKc27oBx0aB',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '11Y9a53lj1Yw_El17S0YSG',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0AF5zS6Tf0AA8AZaB3bCYY',
+                      type: 'material',
+                      coreId: 'SlabMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '3DfPIv6yr4Sg7Yztx0FEIg',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2QolRCVe92kg3ozJfbAOUM',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0aPeoxafL6HhKc27oBx0aB',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '11Y9a53lj1Yw_El17S0YSG',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0AF5zS6Tf0AA8AZaB3bCYY',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'BuildingElementProxyMaterial',
+                  type: 'tag',
+                  tag: 'BuildingElementProxy',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '0UfWZ-as99IBXFq6_fRGoK',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0N2WEwKhzBTAPzeYIjyYWR',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2fcup1Ren8HwpBucZFMXM7',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0vrKXlxt96bPdcp55UoMaD',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3dBWTgI5b8Leg8_i_1YzTa',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0w158XTbvBnBXmoYy3dbSE',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2ADVdTbUH99A4X-9TCI41s',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '23ZZaTDBT9H8MQItXILunV',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '14fl4zCyL3iwdgXelMZ-yi',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1EzXpV7fnAH83MtMH97_m2',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0Os4YpZEb0GxgLN8Vhsv4M',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0GGVcAQ-b4sPBW1VP7Vzsq',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0_DSX_4ULCP9agO84vk7PC',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '29EwButG18LBt9qAxTXWZo',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1VRruvRwv9svI9E83_Kwhr',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1CDbhwLLH1aP3OGWKd8RYR',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '399RAsI551mQnNhBBkjmG8',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2W8ejls-96-R2jfvBH7tsQ',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1E-s4_gF198PY4Mfbq9pjv',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3uG5pdun9EbviqAtv3_udT',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0s4Z9PG0bApfXXvsMa6mpM',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3JGwPjLmvDGglhlflv-hdK',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2h8Vmszef0GAX8-HFLSadZ',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1mpnobVKr8iOhWh97Uwf2P',
+                      type: 'material',
+                      coreId: 'BuildingElementProxyMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '0UfWZ-as99IBXFq6_fRGoK',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0N2WEwKhzBTAPzeYIjyYWR',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2fcup1Ren8HwpBucZFMXM7',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0vrKXlxt96bPdcp55UoMaD',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3dBWTgI5b8Leg8_i_1YzTa',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0w158XTbvBnBXmoYy3dbSE',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2ADVdTbUH99A4X-9TCI41s',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '23ZZaTDBT9H8MQItXILunV',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '14fl4zCyL3iwdgXelMZ-yi',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1EzXpV7fnAH83MtMH97_m2',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0Os4YpZEb0GxgLN8Vhsv4M',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0GGVcAQ-b4sPBW1VP7Vzsq',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0_DSX_4ULCP9agO84vk7PC',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '29EwButG18LBt9qAxTXWZo',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1VRruvRwv9svI9E83_Kwhr',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1CDbhwLLH1aP3OGWKd8RYR',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '399RAsI551mQnNhBBkjmG8',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2W8ejls-96-R2jfvBH7tsQ',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1E-s4_gF198PY4Mfbq9pjv',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3uG5pdun9EbviqAtv3_udT',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0s4Z9PG0bApfXXvsMa6mpM',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3JGwPjLmvDGglhlflv-hdK',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2h8Vmszef0GAX8-HFLSadZ',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1mpnobVKr8iOhWh97Uwf2P',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'StairMaterial',
+                  type: 'tag',
+                  tag: 'Stair',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '2FglF1Iy5D_8N1yc6rETyS',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '016v1-5m99nOt6XVvJp0WP',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3hRfhr2mj9oQyknS09PmZT',
+                      type: 'material',
+                      coreId: 'StairMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '2FglF1Iy5D_8N1yc6rETyS',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '016v1-5m99nOt6XVvJp0WP',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3hRfhr2mj9oQyknS09PmZT',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'RailingMaterial',
+                  type: 'tag',
+                  tag: 'Railing',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '3GRgBYaz502Bhb935MMHeY',
+                      type: 'material',
+                      coreId: 'RailingMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '3GRgBYaz502Bhb935MMHeY',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'WindowMaterial',
+                  type: 'tag',
+                  tag: 'Window',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '3a6fJdSh17LO95vIwy3uCE',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0h4kPYIlr4DPpy0amKK55Z',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3QTdwYwGDALeqd_LAowZf_',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2fr6Zs53nCngDmHFP_xYU5',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0hg52E-kLB9x7xhofqj3pT',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '121QnkHZjBkPWZrZ52OyiQ',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2j2VaRIHrAxeV108vXjiXO',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1vUmGtpfzD-gqrI2aP0Eo9',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3TW0fY5Kj07g8i-l8MP-xA',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1xh7z0EcDCHhnWYY6qM_QJ',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3rovm07357lQoNdlDBJLYm',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1tQRQMnIb2GOje8i-gaknr',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1KTwnzVLz41RnzAafq3ghX',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '1guD0_tY92IPJieo7fb85P',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '3sqSTXcWbBQ8gx612bMUSp',
+                      type: 'material',
+                      coreId: 'WindowMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '3a6fJdSh17LO95vIwy3uCE',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0h4kPYIlr4DPpy0amKK55Z',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3QTdwYwGDALeqd_LAowZf_',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2fr6Zs53nCngDmHFP_xYU5',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0hg52E-kLB9x7xhofqj3pT',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '121QnkHZjBkPWZrZ52OyiQ',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2j2VaRIHrAxeV108vXjiXO',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1vUmGtpfzD-gqrI2aP0Eo9',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3TW0fY5Kj07g8i-l8MP-xA',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1xh7z0EcDCHhnWYY6qM_QJ',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3rovm07357lQoNdlDBJLYm',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1tQRQMnIb2GOje8i-gaknr',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1KTwnzVLz41RnzAafq3ghX',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '1guD0_tY92IPJieo7fb85P',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '3sqSTXcWbBQ8gx612bMUSp',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'RoofMaterial',
+                  type: 'tag',
+                  tag: 'Roof',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '27x1Bx5nf5Lxg1euPXINyj',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2FCguWAu50Fg5Proi7B0Ac',
+                      type: 'material',
+                      coreId: 'RoofMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '27x1Bx5nf5Lxg1euPXINyj',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2FCguWAu50Fg5Proi7B0Ac',
+                        },
+                      ],
                     },
                   ],
                 },
                 {
-                  type: 'material',
-                  coreId: 'ColumnMaterial',
+                  type: 'tag',
+                  tag: 'Column',
                   nodes: [
                     {
-                      type: 'geometry',
-                      coreId: '2qDUPC7uD87fv07NxzrQfV',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '0ENOPE3AzAFQHjJm6e9J9L',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2XuHZheRL94vHU7xmgZEem',
-                    },
-                    {
-                      type: 'geometry',
-                      coreId: '2IBJNjmXfCOh5TA-07yvkx',
+                      type: 'material',
+                      coreId: 'ColumnMaterial',
+                      nodes: [
+                        {
+                          type: 'geometry',
+                          coreId: '2qDUPC7uD87fv07NxzrQfV',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '0ENOPE3AzAFQHjJm6e9J9L',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2XuHZheRL94vHU7xmgZEem',
+                        },
+                        {
+                          type: 'geometry',
+                          coreId: '2IBJNjmXfCOh5TA-07yvkx',
+                        },
+                      ],
                     },
                   ],
                 },
