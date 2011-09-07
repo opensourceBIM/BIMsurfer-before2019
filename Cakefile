@@ -13,6 +13,7 @@ appFiles  = [
   'state'
   'events.init'
   'events.mouse'
+  'events.controls'
   'events.register'
 ]
 

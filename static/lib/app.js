@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var constants, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var constants, controlsToggleLayer, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   modifySubAttr = function(node, attr, subAttr, value) {
     var attrRecord;
     attrRecord = node.get(attr);
@@ -161,6 +161,9 @@
     zoomDistance = event.wheelDelta / -120.0 * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
     return zoomLookAtNode(state.scene.findNode('main-lookAt'), zoomDistance, state.camera.distanceLimits);
   };
+  controlsToggleLayer = function(event) {
+    return state.scene.set('tagMask', '(' + (event.target.id.split(/^layer\-/))[1] + ')');
+  };
   registerDOMEvents = function() {
     state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
     state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
@@ -169,4 +172,10 @@
     return state.viewport.domElement.addEventListener('DOMMouseScroll', mouseWheel, true);
   };
   registerDOMEvents();
+  ($('#layer-walls')).change(controlsToggleLayer);
+  ($('#layer-doors')).change(controlsToggleLayer);
+  ($('#layer-windows')).change(controlsToggleLayer);
+  ($('#layer-columns')).change(controlsToggleLayer);
+  ($('#layer-roofs')).change(controlsToggleLayer);
+  ($('#layer-floors')).change(controlsToggleLayer);
 }).call(this);
