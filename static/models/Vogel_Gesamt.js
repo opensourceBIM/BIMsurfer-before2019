@@ -1262,7 +1262,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'WallStandardCase',
+                  tag: 'wallstandardcase',
                   nodes: [
                     {
                       type: 'material',
@@ -1498,7 +1498,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Wall',
+                  tag: 'wall',
                   nodes: [
                     {
                       type: 'material',
@@ -1538,7 +1538,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Door',
+                  tag: 'door',
                   nodes: [
                     {
                       type: 'material',
@@ -1602,7 +1602,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Slab',
+                  tag: 'slab',
                   nodes: [
                     {
                       type: 'material',
@@ -1634,7 +1634,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'BuildingElementProxy',
+                  tag: 'buildingelementproxy',
                   nodes: [
                     {
                       type: 'material',
@@ -1742,7 +1742,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Stair',
+                  tag: 'stair',
                   nodes: [
                     {
                       type: 'material',
@@ -1766,7 +1766,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Railing',
+                  tag: 'railing',
                   nodes: [
                     {
                       type: 'material',
@@ -1782,7 +1782,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Window',
+                  tag: 'window',
                   nodes: [
                     {
                       type: 'material',
@@ -1854,7 +1854,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Roof',
+                  tag: 'roof',
                   nodes: [
                     {
                       type: 'material',
@@ -1874,7 +1874,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Column',
+                  tag: 'column',
                   nodes: [
                     {
                       type: 'material',

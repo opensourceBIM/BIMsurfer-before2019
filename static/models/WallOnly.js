@@ -230,7 +230,7 @@ SceneJS.createScene({
                 },
                 {
                   type: 'tag',
-                  tag: 'Wall',
+                  tag: 'wall',
                   nodes: [
                     {
                       type: 'material',
