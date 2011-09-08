@@ -21,3 +21,43 @@ var SceneJS_math_mulVec3 = function(u, v, dest) {
     return dest;
 };
 
+/**
+ * Also see http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
+ * @param m mat3
+ */
+var SceneJS_math_newQuaternionFromMat3 = function(m) {
+  var tr = m[0 + 0*3] + m[1 + 1*3] + m[2 + 2*3];
+  if (tr > 0) {
+    var s = sqrt(tr+1.0) * 2;
+    return [
+      (m[2 + 1*3] - m[1 + 2*3]) / s,
+      (m[0 + 2*3] - m[2 + 0*3]) / s,
+      (m[1 + 0*3] - m[0 + 1*3]) / s,
+      0.25 * s
+    ];
+  } else if ((m[0 + 0*3] > m[1 + 1*3])&(m[0 + 0*3] > m[2 + 2*3])) { 
+    var s = sqrt(1.0 + m[0 + 0*3] - m[1 + 1*3] - m[2 + 2*3]) * 2;
+    return [
+      0.25 * s,
+      (m[0 + 1*3] + m[1 + 0*3]) / s,
+      (m[0 + 2*3] + m[2 + 0*3]) / s,
+      (m[2 + 1*3] - m[1 + 2*3]) / s
+    ];
+  } else if (m[1 + 1*3] > m[2 + 2*3]) { 
+    var s = sqrt(1.0 + m[1 + 1*3] - m[0 + 0*3] - m[2 + 2*3]) * 2;
+    return [
+      qx = (m[0 + 1*3] + m[1 + 0*3]) / s,
+      qy = 0.25 * s,
+      qz = (m[1 + 2*3] + m[2 + 1*3]) / s,
+      qw = (m[0 + 2*3] - m[2 + 0*3]) / s
+    ];
+  } else {
+    var s = sqrt(1.0 + m[2 + 2*3] - m[0 + 0*3] - m[1 + 1*3]) * 2;
+    return [
+      (m[0 + 2*3] + m[2 + 0*3]) / s,
+      (m[1 + 2*3] + m[2 + 1*3]) / s,
+      0.25 * s,
+      (m[1 + 0*3] - m[0 + 1*3]) / s
+    ];
+  }
+};
