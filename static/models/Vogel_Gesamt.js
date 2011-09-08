@@ -1910,5 +1910,6 @@ SceneJS.createScene({
   data: {
     bounds: [24.357634,40.257915,11.8498335],
     unit: '1.0 meter',
+    ifcTypes: ['WallStandardCase','Wall','Door','Slab','BuildingElementProxy','Stair','Railing','Window','Roof','Column',]
   },
 });

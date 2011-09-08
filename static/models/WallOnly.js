@@ -254,5 +254,6 @@ SceneJS.createScene({
   data: {
     bounds: [5400.0,200.0,5000.0],
     unit: '0.001 millimeter',
+    ifcTypes: ['Wall',]
   },
 });
