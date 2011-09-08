@@ -235,7 +235,7 @@
     #main-view-controls {
       position: absolute;
       top: 140px;
-      width: 200px;
+      width: 230px;
       font-size: 13px;
       margin-left: 10px;
     }
@@ -401,14 +401,7 @@
             <h3><a href='#'>Properties</a></h3>
             <div></div>
             <h3><a href='#'>Layers</a></h3>
-            <div><form id='layers'>
-              <div><input id='layer-wall' type='checkbox'> Walls</div>
-              <div><input id='layer-door' type='checkbox'> Doors</div>
-              <div><input id='layer-window' type='checkbox'> Windows</div>
-              <div><input id='layer-column' type='checkbox'> Columns</div>
-              <div><input id='layer-roof' type='checkbox'> Roofs</div>
-              <div><input id='layer-floor' type='checkbox'> Floors</div>
-            </form></div>
+            <div><form id='layers'></form></div>
             <h3><a href='#'>Annotations</a></h3>
             <div></div>
           </div>
@@ -472,18 +465,6 @@
   <!-- --
   <script src='static/models/urban.js'></script>
   <!-- -->
-
-  <!-- Controls -->
-
-  <script>
-    $(function(){
-      // Initialize controls
-      $('#controls-accordion').accordion({ header: 'h3' });			
-      
-      // Make controls visible
-      $('#main-view-controls').removeAttr('style');
-    });
-  </script>
 
   <!-- Application logic -->
 

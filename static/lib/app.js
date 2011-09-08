@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var constants, controlsToggleLayer, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var constants, controlsInit, controlsToggleLayer, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   modifySubAttr = function(node, attr, subAttr, value) {
     var attrRecord;
     attrRecord = node.get(attr);
@@ -123,14 +123,35 @@
     }
   };
   sceneInit = function() {
-    var sceneData, sceneDiameter;
+    var sceneDiameter;
     modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
-    sceneData = state.scene.data();
-    sceneDiameter = SceneJS_math_lenVec3(sceneData.bounds);
+    sceneDiameter = SceneJS_math_lenVec3(state.scene.data().bounds);
     return state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0];
+  };
+  controlsInit = function() {
+    var ifcType, layersHtml, sceneData;
+    sceneData = state.scene.data();
+    layersHtml = (function() {
+      var _i, _len, _ref, _results;
+      _ref = sceneData.ifcTypes;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        ifcType = _ref[_i];
+        _results.push("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox'> " + ifcType + "</div>");
+      }
+      return _results;
+    })();
+    ($('#layers')).html(layersHtml.join(''));
+    ($('#controls-accordion')).accordion({
+      header: 'h3'
+    });
+    return ($('#main-view-controls')).removeAttr('style');
   };
   sceneInit();
   state.scene.start();
+  $(function() {
+    return controlsInit();
+  });
   mouseDown = function(event) {
     state.viewport.mouse.last = [event.clientX, event.clientY];
     switch (event.which) {
