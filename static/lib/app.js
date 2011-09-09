@@ -5,7 +5,23 @@
 "use strict";
 
 (function() {
-  var constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
+    var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
+    thumbCanvas = document.createElement('canvas');
+    thumbCanvas.width = destWidth;
+    thumbCanvas.height = destHeight;
+    thumbCtx = thumbCanvas.getContext('2d');
+    w = ($(srcCanvas)).width();
+    h = ($(srcCanvas)).height();
+    clipHeight = Math.min(h, srcHeight);
+    clipWidth = Math.min(w, srcWidth);
+    clipX = Math.floor((w - srcWidth) / 2);
+    clipY = Math.floor((h - srcHeight) / 2);
+    thumbCtx.drawImage(srcCanvas, clipX, clipY, clipWidth, clipHeight, 0, 0, destWidth, destHeight);
+    imgURI = thumbCanvas.toDataURL('image/png');
+    return imgURI;
+  };
   modifySubAttr = function(node, attr, subAttr, value) {
     var attrRecord;
     attrRecord = node.get(attr);
@@ -206,14 +222,16 @@
     return state.scene.set('tagMask', '(' + (event.target.id.split(/^layer\-/))[1] + ')');
   };
   snapshotsPush = function() {
-    var node;
+    var imgURI, node, snapshotElement;
     node = state.scene.findNode('main-lookAt');
+    imgURI = canvasCaptureThumbnail(state.canvas, 512 * 1.25, 512, 125, 100);
     state.snapshots.push({
       eye: node.get('eye'),
       look: node.get('look'),
       up: node.get('up')
     });
-    return ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a></div></div>");
+    snapshotElement = ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a><img width='125px' height='100px'></div><div class='snapshot-swap'><a href='#'>&lt;</a><a href='#'>&gt;</a></div></div>");
+    return (($(snapshotElement)).find('img')).attr('src', imgURI);
   };
   snapshotsDelete = function(event) {
     var parent;

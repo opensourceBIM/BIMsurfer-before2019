@@ -4,6 +4,7 @@ path   = require 'path'
 
 appFiles  = [
   # omit src/ and .coffee to make the below lines a little shorter
+  'canvas.thumbnail'
   'scenejs.nodeattr'
   'scenejs.conversion'
   'scenejs.orbitlookat'
