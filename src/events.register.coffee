@@ -27,3 +27,6 @@ registerDOMEvents()
 ($ '#snapshot-placeholder').click snapshotsPush
 ($ '#snapshots').delegate '.snapshot', 'click', snapshotsToggle
 ($ '#snapshots').delegate '.snapshot-delete', 'click', snapshotsDelete
+($ '#top-menu-help').click topmenuHelp
+
+

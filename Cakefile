@@ -15,6 +15,7 @@ appFiles  = [
   'state'
   'events.init'
   'events.mouse'
+  'events.topmenu'
   'events.controls'
   'events.snapshots'
   'events.register'

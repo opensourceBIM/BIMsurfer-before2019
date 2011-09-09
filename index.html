@@ -155,11 +155,13 @@
     }
     #top-menu li {
       display: inline-block;
-      margin: 0 5px;
     }
     #top-menu a {
+      display: block;
       color: #ddd;
-      margin: 0 13px;
+      line-height: 18px;
+      margin: 0 5px;
+      padding: 0 13px;
       font-size: 13px;
     }
     #top-menu a:hover {
@@ -370,7 +372,7 @@
         <li><a href='#'>Share</a></li>
         <li><a href='#'>Settings</a></li>
         <li><a href='#'>About</a></li>
-        <li class='top-menu-activated'><a href='#'>Help</a></li>
+        <li><a href='#' id='top-menu-help' class='top-menu-activated'>Help</a></li>
       </ul>
 	</nav>
     <div id='main-layout'><div id='main-layout-row'>

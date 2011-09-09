@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPush, snapshotsToggle, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   modifySubAttr = function(node, attr, subAttr, value) {
     var attrRecord;
     attrRecord = node.get(attr);
@@ -197,6 +197,11 @@
     zoomDistance = event.wheelDelta / -120.0 * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
     return zoomLookAtNode(state.scene.findNode('main-lookAt'), zoomDistance, state.camera.distanceLimits);
   };
+  topmenuHelp = function(event) {
+    ($(event.target)).toggleClass('top-menu-activated');
+    ($('#main-view-help')).toggle();
+    return ($('#main-view-keys')).toggle();
+  };
   controlsToggleLayer = function(event) {
     return state.scene.set('tagMask', '(' + (event.target.id.split(/^layer\-/))[1] + ')');
   };
@@ -234,4 +239,5 @@
   ($('#snapshot-placeholder')).click(snapshotsPush);
   ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
   ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
+  ($('#top-menu-help')).click(topmenuHelp);
 }).call(this);
