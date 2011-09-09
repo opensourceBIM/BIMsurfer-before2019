@@ -1,6 +1,12 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+# Please note the following conventions: 
+#
+#  * Use jquery delegate in place of live
+#    http://jupiterjs.com/news/why-you-should-never-use-jquery-live
+#
+
 # Register document events
 registerDOMEvents = () ->
   state.viewport.domElement.addEventListener 'mousedown', mouseDown, true
@@ -17,3 +23,6 @@ registerDOMEvents()
 ($ '#layer-columns').change controlsToggleLayer
 ($ '#layer-roofs').change controlsToggleLayer
 ($ '#layer-floors').change controlsToggleLayer
+
+($ '#snapshot-placeholder').click snapshotsPush
+($ '#snapshots').delegate '.snapshot', 'click', snapshotsDelete

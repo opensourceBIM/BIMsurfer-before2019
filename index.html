@@ -308,13 +308,18 @@
       vertical-align: top;
       //overflow-y: auto;
     }
-    #snapshot-thumb  {
+    .snapshot-thumb  {
+      position: relative;
       border: 1px solid #444;
       color: #444;
       margin-right: 10px;
       margin-top: 10px;
       width: 120px;
       height: 100px;
+    }
+    .snapshot-delete {
+      position: absolute;
+      right: 4px;
     }
     #snapshot-placeholder  {
       display: block;
@@ -413,7 +418,7 @@
         <a id='snapshot-play' href='#'>Play &gt;</a>
         <div id='snapshot-animframe'>
         </div>
-        <div id='snapshot-thumb'>
+        <div id='snapshots'>
         </div>
         <a href='#' id='snapshot-placeholder'>
           + Snapshot

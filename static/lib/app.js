@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPush, snapshotsRemove, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   modifySubAttr = function(node, attr, subAttr, value) {
     var attrRecord;
     attrRecord = node.get(attr);
@@ -123,7 +123,7 @@
     canvas: document.getElementById('scenejsCanvas'),
     viewport: {
       domElement: document.getElementById('viewport'),
-      selectedElement: null,
+      selectedIfcObject: null,
       mouse: {
         last: [0, 0],
         leftDragging: false,
@@ -132,7 +132,8 @@
     },
     camera: {
       distanceLimits: [0.0, 0.0]
-    }
+    },
+    snapshots: []
   };
   sceneInit = function() {
     var sceneDiameter;
@@ -199,6 +200,26 @@
   controlsToggleLayer = function(event) {
     return state.scene.set('tagMask', '(' + (event.target.id.split(/^layer\-/))[1] + ')');
   };
+  snapshotsPush = function() {
+    var node;
+    node = state.scene.findNode('main-lookAt');
+    state.snapshots.push({
+      eye: node.get('eye'),
+      look: node.get('look'),
+      up: node.get('up')
+    });
+    return ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a></div></div>");
+  };
+  snapshotsRemove = function(index) {
+    state.snapshots.slice(index + 1);
+    return ($('.snapshot'))[index].remove();
+  };
+  snapshotsDelete = function(event) {
+    var parent;
+    parent = ($(event.target)).parent();
+    state.snapshots.slice(parent.index() + 1);
+    return parent.remove();
+  };
   registerDOMEvents = function() {
     state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
     state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
@@ -213,4 +234,6 @@
   ($('#layer-columns')).change(controlsToggleLayer);
   ($('#layer-roofs')).change(controlsToggleLayer);
   ($('#layer-floors')).change(controlsToggleLayer);
+  ($('#snapshot-placeholder')).click(snapshotsPush);
+  ($('#snapshots')).delegate('.snapshot', 'click', snapshotsDelete);
 }).call(this);
