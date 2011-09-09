@@ -129,6 +129,10 @@
       maxOrbitSpeed: Math.PI * 0.1,
       orbitSpeedFactor: 0.01,
       zoomSpeedFactor: 0.05
+    },
+    thumbnails: {
+      size: [125, 100],
+      scale: 2
     }
   };
   Math.clamp = function(s, min, max) {
@@ -222,15 +226,16 @@
     return state.scene.set('tagMask', '(' + (event.target.id.split(/^layer\-/))[1] + ')');
   };
   snapshotsPush = function() {
-    var imgURI, node, snapshotElement;
+    var imgURI, node, snapshotElement, thumbSize;
     node = state.scene.findNode('main-lookAt');
-    imgURI = canvasCaptureThumbnail(state.canvas, 512 * 1.25, 512, 125, 100);
+    thumbSize = constants.thumbnails.size;
+    imgURI = canvasCaptureThumbnail(state.canvas, 512 * thumbSize[0] / thumbSize[1], 512, constants.thumbnails.scale * thumbSize[0], constants.thumbnails.scale * thumbSize[1]);
     state.snapshots.push({
       eye: node.get('eye'),
       look: node.get('look'),
       up: node.get('up')
     });
-    snapshotElement = ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a><img width='125px' height='100px'></div><div class='snapshot-swap'><a href='#'>&lt;</a><a href='#'>&gt;</a></div></div>");
+    snapshotElement = ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a><img width='" + thumbSize[0] + "px' height='" + thumbSize[1] + "px'></div><div class='snapshot-swap'><a href='#'>&lt;</a><a href='#'>&gt;</a></div></div>");
     return (($(snapshotElement)).find('img')).attr('src', imgURI);
   };
   snapshotsDelete = function(event) {
