@@ -8,6 +8,8 @@ appFiles  = [
   'scenejs.conversion'
   'scenejs.orbitlookat'
   'scenejs.zoomlookat'
+  'scenejs.fx'
+  'scenejs.fx.idle'
   'constants'
   'math'
   'state'

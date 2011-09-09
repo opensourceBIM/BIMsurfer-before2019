@@ -20,7 +20,8 @@ controlsInit = () ->
 
 # Start rendering as soon as possible
 sceneInit()
-state.scene.start()
+state.scene.start
+  idleFunc: SceneJS.FX.idle
 
 # Initialize the gui controls once the rest of the document has completely loaded
 $ () -> controlsInit()

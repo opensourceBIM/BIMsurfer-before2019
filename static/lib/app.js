@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var constants, controlsInit, controlsToggleLayer, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   modifySubAttr = function(node, attr, subAttr, value) {
     var attrRecord;
     attrRecord = node.get(attr);
@@ -32,6 +32,14 @@
       z: vec[2],
       w: vec[3]
     };
+  };
+  lookAtToQuaternion = function(lookAt) {
+    var axis, look, up;
+    look = SceneJS_math_subVec3(lookAt.target(lookAt.eye));
+    axis = SceneJS_math_normalizeVec3(SceneJS_math_cross3Vec3(look(lookAt.up)));
+    SceneJS_math_normalizeVec3(look(look));
+    up = SceneJS_math_cross3Vec3(axis(look));
+    return SceneJS_math_newQuaternionFromMat3(axis.concat(up, look));
   };
   orbitLookAt = function(dAngles, orbitUp, lookAt) {
     var axis, dAngle, eye0, eye0len, eye0norm, eye1, look, result, rotMat, tangent0, tangent0norm, tangent1, tangentError, up0, up0norm, up1;
@@ -96,6 +104,10 @@
       up: node.get('up')
     }));
   };
+  SceneJS.FX = {};
+  SceneJS.FX.idle = function() {
+    return null;
+  };
   constants = {
     camera: {
       maxOrbitSpeed: Math.PI * 0.1,
@@ -148,7 +160,9 @@
     return ($('#main-view-controls')).removeAttr('style');
   };
   sceneInit();
-  state.scene.start();
+  state.scene.start({
+    idleFunc: SceneJS.FX.idle
+  });
   $(function() {
     return controlsInit();
   });
