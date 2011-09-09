@@ -25,4 +25,5 @@ registerDOMEvents()
 ($ '#layer-floors').change controlsToggleLayer
 
 ($ '#snapshot-placeholder').click snapshotsPush
-($ '#snapshots').delegate '.snapshot', 'click', snapshotsDelete
+($ '#snapshots').delegate '.snapshot', 'click', snapshotsToggle
+($ '#snapshots').delegate '.snapshot-delete', 'click', snapshotsDelete

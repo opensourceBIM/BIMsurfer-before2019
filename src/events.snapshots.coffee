@@ -12,12 +12,11 @@ snapshotsPush = () ->
 <div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a></div>
 </div>"
 
-snapshotsRemove = (index) ->
-  state.snapshots.slice index + 1
-  ($ '.snapshot')[index].remove()
-
 snapshotsDelete = (event) ->
   parent = ($ event.target).parent()
   state.snapshots.slice parent.index() + 1
   parent.remove()
+
+snapshotsToggle = (event) ->
+  # TODO: SceneJS.FX.transition (state.scene.findNode 'main-lookAt'), state.snapshots, { interpolation: 'linear' }
 

@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPush, snapshotsRemove, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPush, snapshotsToggle, state, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   modifySubAttr = function(node, attr, subAttr, value) {
     var attrRecord;
     attrRecord = node.get(attr);
@@ -210,16 +210,13 @@
     });
     return ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a></div></div>");
   };
-  snapshotsRemove = function(index) {
-    state.snapshots.slice(index + 1);
-    return ($('.snapshot'))[index].remove();
-  };
   snapshotsDelete = function(event) {
     var parent;
     parent = ($(event.target)).parent();
     state.snapshots.slice(parent.index() + 1);
     return parent.remove();
   };
+  snapshotsToggle = function(event) {};
   registerDOMEvents = function() {
     state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
     state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
@@ -235,5 +232,6 @@
   ($('#layer-roofs')).change(controlsToggleLayer);
   ($('#layer-floors')).change(controlsToggleLayer);
   ($('#snapshot-placeholder')).click(snapshotsPush);
-  ($('#snapshots')).delegate('.snapshot', 'click', snapshotsDelete);
+  ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
+  ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
 }).call(this);

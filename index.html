@@ -306,9 +306,9 @@
       padding: 0 0 0 30px;
       width: 150px;
       vertical-align: top;
-      //overflow-y: auto;
+      /*overflow-y: auto;*/
     }
-    .snapshot-thumb  {
+    .snapshot-thumb {
       position: relative;
       border: 1px solid #444;
       color: #444;
@@ -316,10 +316,15 @@
       margin-top: 10px;
       width: 120px;
       height: 100px;
+      cursor: pointer;
     }
     .snapshot-delete {
       position: absolute;
+      display: none;
       right: 4px;
+    }
+    .snapshot-thumb:hover .snapshot-delete {
+      display: block;
     }
     #snapshot-placeholder  {
       display: block;
@@ -334,8 +339,8 @@
       text-align: center;
     }
     #snapshot-placeholder div {
-      //margin: auto auto;
-      //display: inline-block;
+      /*margin: auto auto;
+      display: inline-block;*/
     }
     #snapshot-export {
       float: right;
