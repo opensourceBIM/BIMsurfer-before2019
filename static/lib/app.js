@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -121,6 +121,36 @@
     }));
   };
   SceneJS.FX = {};
+  SceneJS.FX.Tween = {};
+  SceneJS.FX.TweenSpline = (function() {
+    var TweenSpline;
+    TweenSpline = (function() {
+      function TweenSpline(lookAtNode) {
+        this._target = lookAtNode;
+        this._sequence = [];
+      }
+      TweenSpline._t = 0.0;
+      TweenSpline.prototype.tick = function(dt) {
+        return this._t += dt;
+      };
+      TweenSpline.prototype.start = function(lookAt) {
+        return this._sequence.push(lookAt);
+      };
+      TweenSpline.prototype.sequence = function(lookAts, dt) {
+        var lookAt, _i, _len, _ref;
+        for (_i = 0, _len = lookAts.length; _i < _len; _i++) {
+          lookAt = lookAts[_i];
+          this._sequence.push(lookAt);
+          this._timeline.push(((_ref = this._timeline[0]) != null ? _ref : 0.0) + dt);
+        }
+        return null;
+      };
+      return TweenSpline;
+    })();
+    return function(lookAtNode) {
+      return new TweenSpline(lookAtNode);
+    };
+  })();
   SceneJS.FX.idle = function() {
     return null;
   };
@@ -153,7 +183,9 @@
     camera: {
       distanceLimits: [0.0, 0.0]
     },
-    snapshots: []
+    snapshots: {
+      lookAts: []
+    }
   };
   sceneInit = function() {
     var sceneDiameter;
@@ -226,17 +258,16 @@
     return state.scene.set('tagMask', '(' + (event.target.id.split(/^layer\-/))[1] + ')');
   };
   snapshotsPush = function() {
-    var imgURI, node, snapshotElement, thumbSize;
+    var imgURI, node, thumbSize;
     node = state.scene.findNode('main-lookAt');
     thumbSize = constants.thumbnails.size;
     imgURI = canvasCaptureThumbnail(state.canvas, 512 * thumbSize[0] / thumbSize[1], 512, constants.thumbnails.scale * thumbSize[0], constants.thumbnails.scale * thumbSize[1]);
-    state.snapshots.push({
+    state.snapshots.lookAts.push({
       eye: node.get('eye'),
       look: node.get('look'),
       up: node.get('up')
     });
-    snapshotElement = ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a><img width='" + thumbSize[0] + "px' height='" + thumbSize[1] + "px'></div><div class='snapshot-swap'><a href='#'>&lt;</a><a href='#'>&gt;</a></div></div>");
-    return (($(snapshotElement)).find('img')).attr('src', imgURI);
+    return ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a><img width='" + thumbSize[0] + "px' height='" + thumbSize[1] + "px' src='" + imgURI + "'></div><div class='snapshot-swap'><a href='#'>&lt;</a><a href='#'>&gt;</a></div></div>");
   };
   snapshotsDelete = function(event) {
     var parent;
@@ -245,6 +276,11 @@
     return parent.remove();
   };
   snapshotsToggle = function(event) {};
+  snapshotsPlay = function(event) {
+    var lookTween;
+    lookTween = SceneJS.FX.TweenSpline(state.snapshots.lookAts);
+    return lookTween;
+  };
   registerDOMEvents = function() {
     state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
     state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
@@ -253,6 +289,7 @@
     return state.viewport.domElement.addEventListener('DOMMouseScroll', mouseWheel, true);
   };
   registerDOMEvents();
+  ($('#top-menu-help')).click(topmenuHelp);
   ($('#layer-walls')).change(controlsToggleLayer);
   ($('#layer-doors')).change(controlsToggleLayer);
   ($('#layer-windows')).change(controlsToggleLayer);
@@ -262,5 +299,5 @@
   ($('#snapshot-placeholder')).click(snapshotsPush);
   ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
   ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
-  ($('#top-menu-help')).click(topmenuHelp);
+  ($('#snapshots-play')).click(snapshotsPlay);
 }).call(this);

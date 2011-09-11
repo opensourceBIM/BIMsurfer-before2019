@@ -17,6 +17,8 @@ registerDOMEvents = () ->
 registerDOMEvents()
 
 # Register UI events
+($ '#top-menu-help').click topmenuHelp
+
 ($ '#layer-walls').change controlsToggleLayer
 ($ '#layer-doors').change controlsToggleLayer
 ($ '#layer-windows').change controlsToggleLayer
@@ -27,6 +29,5 @@ registerDOMEvents()
 ($ '#snapshot-placeholder').click snapshotsPush
 ($ '#snapshots').delegate '.snapshot', 'click', snapshotsToggle
 ($ '#snapshots').delegate '.snapshot-delete', 'click', snapshotsDelete
-($ '#top-menu-help').click topmenuHelp
-
+($ '#snapshots-play').click snapshotsPlay
 

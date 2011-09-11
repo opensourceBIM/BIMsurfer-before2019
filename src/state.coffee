@@ -13,4 +13,5 @@ state =
       middleDragging: false
   camera:
     distanceLimits: [0.0, 0.0]    # Min / Max limits
-  snapshots: []
+  snapshots: 
+    lookAts: []
