@@ -9,15 +9,14 @@ snapshotsPush = () ->
     eye: node.get 'eye'
     look: node.get 'look'
     up: node.get 'up'
-  snapshotElement = ($ '#snapshots').append "
+  ($ '#snapshots').append "
 <div class='snapshot'>
 <div class='snapshot-thumb'>
 <a href='#' class='snapshot-delete'>x</a>
-<img width='" + thumbSize[0] + "px' height='" + thumbSize[1] + "px'>
+<img width='" + thumbSize[0] + "px' height='" + thumbSize[1] + "px' src='" + imgURI + "'>
 </div>
 <div class='snapshot-swap'><a href='#'>&lt;</a><a href='#'>&gt;</a></div>
 </div>"
-  (($ snapshotElement).find 'img').attr 'src', imgURI
 
 snapshotsDelete = (event) ->
   parent = ($ event.target).parent()
