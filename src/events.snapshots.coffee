@@ -20,7 +20,7 @@ snapshotsPush = () ->
 
 snapshotsDelete = (event) ->
   parent = ($ event.target).parent()
-  state.snapshots.slice parent.index() + 1
+  state.snapshots.lookAts.slice parent.index() + 1
   parent.remove()
 
 snapshotsToggle = (event) ->
