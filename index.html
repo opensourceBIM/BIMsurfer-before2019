@@ -150,7 +150,7 @@
     #page-contents {
       height: 100%;
     }
-    #top-menu {     
+    #top-menu {
       position: absolute;
       background: #2d2d2d;
       text-align: right;
@@ -161,6 +161,24 @@
     }
     #top-menu li {
       display: inline-block;
+      position: relative;
+    }
+    .top-menu-popup {
+      display: none;
+      position: absolute;
+      padding: 5px 0 0 0;
+      width: 150px;
+      left: 0;
+      z-index: 99999;
+    }
+    .top-menu-popup ul {
+      border: 1px black;
+      background: #2d2d2d;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+    }
+    #top-menu li:hover > .top-menu-popup {
+      display: block;
     }
     #top-menu a {
       display: block;
@@ -388,15 +406,20 @@
   <div id='scenejsLog'></div>
 
   <div id='page-contents'>
-    <nav id='top-menu'>
-      <ul>
+    <nav>
+      <ul id='top-menu'>
         <li style='float: left;'><a href='#'>&lt; BiMserver</a></li>
         <li><a href='#'>Share</a></li>
-        <li><a href='#'>Settings</a></li>
+        <li><a href='#'>Settings</a>
+          <div class='top-menu-popup'><ul>
+            <li><a href='#'>High Quality</a></li>
+            <li><a href='#'>High Performance</a></li>
+          </ul></div>
+        </li>
         <li><a href='#'>About</a></li>
         <li><a href='#' id='top-menu-help' class='top-menu-activated'>Help</a></li>
       </ul>
-	</nav>
+  	</nav>
     <div id='main-layout'><div id='main-layout-row'>
       <div id='main-view' class='main-layout-cell'>
         <div id='main-menu'>
