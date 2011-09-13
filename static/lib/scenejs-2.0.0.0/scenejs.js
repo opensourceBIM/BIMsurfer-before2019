@@ -1913,37 +1913,57 @@ SceneJS.Services.addService(
                 };
             })());
 
+    function updateNode(scene, target, params) {
+        var targetNode = scene.findNode(target);
+        if (!targetNode) { // Node might have been blown away by some other command
+            return;
+        }
+        var sett = params["set"];
+        if (sett) {
+            callNodeMethods("set", sett, targetNode);
+        }
+        if (params.insert) {
+            callNodeMethods("insert", params.insert, targetNode);
+        }
+        if (params.inc) {
+            callNodeMethods("inc", params.inc, targetNode);
+        }
+        if (params.dec) {
+            callNodeMethods("dec", params.dec, targetNode);
+        }
+        if (params.add) {
+            callNodeMethods("add", params.add, targetNode);
+        }
+        if (params.remove) {
+            callNodeMethods("remove", params.remove, targetNode);
+        }
+    }
+
     commandService.addCommand("update", {
         execute: function(ctx, params) {
-            var scenes = ctx.scenes || SceneJS._scenes;
+
+            var scenes;
             var target = params.target;
             var scene;
-            var targetNode;
-            for (var i = 0, len = scenes.length; i < len; i++) {
-                scene = scenes[i];
-                if (scene) { // Scene might have been blown away by some other command
-                    targetNode = scene.findNode(target);
-                    if (!targetNode) { // Node might have been blown away by some other command
-                        continue;
+
+            if (ctx.scenes) {
+                scenes = ctx.scenes;
+                for (var i = 0, len = scenes.length; i < len; i++) {
+                    scene = scenes[i];
+                    if (scene) { // Scene might have been blown away by some other command
+                        updateNode(scene, target, params);
                     }
-                    var sett = params["set"];
-                    if (sett) {
-                        callNodeMethods("set", sett, targetNode);
-                    }
-                    if (params.insert) {
-                        callNodeMethods("insert", params.insert, targetNode);
-                    }
-                    if (params.inc) {
-                        callNodeMethods("inc", params.inc, targetNode);
-                    }
-                    if (params.dec) {
-                        callNodeMethods("dec", params.dec, targetNode);
-                    }
-                    if (params.add) {
-                        callNodeMethods("add", params.add, targetNode);
-                    }
-                    if (params.remove) {
-                        callNodeMethods("remove", params.remove, targetNode);
+                }
+
+            } else {
+
+                scenes = SceneJS._scenes;
+                for (var sceneId in scenes) {
+                    if (scenes.hasOwnProperty(sceneId)) {
+                        scene = scenes[sceneId];
+                        if (scene) { // Scene might have been blown away by some other command
+                            updateNode(scene, target, params);
+                        }
                     }
                 }
             }
@@ -5617,19 +5637,19 @@ var SceneJS_compileCfg = new (function() {
 
         "lookAt": {
             set: {
-                level: this.REDRAW
+                level: this.COMPILE_PATH
             },
             inc: {
-                level: this.REDRAW
+                level: this.COMPILE_PATH
             }
         },
 
         "camera": {
             set: {
-                level: this.REDRAW
+                level: this.COMPILE_PATH
             },
             inc: {
-                level: this.REDRAW
+                level: this.COMPILE_PATH
             }
         },
 
@@ -5926,8 +5946,7 @@ var SceneJS_compileModule = new (function() {
     SceneJS_eventModule.addListener(
             SceneJS_eventModule.INIT,
             function() {
-                self._debugCfg = SceneJS_debugModule.getConfigs("compilation");
-                self._enableCompiler = !!self._debugCfg.enabled;
+              self._debugCfg = SceneJS_debugModule.getConfigs("compilation");
             });
 
     SceneJS_eventModule.addListener(
@@ -6097,11 +6116,11 @@ var SceneJS_compileModule = new (function() {
         };
         var stats = compileScene.stats;
 
-        if (this._debugCfg.logTrace) {
-            SceneJS_loggingModule.info("-------------------------------------------------------------------");
-            SceneJS_loggingModule.info("COMPILING ...");
-            SceneJS_loggingModule.info("");
-        }
+//        if (this._debugCfg.logTrace) {
+//            SceneJS_loggingModule.info("-------------------------------------------------------------------");
+//            SceneJS_loggingModule.info("COMPILING ...");
+//            SceneJS_loggingModule.info("");
+//        }
 
         var result = {
             level: this.REDRAW,     // Just flag display redraw until we know we need any node recompilations
@@ -6145,9 +6164,9 @@ var SceneJS_compileModule = new (function() {
             }
         }
 
-        if (this._debugCfg.logTrace) {
-            SceneJS_loggingModule.info("-------------------------------------------------------------------");
-        }
+//        if (this._debugCfg.logTrace) {
+//            SceneJS_loggingModule.info("-------------------------------------------------------------------");
+//        }
 
         return result;
     };
@@ -21834,7 +21853,7 @@ var SceneJS_textureModule = new (function() {
                     }
                 }
                 if (layerParam.blendMode) {
-                    if (layerParam.blendMode != "add" || layerParam.blendMode != "multiply") {
+                    if (layerParam.blendMode != "add" && layerParam.blendMode != "multiply") {
                         throw SceneJS_errorModule.fatalError(
                                 SceneJS.errors.NODE_CONFIG_EXPECTED,
                                 "texture layer " + i + " blendMode value is unsupported - " +
