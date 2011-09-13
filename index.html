@@ -163,7 +163,7 @@
       display: inline-block;
       position: relative;
     }
-    .top-menu-popup {
+    .top-menu-dropdown {
       display: none;
       position: absolute;
       padding: 5px 0 0 0;
@@ -171,13 +171,13 @@
       left: 0;
       z-index: 99999;
     }
-    .top-menu-popup ul {
+    .top-menu-dropdown ul {
       border: 1px black;
       background: #2d2d2d;
       -moz-border-radius: 5px;
       border-radius: 5px;
     }
-    #top-menu li:hover > .top-menu-popup {
+    #top-menu li:hover > .top-menu-dropdown {
       display: block;
     }
     #top-menu a {
@@ -411,7 +411,7 @@
         <li style='float: left;'><a href='#'>&lt; BiMserver</a></li>
         <li><a href='#'>Share</a></li>
         <li><a href='#'>Settings</a>
-          <div class='top-menu-popup'><ul>
+          <div class='top-menu-dropdown'><ul>
             <li><a href='#'>High Quality</a></li>
             <li><a href='#'>High Performance</a></li>
           </ul></div>
