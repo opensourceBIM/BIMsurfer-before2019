@@ -23,6 +23,9 @@ sceneInit()
 state.scene.start
   idleFunc: SceneJS.FX.idle
 
-# Initialize the gui controls once the rest of the document has completely loaded
-$ () -> controlsInit()
+# Initialize the gui controls and register events once the rest of the document has completely loaded
+$ () -> 
+  controlsInit()
+  registerDOMEvents()
+  registerControlEvents()
 

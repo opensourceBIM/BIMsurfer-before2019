@@ -2,4 +2,6 @@
 # Program state should not be manipulated outside events files
 
 controlsToggleLayer = (event) ->
-  state.scene.set 'tagMask', '(' + (event.target.id.split /^layer\-/)[1] + ')'
+  elements = ($ '#layers input:checked').toArray()
+  tags = (((($ el).attr 'id').split /^layer\-/)[1] for el in elements)
+  state.scene.set 'tagMask', '(' + (tags.join '|') + ')'

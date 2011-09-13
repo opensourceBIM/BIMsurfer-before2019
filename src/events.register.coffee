@@ -14,20 +14,15 @@ registerDOMEvents = () ->
   state.viewport.domElement.addEventListener 'mousemove', mouseMove, true
   state.viewport.domElement.addEventListener 'mousewheel', mouseWheel, true
   state.viewport.domElement.addEventListener 'DOMMouseScroll', mouseWheel, true
-registerDOMEvents()
 
-# Register UI events
-($ '#top-menu-help').click topmenuHelp
+# Register UI controls events
+registerControlEvents = () ->
+  ($ '#top-menu-help').click topmenuHelp
 
-($ '#layer-walls').change controlsToggleLayer
-($ '#layer-doors').change controlsToggleLayer
-($ '#layer-windows').change controlsToggleLayer
-($ '#layer-columns').change controlsToggleLayer
-($ '#layer-roofs').change controlsToggleLayer
-($ '#layer-floors').change controlsToggleLayer
+  ($ '#layers input').change controlsToggleLayer
 
-($ '#snapshot-placeholder').click snapshotsPush
-($ '#snapshots').delegate '.snapshot', 'click', snapshotsToggle
-($ '#snapshots').delegate '.snapshot-delete', 'click', snapshotsDelete
-($ '#snapshots-play').click snapshotsPlay
+  ($ '#snapshot-placeholder').click snapshotsPush
+  ($ '#snapshots').delegate '.snapshot', 'click', snapshotsToggle
+  ($ '#snapshots').delegate '.snapshot-delete', 'click', snapshotsDelete
+  ($ '#snapshots-play').click snapshotsPlay
 
