@@ -5,25 +5,31 @@ lerpLookAt = (t, lookAt0, lookAt1) ->
   eye0 = recordToVec3 lookAt0.eye
   look0 = recordToVec3 lookAt0.look
   up0  = recordToVec3 lookAt0.up
-  z0 = SceneJS_math_subVec3 look0, eye0
-  x0 = SceneJS_math_cross3Vec3 up0, z0
-  y0 = SceneJS_math_cross3Vec3 z0, x0
-  SceneJS_math_normalizeVec3 x0, x0
-  SceneJS_math_normalizeVec3 y0, y0
-  SceneJS_math_normalizeVec3 z0, z0
-
+  x0 = [0.0, 0.0, 0.0]
+  y0 = [0.0, 0.0, 0.0] 
+  z0 = [0.0, 0.0, 0.0]
+  SceneJS_math_subVec3 look0, eye0, z0
+  SceneJS_math_cross3Vec3 up0, z0, x0
+  SceneJS_math_cross3Vec3 z0, x0, y0
+  SceneJS_math_normalizeVec3 x0
+  SceneJS_math_normalizeVec3 y0
+  SceneJS_math_normalizeVec3 z0
+ 
   eye1 = recordToVec3 lookAt1.eye
   look1 = recordToVec3 lookAt1.look
   up1  = recordToVec3 lookAt1.up
-  z1 = SceneJS_math_subVec3 look1, eye1
-  x1 = SceneJS_math_cross3Vec3 up1, z1
-  y1 = SceneJS_math_cross3Vec3 z1, x1
-  SceneJS_math_normalizeVec3 x1, x1
-  SceneJS_math_normalizeVec3 y1, y1
-  SceneJS_math_normalizeVec3 z1, z1
+  x1 = [0.0, 0.0, 0.0]
+  y1 = [0.0, 0.0, 0.0] 
+  z1 = [0.0, 0.0, 0.0]
+  SceneJS_math_subVec3 look1, eye1, z1
+  SceneJS_math_cross3Vec3 up1, z1, x1
+  SceneJS_math_cross3Vec3 z1, x1, y1
+  SceneJS_math_normalizeVec3 x1
+  SceneJS_math_normalizeVec3 y1
+  SceneJS_math_normalizeVec3 z1
 
-  mat0 = x0 + y0 + z0
-  mat1 = x1 + y1 + z1
+  mat0 = [].concat x0, y0, z0
+  mat1 = [].concat x1, y1, z1
   q0 = SceneJS_math_newQuaternionFromMat3 mat0
   q1 = SceneJS_math_newQuaternionFromMat3 mat1
   q = SceneJS_math_slerp t, q0, q1

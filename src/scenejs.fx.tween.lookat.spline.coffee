@@ -26,15 +26,23 @@ SceneJS.FX.TweenSpline = do () ->
       @_t = 0.0
 
     push: (lookAt, dt) ->
-      @_t = 0.0 if @_sequence == []
+      @_t = 0.0 if @_sequence.length == 0
+      dt_prime = dt ? 5000
+      if @_timeline.length == 0
+        dt_prime = 0.0
+      @_timeline.push @totalTime() + dt_prime
       @_sequence.push lookAt
-      @_timeline.push @totalTime() + (dt ? 5000)
     
     sequence: (lookAts, dt) ->
-      @_t = 0.0 if @_sequence == []
+      @_t = 0.0 if @_sequence.length == 0
       for lookAt in lookAts
+        # CoffeeScript bug:
+        #dt_prime = (dt ? 5000) if @_timeline.length > 0 else 0.0
+        dt_prime = dt ? 5000
+        if @_timeline.length == 0
+          dt_prime = 0.0
+        @_timeline.push @totalTime() + dt_prime
         @_sequence.push lookAt 
-        @_timeline.push @totalTime() + (dt ? 5000)
       null
     
     pause: () -> @_play = false
@@ -56,13 +64,13 @@ SceneJS.FX.TweenSpline = do () ->
         console.log "done"
       else
         i = 0
-        ++i while @_timeline[i] < @_t        
+        ++i while @_timeline[i] <= @_t        
         console.log "Tween interval: " + i
-        dt = @_timeline[i+1] - @_timeline[i]
+        dt = @_timeline[i] - @_timeline[i - 1]
         lerpLookAtNode @_target, 
-          (@_t - @_timeline[i]) / dt,
-          @_sequence[@_sequence.length - 1], 
-          @_sequence[@_sequence.length - 2]
+          (@_t - @_timeline[i - 1]) / dt,
+          @_sequence[i - 1], 
+          @_sequence[i]
   
   _tweens = []
   _intervalID = null
