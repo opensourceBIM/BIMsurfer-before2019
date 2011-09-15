@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -120,52 +120,130 @@
       up: node.get('up')
     }));
   };
+  lerpLookAt = function(t, lookAt0, lookAt1) {
+    var eye0, eye1, look0, look1, mat0, mat1, q, q0, q1, result, up0, up1, x0, x1, y0, y1, z0, z1;
+    eye0 = recordToVec3(lookAt0.eye);
+    look0 = recordToVec3(lookAt0.look);
+    up0 = recordToVec3(lookAt0.up);
+    x0 = [0.0, 0.0, 0.0];
+    y0 = [0.0, 0.0, 0.0];
+    z0 = [0.0, 0.0, 0.0];
+    SceneJS_math_subVec3(look0, eye0, z0);
+    SceneJS_math_cross3Vec3(up0, z0, x0);
+    SceneJS_math_cross3Vec3(z0, x0, y0);
+    SceneJS_math_normalizeVec3(x0);
+    SceneJS_math_normalizeVec3(y0);
+    SceneJS_math_normalizeVec3(z0);
+    eye1 = recordToVec3(lookAt1.eye);
+    look1 = recordToVec3(lookAt1.look);
+    up1 = recordToVec3(lookAt1.up);
+    x1 = [0.0, 0.0, 0.0];
+    y1 = [0.0, 0.0, 0.0];
+    z1 = [0.0, 0.0, 0.0];
+    SceneJS_math_subVec3(look1, eye1, z1);
+    SceneJS_math_cross3Vec3(up1, z1, x1);
+    SceneJS_math_cross3Vec3(z1, x1, y1);
+    SceneJS_math_normalizeVec3(x1);
+    SceneJS_math_normalizeVec3(y1);
+    SceneJS_math_normalizeVec3(z1);
+    mat0 = [].concat(x0, y0, z0);
+    mat1 = [].concat(x1, y1, z1);
+    q0 = SceneJS_math_newQuaternionFromMat3(mat0);
+    q1 = SceneJS_math_newQuaternionFromMat3(mat1);
+    q = SceneJS_math_slerp(t, q0, q1);
+    return result = {
+      eye: SceneJS_math_lerpVec3(t, 0.0, 1.0, lookAt0.eye, lookAt1.eye),
+      look: SceneJS_math_lerpVec3(t, 0.0, 1.0, lookAt0.look, lookAt1.look),
+      up: vec3ToRecord(SceneJS_math_newUpVec3FromQuaternion(q))
+    };
+  };
+  lerpLookAtNode = function(node, t, lookAt0, lookAt1) {
+    return node.set(lerpLookAt(t, lookAt0, lookAt1));
+  };
   SceneJS.FX = {};
   SceneJS.FX.Tween = {};
   SceneJS.FX.TweenSpline = (function() {
     var TweenSpline, _dt, _intervalID, _r, _tick, _tweens;
     TweenSpline = (function() {
-      function TweenSpline(lookAtNode) {
+      function TweenSpline(lookAtNode, play) {
         this._target = lookAtNode;
         this._sequence = [];
         this._timeline = [];
-        if (window.Ticker != null) {
-          Ticker.addListener(Tween);
-        }
+        this._play = play != null ? play : true;
+        this._t = 0.0;
       }
-      TweenSpline.prototype._t = 0.0;
       TweenSpline.prototype.tick = function(dt) {
-        return this._t += dt;
+        if (this._play) {
+          return this._t += dt;
+        }
       };
       TweenSpline.prototype.start = function(lookAt) {
-        this._sequence = [lookAt];
+        this._sequence = [
+          lookAt != null ? lookAt : {
+            eye: this._target.get('eye'),
+            look: this._target.get('look'),
+            up: this._target.get('up')
+          }
+        ];
         this._timeline = [0.0];
         return this._t = 0.0;
       };
       TweenSpline.prototype.push = function(lookAt, dt) {
-        if (this._sequence === []) {
+        var dt_prime;
+        if (this._sequence.length === 0) {
           this._t = 0.0;
         }
-        this._sequence.push(lookAt);
-        return this._timeline.push(this.totalTime() + dt);
+        dt_prime = dt != null ? dt : 5000;
+        if (this._timeline.length === 0) {
+          dt_prime = 0.0;
+        }
+        this._timeline.push(this.totalTime() + dt_prime);
+        return this._sequence.push(lookAt);
       };
       TweenSpline.prototype.sequence = function(lookAts, dt) {
-        var lookAt, _i, _len, _ref;
-        if (this._sequence === []) {
+        var dt_prime, lookAt, _i, _len;
+        if (this._sequence.length === 0) {
           this._t = 0.0;
         }
         for (_i = 0, _len = lookAts.length; _i < _len; _i++) {
           lookAt = lookAts[_i];
+          dt_prime = dt != null ? dt : 5000;
+          if (this._timeline.length === 0) {
+            dt_prime = 0.0;
+          }
+          this._timeline.push(this.totalTime() + dt_prime);
           this._sequence.push(lookAt);
-          this._timeline.push(((_ref = this._timeline[0]) != null ? _ref : 0.0) + dt);
         }
         return null;
       };
+      TweenSpline.prototype.pause = function() {
+        return this._play = false;
+      };
+      TweenSpline.prototype.play = function() {
+        return this._play = true;
+      };
       TweenSpline.prototype.totalTime = function() {
         if (this._timeline.length > 0) {
-          return this._timeline[this._timeline.length];
+          return this._timeline[this._timeline.length - 1];
+        }
+        return 0;
+      };
+      TweenSpline.prototype.update = function() {
+        var dt, i;
+        if (this._sequence.length === 0 || !this._play) {
+          return;
+        }
+        if (this._t >= this.totalTime() || this._sequence.length === 1) {
+          this._target.set(this._sequence[this._sequence.length - 1]);
+          return console.log("done");
         } else {
-          return 0;
+          i = 0;
+          while (this._timeline[i] <= this._t) {
+            ++i;
+          }
+          console.log("Tween interval: " + i);
+          dt = this._timeline[i] - this._timeline[i - 1];
+          return lerpLookAtNode(this._target, (this._t - this._timeline[i - 1]) / dt, this._sequence[i - 1], this._sequence[i]);
         }
       };
       return TweenSpline;
@@ -182,17 +260,19 @@
       return null;
     };
     _r = function(lookAtNode, interval) {
+      var tween;
       _dt = interval || 50;
       _intervalID = setInterval(_tick, _dt);
-      return _tweens.push(new TweenSpline(lookAtNode));
+      tween = new TweenSpline(lookAtNode);
+      _tweens.push(tween);
+      return tween;
     };
     _r.update = function() {
       var tween, _i, _len, _results;
       _results = [];
       for (_i = 0, _len = _tweens.length; _i < _len; _i++) {
         tween = _tweens[_i];
-        console.log(tween);
-        _results.push(tween._t < tween.totalTime() ? console.log(tween) : void 0);
+        _results.push(tween._t < tween.totalTime() ? tween.update() : void 0);
       }
       return _results;
     };
@@ -338,9 +418,7 @@
   };
   snapshotsToggle = function(event) {};
   snapshotsPlay = function(event) {
-    var lookTween;
-    lookTween = SceneJS.FX.TweenSpline(state.snapshots.lookAts);
-    return lookTween;
+    return (SceneJS.FX.TweenSpline(state.scene.findNode('main-lookAt'))).sequence(state.snapshots.lookAts);
   };
   registerDOMEvents = function() {
     state.viewport.domElement.addEventListener('mousedown', mouseDown, true);

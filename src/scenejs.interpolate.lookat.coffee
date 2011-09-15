@@ -35,8 +35,8 @@ lerpLookAt = (t, lookAt0, lookAt1) ->
   q = SceneJS_math_slerp t, q0, q1
 
   result = 
-    eye: vec3ToRecord SceneJS_math_lerpVec3 t, 0.0, 1.0, eye0, eye1
-    look: vec3ToRecord SceneJS_math_lerpVec3 t, 0.0, 1.0, look0, look1
+    eye: SceneJS_math_lerpVec3 t, 0.0, 1.0, lookAt0.eye, lookAt1.eye
+    look: SceneJS_math_lerpVec3 t, 0.0, 1.0, lookAt0.look, lookAt1.look
     up: vec3ToRecord SceneJS_math_newUpVec3FromQuaternion q
 
 lerpLookAtNode = (node, t, lookAt0, lookAt1) ->
