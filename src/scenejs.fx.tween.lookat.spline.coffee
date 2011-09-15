@@ -7,44 +7,62 @@
 
 SceneJS.FX.TweenSpline = do () ->
   class TweenSpline
-    constructor: (lookAtNode) ->
+    constructor: (lookAtNode, play) ->
       @_target = lookAtNode
       @_sequence = []
       @_timeline = []
-      if window.Ticker? 
-        Ticker.addListener(Tween);
-    
-    _t: 0.0 
+      @_play = play ? true
+      @_t = 0.0
     
     tick: (dt) ->
-      @_t += dt
+      @_t += dt if @_play
     
     start: (lookAt) ->
-      @_sequence = [lookAt]
+      @_sequence = [lookAt ? {
+        eye: @_target.get 'eye'
+        look: @_target.get 'look'
+        up: @_target.get 'up' }]
       @_timeline = [0.0]
       @_t = 0.0
 
     push: (lookAt, dt) ->
-      if @_sequence == []
-        @_t = 0.0
+      @_t = 0.0 if @_sequence == []
       @_sequence.push lookAt
-      @_timeline.push @totalTime() + dt
+      @_timeline.push @totalTime() + (dt ? 5000)
     
     sequence: (lookAts, dt) ->
-      if @_sequence == []
-        @_t = 0.0
+      @_t = 0.0 if @_sequence == []
       for lookAt in lookAts
         @_sequence.push lookAt 
-        @_timeline.push (@_timeline[0] ? 0.0) + dt
+        @_timeline.push @totalTime() + (dt ? 5000)
       null
+    
+    pause: () -> @_play = false
+
+    play: () -> @_play = true
     
     totalTime: () -> 
       # CoffeeScript bug:
       # return @_timeline[@_timeline.length] if @_timeline.length > 0 else 0
       if @_timeline.length > 0
-        return @_timeline[@_timeline.length] 
+        return @_timeline[@_timeline.length - 1] 
+      return 0
+
+    update: () ->
+      return if @_sequence.length == 0 || not @_play
+      if @_t >= @totalTime() || @_sequence.length == 1
+        @_target.set @_sequence[@_sequence.length - 1]
+        # TODO: remove from the list if tween is done        
+        console.log "done"
       else
-        return 0
+        i = 0
+        ++i while @_timeline[i] < @_t        
+        console.log "Tween interval: " + i
+        dt = @_timeline[i+1] - @_timeline[i]
+        lerpLookAtNode @_target, 
+          (@_t - @_timeline[i]) / dt,
+          @_sequence[@_sequence.length - 1], 
+          @_sequence[@_sequence.length - 2]
   
   _tweens = []
   _intervalID = null
@@ -58,12 +76,13 @@ SceneJS.FX.TweenSpline = do () ->
   _r = (lookAtNode, interval) ->
     _dt = interval || 50                       # The default interval is 50 ms equivalent to 20 FPS
     _intervalID = setInterval _tick, _dt
-    return _tweens.push (new TweenSpline lookAtNode)
+    tween = new TweenSpline lookAtNode
+    _tweens.push tween
+    return tween
   
   _r.update = () ->
     for tween in _tweens
-      console.log tween
       if tween._t < tween.totalTime()
-        console.log tween
+        tween.update()
   
   return _r

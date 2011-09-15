@@ -27,6 +27,5 @@ snapshotsToggle = (event) ->
   # TODO: SceneJS.FX.transition (state.scene.findNode 'main-lookAt'), state.snapshots, { interpolation: 'linear' }
 
 snapshotsPlay = (event) ->
-  lookTween = SceneJS.FX.TweenSpline state.snapshots.lookAts
-  return lookTween
+  (SceneJS.FX.TweenSpline state.scene.findNode 'main-lookAt').sequence state.snapshots.lookAts
 
