@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -123,21 +123,37 @@
   SceneJS.FX = {};
   SceneJS.FX.Tween = {};
   SceneJS.FX.TweenSpline = (function() {
-    var TweenSpline;
+    var TweenSpline, _dt, _intervalID, _r, _tick, _tweens;
     TweenSpline = (function() {
       function TweenSpline(lookAtNode) {
         this._target = lookAtNode;
         this._sequence = [];
+        this._timeline = [];
+        if (window.Ticker != null) {
+          Ticker.addListener(Tween);
+        }
       }
-      TweenSpline._t = 0.0;
+      TweenSpline.prototype._t = 0.0;
       TweenSpline.prototype.tick = function(dt) {
         return this._t += dt;
       };
       TweenSpline.prototype.start = function(lookAt) {
-        return this._sequence.push(lookAt);
+        this._sequence = [lookAt];
+        this._timeline = [0.0];
+        return this._t = 0.0;
+      };
+      TweenSpline.prototype.push = function(lookAt, dt) {
+        if (this._sequence === []) {
+          this._t = 0.0;
+        }
+        this._sequence.push(lookAt);
+        return this._timeline.push(this.totalTime() + dt);
       };
       TweenSpline.prototype.sequence = function(lookAts, dt) {
         var lookAt, _i, _len, _ref;
+        if (this._sequence === []) {
+          this._t = 0.0;
+        }
         for (_i = 0, _len = lookAts.length; _i < _len; _i++) {
           lookAt = lookAts[_i];
           this._sequence.push(lookAt);
@@ -145,13 +161,45 @@
         }
         return null;
       };
+      TweenSpline.prototype.totalTime = function() {
+        if (this._timeline.length > 0) {
+          return this._timeline[this._timeline.length];
+        } else {
+          return 0;
+        }
+      };
       return TweenSpline;
     })();
-    return function(lookAtNode) {
-      return new TweenSpline(lookAtNode);
+    _tweens = [];
+    _intervalID = null;
+    _dt = 0;
+    _tick = function() {
+      var tween, _i, _len;
+      for (_i = 0, _len = _tweens.length; _i < _len; _i++) {
+        tween = _tweens[_i];
+        tween.tick(_dt);
+      }
+      return null;
     };
+    _r = function(lookAtNode, interval) {
+      _dt = interval || 50;
+      _intervalID = setInterval(_tick, _dt);
+      return _tweens.push(new TweenSpline(lookAtNode));
+    };
+    _r.update = function() {
+      var tween, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = _tweens.length; _i < _len; _i++) {
+        tween = _tweens[_i];
+        console.log(tween);
+        _results.push(tween._t < tween.totalTime() ? console.log(tween) : void 0);
+      }
+      return _results;
+    };
+    return _r;
   })();
   SceneJS.FX.idle = function() {
+    SceneJS.FX.TweenSpline.update();
     return null;
   };
   constants = {
@@ -217,7 +265,9 @@
     idleFunc: SceneJS.FX.idle
   });
   $(function() {
-    return controlsInit();
+    controlsInit();
+    registerDOMEvents();
+    return registerControlEvents();
   });
   mouseDown = function(event) {
     state.viewport.mouse.last = [event.clientX, event.clientY];
@@ -255,7 +305,18 @@
     return ($('#main-view-keys')).toggle();
   };
   controlsToggleLayer = function(event) {
-    return state.scene.set('tagMask', '(' + (event.target.id.split(/^layer\-/))[1] + ')');
+    var el, elements, tags;
+    elements = ($('#layers input:checked')).toArray();
+    tags = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = elements.length; _i < _len; _i++) {
+        el = elements[_i];
+        _results.push(((($(el)).attr('id')).split(/^layer\-/))[1]);
+      }
+      return _results;
+    })();
+    return state.scene.set('tagMask', '(' + (tags.join('|')) + ')');
   };
   snapshotsPush = function() {
     var imgURI, node, thumbSize;
@@ -272,7 +333,7 @@
   snapshotsDelete = function(event) {
     var parent;
     parent = ($(event.target)).parent();
-    state.snapshots.slice(parent.index() + 1);
+    state.snapshots.lookAts.slice(parent.index() + 1);
     return parent.remove();
   };
   snapshotsToggle = function(event) {};
@@ -288,16 +349,12 @@
     state.viewport.domElement.addEventListener('mousewheel', mouseWheel, true);
     return state.viewport.domElement.addEventListener('DOMMouseScroll', mouseWheel, true);
   };
-  registerDOMEvents();
-  ($('#top-menu-help')).click(topmenuHelp);
-  ($('#layer-walls')).change(controlsToggleLayer);
-  ($('#layer-doors')).change(controlsToggleLayer);
-  ($('#layer-windows')).change(controlsToggleLayer);
-  ($('#layer-columns')).change(controlsToggleLayer);
-  ($('#layer-roofs')).change(controlsToggleLayer);
-  ($('#layer-floors')).change(controlsToggleLayer);
-  ($('#snapshot-placeholder')).click(snapshotsPush);
-  ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
-  ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
-  ($('#snapshots-play')).click(snapshotsPlay);
+  registerControlEvents = function() {
+    ($('#top-menu-help')).click(topmenuHelp);
+    ($('#layers input')).change(controlsToggleLayer);
+    ($('#snapshot-placeholder')).click(snapshotsPush);
+    ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
+    ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
+    return ($('#snapshots-play')).click(snapshotsPlay);
+  };
 }).call(this);
