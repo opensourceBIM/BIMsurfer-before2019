@@ -50,12 +50,20 @@
     };
   };
   lookAtToQuaternion = function(lookAt) {
-    var axis, look, up;
-    look = SceneJS_math_subVec3(lookAt.target(lookAt.eye));
-    axis = SceneJS_math_normalizeVec3(SceneJS_math_cross3Vec3(look(lookAt.up)));
-    SceneJS_math_normalizeVec3(look(look));
-    up = SceneJS_math_cross3Vec3(axis(look));
-    return SceneJS_math_newQuaternionFromMat3(axis.concat(up, look));
+    var eye, look, up, x, y, z;
+    eye = recordToVec3(lookAt.eye);
+    look = recordToVec3(lookAt.look);
+    up = recordToVec3(lookAt.up);
+    x = [0.0, 0.0, 0.0];
+    y = [0.0, 0.0, 0.0];
+    z = [0.0, 0.0, 0.0];
+    SceneJS_math_subVec3(look, eye, z);
+    SceneJS_math_cross3Vec3(up, z, x);
+    SceneJS_math_cross3Vec3(z, x, y);
+    SceneJS_math_normalizeVec3(x);
+    SceneJS_math_normalizeVec3(y);
+    SceneJS_math_normalizeVec3(z);
+    return SceneJS_math_newQuaternionFromMat3(x.concat(y, z));
   };
   orbitLookAt = function(dAngles, orbitUp, lookAt) {
     var axis, dAngle, eye0, eye0len, eye0norm, eye1, look, result, rotMat, tangent0, tangent0norm, tangent1, tangentError, up0, up0norm, up1;
@@ -121,35 +129,9 @@
     }));
   };
   lerpLookAt = function(t, lookAt0, lookAt1) {
-    var eye0, eye1, look0, look1, mat0, mat1, q, q0, q1, result, up0, up1, x0, x1, y0, y1, z0, z1;
-    eye0 = recordToVec3(lookAt0.eye);
-    look0 = recordToVec3(lookAt0.look);
-    up0 = recordToVec3(lookAt0.up);
-    x0 = [0.0, 0.0, 0.0];
-    y0 = [0.0, 0.0, 0.0];
-    z0 = [0.0, 0.0, 0.0];
-    SceneJS_math_subVec3(look0, eye0, z0);
-    SceneJS_math_cross3Vec3(up0, z0, x0);
-    SceneJS_math_cross3Vec3(z0, x0, y0);
-    SceneJS_math_normalizeVec3(x0);
-    SceneJS_math_normalizeVec3(y0);
-    SceneJS_math_normalizeVec3(z0);
-    eye1 = recordToVec3(lookAt1.eye);
-    look1 = recordToVec3(lookAt1.look);
-    up1 = recordToVec3(lookAt1.up);
-    x1 = [0.0, 0.0, 0.0];
-    y1 = [0.0, 0.0, 0.0];
-    z1 = [0.0, 0.0, 0.0];
-    SceneJS_math_subVec3(look1, eye1, z1);
-    SceneJS_math_cross3Vec3(up1, z1, x1);
-    SceneJS_math_cross3Vec3(z1, x1, y1);
-    SceneJS_math_normalizeVec3(x1);
-    SceneJS_math_normalizeVec3(y1);
-    SceneJS_math_normalizeVec3(z1);
-    mat0 = [].concat(x0, y0, z0);
-    mat1 = [].concat(x1, y1, z1);
-    q0 = SceneJS_math_newQuaternionFromMat3(mat0);
-    q1 = SceneJS_math_newQuaternionFromMat3(mat1);
+    var q, q0, q1, result;
+    q0 = lookAtToQuaternion(lookAt0);
+    q1 = lookAtToQuaternion(lookAt1);
     q = SceneJS_math_slerp(t, q0, q1);
     return result = {
       eye: SceneJS_math_lerpVec3(t, 0.0, 1.0, lookAt0.eye, lookAt1.eye),
