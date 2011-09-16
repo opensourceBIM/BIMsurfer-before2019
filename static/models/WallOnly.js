@@ -237,8 +237,14 @@ SceneJS.createScene({
                       coreId: 'WallMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '3Ep4r0uuX5ywPYOUG2H2A4',
+                          type: 'name',
+                          id: '3Ep4r0uuX5ywPYOUG2H2A4',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3Ep4r0uuX5ywPYOUG2H2A4',
+                            },
+                          ],
                         },
                       ],
                     },

@@ -1269,228 +1269,564 @@ SceneJS.createScene({
                       coreId: 'WallStandardCaseMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '2m6pmoQYr1O92-b0TIlEaO',
+                          type: 'name',
+                          id: '2m6pmoQYr1O92-b0TIlEaO',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2m6pmoQYr1O92-b0TIlEaO',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0pwgDz1bT6qvDWQF6MQ7yz',
+                          type: 'name',
+                          id: '0pwgDz1bT6qvDWQF6MQ7yz',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0pwgDz1bT6qvDWQF6MQ7yz',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3u1T26-fzEpgg4WdmSavc8',
+                          type: 'name',
+                          id: '3u1T26-fzEpgg4WdmSavc8',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3u1T26-fzEpgg4WdmSavc8',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0zIvMWG1LEKuSk5LwW79d6',
+                          type: 'name',
+                          id: '0zIvMWG1LEKuSk5LwW79d6',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0zIvMWG1LEKuSk5LwW79d6',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0SU7IhLE93WubvFgjq05TA',
+                          type: 'name',
+                          id: '0SU7IhLE93WubvFgjq05TA',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0SU7IhLE93WubvFgjq05TA',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3_buJ90hDDigz_MboE32AI',
+                          type: 'name',
+                          id: '3_buJ90hDDigz_MboE32AI',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3_buJ90hDDigz_MboE32AI',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0nO4A91nz7e8B2Z7u6l0-d',
+                          type: 'name',
+                          id: '0nO4A91nz7e8B2Z7u6l0-d',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0nO4A91nz7e8B2Z7u6l0-d',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '34smNELsj1Dv9ZX10SRaSc',
+                          type: 'name',
+                          id: '34smNELsj1Dv9ZX10SRaSc',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '34smNELsj1Dv9ZX10SRaSc',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2PNZFUX-LFuungam3j4mMH',
+                          type: 'name',
+                          id: '2PNZFUX-LFuungam3j4mMH',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2PNZFUX-LFuungam3j4mMH',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3woj_wQY18GO9Lxqr0EpjL',
+                          type: 'name',
+                          id: '3woj_wQY18GO9Lxqr0EpjL',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3woj_wQY18GO9Lxqr0EpjL',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1ZI4cZjsz2PuY0IPWQvup2',
+                          type: 'name',
+                          id: '1ZI4cZjsz2PuY0IPWQvup2',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1ZI4cZjsz2PuY0IPWQvup2',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '247uQaMFX6xRujZiBXjmmW',
+                          type: 'name',
+                          id: '247uQaMFX6xRujZiBXjmmW',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '247uQaMFX6xRujZiBXjmmW',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3ddBxrdnz1m94m_La95SOP',
+                          type: 'name',
+                          id: '3ddBxrdnz1m94m_La95SOP',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3ddBxrdnz1m94m_La95SOP',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2ZRDJc2EnF8f-Mb3XGFNKB',
+                          type: 'name',
+                          id: '2ZRDJc2EnF8f-Mb3XGFNKB',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2ZRDJc2EnF8f-Mb3XGFNKB',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0M9cf7ZZj5AxoranjZdxDc',
+                          type: 'name',
+                          id: '0M9cf7ZZj5AxoranjZdxDc',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0M9cf7ZZj5AxoranjZdxDc',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2J7tlJMGH1ROUb1JtNskG8',
+                          type: 'name',
+                          id: '2J7tlJMGH1ROUb1JtNskG8',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2J7tlJMGH1ROUb1JtNskG8',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1fi3VO3-XApvJgLv3b5Zxe',
+                          type: 'name',
+                          id: '1fi3VO3-XApvJgLv3b5Zxe',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1fi3VO3-XApvJgLv3b5Zxe',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2OF680fOP2Nugkohjrv5CX',
+                          type: 'name',
+                          id: '2OF680fOP2Nugkohjrv5CX',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2OF680fOP2Nugkohjrv5CX',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3fibx4ihD3CQIqrTdsvi9g',
+                          type: 'name',
+                          id: '3fibx4ihD3CQIqrTdsvi9g',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3fibx4ihD3CQIqrTdsvi9g',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1ehbPqfpXCbBwQ2L07V2eq',
+                          type: 'name',
+                          id: '1ehbPqfpXCbBwQ2L07V2eq',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1ehbPqfpXCbBwQ2L07V2eq',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '068NRKKj53NPaj-uMtcWay',
+                          type: 'name',
+                          id: '068NRKKj53NPaj-uMtcWay',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '068NRKKj53NPaj-uMtcWay',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1erluvDiDBohywHdrQv9TC',
+                          type: 'name',
+                          id: '1erluvDiDBohywHdrQv9TC',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1erluvDiDBohywHdrQv9TC',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1mTnfCjmXA0AoSpBs8UuhL',
+                          type: 'name',
+                          id: '1mTnfCjmXA0AoSpBs8UuhL',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1mTnfCjmXA0AoSpBs8UuhL',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1wwmhDTkr7hxFCaCZ1QIqk',
+                          type: 'name',
+                          id: '1wwmhDTkr7hxFCaCZ1QIqk',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1wwmhDTkr7hxFCaCZ1QIqk',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1wV55spIf3aun_hM1dXNq0',
+                          type: 'name',
+                          id: '1wV55spIf3aun_hM1dXNq0',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1wV55spIf3aun_hM1dXNq0',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3ogkeiy518XOjD9Uc2xJZE',
+                          type: 'name',
+                          id: '3ogkeiy518XOjD9Uc2xJZE',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3ogkeiy518XOjD9Uc2xJZE',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2oWoewqV11W98Srb4Gffpa',
+                          type: 'name',
+                          id: '2oWoewqV11W98Srb4Gffpa',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2oWoewqV11W98Srb4Gffpa',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3HgIyCcnv1eAICmgzfhP19',
+                          type: 'name',
+                          id: '3HgIyCcnv1eAICmgzfhP19',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3HgIyCcnv1eAICmgzfhP19',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3qidxPYJX3Y8oizTfaC8HK',
+                          type: 'name',
+                          id: '3qidxPYJX3Y8oizTfaC8HK',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3qidxPYJX3Y8oizTfaC8HK',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1l8USw90vAHAahsAo3TNmL',
+                          type: 'name',
+                          id: '1l8USw90vAHAahsAo3TNmL',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1l8USw90vAHAahsAo3TNmL',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2vNF8M7QP5Yw4haf24tdRm',
+                          type: 'name',
+                          id: '2vNF8M7QP5Yw4haf24tdRm',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2vNF8M7QP5Yw4haf24tdRm',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1CbjLp0W92mg9SxitEBT5q',
+                          type: 'name',
+                          id: '1CbjLp0W92mg9SxitEBT5q',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1CbjLp0W92mg9SxitEBT5q',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2MrYn-x5L5sBRul7M8ox_-',
+                          type: 'name',
+                          id: '2MrYn-x5L5sBRul7M8ox_-',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2MrYn-x5L5sBRul7M8ox_-',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '29ykd_Rvb20gyo3mJw9RN9',
+                          type: 'name',
+                          id: '29ykd_Rvb20gyo3mJw9RN9',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '29ykd_Rvb20gyo3mJw9RN9',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2EdonmFNP97uvJFw_lqwHS',
+                          type: 'name',
+                          id: '2EdonmFNP97uvJFw_lqwHS',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2EdonmFNP97uvJFw_lqwHS',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3Hy1azZ21BghzXLxuRySaM',
+                          type: 'name',
+                          id: '3Hy1azZ21BghzXLxuRySaM',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3Hy1azZ21BghzXLxuRySaM',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3w_URGu-1FgPgbvU-_Nubj',
+                          type: 'name',
+                          id: '3w_URGu-1FgPgbvU-_Nubj',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3w_URGu-1FgPgbvU-_Nubj',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1IQ4mWMBTAPxQ8HH0kyJ11',
+                          type: 'name',
+                          id: '1IQ4mWMBTAPxQ8HH0kyJ11',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1IQ4mWMBTAPxQ8HH0kyJ11',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1yLbOteST1axD5i_6Dr8bN',
+                          type: 'name',
+                          id: '1yLbOteST1axD5i_6Dr8bN',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1yLbOteST1axD5i_6Dr8bN',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3morB0pVvELvTrPpnUQmaG',
+                          type: 'name',
+                          id: '3morB0pVvELvTrPpnUQmaG',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3morB0pVvELvTrPpnUQmaG',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '38xbA34hvDV9Nond24foS-',
+                          type: 'name',
+                          id: '38xbA34hvDV9Nond24foS-',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '38xbA34hvDV9Nond24foS-',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2Lbdh1EZn4ExVsgrR0qHJC',
+                          type: 'name',
+                          id: '2Lbdh1EZn4ExVsgrR0qHJC',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2Lbdh1EZn4ExVsgrR0qHJC',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0RjcgOAqzApf_Oj1tAiOEJ',
+                          type: 'name',
+                          id: '0RjcgOAqzApf_Oj1tAiOEJ',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0RjcgOAqzApf_Oj1tAiOEJ',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2zNxAUL5XCC9aCP8AxQLDN',
+                          type: 'name',
+                          id: '2zNxAUL5XCC9aCP8AxQLDN',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2zNxAUL5XCC9aCP8AxQLDN',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3B_lhPfCjF0BPzvy4HKqtj',
+                          type: 'name',
+                          id: '3B_lhPfCjF0BPzvy4HKqtj',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3B_lhPfCjF0BPzvy4HKqtj',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3K2U6yd5L1MxhxQD4lgLh0',
+                          type: 'name',
+                          id: '3K2U6yd5L1MxhxQD4lgLh0',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3K2U6yd5L1MxhxQD4lgLh0',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0RsrgGh4H4zhQjfuKoObEa',
+                          type: 'name',
+                          id: '0RsrgGh4H4zhQjfuKoObEa',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0RsrgGh4H4zhQjfuKoObEa',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0GcDvkWf1E6PLP0OQE0UNg',
+                          type: 'name',
+                          id: '0GcDvkWf1E6PLP0OQE0UNg',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0GcDvkWf1E6PLP0OQE0UNg',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1IvwC9cRT2FuL4kmH5-PXQ',
+                          type: 'name',
+                          id: '1IvwC9cRT2FuL4kmH5-PXQ',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1IvwC9cRT2FuL4kmH5-PXQ',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3bmfKPwwL669io4O8J_Kuo',
+                          type: 'name',
+                          id: '3bmfKPwwL669io4O8J_Kuo',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3bmfKPwwL669io4O8J_Kuo',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0CqTELMBf53Rg98XtD2dQy',
+                          type: 'name',
+                          id: '0CqTELMBf53Rg98XtD2dQy',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0CqTELMBf53Rg98XtD2dQy',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1-jDliaFf0_94qp7RmI7tR',
+                          type: 'name',
+                          id: '1-jDliaFf0_94qp7RmI7tR',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1-jDliaFf0_94qp7RmI7tR',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3bv9ZuWj1EsxnEqhcbZR0R',
+                          type: 'name',
+                          id: '3bv9ZuWj1EsxnEqhcbZR0R',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3bv9ZuWj1EsxnEqhcbZR0R',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3id7lnRxj1ruKtCcKtJMAb',
+                          type: 'name',
+                          id: '3id7lnRxj1ruKtCcKtJMAb',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3id7lnRxj1ruKtCcKtJMAb',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0wOLjEu9DEOPlpkKGhQrcO',
+                          type: 'name',
+                          id: '0wOLjEu9DEOPlpkKGhQrcO',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0wOLjEu9DEOPlpkKGhQrcO',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1RT6AqpcL19RRvVRYxdbM_',
+                          type: 'name',
+                          id: '1RT6AqpcL19RRvVRYxdbM_',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1RT6AqpcL19RRvVRYxdbM_',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1505,32 +1841,74 @@ SceneJS.createScene({
                       coreId: 'WallMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '1CYkSY1Q96ivPJD1ZydrPv',
+                          type: 'name',
+                          id: '1CYkSY1Q96ivPJD1ZydrPv',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1CYkSY1Q96ivPJD1ZydrPv',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '15-xMDyN51cAGKHB1EP_Yn',
+                          type: 'name',
+                          id: '15-xMDyN51cAGKHB1EP_Yn',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '15-xMDyN51cAGKHB1EP_Yn',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0n6-Y3zsj6vOr_XYIL8Q3Y',
+                          type: 'name',
+                          id: '0n6-Y3zsj6vOr_XYIL8Q3Y',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0n6-Y3zsj6vOr_XYIL8Q3Y',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0NxoRHk2vFiPN0pVqA34vs',
+                          type: 'name',
+                          id: '0NxoRHk2vFiPN0pVqA34vs',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0NxoRHk2vFiPN0pVqA34vs',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3y_DZRPXz9x84aM4EoxNiq',
+                          type: 'name',
+                          id: '3y_DZRPXz9x84aM4EoxNiq',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3y_DZRPXz9x84aM4EoxNiq',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2u6GPlksH2NRf4TcTwl5Sb',
+                          type: 'name',
+                          id: '2u6GPlksH2NRf4TcTwl5Sb',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2u6GPlksH2NRf4TcTwl5Sb',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1Jcs3_Zaj2yPPxH1fwCT5G',
+                          type: 'name',
+                          id: '1Jcs3_Zaj2yPPxH1fwCT5G',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1Jcs3_Zaj2yPPxH1fwCT5G',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1545,56 +1923,134 @@ SceneJS.createScene({
                       coreId: 'DoorMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '0qAnfHRmnAyuXYyLQrTfNg',
+                          type: 'name',
+                          id: '0qAnfHRmnAyuXYyLQrTfNg',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0qAnfHRmnAyuXYyLQrTfNg',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3f2PbcIlb8EBgeUKNxvJyk',
+                          type: 'name',
+                          id: '3f2PbcIlb8EBgeUKNxvJyk',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3f2PbcIlb8EBgeUKNxvJyk',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '28xPEsoRn1Duwj0tMygige',
+                          type: 'name',
+                          id: '28xPEsoRn1Duwj0tMygige',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '28xPEsoRn1Duwj0tMygige',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1-TezpWNXDjecTkbzGW4MY',
+                          type: 'name',
+                          id: '1-TezpWNXDjecTkbzGW4MY',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1-TezpWNXDjecTkbzGW4MY',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2w42Qn0qD6pOgjKyXQVKP5',
+                          type: 'name',
+                          id: '2w42Qn0qD6pOgjKyXQVKP5',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2w42Qn0qD6pOgjKyXQVKP5',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '05JUUfY51Cpf5_w0mHap3T',
+                          type: 'name',
+                          id: '05JUUfY51Cpf5_w0mHap3T',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '05JUUfY51Cpf5_w0mHap3T',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '128s1Bd09E68ToTGCOwwfI',
+                          type: 'name',
+                          id: '128s1Bd09E68ToTGCOwwfI',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '128s1Bd09E68ToTGCOwwfI',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0jPrau6Jj1F9X96ngO2HGe',
+                          type: 'name',
+                          id: '0jPrau6Jj1F9X96ngO2HGe',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0jPrau6Jj1F9X96ngO2HGe',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1RBu6kRyzFMh7iFbgW8lm3',
+                          type: 'name',
+                          id: '1RBu6kRyzFMh7iFbgW8lm3',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1RBu6kRyzFMh7iFbgW8lm3',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2r1fvqY0P6zh9vQ2VkwuTW',
+                          type: 'name',
+                          id: '2r1fvqY0P6zh9vQ2VkwuTW',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2r1fvqY0P6zh9vQ2VkwuTW',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '17ee42beHAIuEb1Yh_Irw7',
+                          type: 'name',
+                          id: '17ee42beHAIuEb1Yh_Irw7',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '17ee42beHAIuEb1Yh_Irw7',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1RE56UFvz7gBpzwyyv4SBu',
+                          type: 'name',
+                          id: '1RE56UFvz7gBpzwyyv4SBu',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1RE56UFvz7gBpzwyyv4SBu',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2qqomPoOTEZwNLUKDQ3hqA',
+                          type: 'name',
+                          id: '2qqomPoOTEZwNLUKDQ3hqA',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2qqomPoOTEZwNLUKDQ3hqA',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1609,24 +2065,54 @@ SceneJS.createScene({
                       coreId: 'SlabMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '3DfPIv6yr4Sg7Yztx0FEIg',
+                          type: 'name',
+                          id: '3DfPIv6yr4Sg7Yztx0FEIg',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3DfPIv6yr4Sg7Yztx0FEIg',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2QolRCVe92kg3ozJfbAOUM',
+                          type: 'name',
+                          id: '2QolRCVe92kg3ozJfbAOUM',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2QolRCVe92kg3ozJfbAOUM',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0aPeoxafL6HhKc27oBx0aB',
+                          type: 'name',
+                          id: '0aPeoxafL6HhKc27oBx0aB',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0aPeoxafL6HhKc27oBx0aB',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '11Y9a53lj1Yw_El17S0YSG',
+                          type: 'name',
+                          id: '11Y9a53lj1Yw_El17S0YSG',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '11Y9a53lj1Yw_El17S0YSG',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0AF5zS6Tf0AA8AZaB3bCYY',
+                          type: 'name',
+                          id: '0AF5zS6Tf0AA8AZaB3bCYY',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0AF5zS6Tf0AA8AZaB3bCYY',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1641,100 +2127,244 @@ SceneJS.createScene({
                       coreId: 'BuildingElementProxyMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '0UfWZ-as99IBXFq6_fRGoK',
+                          type: 'name',
+                          id: '0UfWZ-as99IBXFq6_fRGoK',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0UfWZ-as99IBXFq6_fRGoK',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0N2WEwKhzBTAPzeYIjyYWR',
+                          type: 'name',
+                          id: '0N2WEwKhzBTAPzeYIjyYWR',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0N2WEwKhzBTAPzeYIjyYWR',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2fcup1Ren8HwpBucZFMXM7',
+                          type: 'name',
+                          id: '2fcup1Ren8HwpBucZFMXM7',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2fcup1Ren8HwpBucZFMXM7',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0vrKXlxt96bPdcp55UoMaD',
+                          type: 'name',
+                          id: '0vrKXlxt96bPdcp55UoMaD',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0vrKXlxt96bPdcp55UoMaD',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3dBWTgI5b8Leg8_i_1YzTa',
+                          type: 'name',
+                          id: '3dBWTgI5b8Leg8_i_1YzTa',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3dBWTgI5b8Leg8_i_1YzTa',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0w158XTbvBnBXmoYy3dbSE',
+                          type: 'name',
+                          id: '0w158XTbvBnBXmoYy3dbSE',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0w158XTbvBnBXmoYy3dbSE',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2ADVdTbUH99A4X-9TCI41s',
+                          type: 'name',
+                          id: '2ADVdTbUH99A4X-9TCI41s',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2ADVdTbUH99A4X-9TCI41s',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '23ZZaTDBT9H8MQItXILunV',
+                          type: 'name',
+                          id: '23ZZaTDBT9H8MQItXILunV',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '23ZZaTDBT9H8MQItXILunV',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '14fl4zCyL3iwdgXelMZ-yi',
+                          type: 'name',
+                          id: '14fl4zCyL3iwdgXelMZ-yi',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '14fl4zCyL3iwdgXelMZ-yi',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1EzXpV7fnAH83MtMH97_m2',
+                          type: 'name',
+                          id: '1EzXpV7fnAH83MtMH97_m2',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1EzXpV7fnAH83MtMH97_m2',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0Os4YpZEb0GxgLN8Vhsv4M',
+                          type: 'name',
+                          id: '0Os4YpZEb0GxgLN8Vhsv4M',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0Os4YpZEb0GxgLN8Vhsv4M',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0GGVcAQ-b4sPBW1VP7Vzsq',
+                          type: 'name',
+                          id: '0GGVcAQ-b4sPBW1VP7Vzsq',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0GGVcAQ-b4sPBW1VP7Vzsq',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0_DSX_4ULCP9agO84vk7PC',
+                          type: 'name',
+                          id: '0_DSX_4ULCP9agO84vk7PC',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0_DSX_4ULCP9agO84vk7PC',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '29EwButG18LBt9qAxTXWZo',
+                          type: 'name',
+                          id: '29EwButG18LBt9qAxTXWZo',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '29EwButG18LBt9qAxTXWZo',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1VRruvRwv9svI9E83_Kwhr',
+                          type: 'name',
+                          id: '1VRruvRwv9svI9E83_Kwhr',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1VRruvRwv9svI9E83_Kwhr',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1CDbhwLLH1aP3OGWKd8RYR',
+                          type: 'name',
+                          id: '1CDbhwLLH1aP3OGWKd8RYR',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1CDbhwLLH1aP3OGWKd8RYR',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '399RAsI551mQnNhBBkjmG8',
+                          type: 'name',
+                          id: '399RAsI551mQnNhBBkjmG8',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '399RAsI551mQnNhBBkjmG8',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2W8ejls-96-R2jfvBH7tsQ',
+                          type: 'name',
+                          id: '2W8ejls-96-R2jfvBH7tsQ',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2W8ejls-96-R2jfvBH7tsQ',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1E-s4_gF198PY4Mfbq9pjv',
+                          type: 'name',
+                          id: '1E-s4_gF198PY4Mfbq9pjv',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1E-s4_gF198PY4Mfbq9pjv',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3uG5pdun9EbviqAtv3_udT',
+                          type: 'name',
+                          id: '3uG5pdun9EbviqAtv3_udT',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3uG5pdun9EbviqAtv3_udT',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0s4Z9PG0bApfXXvsMa6mpM',
+                          type: 'name',
+                          id: '0s4Z9PG0bApfXXvsMa6mpM',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0s4Z9PG0bApfXXvsMa6mpM',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3JGwPjLmvDGglhlflv-hdK',
+                          type: 'name',
+                          id: '3JGwPjLmvDGglhlflv-hdK',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3JGwPjLmvDGglhlflv-hdK',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2h8Vmszef0GAX8-HFLSadZ',
+                          type: 'name',
+                          id: '2h8Vmszef0GAX8-HFLSadZ',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2h8Vmszef0GAX8-HFLSadZ',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1mpnobVKr8iOhWh97Uwf2P',
+                          type: 'name',
+                          id: '1mpnobVKr8iOhWh97Uwf2P',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1mpnobVKr8iOhWh97Uwf2P',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1749,16 +2379,34 @@ SceneJS.createScene({
                       coreId: 'StairMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '2FglF1Iy5D_8N1yc6rETyS',
+                          type: 'name',
+                          id: '2FglF1Iy5D_8N1yc6rETyS',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2FglF1Iy5D_8N1yc6rETyS',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '016v1-5m99nOt6XVvJp0WP',
+                          type: 'name',
+                          id: '016v1-5m99nOt6XVvJp0WP',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '016v1-5m99nOt6XVvJp0WP',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3hRfhr2mj9oQyknS09PmZT',
+                          type: 'name',
+                          id: '3hRfhr2mj9oQyknS09PmZT',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3hRfhr2mj9oQyknS09PmZT',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1773,8 +2421,14 @@ SceneJS.createScene({
                       coreId: 'RailingMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '3GRgBYaz502Bhb935MMHeY',
+                          type: 'name',
+                          id: '3GRgBYaz502Bhb935MMHeY',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3GRgBYaz502Bhb935MMHeY',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1789,64 +2443,154 @@ SceneJS.createScene({
                       coreId: 'WindowMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '3a6fJdSh17LO95vIwy3uCE',
+                          type: 'name',
+                          id: '3a6fJdSh17LO95vIwy3uCE',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3a6fJdSh17LO95vIwy3uCE',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0h4kPYIlr4DPpy0amKK55Z',
+                          type: 'name',
+                          id: '0h4kPYIlr4DPpy0amKK55Z',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0h4kPYIlr4DPpy0amKK55Z',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3QTdwYwGDALeqd_LAowZf_',
+                          type: 'name',
+                          id: '3QTdwYwGDALeqd_LAowZf_',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3QTdwYwGDALeqd_LAowZf_',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2fr6Zs53nCngDmHFP_xYU5',
+                          type: 'name',
+                          id: '2fr6Zs53nCngDmHFP_xYU5',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2fr6Zs53nCngDmHFP_xYU5',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0hg52E-kLB9x7xhofqj3pT',
+                          type: 'name',
+                          id: '0hg52E-kLB9x7xhofqj3pT',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0hg52E-kLB9x7xhofqj3pT',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '121QnkHZjBkPWZrZ52OyiQ',
+                          type: 'name',
+                          id: '121QnkHZjBkPWZrZ52OyiQ',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '121QnkHZjBkPWZrZ52OyiQ',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2j2VaRIHrAxeV108vXjiXO',
+                          type: 'name',
+                          id: '2j2VaRIHrAxeV108vXjiXO',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2j2VaRIHrAxeV108vXjiXO',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1vUmGtpfzD-gqrI2aP0Eo9',
+                          type: 'name',
+                          id: '1vUmGtpfzD-gqrI2aP0Eo9',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1vUmGtpfzD-gqrI2aP0Eo9',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3TW0fY5Kj07g8i-l8MP-xA',
+                          type: 'name',
+                          id: '3TW0fY5Kj07g8i-l8MP-xA',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3TW0fY5Kj07g8i-l8MP-xA',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1xh7z0EcDCHhnWYY6qM_QJ',
+                          type: 'name',
+                          id: '1xh7z0EcDCHhnWYY6qM_QJ',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1xh7z0EcDCHhnWYY6qM_QJ',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3rovm07357lQoNdlDBJLYm',
+                          type: 'name',
+                          id: '3rovm07357lQoNdlDBJLYm',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3rovm07357lQoNdlDBJLYm',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1tQRQMnIb2GOje8i-gaknr',
+                          type: 'name',
+                          id: '1tQRQMnIb2GOje8i-gaknr',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1tQRQMnIb2GOje8i-gaknr',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1KTwnzVLz41RnzAafq3ghX',
+                          type: 'name',
+                          id: '1KTwnzVLz41RnzAafq3ghX',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1KTwnzVLz41RnzAafq3ghX',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '1guD0_tY92IPJieo7fb85P',
+                          type: 'name',
+                          id: '1guD0_tY92IPJieo7fb85P',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '1guD0_tY92IPJieo7fb85P',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '3sqSTXcWbBQ8gx612bMUSp',
+                          type: 'name',
+                          id: '3sqSTXcWbBQ8gx612bMUSp',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '3sqSTXcWbBQ8gx612bMUSp',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1861,12 +2605,24 @@ SceneJS.createScene({
                       coreId: 'RoofMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '27x1Bx5nf5Lxg1euPXINyj',
+                          type: 'name',
+                          id: '27x1Bx5nf5Lxg1euPXINyj',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '27x1Bx5nf5Lxg1euPXINyj',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2FCguWAu50Fg5Proi7B0Ac',
+                          type: 'name',
+                          id: '2FCguWAu50Fg5Proi7B0Ac',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2FCguWAu50Fg5Proi7B0Ac',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1881,20 +2637,44 @@ SceneJS.createScene({
                       coreId: 'ColumnMaterial',
                       nodes: [
                         {
-                          type: 'geometry',
-                          coreId: '2qDUPC7uD87fv07NxzrQfV',
+                          type: 'name',
+                          id: '2qDUPC7uD87fv07NxzrQfV',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2qDUPC7uD87fv07NxzrQfV',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '0ENOPE3AzAFQHjJm6e9J9L',
+                          type: 'name',
+                          id: '0ENOPE3AzAFQHjJm6e9J9L',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '0ENOPE3AzAFQHjJm6e9J9L',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2XuHZheRL94vHU7xmgZEem',
+                          type: 'name',
+                          id: '2XuHZheRL94vHU7xmgZEem',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2XuHZheRL94vHU7xmgZEem',
+                            },
+                          ],
                         },
                         {
-                          type: 'geometry',
-                          coreId: '2IBJNjmXfCOh5TA-07yvkx',
+                          type: 'name',
+                          id: '2IBJNjmXfCOh5TA-07yvkx',
+                          nodes: [
+                            {
+                              type: 'geometry',
+                              coreId: '2IBJNjmXfCOh5TA-07yvkx',
+                            },
+                          ],
                         },
                       ],
                     },
