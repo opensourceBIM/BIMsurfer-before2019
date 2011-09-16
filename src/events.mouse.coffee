@@ -10,12 +10,14 @@ mouseDown = (event) ->
 mouseUp = (event) ->
   state.viewport.mouse.leftDragging = false
   state.viewport.mouse.middleDragging = false
-  #coords = mouseCoordsWithinElement event
-  #pickRecord = scene.pick coords[0] coords[1]
-  #if pickRecord
-  # alert "Picked 'name' node with id '" + pickRecord.nodeId + "' at canvasX=" + pickRecord.canvasX + ", canvasY=" + pickRecord.canvasY
-  #else
-  # alert "Nothing picked"
+  if event.which == 1 # Left mouse button
+    coords = mouseCoordsWithinElement event
+    pickRecord = state.scene.pick coords[0], coords[1]
+    console.log coords
+    if pickRecord
+      console.log "Picked 'name' node with id '" + pickRecord.nodeId + "' at canvasX=" + pickRecord.canvasX + ", canvasY=" + pickRecord.canvasY
+    else
+      console.log "Nothing picked"
 
 mouseMove = (event) ->
   # TODO: Get an accurate time measurement since the last mouseMove event

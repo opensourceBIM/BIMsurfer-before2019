@@ -16,6 +16,7 @@ appFiles  = [
   'constants'
   'math'
   'state'
+  'mouse'
   'events.init'
   'events.mouse'
   'events.topmenu'

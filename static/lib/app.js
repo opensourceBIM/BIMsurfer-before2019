@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -216,14 +216,12 @@
           return;
         }
         if (this._t >= this.totalTime() || this._sequence.length === 1) {
-          this._target.set(this._sequence[this._sequence.length - 1]);
-          return console.log("done");
+          return this._target.set(this._sequence[this._sequence.length - 1]);
         } else {
           i = 0;
           while (this._timeline[i] <= this._t) {
             ++i;
           }
-          console.log("Tween interval: " + i);
           dt = this._timeline[i] - this._timeline[i - 1];
           return lerpLookAtNode(this._target, (this._t - this._timeline[i - 1]) / dt, this._sequence[i - 1], this._sequence[i]);
         }
@@ -297,6 +295,25 @@
       lookAts: []
     }
   };
+  mouseCoordsWithinElement = function(event) {
+    var coords, element, totalOffsetLeft, totalOffsetTop;
+    coords = [0, 0];
+    if (!event) {
+      event = window.event;
+      coords = [event.x, event.y];
+    } else {
+      element = event.target;
+      totalOffsetLeft = 0;
+      totalOffsetTop = 0;
+      while (element.offsetParent) {
+        totalOffsetLeft += element.offsetLeft;
+        totalOffsetTop += element.offsetTop;
+        element = element.offsetParent;
+      }
+      coords = [event.pageX - totalOffsetLeft, event.pageY - totalOffsetTop];
+    }
+    return coords;
+  };
   sceneInit = function() {
     var sceneDiameter;
     modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
@@ -341,8 +358,19 @@
     }
   };
   mouseUp = function(event) {
+    var coords, pickRecord;
     state.viewport.mouse.leftDragging = false;
-    return state.viewport.mouse.middleDragging = false;
+    state.viewport.mouse.middleDragging = false;
+    if (event.which === 1) {
+      coords = mouseCoordsWithinElement(event);
+      pickRecord = state.scene.pick(coords[0], coords[1]);
+      console.log(coords);
+      if (pickRecord) {
+        return console.log("Picked 'name' node with id '" + pickRecord.nodeId + "' at canvasX=" + pickRecord.canvasX + ", canvasY=" + pickRecord.canvasY);
+      } else {
+        return console.log("Nothing picked");
+      }
+    }
   };
   mouseMove = function(event) {
     var delta, deltaLength, orbitAngles;
