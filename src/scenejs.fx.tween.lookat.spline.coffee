@@ -61,11 +61,9 @@ SceneJS.FX.TweenSpline = do () ->
       if @_t >= @totalTime() || @_sequence.length == 1
         @_target.set @_sequence[@_sequence.length - 1]
         # TODO: remove from the list if tween is done        
-        console.log "done"
       else
         i = 0
         ++i while @_timeline[i] <= @_t        
-        console.log "Tween interval: " + i
         dt = @_timeline[i] - @_timeline[i - 1]
         lerpLookAtNode @_target, 
           (@_t - @_timeline[i - 1]) / dt,
