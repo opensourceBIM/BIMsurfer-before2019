@@ -4,3 +4,7 @@
 # Use x.length == 0 instead
 grep "\=\= \[\]" src/* -r
 grep "\!\= \[\]" src/* -r
+
+# Search for debugging helpers
+grep "console.log" src/* -r
+grep "alert" src/* -r
