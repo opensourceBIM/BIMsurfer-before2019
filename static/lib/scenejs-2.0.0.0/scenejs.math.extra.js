@@ -79,7 +79,7 @@ var SceneJS_math_newUpVec3FromQuaternion = function(q) {
     var txy = ty * q[0];
     var tyz = tz * q[1];
     var tzz = tz * q[2];
-
-    return [txy + twz, 1.0 - (txx + tzz), tyz - twx];
+    
+    return [txy - twz, 1.0 - (txx + tzz), tyz + twx];
 };
 
