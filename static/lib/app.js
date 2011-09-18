@@ -271,6 +271,16 @@
     thumbnails: {
       size: [125, 100],
       scale: 2
+    },
+    highlightMaterial: {
+      type: 'material',
+      id: 'highlight',
+      emit: 0.0,
+      baseColor: {
+        r: 0.0,
+        g: 0.5,
+        b: 0.5
+      }
     }
   };
   Math.clamp = function(s, min, max) {
@@ -358,17 +368,20 @@
     }
   };
   mouseUp = function(event) {
-    var coords, pickRecord;
+    var coords, oldHighlight, pickRecord;
     state.viewport.mouse.leftDragging = false;
     state.viewport.mouse.middleDragging = false;
     if (event.which === 1) {
       coords = mouseCoordsWithinElement(event);
       pickRecord = state.scene.pick(coords[0], coords[1]);
       console.log(coords);
+      oldHighlight = state.scene.findNode(constants.highlightMaterial.id);
+      if (oldHighlight != null) {
+        oldHighlight.splice();
+      }
       if (pickRecord) {
-        return console.log("Picked 'name' node with id '" + pickRecord.nodeId + "' at canvasX=" + pickRecord.canvasX + ", canvasY=" + pickRecord.canvasY);
-      } else {
-        return console.log("Nothing picked");
+        console.log("Picked 'name' node with id '" + pickRecord.nodeId + "' at canvasX=" + pickRecord.canvasX + ", canvasY=" + pickRecord.canvasY);
+        return (state.scene.findNode(pickRecord.nodeId)).insert('node', constants.highlightMaterial);
       }
     }
   };

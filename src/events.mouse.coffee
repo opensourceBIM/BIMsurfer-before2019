@@ -14,10 +14,15 @@ mouseUp = (event) ->
     coords = mouseCoordsWithinElement event
     pickRecord = state.scene.pick coords[0], coords[1]
     console.log coords
+    # Delete the old highlight material
+    oldHighlight = state.scene.findNode constants.highlightMaterial.id
+    oldHighlight.splice() if oldHighlight?
+    # Apply the highlight material to the node
     if pickRecord
       console.log "Picked 'name' node with id '" + pickRecord.nodeId + "' at canvasX=" + pickRecord.canvasX + ", canvasY=" + pickRecord.canvasY
-    else
-      console.log "Nothing picked"
+      (state.scene.findNode pickRecord.nodeId).insert 'node', constants.highlightMaterial
+    #else
+    #  console.log "Nothing picked"
 
 mouseMove = (event) ->
   # TODO: Get an accurate time measurement since the last mouseMove event

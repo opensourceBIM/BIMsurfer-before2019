@@ -7,6 +7,8 @@ sceneInit = () ->
   # Calculate camera attributes
   sceneDiameter = SceneJS_math_lenVec3 state.scene.data().bounds
   state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0]
+  # Add useful nodes to the library
+  #highlightNode = 
 
 controlsInit = () ->
   # Initialize controls
