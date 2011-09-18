@@ -832,18 +832,18 @@ SceneJS._Node.prototype.splice = function() {
     if (this.parent == null) {
         return null;
     }
-    var parentChildren = this.parent.children;
-    var children = this.children;
-    this.children = [];
+    var parent = this.parent;
+    var children = this.disconnectNodes();
     for (var i = 0, len = children.length; i < len; i++) {  // Link this node's children to new parent
         children[i].parent = this.parent;
     }
-    for (var i = 0, len = parentChildren.length; i < len; i++) { // Replace node on parent's children with this node's children
-        if (parentChildren[i] === this) {
-            this.parent.children = parentChildren.splice(i, 1, children);
-            this.parent._resetTreeCompilationMemos();
+    for (var i = 0, len = parent.children.length; i < len; i++) { // Replace node on parent's children with this node's children
+        if (parent.children[i] === this) {
+            parent.children.splice.apply(parent.children, [i, 1].concat(children));
+            this.parent = null;
             this.destroy();
-            SceneJS_compileModule.nodeUpdated(this.parent);
+            parent._resetTreeCompilationMemos();
+            SceneJS_compileModule.nodeUpdated(parent);
             return parent;
         }
     }
@@ -1185,10 +1185,6 @@ SceneJS._Node.prototype._findNodesByType = function(type, list, recursive) {
 SceneJS._Node.prototype.getJSON = function() {
     return this.attr;
 };
-
-
-
-
 
 var SceneJS_State = function(cfg) {
     this.core = cfg.core || {};
