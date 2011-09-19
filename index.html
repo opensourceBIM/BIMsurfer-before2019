@@ -140,6 +140,12 @@
     textarea {
       resize: vertical;
     }
+    menu menu {
+      display: none;
+    }
+    menu:hover menu {
+      display: block;
+    }
 
     /* Generic classes */
     .clickable {
@@ -165,15 +171,11 @@
       text-align: left;
     }
     .top-menu-dropdown menu {
-      display: none;
       position: absolute;
       padding: 5px 0 0 0;
       width: 150px;
       left: 0;
       z-index: 99999;
-    }
-    .top-menu-dropdown:hover menu {
-      display: block;
     }
     .top-menu-float {
       border: 1px black;
@@ -390,13 +392,9 @@
       margin: 0 10px 0 0;
     }
     #snapshots-export-menu  {
-      display: none;
       background: rgb(245,245,245);
       border: 1px solid #888;
       margin: 2px;
-    }
-    #snapshots-export:hover #snapshots-export-menu {
-      display: block;
     }
   </style>
 </head>
