@@ -153,11 +153,7 @@
     }
     
     /* Application styling */
-    #page-contents {
-      height: 100%;
-    }
     #top-menu {
-      position: absolute;
       background: #2d2d2d;
       text-align: right;
       width: 100%;
@@ -205,24 +201,24 @@
       -webkit-border-radius: 7px;
     }
     #main-layout {
-      -moz-box-sizing: border-box;
-      -webkit-box-sizing: border-box;
-      box-sizing: border-box;
-      display: table;
+      display: -webkit-box;
+      display: -moz-box;
+      display: box;
+	    -webkit-box-orient: vertical;
+	    -moz-box-orient: vertical;
+	    box-orient: vertical;
       width: 100%;
       height: 100%;
-      padding-top: 26px;
     }
-    #main-layout-row {
-      display: table-row;
-      height: 100%;
-    }
-    .main-layout-cell {
-      display: table-cell;
-      height: 100%;
+    .main-layout-row {
+      display: -webkit-box;
+      display: -moz-box;
+      display: box;
+	    -webkit-box-flex: 1;
+	    -moz-box-flex: 1;
+	    box-flex: 1;
     }
     #main-menu {
-      position: absolute;
       z-index: 1;
       border-bottom: 1px solid #ddd;
       height: 120px;
@@ -244,16 +240,16 @@
       width: 200px;
     }
     #main-view {
+      position: relative;
+    	-webkit-box-flex: 1;
+    	-moz-box-flex: 1;
+    	box-flex: 1;
       background: rgb(235,235,235); /* Old browsers */
       background: -moz-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* FF3.6+ */
       background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(60%,rgba(255,255,255,1)), color-stop(100%,rgba(235,235,235,1))); /* Chrome,Safari4+ */
       background: -webkit-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* Chrome10+,Safari5.1+ */
-      float: left;
-      position: relative;
-      width: 100%;
     }
     #viewport {
-      margin: 120px 0 0 0;
       width: 100%;
       height: 100%;
     }
@@ -327,21 +323,30 @@
       text-align: center;
       width: 100%;
     }
-    #snapshots-fold  {
+    #snapshots-fold {
+      display: -webkit-box;
+      display: -moz-box;
+      display: box;
+	    -webkit-box-orient: vertical;
+	    -moz-box-orient: vertical;
+	    box-orient: vertical;
+
+      padding: 0 0 0 30px;
+      width: 150px;
+      vertical-align: top;
       background: rgb(245,245,245); /* Old browsers */
       background: -moz-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* FF3.6+ */
       background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(211,211,211,1)), color-stop(20%,rgba(245,245,245,1)), color-stop(100%,rgba(245,245,245,1))); /* Chrome,Safari4+ */
       background: -webkit-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* Chrome10+,Safari5.1+ */
-      padding: 0 0 0 30px;
-      width: 150px;
-      vertical-align: top;
     }
     #snapshots {
       width: 140px;
     }
     #snapshots-area {
+	    -webkit-box-flex: 1;
+	    -moz-box-flex: 1;
+	    box-flex: 1;
       overflow-y: auto;
-      height: 100%;
     }
     .snapshot-thumb {
       display: inline-block;
@@ -390,14 +395,17 @@
       /*margin: auto auto;
       display: inline-block;*/
     }
-    #snapshots-export {
+    #snapshots-toolbar {
+      background: rgb(225,225,225);
+    }
+    #snapshots-toolbar-export {
       float: right;
       margin: 0 10px 0 0;
     }
-    #snapshots-export-menu  {
+    #snapshots-toolbar-export menu {
+      position: absolute;
+      bottom: 20px;
       background: rgb(245,245,245);
-      border: 1px solid #888;
-      margin: 2px;
     }
   </style>
 </head>
@@ -407,7 +415,7 @@
 
   <div id='scenejsLog'></div>
 
-  <div id='page-contents'>
+  <div id='main-layout'>
     <menu id='top-menu' type='toolbar'>
       <li style='float: left;'><a href='#'>&lt; BiMserver</a></li>
       <li><a href='#'>Share</a></li>
@@ -421,8 +429,8 @@
       <li><a href='#'>About</a></li>
       <li><a href='#' id='top-menu-help' class='top-menu-activated'>Help</a></li>
   	</menu>
-    <div id='main-layout'><div id='main-layout-row'>
-      <div id='main-view' class='main-layout-cell'>
+    <div class='main-layout-row'>
+      <div id='main-view'>
         <div id='main-menu'>
           <div id='main-menu-logo'></div>
           <div class='main-menu-panel ui-widget-content'>
@@ -470,28 +478,30 @@
         </div>
         <div id='main-view-help'></div>
       </div>
-      <div id='snapshots-fold' class='main-layout-cell'>
-        <h2>Snapshots</h2>
-        <a id='snapshots-play' href='#'>Play &gt;</a>
-        <div id='snapshots-animframe'>
+      <div id='snapshots-fold'>
+        <div>
+          <h2>Snapshots</h2>
+          <a id='snapshots-play' href='#'>Play &gt;</a>
         </div>
         <div id='snapshots-area'>
+          <div id='snapshots-animframe'>
+          </div>
           <div id='snapshots'>
           </div>
           <a href='#' id='snapshot-placeholder'>
             + Snapshot
           </a>
         </div>
-        <menu id='snapshots-export'>
-          <li>
+        <menu id='snapshots-toolbar' type='toolbar'>
+          <li id='snapshots-toolbar-export'>
             <a href='#'>Export</a>
-            <menu id='snapshots-export-menu'>
+            <menu type='toolbar'>
               <li><a href='#'>PDF</a></li>
             </menu>
           </li>
         </div>
       </div>
-    </div></div>
+    </div>
   </div>
 
   <!-- Prompt IE users to install Chrome Frame. chromium.org/developers/how-tos/chrome-frame-getting-started -->
@@ -503,7 +513,7 @@
   <!-- Disable text selection -->
 
   <script type='application/javascript'>
-    var pageElement = document.getElementById('page-contents');
+    var pageElement = document.getElementById('main-layout');
     pageElement.style.MozUserSelect='none';
     pageElement.onmousedown=function(){return false};
   </script>
