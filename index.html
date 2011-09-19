@@ -335,10 +335,13 @@
       padding: 0 0 0 30px;
       width: 150px;
       vertical-align: top;
-      /*overflow-y: auto;*/
     }
     #snapshots {
       width: 140px;
+    }
+    #snapshots-area {
+      overflow-y: auto;
+      height: 100%;
     }
     .snapshot-thumb {
       display: inline-block;
@@ -472,11 +475,13 @@
         <a id='snapshots-play' href='#'>Play &gt;</a>
         <div id='snapshots-animframe'>
         </div>
-        <div id='snapshots'>
+        <div id='snapshots-area'>
+          <div id='snapshots'>
+          </div>
+          <a href='#' id='snapshot-placeholder'>
+            + Snapshot
+          </a>
         </div>
-        <a href='#' id='snapshot-placeholder'>
-          + Snapshot
-        </a>
         <menu id='snapshots-export'>
           <li>
             <a href='#'>Export</a>
