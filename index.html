@@ -140,10 +140,10 @@
     textarea {
       resize: vertical;
     }
-    menu menu {
+    menu li menu {
       display: none;
     }
-    menu:hover menu {
+    menu li:hover menu {
       display: block;
     }
 
@@ -478,10 +478,12 @@
           + Snapshot
         </a>
         <menu id='snapshots-export'>
-          <a href='#'>Export</a>
-          <menu id='snapshots-export-menu'>
-            <li><a href='#'>PDF</a></li>
-          </menu>
+          <li>
+            <a href='#'>Export</a>
+            <menu id='snapshots-export-menu'>
+              <li><a href='#'>PDF</a></li>
+            </menu>
+          </li>
         </div>
       </div>
     </div></div>
