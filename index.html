@@ -25,7 +25,7 @@
       text-decoration: none;
       outline: none;
     }
-    ul {
+    menu {
       list-style: none;
       list-style-image: none;
     }
@@ -164,7 +164,7 @@
       position: relative;
       text-align: left;
     }
-    .top-menu-dropdown {
+    .top-menu-dropdown menu {
       display: none;
       position: absolute;
       padding: 5px 0 0 0;
@@ -172,14 +172,14 @@
       left: 0;
       z-index: 99999;
     }
-    .top-menu-dropdown ul {
+    .top-menu-dropdown:hover menu {
+      display: block;
+    }
+    .top-menu-float {
       border: 1px black;
       background: #2d2d2d;
       -moz-border-radius: 5px;
       border-radius: 5px;
-    }
-    #top-menu li:hover > .top-menu-dropdown {
-      display: block;
     }
     #top-menu a {
       display: block;
@@ -389,13 +389,13 @@
       float: right;
       margin: 0 10px 0 0;
     }
-    #snapshots-export ul {
+    #snapshots-export-menu  {
       display: none;
       background: rgb(245,245,245);
       border: 1px solid #888;
       margin: 2px;
     }
-    #snapshots-export:hover > ul {
+    #snapshots-export:hover #snapshots-export-menu {
       display: block;
     }
   </style>
@@ -407,20 +407,19 @@
   <div id='scenejsLog'></div>
 
   <div id='page-contents'>
-    <nav>
-      <ul id='top-menu'>
-        <li style='float: left;'><a href='#'>&lt; BiMserver</a></li>
-        <li><a href='#'>Share</a></li>
-        <li><a href='#'>Settings</a>
-          <div class='top-menu-dropdown'><ul>
-            <li><a href='#'>High Quality</a></li>
-            <li><a href='#'>High Performance</a></li>
-          </ul></div>
-        </li>
-        <li><a href='#'>About</a></li>
-        <li><a href='#' id='top-menu-help' class='top-menu-activated'>Help</a></li>
-      </ul>
-  	</nav>
+    <menu id='top-menu' type='toolbar'>
+      <li style='float: left;'><a href='#'>&lt; BiMserver</a></li>
+      <li><a href='#'>Share</a></li>
+      <li class='top-menu-dropdown'>
+        <a href='#'>Settings</a>
+        <menu><div class='top-menu-float'>
+          <li><a href='#'>High Quality</a></li>
+          <li><a href='#'>High Performance</a></li>
+        </div></menu>
+      </li>
+      <li><a href='#'>About</a></li>
+      <li><a href='#' id='top-menu-help' class='top-menu-activated'>Help</a></li>
+  	</menu>
     <div id='main-layout'><div id='main-layout-row'>
       <div id='main-view' class='main-layout-cell'>
         <div id='main-menu'>
@@ -476,11 +475,11 @@
         <a href='#' id='snapshot-placeholder'>
           + Snapshot
         </a>
-        <div id='snapshots-export'>
+        <menu id='snapshots-export'>
           <a href='#'>Export</a>
-          <ul id='snapshots-export-menu'>
+          <menu id='snapshots-export-menu'>
             <li><a href='#'>PDF</a></li>
-          </ul>
+          </menu>
         </div>
       </div>
     </div></div>
