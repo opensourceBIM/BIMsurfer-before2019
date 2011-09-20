@@ -130,6 +130,9 @@
       height: 100%;
       font-family: arial, sans-serif;
     }
+    a {
+      color: #3a74ae;
+    }
     h2 {
       font-size: 20px;
     }
@@ -251,7 +254,7 @@
       font-size: 20px;
       text-shadow: 1px 1px 0px #fff;
     }
-    .main-menu-panel li {
+    .main-menu-panel a {
       color: #ccc;
       font-size: 14px;
     }
@@ -346,9 +349,8 @@
 	    -webkit-box-orient: vertical;
 	    -moz-box-orient: vertical;
 	    box-orient: vertical;
-
-      padding: 0 0 0 30px;
-      width: 150px;
+      padding: 6px 0 0 30px;
+      width: 158px;
       vertical-align: top;
       background: rgb(245,245,245); /* Old browsers */
       background: -moz-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* FF3.6+ */
@@ -368,7 +370,7 @@
       display: inline-block;
       vertical-align: middle;
       position: relative;
-      border: 1px solid #444;
+      border: 1px solid #aaa;
       color: #444;
       margin-top: 10px;
       width: 125px;
@@ -397,8 +399,7 @@
     }
     #snapshot-placeholder  {
       display: block;
-      border: 1px dashed #44e;
-      color: #44e;
+      border: 1px dashed #3a74ae;
       font-size: 13px;
       margin-right: 10px;
       margin-top: 10px;
@@ -412,16 +413,29 @@
       display: inline-block;*/
     }
     #snapshots-toolbar {
-      background: rgb(225,225,225);
+      position: relative;
+      padding: 1px 0 0 0;
+    }
+    #snapshots-toolbar li {
+      font-size: 15px;
+      line-height: 26px;
     }
     #snapshots-toolbar-export {
-      float: right;
-      margin: 0 10px 0 0;
+      background: #f1f1f1;
+      padding: 0 10px;
+      border: solid 1px #e2e2e2;
+      min-width: 50px;
+      text-align: center;
     }
-    #snapshots-toolbar-export menu {
+    .snapshots-toolbar-pullup {
       position: absolute;
-      bottom: 20px;
-      background: rgb(245,245,245);
+      bottom: 26px;
+      right: 0;
+      padding: 0 10px;
+      min-width: 50px;
+      line-height: auto;
+      background: #f5f5f5;
+      border: solid 1px #ccc;
     }
 
     /* JQuery UI overides */
@@ -460,7 +474,7 @@
         <menu class='top-menu-dropdown vertical-list'><div class='top-menu-float'>
           <li><a href='#'>Facebook</a></li>
           <li><a href='#'>Twitter</a></li>
-          <li><a href='#'>Google</a></li>
+          <li><a href='#'>Google+</a></li>
           <li><a href='#'>Email</a></li>
         </div></menu>
       </li>
@@ -474,17 +488,17 @@
           <div class='main-menu-panel ui-widget-content'>
             <h3>Controls</h3>
             <menu type='toolbar'>
-              <li>+ Select</li>
-              <li>+ Arcball</li>
-              <li>+ Annotate</li>
+              <li><a href='#'>+ Select</a></li>
+              <li><a href='#'>+ Arcball</a></li>
+              <li><a href='#'>+ Annotate</a></li>
             </menu>
           </div>
           <div class='main-menu-panel ui-widget-content'>
             <h3>Views</h3>
             <menu type='toolbar'>
-              <li>+ 4 Views</li>
-              <li>+ Orthogonal</li>
-              <li>+ First person</li>
+              <li><a href='#'>+ 4 Views</a></li>
+              <li><a href='#'>+ Orthogonal</a></li>
+              <li><a href='#'>+ First person</a></li>
             </menu>
           </div>
         </div>
@@ -517,10 +531,7 @@
         <div id='main-view-help'></div>
       </div>
       <div id='snapshots-fold'>
-        <div>
-          <h2>Snapshots</h2>
-          <a id='snapshots-play' href='#'>Play &gt;</a>
-        </div>
+        <div><h2>Snapshots</h2></div>
         <div id='snapshots-area'>
           <div id='snapshots-animframe'>
           </div>
@@ -530,10 +541,11 @@
             + Snapshot
           </a>
         </div>
-        <menu id='snapshots-toolbar' type='toolbar'>
-          <li id='snapshots-toolbar-export'>
+        <menu id='snapshots-toolbar' class='horizontal-list' type='toolbar'>
+          <li id='snapshots-toolbar-play'><a id='snapshots-play' href='#'>&gt; Play</a></li>
+          <li id='snapshots-toolbar-export' style='float:right'>
             <a href='#'>Export</a>
-            <menu type='toolbar'>
+            <menu type='toolbar' class='snapshots-toolbar-pullup'>
               <li><a href='#'>PDF</a></li>
             </menu>
           </li>
