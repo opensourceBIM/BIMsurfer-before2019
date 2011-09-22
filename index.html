@@ -298,6 +298,26 @@
       font-size: 13px;
       margin-left: 10px;
     }
+    #controls-accordion-objects {
+      padding: 0;
+    }
+    .controls-tree {
+      list-style: none;
+      list-style-image: none;
+      cursor: pointer;
+    }
+    .controls-tree-root {
+      padding: 5px 20px;
+    }
+    .controls-tree li:hover {
+      background: #e8edff;
+    }
+    .controls-tree-root ul {
+      display: none;
+    }
+    .controls-tree-open ul, .controls-tree-selected ul {
+      display: block;
+    }
     #main-view-keys {
       position: absolute;
       bottom: 60px;
@@ -537,7 +557,15 @@
         <div id='main-view-controls' style='visibility: hidden;'>
           <div id='controls-accordion'>
             <h3><a href='#'>Objects</a></h3>
-            <div></div>
+            <div id='controls-accordion-objects'>
+              <ul id='controls-decomposition' class='controls-tree'>
+                <li class='controls-tree-root'>Project (type)
+                  <ul class='controls-tree'>
+                    <li>Element</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
             <h3><a href='#'>Properties</a></h3>
             <div></div>
             <h3><a href='#'>Layers</a></h3>
