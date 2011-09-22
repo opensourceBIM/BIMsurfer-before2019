@@ -20,6 +20,30 @@ controlsInit = () ->
   # Make controls visible
   ($ '#main-view-controls').removeAttr 'style'
 
+ifcTreeInit = () ->
+  # Initialize the IFC tree control
+  sceneData = state.scene.data()
+  
+  ifcObjectDescription = (obj) ->
+    "<li class='controls-tree-root' id='" + obj.name + "'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span>" + (ifcRelationships obj.rel) + "</li>"
+  
+  ifcRelationships = (rel) ->
+    if rel? and rel.length > 0
+      html = "<ul class='controls-tree'>"
+      for obj in rel
+        html += ifcObjectDescription obj
+      html += "</ul>"
+    else
+      ""
+  
+  ifcProject = (obj) ->
+    "<li class='controls-tree-root' id='" + obj.name + "'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span>" + (ifcRelationships obj.rel) + "</li>"
+
+  treeHtml = ""
+  for project in sceneData.composition
+    treeHtml += ifcProject project
+  ($ '#controls-decomposition').html treeHtml
+
 # Start rendering as soon as possible
 sceneInit()
 state.scene.start
@@ -30,4 +54,4 @@ $ () ->
   controlsInit()
   registerDOMEvents()
   registerControlEvents()
-
+  ifcTreeInit()

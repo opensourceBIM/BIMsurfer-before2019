@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -349,6 +349,36 @@
     });
     return ($('#main-view-controls')).removeAttr('style');
   };
+  ifcTreeInit = function() {
+    var ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
+    sceneData = state.scene.data();
+    ifcObjectDescription = function(obj) {
+      return "<li class='controls-tree-root' id='" + obj.name + "'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span>" + (ifcRelationships(obj.rel)) + "</li>";
+    };
+    ifcRelationships = function(rel) {
+      var html, obj, _i, _len;
+      if ((rel != null) && rel.length > 0) {
+        html = "<ul class='controls-tree'>";
+        for (_i = 0, _len = rel.length; _i < _len; _i++) {
+          obj = rel[_i];
+          html += ifcObjectDescription(obj);
+        }
+        return html += "</ul>";
+      } else {
+        return "";
+      }
+    };
+    ifcProject = function(obj) {
+      return "<li class='controls-tree-root' id='" + obj.name + "'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span>" + (ifcRelationships(obj.rel)) + "</li>";
+    };
+    treeHtml = "";
+    _ref = sceneData.composition;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      project = _ref[_i];
+      treeHtml += ifcProject(project);
+    }
+    return ($('#controls-decomposition')).html(treeHtml);
+  };
   sceneInit();
   state.scene.start({
     idleFunc: SceneJS.FX.idle
@@ -356,7 +386,8 @@
   $(function() {
     controlsInit();
     registerDOMEvents();
-    return registerControlEvents();
+    registerControlEvents();
+    return ifcTreeInit();
   });
   mouseDown = function(event) {
     state.viewport.mouse.last = [event.clientX, event.clientY];
@@ -407,6 +438,12 @@
     ($('#main-view-help')).toggle();
     return ($('#main-view-keys')).toggle();
   };
+  controlsToggleTreeOpen = function(event) {
+    return ($(event.target)).toggleClass('controls-tree-open');
+  };
+  controlsToggleTreeSelected = function(event) {
+    return ($(event.target)).toggleClass('controls-tree-selected');
+  };
   controlsToggleLayer = function(event) {
     var el, elements, tags;
     elements = ($('#layers input:checked')).toArray();
@@ -452,6 +489,7 @@
   };
   registerControlEvents = function() {
     ($('#top-menu-help')).click(topmenuHelp);
+    ($('#controls-decomposition')).delegate('li', 'click', controlsToggleTreeOpen);
     ($('#layers input')).change(controlsToggleLayer);
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
