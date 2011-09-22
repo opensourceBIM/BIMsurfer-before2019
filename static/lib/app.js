@@ -353,7 +353,7 @@
     var ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
     sceneData = state.scene.data();
     ifcObjectDescription = function(obj) {
-      return "<li class='controls-tree-root' id='" + obj.name + "'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span>" + (ifcRelationships(obj.rel)) + "</li>";
+      return "<li class='controls-tree-rel' id='" + obj.name + "'><a>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></a>" + (ifcRelationships(obj.rel)) + "</li>";
     };
     ifcRelationships = function(rel) {
       var html, obj, _i, _len;
@@ -369,7 +369,7 @@
       }
     };
     ifcProject = function(obj) {
-      return "<li class='controls-tree-root' id='" + obj.name + "'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span>" + (ifcRelationships(obj.rel)) + "</li>";
+      return "<li class='controls-tree-root' id='" + obj.name + "'><a>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></a>" + (ifcRelationships(obj.rel)) + "</li>";
     };
     treeHtml = "";
     _ref = sceneData.composition;

@@ -25,7 +25,7 @@ ifcTreeInit = () ->
   sceneData = state.scene.data()
   
   ifcObjectDescription = (obj) ->
-    "<li class='controls-tree-root' id='" + obj.name + "'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span>" + (ifcRelationships obj.rel) + "</li>"
+    "<li class='controls-tree-rel' id='" + obj.name + "'><a>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></a>" + (ifcRelationships obj.rel) + "</li>"
   
   ifcRelationships = (rel) ->
     if rel? and rel.length > 0
@@ -37,7 +37,7 @@ ifcTreeInit = () ->
       ""
   
   ifcProject = (obj) ->
-    "<li class='controls-tree-root' id='" + obj.name + "'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span>" + (ifcRelationships obj.rel) + "</li>"
+    "<li class='controls-tree-root' id='" + obj.name + "'><a>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></a>" + (ifcRelationships obj.rel) + "</li>"
 
   treeHtml = ""
   for project in sceneData.composition
