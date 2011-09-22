@@ -149,6 +149,13 @@
     menu li:hover menu {
       display: block;
     }
+    hr {
+      border: solid 1px #666;
+      background-color: #666;
+      color: #666;
+      width: 60%;
+      margin: 8px auto;
+    }
 
     /* Generic classes */
     .clickable {
@@ -186,6 +193,7 @@
       background: #2d2d2d;
       -moz-border-radius: 5px;
       border-radius: 5px;
+      padding: 8px 20px;
     }
     #top-menu a {
       display: block;
@@ -207,6 +215,10 @@
       border-radius: 7px;
       -moz-border-radius: 7px;
       -webkit-border-radius: 7px;
+    }
+    #top-menu .top-menu-dropdown a {
+      margin: 0;
+      padding: 0;
     }
     #main-layout {
       display: -webkit-box;
@@ -467,6 +479,9 @@
         <menu class='top-menu-dropdown vertical-list'><div class='top-menu-float'>
           <li><a href='#'>High Quality</a></li>
           <li><a href='#'>High Performance</a></li>
+          <hr>
+          <li><a href='#'>Basic Mode</a></li>
+          <li><a href='#'>Advanced Mode</a></li>
         </div></menu>
       </li>
       <li>
