@@ -13,7 +13,7 @@ sceneInit = () ->
 controlsInit = () ->
   # Initialize controls
   sceneData = state.scene.data()
-  layersHtml = ("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox'> " + ifcType + "</div>" for ifcType in sceneData.ifcTypes)
+  layersHtml = ("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox' checked='checked'> " + ifcType + "</div>" for ifcType in sceneData.ifcTypes)
   ($ '#controls-layers').html layersHtml.join ''
   ($ '#controls-accordion').accordion { header: 'h3' }
   
@@ -25,7 +25,9 @@ ifcTreeInit = () ->
   sceneData = state.scene.data()
   
   ifcObjectDescription = (obj, indent) ->
-    "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, indent) + "</li>"
+    "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + 
+      "<input type='checkbox' checked='checked'> " +
+      obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, indent) + "</li>"
   
   ifcRelationships = (rel, indent) ->
     if rel? and rel.length > 0

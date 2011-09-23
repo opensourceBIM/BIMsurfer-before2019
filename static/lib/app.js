@@ -339,7 +339,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         ifcType = _ref[_i];
-        _results.push("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox'> " + ifcType + "</div>");
+        _results.push("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox' checked='checked'> " + ifcType + "</div>");
       }
       return _results;
     })();
@@ -353,7 +353,7 @@
     var ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
     sceneData = state.scene.data();
     ifcObjectDescription = function(obj, indent) {
-      return "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, indent)) + "</li>";
+      return "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + "<input type='checkbox' checked='checked'> " + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, indent)) + "</li>";
     };
     ifcRelationships = function(rel, indent) {
       var html, obj, _i, _len;
@@ -448,7 +448,7 @@
   };
   controlsToggleLayer = function(event) {
     var el, elements, tags;
-    elements = ($('#layers input:checked')).toArray();
+    elements = ($('#controls-layers input:checked')).toArray();
     tags = (function() {
       var _i, _len, _results;
       _results = [];
