@@ -24,20 +24,21 @@ ifcTreeInit = () ->
   # Initialize the IFC tree control
   sceneData = state.scene.data()
   
-  ifcObjectDescription = (obj) ->
-    "<li class='controls-tree-rel' id='" + obj.name + "'><a>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></a>" + (ifcRelationships obj.rel) + "</li>"
+  ifcObjectDescription = (obj, indent) ->
+    "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, indent) + "</li>"
   
-  ifcRelationships = (rel) ->
+  ifcRelationships = (rel, indent) ->
     if rel? and rel.length > 0
+      indent = Math.min(indent + 1, 4)
       html = "<ul class='controls-tree'>"
       for obj in rel
-        html += ifcObjectDescription obj
+        html += ifcObjectDescription obj, indent
       html += "</ul>"
     else
       ""
   
   ifcProject = (obj) ->
-    "<li class='controls-tree-root' id='" + obj.name + "'><a>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></a>" + (ifcRelationships obj.rel) + "</li>"
+    "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, 0) + "</li>"
 
   treeHtml = ""
   for project in sceneData.composition

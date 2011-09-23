@@ -167,7 +167,23 @@
     .vertical-list li {
       display: block;
     }
-    
+    .indent-1 {
+      display: inline-block;
+      padding: 0 0 0 10px;
+    }
+    .indent-2 {
+      display: inline-block;
+      padding: 0 0 0 20px;
+    }
+    .indent-3 {
+      display: inline-block;
+      padding: 0 0 0 30px;
+    }
+    .indent-4 {
+      display: inline-block;
+      padding: 0 0 0 40px;
+    }
+
     /* Application styling */
     #top-menu {
       background: #2d2d2d;
@@ -301,7 +317,7 @@
     #main-view-controls {
       position: absolute;
       top: 140px;
-      width: 230px;
+      width: 260px;
       font-size: 13px;
       margin-left: 10px;
     }
@@ -314,18 +330,15 @@
       list-style-image: none;
       cursor: pointer;
     }
+    .controls-tree-item {
+      padding: 4px 2px 4px 10px;
+    }
+    .controls-tree-item:hover {
+      background: #e8edff;
+    }
     .controls-tree-postfix {
       float: right;
       color: #aaa;
-    }
-    .controls-tree-root {
-      padding: 5px 2px 5px 20px;
-    }
-    .controls-tree-rel {
-      padding: 0 0 0 5px;
-    }
-    .controls-tree li:hover {
-      background: #e8edff;
     }
     .controls-tree-root ul {
       display: none;

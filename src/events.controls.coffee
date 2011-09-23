@@ -2,10 +2,10 @@
 # Program state should not be manipulated outside events files
 
 controlsToggleTreeOpen = (event) ->
-  ($ event.target).toggleClass 'controls-tree-open'
+  ($ event.target).parent().toggleClass 'controls-tree-open'
 
 controlsToggleTreeSelected = (event) ->
-  ($ event.target).toggleClass 'controls-tree-selected'
+  ($ event.target).parent().toggleClass 'controls-tree-selected'
 
 controlsToggleLayer = (event) ->
   elements = ($ '#layers input:checked').toArray()

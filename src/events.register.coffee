@@ -19,7 +19,7 @@ registerDOMEvents = () ->
 registerControlEvents = () ->
   ($ '#top-menu-help').click topmenuHelp
 
-  ($ '#controls-decomposition').delegate 'li', 'click', controlsToggleTreeOpen
+  ($ '#controls-decomposition').delegate '.controls-tree-item', 'click', controlsToggleTreeOpen
   ($ '#layers input').change controlsToggleLayer
 
   ($ '#snapshot-placeholder').click snapshotsPush

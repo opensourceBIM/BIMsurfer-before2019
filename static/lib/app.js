@@ -352,16 +352,17 @@
   ifcTreeInit = function() {
     var ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
     sceneData = state.scene.data();
-    ifcObjectDescription = function(obj) {
-      return "<li class='controls-tree-rel' id='" + obj.name + "'><a>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></a>" + (ifcRelationships(obj.rel)) + "</li>";
+    ifcObjectDescription = function(obj, indent) {
+      return "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, indent)) + "</li>";
     };
-    ifcRelationships = function(rel) {
+    ifcRelationships = function(rel, indent) {
       var html, obj, _i, _len;
       if ((rel != null) && rel.length > 0) {
+        indent = Math.min(indent + 1, 4);
         html = "<ul class='controls-tree'>";
         for (_i = 0, _len = rel.length; _i < _len; _i++) {
           obj = rel[_i];
-          html += ifcObjectDescription(obj);
+          html += ifcObjectDescription(obj, indent);
         }
         return html += "</ul>";
       } else {
@@ -369,7 +370,7 @@
       }
     };
     ifcProject = function(obj) {
-      return "<li class='controls-tree-root' id='" + obj.name + "'><a>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></a>" + (ifcRelationships(obj.rel)) + "</li>";
+      return "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, 0)) + "</li>";
     };
     treeHtml = "";
     _ref = sceneData.composition;
@@ -439,10 +440,10 @@
     return ($('#main-view-keys')).toggle();
   };
   controlsToggleTreeOpen = function(event) {
-    return ($(event.target)).toggleClass('controls-tree-open');
+    return ($(event.target)).parent().toggleClass('controls-tree-open');
   };
   controlsToggleTreeSelected = function(event) {
-    return ($(event.target)).toggleClass('controls-tree-selected');
+    return ($(event.target)).parent().toggleClass('controls-tree-selected');
   };
   controlsToggleLayer = function(event) {
     var el, elements, tags;
@@ -489,7 +490,7 @@
   };
   registerControlEvents = function() {
     ($('#top-menu-help')).click(topmenuHelp);
-    ($('#controls-decomposition')).delegate('li', 'click', controlsToggleTreeOpen);
+    ($('#controls-decomposition')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
     ($('#layers input')).change(controlsToggleLayer);
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
