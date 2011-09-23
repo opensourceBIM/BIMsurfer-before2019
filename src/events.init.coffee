@@ -14,7 +14,7 @@ controlsInit = () ->
   # Initialize controls
   sceneData = state.scene.data()
   layersHtml = ("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox'> " + ifcType + "</div>" for ifcType in sceneData.ifcTypes)
-  ($ '#layers').html layersHtml.join ''
+  ($ '#controls-layers').html layersHtml.join ''
   ($ '#controls-accordion').accordion { header: 'h3' }
   
   # Make controls visible
@@ -40,9 +40,10 @@ ifcTreeInit = () ->
   ifcProject = (obj) ->
     "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, 0) + "</li>"
 
-  treeHtml = ""
+  treeHtml = "<ul class='controls-tree'>"
   for project in sceneData.composition
     treeHtml += ifcProject project
+  treeHtml += "</ul>"
   ($ '#controls-decomposition').html treeHtml
 
 # Start rendering as soon as possible

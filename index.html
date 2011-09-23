@@ -325,6 +325,9 @@
       padding: 0;
       font-size: 12px;
     }
+    #controls-decomposition {
+      min-height: 200px;
+    }
     .controls-tree {
       list-style: none;
       list-style-image: none;
@@ -589,18 +592,12 @@
           <div id='controls-accordion'>
             <h3><a href='#'>Objects</a></h3>
             <div id='controls-accordion-objects'>
-              <ul id='controls-decomposition' class='controls-tree'>
-                <li class='controls-tree-root'>Project (type)
-                  <ul class='controls-tree'>
-                    <li>Element</li>
-                  </ul>
-                </li>
-              </ul>
+              <form id='controls-decomposition'></form>
             </div>
             <h3><a href='#'>Properties</a></h3>
             <div></div>
             <h3><a href='#'>Layers</a></h3>
-            <div><form id='layers'></form></div>
+            <div><form id='controls-layers'></form></div>
             <h3><a href='#'>Annotations</a></h3>
             <div></div>
           </div>

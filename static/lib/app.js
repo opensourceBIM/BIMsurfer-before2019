@@ -343,7 +343,7 @@
       }
       return _results;
     })();
-    ($('#layers')).html(layersHtml.join(''));
+    ($('#controls-layers')).html(layersHtml.join(''));
     ($('#controls-accordion')).accordion({
       header: 'h3'
     });
@@ -372,12 +372,13 @@
     ifcProject = function(obj) {
       return "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, 0)) + "</li>";
     };
-    treeHtml = "";
+    treeHtml = "<ul class='controls-tree'>";
     _ref = sceneData.composition;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       project = _ref[_i];
       treeHtml += ifcProject(project);
     }
+    treeHtml += "</ul>";
     return ($('#controls-decomposition')).html(treeHtml);
   };
   sceneInit();
@@ -491,7 +492,7 @@
   registerControlEvents = function() {
     ($('#top-menu-help')).click(topmenuHelp);
     ($('#controls-decomposition')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
-    ($('#layers input')).change(controlsToggleLayer);
+    ($('#controls-layers input')).change(controlsToggleLayer);
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
     ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
