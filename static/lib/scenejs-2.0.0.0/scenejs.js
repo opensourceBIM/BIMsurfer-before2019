@@ -751,8 +751,7 @@ SceneJS._Node.prototype.disconnect = function() {
     if (this.parent) {
         for (var i = 0; i < this.parent.children.length; i++) {
             if (this.parent.children[i] === this) {
-                //this._resetCompilationMemos(); (disconnectNodeAt already does this)
-                return this.disconnectNodeAt(i);
+                return this.parent.disconnectNodeAt(i);
             }
         }
     }
@@ -819,7 +818,7 @@ SceneJS._Node.prototype.disconnectNodes = function() {
  * @returns {Array[Node]} The removed child nodes
  */
 SceneJS._Node.prototype.removeNodes = function() {
-    var children = disconnectNodes();
+    var children = this.disconnectNodes();
     for (var i = 0; i < children.length; i++) {
         this.children[i].destroy();
     }
@@ -1373,6 +1372,17 @@ SceneJS.Services = new (function() {
         return this._targetNode.findNode(nodeId);
     };
 
+    /** Find nodes in scene that have IDs matching the given regular expression
+     *
+     */
+    NodeSelector.prototype.findNodes = function (nodeIdRegex) {
+        if (this._targetNode.attr.type != "scene") {
+            SceneJS_errorModule.fatalError("findNode attempted on node that is not a \"scene\" type: '" + this._targetNode.attr.id + "'");
+        }
+        return this._targetNode.findNodes(nodeIdRegex);
+    };
+
+
     /** Returns the scene to which the node belongs
      */
     NodeSelector.prototype.scene = function() {
@@ -1538,7 +1548,7 @@ SceneJS.Services = new (function() {
      */
     NodeSelector.prototype.get = function(attr) {
         if (!attr) {
-            return this._targetNode.getJSON(); 
+            return this._targetNode.getJSON();
         }
         var funcName = "get" + attr.substr(0, 1).toUpperCase() + attr.substr(1);
         var func = this._targetNode[funcName];
@@ -1629,9 +1639,9 @@ SceneJS.Services = new (function() {
         if (this._targetNode.attr.type != "scene") {
             throw SceneJS_errorModule.fatalError("pick attempted on node that is not a \"scene\" type: '" + this._targetNode.attr.id + "'");
         }
-        return this._targetNode.pick(offsetX, offsetY, options);        
+        return this._targetNode.pick(offsetX, offsetY, options);
     };
-    
+
     /**
      * Starts the selected scene node, which must be a scene.
      */
@@ -6849,7 +6859,7 @@ new (function() {
             this.tagSelector = {};
         }
         this.tagSelector.mask = tagMask;
-        this.tagSelector.regex = tagMask ? new RegExp(tagMask) : null
+        this.tagSelector.regex = tagMask ? new RegExp(tagMask) : null;
     };
 
     /** Gets regular expression that selects "tag" nodes to include in render passes
@@ -6868,7 +6878,7 @@ new (function() {
 
         var getFPS = this._setupFps();
 
-        if (!this._running || this._paused) {
+        if (!this._running) {
             cfg = cfg || {};
 
             this._running = true;
@@ -6947,9 +6957,7 @@ new (function() {
         if (this._destroyed) {
             throw SceneJS_errorModule.fatalError(SceneJS.errors.NODE_ILLEGAL_STATE, "Scene has been destroyed");
         }
-        if (this._running && this._created) {
-            this._paused = doPause;
-        }
+        this._paused = doPause;
     };
 
     /** Returns true if the scene is currently rendering repeatedly in a loop after being started with {@link #start}.
@@ -6961,14 +6969,16 @@ new (function() {
     /**
      * Picks whatever geometry will be rendered at the given canvas coordinates.
      */
-    Scene.prototype.pick = function(canvasX, canvasY, options) {
+    Scene.prototype.pick = function(canvasX, canvasY) {
         if (this._destroyed) {
             throw SceneJS_errorModule.fatalError(SceneJS.errors.NODE_ILLEGAL_STATE, "Scene has been destroyed");
         }
         var nodeId = SceneJS_DrawList.pick({
             sceneId: this.attr.id,
             canvasX : canvasX,
-            canvasY : canvasY }, options);
+            canvasY : canvasY,
+            tagSelector: this.tagSelector
+        });
         return nodeId ? { nodeId : nodeId, canvasX: canvasX, canvasY: canvasY } : null;
     };
 
@@ -7042,6 +7052,22 @@ new (function() {
         }
         var node = this.nodeMap.items[nodeId];
         return (node) ? true : false;
+    };
+
+    /** Finds nodes in this scene that have nodes IDs matching the given regular expression
+     */
+    Scene.prototype.findNodes = function(nodeIdRegex) {
+        var regex = new RegExp(nodeIdRegex);
+        var nodes = [];
+        var nodeMap = this.nodeMap.items;
+        for (var nodeId in nodeMap) {
+            if (nodeMap.hasOwnProperty(nodeId)) {
+                if (regex.test(nodeId)) {
+                    nodes.push(nodeMap[nodeId]);
+                }
+            }
+        }
+        return nodes;
     };
 
     Scene.prototype.findNode = function(nodeId) {
@@ -8354,7 +8380,7 @@ var SceneJS_DrawList = new (function() {
             pickBuf.clear();
 
             states.nodeRenderer.init({ picking: true });
-            this._renderBin(states, true);
+            this._renderBin(states, true, params.tagSelector);
             states.nodeRenderer.cleanup();
 
             states.pickBufDirty = false;
@@ -8538,7 +8564,7 @@ var SceneJS_DrawList = new (function() {
         }
     };
 
-    this._composePickingVertexShader = function() {
+     this._composePickingVertexShader = function() {
 
         var customShaders = shaderState.shader.shaders || {};
 
@@ -8851,10 +8877,10 @@ var SceneJS_DrawList = new (function() {
 
         src.push("void main(void) {");
 
-        if (fragmentHooks.worldPosClip) {
+        if (fragmentHooks.worldPos) {
             src.push("if (" + fragmentHooks.worldPosClip + "(SCENEJS_vWorldVertex) == false) { discard; };");
         }
-        if (fragmentHooks.viewPosClip) {
+        if (fragmentHooks.viewPos) {
             src.push("if (!" + fragmentHooks.viewPosClip + "(SCENEJS_vViewVertex) == false) { discard; };");
         }
 
@@ -8904,14 +8930,12 @@ var SceneJS_DrawList = new (function() {
         return false;
     };
 
-    this._isLighting = function() {
-        if (lightState.lights.length > 0) {
-            if (geoState.geo.normalBuf) {
-                return true;
-            }
-            if (morphState.morph && morphState.morph.targets[0].normalBuf) {
-                return true;
-            }
+    this._hasNormals = function() {
+        if (geoState.geo.normalBuf) {
+            return true;
+        }
+        if (morphState.morph && morphState.morph.targets[0].normalBuf) {
+            return true;
         }
         return false;
     };
@@ -8928,7 +8952,7 @@ var SceneJS_DrawList = new (function() {
 
 
         var texturing = this._isTexturing();
-        var lighting = this._isLighting();
+        var normals = this._hasNormals();
         var fogging = fogState.fog && true;
         var clipping = clipState.clips.length > 0;
         var morphing = morphState.morph && true;
@@ -8941,18 +8965,21 @@ var SceneJS_DrawList = new (function() {
 
         src.push("attribute vec3 SCENEJS_aVertex;");                // Model coordinates
 
+        src.push("uniform vec3 SCENEJS_uEye;");                     // World-space eye position
+        src.push("varying vec3 SCENEJS_vEyeVec;");                  // Output world-space eye vector
+
         /*-----------------------------------------------------------------------------------
-         * Variables - Lighting
+         * Variables - normals
          *----------------------------------------------------------------------------------*/
 
-        if (lighting) {
-            src.push("uniform vec3 SCENEJS_uEye;");             // World-space eye position
+        if (normals) {
 
             src.push("attribute vec3 SCENEJS_aNormal;");        // Normal vectors
-            src.push("uniform   mat4 SCENEJS_uMNMatrix;");      // Model normal matrix         
+            src.push("uniform   mat4 SCENEJS_uMNMatrix;");      // Model normal matrix
+            src.push("uniform   mat4 SCENEJS_uVNMatrix;");      // View normal matrix
 
-            src.push("varying   vec3 SCENEJS_vNormal;");        // Output world-space vertex normal vector
-            src.push("varying   vec3 SCENEJS_vEyeVec;");        // Output world-space eye vector
+            src.push("varying   vec3 SCENEJS_vWorldNormal;");   // Output world-space vertex normal
+            src.push("varying   vec3 SCENEJS_vViewNormal;");    // Output view-space vertex normal
 
             for (var i = 0; i < lightState.lights.length; i++) {
                 var light = lightState.lights[i];
@@ -8992,11 +9019,11 @@ var SceneJS_DrawList = new (function() {
         src.push("uniform mat4 SCENEJS_uVMatrix;");                 // View matrix
         src.push("uniform mat4 SCENEJS_uPMatrix;");                 // Projection matrix
 
-        if (clipping || fragmentHooks.worldPosClip) {
+        if (clipping || fragmentHooks.worldPos) {
             src.push("varying vec4 SCENEJS_vWorldVertex;");         // Varying for fragment clip or world pos hook
         }
 
-        if (fragmentHooks.viewPosClip || fogging) {
+        if (fragmentHooks.viewPos || fogging) {
             src.push("varying vec4 SCENEJS_vViewVertex;");          // Varying for fragment view clip hook
         }
 
@@ -9018,7 +9045,7 @@ var SceneJS_DrawList = new (function() {
             if (morphState.morph.targets[0].vertexBuf) {      // target2 has these arrays also
                 src.push("attribute vec3 SCENEJS_aMorphVertex;");
             }
-            if (lighting) {
+            if (normals) {
                 if (morphState.morph.targets[0].normalBuf) {
                     src.push("attribute vec3 SCENEJS_aMorphNormal;");
                 }
@@ -9037,7 +9064,7 @@ var SceneJS_DrawList = new (function() {
         }
 
         src.push("  vec4 modelVertex = tmpVertex; ");
-        if (lighting) {
+        if (normals) {
             src.push("  vec4 modelNormal = vec4(SCENEJS_aNormal, 0.0); ");
         }
 
@@ -9049,7 +9076,7 @@ var SceneJS_DrawList = new (function() {
                 src.push("  vec4 vMorphVertex = vec4(SCENEJS_aMorphVertex, 1.0); ");
                 src.push("  modelVertex = vec4(mix(modelVertex.xyz, vMorphVertex.xyz, SCENEJS_uMorphFactor), 1.0); ");
             }
-            if (lighting) {
+            if (normals) {
                 if (morphState.morph.targets[0].normalBuf) {
                     src.push("  vec4 vMorphNormal = vec4(SCENEJS_aMorphNormal, 1.0); ");
                     src.push("  modelNormal = vec4( mix(modelNormal.xyz, vMorphNormal.xyz, 0.0), 1.0); ");
@@ -9063,39 +9090,36 @@ var SceneJS_DrawList = new (function() {
             src.push("worldVertex=" + vertexHooks.worldPos + "(worldVertex);");
         }
 
-        if (lighting) { // Transform normal from model to view space
-            src.push("  vec4 worldNormal = SCENEJS_uMNMatrix * modelNormal; ");
-        }
-
         src.push("  vec4 viewVertex  = SCENEJS_uVMatrix * worldVertex; ");
 
         if (vertexHooks.viewPos) {
             src.push("viewVertex=" + vertexHooks.viewPos + "(viewVertex);");    // Vertex hook function
         }
 
-        if (lighting) {
-            src.push("  SCENEJS_vNormal = normalize(worldNormal.xyz);");
+        if (normals) {
+            src.push("  vec3 worldNormal = normalize((SCENEJS_uMNMatrix * modelNormal).xyz); ");
+            src.push("  SCENEJS_vWorldNormal = worldNormal;");
+            src.push("  SCENEJS_vViewNormal = (SCENEJS_uVNMatrix * vec4(worldNormal, 1.0)).xyz;");
         }
 
-        if (clipping || fragmentHooks.worldPosClip) {
+        if (clipping || fragmentHooks.worldPos) {
             src.push("  SCENEJS_vWorldVertex = worldVertex;");                  // Varying for fragment world clip or hooks
         }
 
-        if (fragmentHooks.viewPosClip || fogging) {
+        if (fragmentHooks.viewPos || fogging) {
             src.push("  SCENEJS_vViewVertex = viewVertex;");                    // Varying for fragment hooks
         }
 
         src.push("  gl_Position = SCENEJS_uPMatrix * viewVertex;");
 
         /*-----------------------------------------------------------------------------------
-         * Logic - Lighting
+         * Logic - normals
          *
          * Transform the world-space lights into view space
          *----------------------------------------------------------------------------------*/
 
         src.push("  vec3 tmpVec3;");
-        if (lighting) {                                                         // Varyings for fragment lighting
-            var light;
+        if (normals) {
             for (var i = 0; i < lightState.lights.length; i++) {
                 light = lightState.lights[i];
                 if (light.mode == "dir") {
@@ -9109,8 +9133,9 @@ var SceneJS_DrawList = new (function() {
 
                 }
             }
-            src.push("SCENEJS_vEyeVec = normalize(SCENEJS_uEye - worldVertex.xyz);");
         }
+
+        src.push("SCENEJS_vEyeVec = normalize(SCENEJS_uEye - worldVertex.xyz);");
 
         if (texturing) {                                                        // varyings for fragment texturing
             if (geoState.geo.uvBuf) {
@@ -9131,7 +9156,7 @@ var SceneJS_DrawList = new (function() {
             SceneJS_loggingModule.info(src);
         }
         return src;
-    }
+    };
 
     /*-----------------------------------------------------------------------------------------------------------------
      * Rendering Fragment shader
@@ -9144,7 +9169,7 @@ var SceneJS_DrawList = new (function() {
         var fragmentHooks = customFragmentShader.hooks || {};
 
         var texturing = this._isTexturing();
-        var lighting = this._isLighting();
+        var normals = this._hasNormals();
         var fogging = fogState.fog && true;
         var clipping = clipState && clipState.clips.length > 0;
         var colortrans = colortransState && colortransState.core;
@@ -9156,11 +9181,11 @@ var SceneJS_DrawList = new (function() {
         src.push("#endif");
 
 
-        if (clipping || fragmentHooks.worldPos || fragmentHooks.worldPosClip) {
+        if (clipping || fragmentHooks.worldPos) {
             src.push("varying vec4 SCENEJS_vWorldVertex;");             // World-space vertex
         }
 
-        if (fragmentHooks.viewPosClip || fogging) {
+        if (fragmentHooks.viewPos || fogging) {
             src.push("varying vec4 SCENEJS_vViewVertex;");              // View-space vertex
         }
 
@@ -9182,7 +9207,6 @@ var SceneJS_DrawList = new (function() {
             if (geoState.geo.uvBuf2) {
                 src.push("varying vec2 SCENEJS_vUVCoord2;");
             }
-
             var layer;
             for (var i = 0, len = texState.core.layers.length; i < len; i++) {
                 layer = texState.core.layers[i];
@@ -9212,21 +9236,20 @@ var SceneJS_DrawList = new (function() {
         src.push("  vec3    ambientValue=SCENEJS_uAmbient;");
         src.push("  float   emit    = SCENEJS_uMaterialEmit;");
 
-        if (lighting) {
-            src.push("varying vec3 SCENEJS_vNormal;");                  // View-space normal
-            src.push("varying vec3 SCENEJS_vEyeVec;");                  // Direction of view-space vertex from eye
+        src.push("varying vec3 SCENEJS_vEyeVec;");                  // Direction of view-space vertex from eye
 
+        if (normals) {
+
+            src.push("varying vec3 SCENEJS_vWorldNormal;");                  // World-space normal
+            src.push("varying vec3 SCENEJS_vViewNormal;");                   // View-space normal
+
+            var light;
             for (var i = 0; i < lightState.lights.length; i++) {
-                var light = lightState.lights[i];
+                light = lightState.lights[i];
                 src.push("uniform vec3  SCENEJS_uLightColor" + i + ";");
                 if (light.mode == "point") {
                     src.push("uniform vec3  SCENEJS_uLightAttenuation" + i + ";");
                 }
-                //                if (light.mode == "spot") {
-                //                   src.push("uniform vec3   SCENEJS_uLightDir" + i + ";");
-                //                    src.push("uniform float  SCENEJS_uLightCutOff" + i + ";");
-                //                    src.push("uniform float  SCENEJS_uLightSpotExp" + i + ";");
-                //                }
                 src.push("varying vec4  SCENEJS_vLightVecAndDist" + i + ";");         // Vector from light to vertex
             }
         }
@@ -9255,20 +9278,45 @@ var SceneJS_DrawList = new (function() {
 
         src.push("void main(void) {");
 
-        if (fragmentHooks.worldPosClip) {
-            src.push("if (" + fragmentHooks.worldPosClip + "(SCENEJS_vWorldVertex) == false) { discard; };");
+        /*-----------------------------------------------------------------------------------
+         * Logic - Clipping
+         *----------------------------------------------------------------------------------*/
+
+        if (clipping) {
+            src.push("  float   dist;");
+            for (var i = 0; i < clipState.clips.length; i++) {
+                src.push("    if (SCENEJS_uClipMode" + i + " != 0.0) {");
+                src.push("        dist = dot(SCENEJS_vWorldVertex.xyz, SCENEJS_uClipNormalAndDist" + i + ".xyz) - SCENEJS_uClipNormalAndDist" + i + ".w;");
+                src.push("        if (SCENEJS_uClipMode" + i + " == 1.0) {");
+                src.push("            if (dist < 0.0) { discard; }");
+                src.push("        }");
+                src.push("        if (SCENEJS_uClipMode" + i + " == 2.0) {");
+                src.push("            if (dist > 0.0) { discard; }");
+                src.push("        }");
+                src.push("    }");
+            }
         }
 
-        if (fragmentHooks.viewPosClip) {
-            src.push("if (!" + fragmentHooks.viewPosClip + "(SCENEJS_vViewVertex) == false) { discard; };");
+        if (fragmentHooks.worldPos) {
+            src.push(fragmentHooks.worldPos + "(SCENEJS_vWorldVertex);");
+        }
+
+        if (fragmentHooks.viewPos) {
+            src.push(fragmentHooks.viewPos + "(SCENEJS_vViewVertex);");
+        }
+
+        if (normals && fragmentHooks.worldNormal) {
+            src.push(fragmentHooks.worldNormal + "(SCENEJS_vWorldNormal);");
+        }
+
+        if (normals && fragmentHooks.viewNormal) {
+            src.push(fragmentHooks.viewNormal + "(SCENEJS_vViewNormal);");
         }
 
         if (geoState.geo.colorBuf) {
             src.push("  vec3    color   = SCENEJS_vColor.rgb;");
-            //                src.push("  float   alpha   = SCENEJS_vColor.a;");
         } else {
-            src.push("  vec3    color   = SCENEJS_uMaterialBaseColor;");
-            //                src.push("  float   alpha   = SCENEJS_uMaterialAlpha;");
+            src.push("  vec3    color   = SCENEJS_uMaterialBaseColor;")
         }
 
         src.push("  float alpha         = SCENEJS_uMaterialAlpha;");
@@ -9295,61 +9343,23 @@ var SceneJS_DrawList = new (function() {
         if (fragmentHooks.materialShine) {
             src.push("shine=" + fragmentHooks.materialShine + "(shine);");
         }
-        //                if (fragmentHooks.worldPos) {
-        //                    src.push("worldVertex=" + hooks.worldPos + "(worldVertex);");
-        //                }
-        //                if (fragmentHooks.normal) {
-        //                    src.push("normalVec=" + hooks.normal + "(normalVec);");
-        //                }
 
-
-        /*-----------------------------------------------------------------------------------
-         * Logic - Clipping
-         *----------------------------------------------------------------------------------*/
-
-        if (clipping) {
-            src.push("  float   dist;");
-            for (var i = 0; i < clipState.clips.length; i++) {
-                src.push("    if (SCENEJS_uClipMode" + i + " != 0.0) {");
-                src.push("        dist = dot(SCENEJS_vWorldVertex.xyz, SCENEJS_uClipNormalAndDist" + i + ".xyz) - SCENEJS_uClipNormalAndDist" + i + ".w;");
-                src.push("        if (SCENEJS_uClipMode" + i + " == 1.0) {");
-                src.push("            if (dist < 0.0) { discard; }");
-                src.push("        }");
-                src.push("        if (SCENEJS_uClipMode" + i + " == 2.0) {");
-                src.push("            if (dist > 0.0) { discard; }");
-                src.push("        }");
-                src.push("    }");
-            }
-        }
-
-        if (lighting) {
-
-
-            // TODO: Cutaway mode should be available for no lighting
-
-            //            src.push("  float dotEyeNorm = dot(SCENEJS_vNormal,SCENEJS_vEyeVec);");
-            //            src.push("  if (dotEyeNorm > 0.3 || dotEyeNorm < -0.3) discard;");
-
-
-            //                src.push("  float   specular=SCENEJS_uMaterialSpecular;");
-            //                src.push("  vec3    specularColor=SCENEJS_uMaterialSpecularColor;");
-            //                src.push("  float   shine=SCENEJS_uMaterialShine;");
+        if (normals) {
             src.push("  float   attenuation = 1.0;");
-
-            src.push("  vec3    normalVec=SCENEJS_vNormal;");
+            src.push("  vec3    normalVec=SCENEJS_vWorldNormal;");
         }
 
+        var layer;
         if (texturing) {
             src.push("  vec4    texturePos;");
             src.push("  vec2    textureCoord=vec2(0.0,0.0);");
 
-            var layer;
             for (var i = 0, len = texState.core.layers.length; i < len; i++) {
                 layer = texState.core.layers[i];
 
                 /* Texture input
                  */
-                if (layer.applyFrom == "normal" && lighting) {
+                if (layer.applyFrom == "normal" && normals) {
                     if (geoState.geo.normalBuf) {
                         src.push("texturePos=vec4(normalVec.xyz, 1.0);");
                     } else {
@@ -9410,7 +9420,7 @@ var SceneJS_DrawList = new (function() {
                     }
                 }
 
-                if (layer.applyTo == "specular" && lighting) {
+                if (layer.applyTo == "specular" && normals) {
                     if (layer.blendMode == "multiply") {
                         src.push("specular  = specular * (SCENEJS_uLayer" + i + "BlendFactor * texture2D(SCENEJS_uSampler" + i + ", vec2(textureCoord.x, 1.0 - textureCoord.y)).r);");
                     } else {
@@ -9418,29 +9428,26 @@ var SceneJS_DrawList = new (function() {
                     }
                 }
 
-                if (layer.applyTo == "normals") {
+                if (layer.applyTo == "normals" && normals) {
                     src.push("vec3 bump = normalize(texture2D(SCENEJS_uSampler" + i + ", textureCoord).xyz * 2.0 - 1.0);");
                     src.push("normalVec *= -bump;");
                 }
             }
         }
 
-        if (lighting) {
+        if (normals) {
+
             src.push("  vec3    lightValue      = SCENEJS_uAmbient;");
             src.push("  vec3    specularValue   = vec3(0.0, 0.0, 0.0);");
-
             src.push("  vec3    lightVec;");
             src.push("  float   dotN;");
-            src.push("  float   spotFactor;");
-            src.push("  float   pf;");
             src.push("  float   lightDist;");
 
+            var light;
             for (var i = 0; i < lightState.lights.length; i++) {
-                var light = lightState.lights[i];
+                light = lightState.lights[i];
                 src.push("lightVec = SCENEJS_vLightVecAndDist" + i + ".xyz;");
 
-                /* Point Light
-                 */
                 if (light.mode == "point") {
 
                     src.push("lightDist = SCENEJS_vLightVecAndDist" + i + ".w;");
@@ -9461,57 +9468,21 @@ var SceneJS_DrawList = new (function() {
                     src.push("}");
                 }
 
-                /* Directional Light
-                 */
                 if (light.mode == "dir") {
-
                     src.push("dotN = max(dot(normalVec,lightVec),0.0);");
-
                     if (light.diffuse) {
                         src.push("lightValue += dotN * SCENEJS_uLightColor" + i + ";");
                     }
                     if (light.specular) {
                         src.push("specularValue += specularColor * SCENEJS_uLightColor" + i +
-                                 " * specular  * pow(max(dot(reflect(lightVec, normalVec),normalize(SCENEJS_vEyeVec)),0.0), shine);");
+                                 " * specular  * pow(max(dot(reflect(lightVec, normalVec),SCENEJS_vEyeVec),0.0), shine);");
                     }
-                }
-
-                /* Spot light
-                 */
-                if (light.mode == "spot") {
-
-                    //                    src.push("lightDist = SCENEJS_vLightVecAndDist" + i + ".w;");
-                    //
-                    //                    src.push("spotFactor = max(dot(normalize(SCENEJS_uLightDir" + i + "), lightVec));");
-                    //                    src.push("if ( spotFactor > 20) {");
-                    //                    src.push("  spotFactor = pow(spotFactor, SCENEJS_uLightSpotExp" + i + ");");
-                    //                    src.push("  dotN = max(dot(normalVec,lightVec),0.0);");
-                    //                    src.push("      if(dotN>0.0){");
-
-                    //                            src.push("          attenuation = spotFactor / (" +
-                    //                                     "SCENEJS_uLightAttenuation" + i + "[0] + " +
-                    //                                     "SCENEJS_uLightAttenuation" + i + "[1] * vLightDist" + i + " + " +
-                    //                                     "SCENEJS_uLightAttenuation" + i + "[2] * vLightDist" + i + " * vLightDist" + i + ");");
-                    src.push("          attenuation = 1;");
-
-                    if (light.diffuse) {
-                        src.push("lightValue +=  dotN * SCENEJS_uLightColor" + i + " * attenuation;");
-                    }
-                    if (light.specular) {
-                        src.push("specularValue += attenuation * specularColor * SCENEJS_uLightColor" + i +
-                                 " * specular  * pow(max(dot(reflect(lightVec, normalVec),normalize(SCENEJS_vEyeVec)),0.0), shine);");
-                    }
-
-                    src.push("      }");
-                    src.push("}");
                 }
             }
 
             src.push("vec4 fragColor = vec4((specularValue.rgb + color.rgb * lightValue.rgb) + (emit * color.rgb), alpha);");
-        } else {
 
-            /* No lighting
-             */
+        } else { // No normals
             src.push("vec4 fragColor = vec4(emit * color.rgb, alpha);");
         }
 
@@ -9927,6 +9898,7 @@ var SceneJS_NodeRenderer = function(cfg) {
 
         if (node.viewXFormState._stateId != this._lastViewXFormStateId) {
             program.setUniform("SCENEJS_uVMatrix", node.viewXFormState.mat);
+            program.setUniform("SCENEJS_uVNMatrix", node.viewXFormState.normalMat);
             program.setUniform("SCENEJS_uEye", node.viewXFormState.lookAt.eye);
             this._lastViewXFormStateId = node.viewXFormState._stateId;
         }
@@ -10119,17 +10091,6 @@ var SceneJS_NodeRenderer = function(cfg) {
          *--------------------------------------------------------------------------------------------------------*/
 
         if (this._picking) {
-//            if (! this._lastPickListenersState || node.pickListenersState._stateId != this._lastPickListenersState._stateId) {
-//                if (node.pickListenersState.listeners.length > 0) {
-//                    this.pickListeners[this._pickIndex++] = node.pickListenersState;
-//                    var b = this._pickIndex >> 16 & 0xFF;
-//                    var g = this._pickIndex >> 8 & 0xFF;
-//                    var r = this._pickIndex & 0xFF;
-//                    program.setUniform("SCENEJS_uPickColor", [r / 255,g / 255,b / 255]);
-//                }
-//                this._lastPickListenersState = node.pickListenersState;
-//            }
-
             if (! this._lastNameState || node.nameState._stateId != this._lastNameState._stateId) {
                 if (node.nameState.name) {
                     this.pickNames[this._pickIndex++] = node.nameState.name;
