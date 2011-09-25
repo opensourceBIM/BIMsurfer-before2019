@@ -4,22 +4,26 @@
 topmenuPerformanceQuality = (event) ->
   ($ event.target).addClass 'top-menu-activated'
   ($ '#top-menu-performance-performance').removeClass 'top-menu-activated'
-  ($ '#viewport').attr position, 'absolute'
+  ($ '#viewport').removeClass 'viewport-performance'
   state.settings.performance = 'quality'
+  windowResize()
 
 topmenuPerformancePerformance = (event) ->
   ($ event.target).addClass 'top-menu-activated'
   ($ '#top-menu-performance-quality').removeClass 'top-menu-activated'
-  ($ '#viewport').attr position, 'relative'
+  ($ '#viewport').addClass 'viewport-performance'
   state.settings.performance = 'performance'
+  windowResize()
 
 topmenuModeBasic = (event) ->
   ($ event.target).addClass 'top-menu-activated'
   ($ '#top-menu-mode-advanced').removeClass 'top-menu-activated'
+  state.settings.mode = 'basic'
 
 topmenuModeAdvanced = (event) ->
   ($ event.target).addClass 'top-menu-activated'
   ($ '#top-menu-mode-basic').removeClass 'top-menu-activated'
+  state.settings.mode = 'performance'
 
 topmenuHelp = (event) ->
   ($ event.target).toggleClass 'top-menu-activated'

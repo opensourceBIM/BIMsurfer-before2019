@@ -9,6 +9,8 @@ constants =
     maxOrbitSpeed: Math.PI * 0.1
     orbitSpeedFactor: 0.01
     zoomSpeedFactor: 0.05
+  canvas:
+    defaultSize: [1024,512]
   thumbnails:
     size: [125, 100] 
     scale: 2 # Scale up the thumbnails for exporting to PDF and smoothing it in the img tag (See issue #18)
