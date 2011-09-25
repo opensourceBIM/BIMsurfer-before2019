@@ -2,9 +2,18 @@
 # Program state should not be manipulated outside events files
 
 snapshotsPush = () ->
-  node = state.scene.findNode 'main-lookAt'
-  thumbSize = constants.thumbnails.size
+  #############
+  # Hack to fix issue #19
+  # TODO: Replace with more elegant solution
+  # See discussion at https://groups.google.com/forum/?pli=1#!topic/scenejs/YjZy3Dd5mbA
+  if $.browser.webkit
+    orbitLookAtNode (state.scene.findNode 'main-lookAt'), [0.0,0.0], [0.0,0.0,1.0]
+    window.__scenejs_sceneLoopScene()
+  #############
+
+  thumbSize = constants.thumbnails.size  
   imgURI = canvasCaptureThumbnail state.canvas, 512 * thumbSize[0] / thumbSize[1], 512, constants.thumbnails.scale * thumbSize[0], constants.thumbnails.scale * thumbSize[1]
+  node = state.scene.findNode 'main-lookAt'
   state.snapshots.lookAts.push
     eye: node.get 'eye'
     look: node.get 'look'
