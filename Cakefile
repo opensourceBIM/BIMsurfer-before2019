@@ -17,13 +17,13 @@ appFiles  = [
   'math'
   'state'
   'mouse'
-  'events.init'
-  'events.mouse'
   'events.window'
+  'events.mouse'
   'events.topmenu'
   'events.controls'
   'events.snapshots'
   'events.register'
+  'events.init'
 ]
 
 task 'build', "Build single application file from source files", ->

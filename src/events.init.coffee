@@ -1,6 +1,9 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+canvasInit = () ->
+  windowResize()
+
 sceneInit = () ->
   # Set the correct aspect ratio
   modifySubAttr (state.scene.findNode 'main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height
@@ -49,6 +52,7 @@ ifcTreeInit = () ->
   ($ '#controls-relationships').html treeHtml
 
 # Start rendering as soon as possible
+canvasInit()
 sceneInit()
 state.scene.start
   idleFunc: SceneJS.FX.idle

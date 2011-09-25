@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -268,6 +268,9 @@
       orbitSpeedFactor: 0.01,
       zoomSpeedFactor: 0.05
     },
+    canvas: {
+      defaultSize: [1024, 512]
+    },
     thumbnails: {
       size: [125, 100],
       scale: 2
@@ -328,73 +331,16 @@
     }
     return coords;
   };
-  sceneInit = function() {
-    var sceneDiameter;
-    modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
-    sceneDiameter = SceneJS_math_lenVec3(state.scene.data().bounds);
-    return state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0];
-  };
-  controlsInit = function() {
-    var ifcType, layersHtml, sceneData;
-    sceneData = state.scene.data();
-    layersHtml = (function() {
-      var _i, _len, _ref, _results;
-      _ref = sceneData.ifcTypes;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        ifcType = _ref[_i];
-        _results.push("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox' checked='checked'> " + ifcType + "</div>");
-      }
-      return _results;
-    })();
-    ($('#controls-layers')).html(layersHtml.join(''));
-    ($('#controls-accordion')).accordion({
-      header: 'h3'
-    });
-    return ($('#main-view-controls')).removeAttr('style');
-  };
-  ifcTreeInit = function() {
-    var ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
-    sceneData = state.scene.data();
-    ifcObjectDescription = function(obj, indent) {
-      return "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + "<input type='checkbox' checked='checked'> " + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, indent)) + "</li>";
-    };
-    ifcRelationships = function(rel, indent) {
-      var html, obj, _i, _len;
-      if ((rel != null) && rel.length > 0) {
-        indent = Math.min(indent + 1, 4);
-        html = "<ul class='controls-tree'>";
-        for (_i = 0, _len = rel.length; _i < _len; _i++) {
-          obj = rel[_i];
-          html += ifcObjectDescription(obj, indent);
-        }
-        return html += "</ul>";
-      } else {
-        return "";
-      }
-    };
-    ifcProject = function(obj) {
-      return "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, 0)) + "</li>";
-    };
-    treeHtml = "<ul class='controls-tree'>";
-    _ref = sceneData.relationships;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      project = _ref[_i];
-      treeHtml += ifcProject(project);
+  windowResize = function() {
+    switch (state.settings.performance) {
+      case 'performance':
+        state.canvas.width = constants.canvas.defaultSize[0];
+        return state.canvas.height = constants.canvas.defaultSize[1];
+      case 'quality':
+        state.canvas.width = ($('#viewport')).width();
+        return state.canvas.height = ($('#viewport')).height();
     }
-    treeHtml += "</ul>";
-    return ($('#controls-relationships')).html(treeHtml);
   };
-  sceneInit();
-  state.scene.start({
-    idleFunc: SceneJS.FX.idle
-  });
-  $(function() {
-    controlsInit();
-    registerDOMEvents();
-    registerControlEvents();
-    return ifcTreeInit();
-  });
   mouseDown = function(event) {
     state.viewport.mouse.last = [event.clientX, event.clientY];
     switch (event.which) {
@@ -439,29 +385,29 @@
     zoomDistance = event.wheelDelta / -120.0 * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
     return zoomLookAtNode(state.scene.findNode('main-lookAt'), zoomDistance, state.camera.distanceLimits);
   };
-  windowResize = function() {
-    state.canvas.width = ($('#viewport')).width();
-    return state.canvas.height = ($('#viewport')).height();
-  };
   topmenuPerformanceQuality = function(event) {
     ($(event.target)).addClass('top-menu-activated');
     ($('#top-menu-performance-performance')).removeClass('top-menu-activated');
-    ($('#viewport')).attr(position, 'absolute');
-    return state.settings.performance = 'quality';
+    ($('#viewport')).removeClass('viewport-performance');
+    state.settings.performance = 'quality';
+    return windowResize();
   };
   topmenuPerformancePerformance = function(event) {
     ($(event.target)).addClass('top-menu-activated');
-    ($('#top-menu-performance-performance')).removeClass('top-menu-activated');
-    ($('#viewport')).attr(position, 'relative');
-    return state.settings.performance = 'performance';
+    ($('#top-menu-performance-quality')).removeClass('top-menu-activated');
+    ($('#viewport')).addClass('viewport-performance');
+    state.settings.performance = 'performance';
+    return windowResize();
   };
   topmenuModeBasic = function(event) {
     ($(event.target)).addClass('top-menu-activated');
-    return ($('#top-menu-mode-advanced')).removeClass('top-menu-activated');
+    ($('#top-menu-mode-advanced')).removeClass('top-menu-activated');
+    return state.settings.mode = 'basic';
   };
   topmenuModeAdvanced = function(event) {
     ($(event.target)).addClass('top-menu-activated');
-    return ($('#top-menu-mode-basic')).removeClass('top-menu-activated');
+    ($('#top-menu-mode-basic')).removeClass('top-menu-activated');
+    return state.settings.mode = 'performance';
   };
   topmenuHelp = function(event) {
     ($(event.target)).toggleClass('top-menu-activated');
@@ -531,4 +477,75 @@
     ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
     return ($('#snapshots-play')).click(snapshotsPlay);
   };
+  canvasInit = function() {
+    return windowResize();
+  };
+  sceneInit = function() {
+    var sceneDiameter;
+    modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
+    sceneDiameter = SceneJS_math_lenVec3(state.scene.data().bounds);
+    return state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0];
+  };
+  controlsInit = function() {
+    var ifcType, layersHtml, sceneData;
+    sceneData = state.scene.data();
+    layersHtml = (function() {
+      var _i, _len, _ref, _results;
+      _ref = sceneData.ifcTypes;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        ifcType = _ref[_i];
+        _results.push("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox' checked='checked'> " + ifcType + "</div>");
+      }
+      return _results;
+    })();
+    ($('#controls-layers')).html(layersHtml.join(''));
+    ($('#controls-accordion')).accordion({
+      header: 'h3'
+    });
+    return ($('#main-view-controls')).removeAttr('style');
+  };
+  ifcTreeInit = function() {
+    var ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
+    sceneData = state.scene.data();
+    ifcObjectDescription = function(obj, indent) {
+      return "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + "<input type='checkbox' checked='checked'> " + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, indent)) + "</li>";
+    };
+    ifcRelationships = function(rel, indent) {
+      var html, obj, _i, _len;
+      if ((rel != null) && rel.length > 0) {
+        indent = Math.min(indent + 1, 4);
+        html = "<ul class='controls-tree'>";
+        for (_i = 0, _len = rel.length; _i < _len; _i++) {
+          obj = rel[_i];
+          html += ifcObjectDescription(obj, indent);
+        }
+        return html += "</ul>";
+      } else {
+        return "";
+      }
+    };
+    ifcProject = function(obj) {
+      return "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, 0)) + "</li>";
+    };
+    treeHtml = "<ul class='controls-tree'>";
+    _ref = sceneData.relationships;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      project = _ref[_i];
+      treeHtml += ifcProject(project);
+    }
+    treeHtml += "</ul>";
+    return ($('#controls-relationships')).html(treeHtml);
+  };
+  canvasInit();
+  sceneInit();
+  state.scene.start({
+    idleFunc: SceneJS.FX.idle
+  });
+  $(function() {
+    controlsInit();
+    registerDOMEvents();
+    registerControlEvents();
+    return ifcTreeInit();
+  });
 }).call(this);
