@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, vec3ToRecord, vec4ToRecord, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, constants, controlsInit, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -289,6 +289,10 @@
   state = {
     scene: SceneJS.scene('Scene'),
     canvas: document.getElementById('scenejsCanvas'),
+    settings: {
+      performance: 'quality',
+      mode: 'basic'
+    },
     viewport: {
       domElement: document.getElementById('viewport'),
       selectedIfcObject: null,
@@ -373,13 +377,13 @@
       return "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, 0)) + "</li>";
     };
     treeHtml = "<ul class='controls-tree'>";
-    _ref = sceneData.composition;
+    _ref = sceneData.relationships;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       project = _ref[_i];
       treeHtml += ifcProject(project);
     }
     treeHtml += "</ul>";
-    return ($('#controls-decomposition')).html(treeHtml);
+    return ($('#controls-relationships')).html(treeHtml);
   };
   sceneInit();
   state.scene.start({
@@ -435,6 +439,30 @@
     zoomDistance = event.wheelDelta / -120.0 * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
     return zoomLookAtNode(state.scene.findNode('main-lookAt'), zoomDistance, state.camera.distanceLimits);
   };
+  windowResize = function() {
+    state.canvas.width = ($('#viewport')).width();
+    return state.canvas.height = ($('#viewport')).height();
+  };
+  topmenuPerformanceQuality = function(event) {
+    ($(event.target)).addClass('top-menu-activated');
+    ($('#top-menu-performance-performance')).removeClass('top-menu-activated');
+    ($('#viewport')).attr(position, 'absolute');
+    return state.settings.performance = 'quality';
+  };
+  topmenuPerformancePerformance = function(event) {
+    ($(event.target)).addClass('top-menu-activated');
+    ($('#top-menu-performance-performance')).removeClass('top-menu-activated');
+    ($('#viewport')).attr(position, 'relative');
+    return state.settings.performance = 'performance';
+  };
+  topmenuModeBasic = function(event) {
+    ($(event.target)).addClass('top-menu-activated');
+    return ($('#top-menu-mode-advanced')).removeClass('top-menu-activated');
+  };
+  topmenuModeAdvanced = function(event) {
+    ($(event.target)).addClass('top-menu-activated');
+    return ($('#top-menu-mode-basic')).removeClass('top-menu-activated');
+  };
   topmenuHelp = function(event) {
     ($(event.target)).toggleClass('top-menu-activated');
     ($('#main-view-help')).toggle();
@@ -487,9 +515,14 @@
     state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
     state.viewport.domElement.addEventListener('mousemove', mouseMove, true);
     state.viewport.domElement.addEventListener('mousewheel', mouseWheel, true);
-    return state.viewport.domElement.addEventListener('DOMMouseScroll', mouseWheel, true);
+    state.viewport.domElement.addEventListener('DOMMouseScroll', mouseWheel, true);
+    return window.addEventListener('resize', windowResize, true);
   };
   registerControlEvents = function() {
+    ($('#top-menu-performance-quality')).click(topmenuPerformanceQuality);
+    ($('#top-menu-performance-performance')).click(topmenuPerformancePerformance);
+    ($('#top-menu-mode-basic')).click(topmenuModeBasic);
+    ($('#top-menu-mode-advanced')).click(topmenuModeAdvanced);
     ($('#top-menu-help')).click(topmenuHelp);
     ($('#controls-decomposition')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
     ($('#controls-layers input')).change(controlsToggleLayer);

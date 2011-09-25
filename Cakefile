@@ -19,6 +19,7 @@ appFiles  = [
   'mouse'
   'events.init'
   'events.mouse'
+  'events.window'
   'events.topmenu'
   'events.controls'
   'events.snapshots'

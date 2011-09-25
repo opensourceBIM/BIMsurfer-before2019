@@ -14,9 +14,14 @@ registerDOMEvents = () ->
   state.viewport.domElement.addEventListener 'mousemove', mouseMove, true
   state.viewport.domElement.addEventListener 'mousewheel', mouseWheel, true
   state.viewport.domElement.addEventListener 'DOMMouseScroll', mouseWheel, true
+  window.addEventListener 'resize', windowResize, true
 
 # Register UI controls events
 registerControlEvents = () ->
+  ($ '#top-menu-performance-quality').click topmenuPerformanceQuality
+  ($ '#top-menu-performance-performance').click topmenuPerformancePerformance
+  ($ '#top-menu-mode-basic').click topmenuModeBasic
+  ($ '#top-menu-mode-advanced').click topmenuModeAdvanced
   ($ '#top-menu-help').click topmenuHelp
 
   ($ '#controls-decomposition').delegate '.controls-tree-item', 'click', controlsToggleTreeOpen

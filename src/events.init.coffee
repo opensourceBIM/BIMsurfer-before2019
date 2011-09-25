@@ -43,10 +43,10 @@ ifcTreeInit = () ->
     "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, 0) + "</li>"
 
   treeHtml = "<ul class='controls-tree'>"
-  for project in sceneData.composition
+  for project in sceneData.relationships
     treeHtml += ifcProject project
   treeHtml += "</ul>"
-  ($ '#controls-decomposition').html treeHtml
+  ($ '#controls-relationships').html treeHtml
 
 # Start rendering as soon as possible
 sceneInit()

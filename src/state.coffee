@@ -4,6 +4,9 @@
 state =
   scene: SceneJS.scene 'Scene'
   canvas: document.getElementById 'scenejsCanvas'
+  settings:
+    performance: 'quality'
+    mode: 'basic'
   viewport: 
     domElement: document.getElementById 'viewport'
     selectedIfcObject: null

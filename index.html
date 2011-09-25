@@ -262,6 +262,7 @@
 	    box-flex: 1;
     }
     #main-menu {
+      position: absolute;
       z-index: 1;
       border-bottom: 1px solid #e2e2e2;
       height: 120px;
@@ -298,6 +299,9 @@
     }
     #main-view {
       position: relative;
+      display: -webkit-box;
+      display: -moz-box;
+      display: box;
     	-webkit-box-flex: 1;
     	-moz-box-flex: 1;
     	box-flex: 1;
@@ -307,6 +311,8 @@
       background: -webkit-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* Chrome10+,Safari5.1+ */
     }
     #viewport {
+      position: absolute;
+      top: 0;
       width: 100%;
       height: 100%;
     }
@@ -325,7 +331,7 @@
       padding: 0;
       font-size: 12px;
     }
-    #controls-decomposition {
+    #controls-relationships {
       min-height: 200px;
     }
     .controls-tree {
@@ -520,37 +526,37 @@
     <menu id='top-menu' class='horizontal-list' type='toolbar'>
       <li style='float: left;'><a href='#'>&lt; BiMserver</a></li>
       <li>
-        <a href='#'>View</a>
+        <a href='#'>Display</a>
         <menu class='top-menu-dropdown vertical-list'><div class='top-menu-float'>
           <h4>Palette</h4>
-          <li><a href='#'>Winter Colors</a></li>
-          <li><a href='#'>Autumn Colors</a></li>
-          <li><a href='#'>Spring Colors</a></li>
-          <li><a href='#'>Summer Colors</a></li>
+          <li><a href='#' id='top-menu-palette-winter'>Winter Colors</a></li>
+          <li><a href='#' id='top-menu-palette-autumn'>Autumn Colors</a></li>
+          <li><a href='#' id='top-menu-palette-spring'>Spring Colors</a></li>
+          <li><a href='#' id='top-menu-palette-summer'>Summer Colors</a></li>
         </div></menu>
       </li>
       <li>
         <a href='#'>Settings</a>
         <menu class='top-menu-dropdown vertical-list'><div class='top-menu-float'>
           <h4>Performance</h4>
-          <li><a href='#'>High Quality</a></li>
-          <li><a href='#'>High Performance</a></li>
+          <li><a href='#' id='top-menu-performance-quality' class='top-menu-activated'>High Quality</a></li>
+          <li><a href='#' id='top-menu-performance-performance'>High Performance</a></li>
           <hr>
           <h4>Mode</h4>
-          <li><a href='#'>Basic Mode</a></li>
-          <li><a href='#'>Advanced Mode</a></li>
+          <li><a href='#' id='top-menu-mode-basic' class='top-menu-activated'>Basic Mode</a></li>
+          <li><a href='#' id='top-menu-mode-advanced'>Advanced Mode</a></li>
         </div></menu>
       </li>
       <li>
         <a href='#'>Share</a>
         <menu class='top-menu-dropdown vertical-list'><div class='top-menu-float'>
-          <li><a href='#'>Facebook</a></li>
-          <li><a href='#'>Twitter</a></li>
-          <li><a href='#'>Google+</a></li>
-          <li><a href='#'>Email</a></li>
+          <li><a href='#' id='top-menu-share-facebook'>Facebook</a></li>
+          <li><a href='#' id='top-menu-share-twitter'>Twitter</a></li>
+          <li><a href='#' id='top-menu-share-gplus'>Google+</a></li>
+          <li><a href='#' id='top-menu-share-email'>Email</a></li>
         </div></menu>
       </li>
-      <li><a href='#'>About</a></li>
+      <li><a href='#' id='top-menu-about'>About</a></li>
       <li><a href='#' id='top-menu-help' class='top-menu-activated'>Help</a></li>
   	</menu>
     <div class='main-layout-row'>
@@ -592,7 +598,7 @@
           <div id='controls-accordion'>
             <h3><a href='#'>Objects</a></h3>
             <div id='controls-accordion-objects'>
-              <form id='controls-decomposition'></form>
+              <form id='controls-relationships'></form>
             </div>
             <h3><a href='#'>Properties</a></h3>
             <div></div>
