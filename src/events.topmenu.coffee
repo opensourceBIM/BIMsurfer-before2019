@@ -9,7 +9,7 @@ topmenuPerformanceQuality = (event) ->
 
 topmenuPerformancePerformance = (event) ->
   ($ event.target).addClass 'top-menu-activated'
-  ($ '#top-menu-performance-performance').removeClass 'top-menu-activated'
+  ($ '#top-menu-performance-quality').removeClass 'top-menu-activated'
   ($ '#viewport').attr position, 'relative'
   state.settings.performance = 'performance'
 
