@@ -2690,66 +2690,42 @@ SceneJS.createScene({
   data: {
     bounds: [24.357634,40.257915,11.8498335],
     unit: '1.0 meter',
-    composition: [
+    ifcTypes: ['WallStandardCase','Wall','Door','Slab','BuildingElementProxy','Stair','Railing','Window','Roof','Column',],
+    relationships: [
       {
-        type: 'project',
+        type: 'Project',
         name: 'null',
-        attributes: {
-          'Description': 'Ifc2xImport #0',
-          'Representation Contexts': [
-            'TestGeometricContext',
-          ],
-          'Global Id': '0QVyVy5q1DkuuE0mOmWq$G',
-          'Phase': 'null',
-        },
+        id: '73',
         rel: [
           {
-            type: 'IfcSiteImpl',
+            type: 'null',
             name: 'Vogel_Gesamtansicht',
-            attributes: {
-              'Description': 'Ifc2xImport #0',
-              'Global Id': '056Xd5cPH0kh4D3$kTusW$',
-            },
+            id: '056Xd5cPH0kh4D3$kTusW$',
             rel: [
               {
-                type: 'IfcBuildingImpl',
+                type: 'null',
                 name: 'Vogel_Einzelhaus',
-                attributes: {
-                  'Description': 'Ifc2xImport #0',
-                  'Global Id': '0h394Xxs53rxZNxD94Tuti',
-                },
+                id: '0h394Xxs53rxZNxD94Tuti',
                 rel: [
                   {
-                    type: 'IfcBuildingStoreyImpl',
-                    name: 'Vogel_OG',
-                    attributes: {
-                      'Description': 'Ifc2xImport #0',
-                      'Global Id': '3CwjzCurn2$9YNKKRCyonw',
-                    },
-                  },
-                  {
-                    type: 'IfcBuildingStoreyImpl',
-                    name: 'Vogel_DG',
-                    attributes: {
-                      'Description': 'Ifc2xImport #0',
-                      'Global Id': '3PFG_wF$L23xarU_yjta9z',
-                    },
-                  },
-                  {
-                    type: 'IfcBuildingStoreyImpl',
-                    name: 'Vogel_UG',
-                    attributes: {
-                      'Description': 'Ifc2xImport #0',
-                      'Global Id': '3ExmyYZYn8wxd5S5z1MN_k',
-                    },
-                  },
-                  {
-                    type: 'IfcBuildingStoreyImpl',
+                    type: 'null',
                     name: 'Vogel_EG',
-                    attributes: {
-                      'Description': 'Ifc2xImport #0',
-                      'Global Id': '0VUC74PTz8Q97DXAnT6Ytv',
-                    },
+                    id: '0VUC74PTz8Q97DXAnT6Ytv',
+                  },
+                  {
+                    type: 'null',
+                    name: 'Vogel_OG',
+                    id: '3CwjzCurn2$9YNKKRCyonw',
+                  },
+                  {
+                    type: 'null',
+                    name: 'Vogel_DG',
+                    id: '3PFG_wF$L23xarU_yjta9z',
+                  },
+                  {
+                    type: 'null',
+                    name: 'Vogel_UG',
+                    id: '3ExmyYZYn8wxd5S5z1MN_k',
                   },
                 ],
               },
@@ -2758,6 +2734,505 @@ SceneJS.createScene({
         ],
       },
     ],
-    ifcTypes: ['WallStandardCase','Wall','Door','Slab','BuildingElementProxy','Stair','Railing','Window','Roof','Column',]
+    properties: {
+      '79': {
+        'Description': 'Ifc2xImport #0',
+      },
+      '102': {
+        'Description': '',
+      },
+      '121': {
+        'Description': 'null',
+      },
+      '224': {
+        'Description': '',
+      },
+      '381': {
+        'Description': 'null',
+      },
+      '353': {
+        'Description': '',
+      },
+      '360': {
+        'Description': '',
+      },
+      '406': {
+        'Description': 'Ifc2xImport #0',
+      },
+      '438': {
+        'Description': '',
+      },
+      '430': {
+        'Description': 'Ifc2xImport #0',
+      },
+      '423': {
+        'Description': '',
+      },
+      '567': {
+        'Description': '',
+      },
+      '531': {
+        'Description': '',
+      },
+      '630': {
+        'Description': '',
+      },
+      '662': {
+        'Description': '',
+      },
+      '746': {
+        'Description': '',
+      },
+      '716': {
+        'Description': '',
+      },
+      '808': {
+        'Description': '',
+      },
+      '895': {
+        'Description': '',
+      },
+      '865': {
+        'Description': '',
+      },
+      '1015': {
+        'Description': '',
+      },
+      '995': {
+        'Description': '',
+      },
+      '964': {
+        'Description': '',
+      },
+      '1149': {
+        'Description': '',
+      },
+      '1051': {
+        'Description': '',
+      },
+      '1265': {
+        'Description': '',
+      },
+      '1191': {
+        'Description': '',
+      },
+      '1343': {
+        'Description': '',
+      },
+      '1325': {
+        'Description': '',
+      },
+      '1448': {
+        'Description': '',
+      },
+      '1871': {
+        'Description': '',
+      },
+      '1852': {
+        'Description': '',
+      },
+      '1798': {
+        'Description': '',
+      },
+      '1984': {
+        'Description': '',
+      },
+      '1970': {
+        'Description': '',
+      },
+      '2205': {
+        'Description': '',
+      },
+      '2084': {
+        'Description': '',
+      },
+      '2159': {
+        'Description': '',
+      },
+      '2968': {
+        'Description': '',
+      },
+      '2870': {
+        'Description': '',
+      },
+      '3703': {
+        'Description': '',
+      },
+      '3661': {
+        'Description': '',
+      },
+      '4452': {
+        'Description': '',
+      },
+      '4543': {
+        'Description': '',
+      },
+      '4590': {
+        'Description': '',
+      },
+      '4185': {
+        'Description': '',
+      },
+      '4265': {
+        'Description': '',
+      },
+      '4256': {
+        'Description': '',
+      },
+      '4867': {
+        'Description': '',
+      },
+      '5061': {
+        'Description': '',
+      },
+      '5098': {
+        'Description': '',
+      },
+      '4635': {
+        'Description': '',
+      },
+      '4675': {
+        'Description': '',
+      },
+      '4802': {
+        'Description': '',
+      },
+      '4827': {
+        'Description': '',
+      },
+      '5492': {
+        'Description': '',
+      },
+      '5483': {
+        'Description': '',
+      },
+      '5449': {
+        'Description': '',
+      },
+      '5415': {
+        'Description': '',
+      },
+      '5557': {
+        'Description': '',
+      },
+      '5997': {
+        'Description': '',
+      },
+      '5988': {
+        'Description': '',
+      },
+      '5910': {
+        'Description': '',
+      },
+      '5899': {
+        'Description': 'Ifc2xImport #0',
+      },
+      '5935': {
+        'Description': '',
+      },
+      '6104': {
+        'Description': '',
+      },
+      '6134': {
+        'Description': '',
+      },
+      '6045': {
+        'Description': '',
+      },
+      '5741': {
+        'Description': '',
+      },
+      '5644': {
+        'Description': '',
+      },
+      '5843': {
+        'Description': '',
+      },
+      '5881': {
+        'Description': '',
+      },
+      '5789': {
+        'Description': '',
+      },
+      '5819': {
+        'Description': '',
+      },
+      '6570': {
+        'Description': '',
+      },
+      '6639': {
+        'Description': '',
+      },
+      '6610': {
+        'Description': '',
+      },
+      '6449': {
+        'Description': '',
+      },
+      '6422': {
+        'Description': '',
+      },
+      '6507': {
+        'Description': '',
+      },
+      '6475': {
+        'Description': '',
+      },
+      '6282': {
+        'Description': '',
+      },
+      '6162': {
+        'Description': '',
+      },
+      '6268': {
+        'Description': '',
+      },
+      '7098': {
+        'Description': '',
+      },
+      '7153': {
+        'Description': '',
+      },
+      '7027': {
+        'Description': '',
+      },
+      '6792': {
+        'Description': '',
+      },
+      '7507': {
+        'Description': '',
+      },
+      '7469': {
+        'Description': '',
+      },
+      '7763': {
+        'Description': '',
+      },
+      '7741': {
+        'Description': '',
+      },
+      '8197': {
+        'Description': '',
+      },
+      '8408': {
+        'Description': '',
+      },
+      '8662': {
+        'Description': '',
+      },
+      '8679': {
+        'Description': '',
+      },
+      '9854': {
+        'Description': '',
+      },
+      '9872': {
+        'Description': '',
+      },
+      '10103': {
+        'Description': '',
+      },
+      '10178': {
+        'Description': '',
+      },
+      '10191': {
+        'Description': '',
+      },
+      '9219': {
+        'Description': '',
+      },
+      '9257': {
+        'Description': '',
+      },
+      '9327': {
+        'Description': '',
+      },
+      '9317': {
+        'Description': '',
+      },
+      '9365': {
+        'Description': '',
+      },
+      '9434': {
+        'Description': 'Ifc2xImport #0',
+      },
+      '9433': {
+        'Description': '',
+      },
+      '9494': {
+        'Description': '',
+      },
+      '9539': {
+        'Description': '',
+      },
+      '9597': {
+        'Description': '',
+      },
+      '9681': {
+        'Description': '',
+      },
+      '10995': {
+        'Description': '',
+      },
+      '10944': {
+        'Description': '',
+      },
+      '10894': {
+        'Description': '',
+      },
+      '10882': {
+        'Description': '',
+      },
+      '10837': {
+        'Description': '',
+      },
+      '11182': {
+        'Description': '',
+      },
+      '11166': {
+        'Description': '',
+      },
+      '11110': {
+        'Description': '',
+      },
+      '11075': {
+        'Description': '',
+      },
+      '10457': {
+        'Description': '',
+      },
+      '10481': {
+        'Description': '',
+      },
+      '10247': {
+        'Description': '',
+      },
+      '10706': {
+        'Description': '',
+      },
+      '10727': {
+        'Description': '',
+      },
+      '10665': {
+        'Description': '',
+      },
+      '10499': {
+        'Description': '',
+      },
+      '10550': {
+        'Description': '',
+      },
+      '12270': {
+        'Description': '',
+      },
+      '11353': {
+        'Description': '',
+      },
+      '13249': {
+        'Description': '',
+      },
+      '13237': {
+        'Description': '',
+      },
+      '15324': {
+        'Description': '',
+      },
+      '14841': {
+        'Description': '',
+      },
+      '14752': {
+        'Description': '',
+      },
+      '16366': {
+        'Description': '',
+      },
+      '16027': {
+        'Description': '',
+      },
+      '16044': {
+        'Description': '',
+      },
+      '15894': {
+        'Description': '',
+      },
+      '15925': {
+        'Description': '',
+      },
+      '15962': {
+        'Description': 'Ifc2xImport #0',
+      },
+      '15999': {
+        'Description': '',
+      },
+      '15803': {
+        'Description': '',
+      },
+      '15773': {
+        'Description': '',
+      },
+      '15830': {
+        'Description': '',
+      },
+      '15737': {
+        'Description': '',
+      },
+      '15688': {
+        'Description': '',
+      },
+      '15708': {
+        'Description': '',
+      },
+      '15549': {
+        'Description': '',
+      },
+      '15519': {
+        'Description': '',
+      },
+      '15612': {
+        'Description': '',
+      },
+      '15584': {
+        'Description': '',
+      },
+      '15483': {
+        'Description': '',
+      },
+      '15455': {
+        'Description': '',
+      },
+      '16548': {
+        'Description': '',
+      },
+      '16418': {
+        'Description': '',
+      },
+      '16429': {
+        'Description': '',
+      },
+      '16508': {
+        'Description': '',
+      },
+      '16788': {
+        'Description': '',
+      },
+      '16844': {
+        'Description': '',
+      },
+      '16706': {
+        'Description': '',
+      },
+      '16716': {
+        'Description': '',
+      },
+      '17126': {
+        'Description': '',
+      },
+      '17138': {
+        'Description': '',
+      },
+      '16991': {
+        'Description': '',
+      },
+    },
   },
 });
