@@ -7,11 +7,11 @@ canvasCaptureThumbnail = (srcCanvas, srcWidth, srcHeight, destWidth, destHeight)
 
   w = ($ srcCanvas).width()
   h = ($ srcCanvas).height()
-  clipHeight = Math.min h, srcHeight
   clipWidth = Math.min w, srcWidth
+  clipHeight = Math.min h, srcHeight
 
-  clipX = Math.floor (w - srcWidth) / 2
-  clipY = Math.floor (h - srcHeight) / 2
+  clipX = Math.floor (w - clipWidth) / 2
+  clipY = Math.floor (h - clipHeight) / 2
 
   thumbCtx.drawImage srcCanvas, clipX, clipY, clipWidth, clipHeight, 0, 0, destWidth, destHeight
   imgURI = thumbCanvas.toDataURL 'image/png'
