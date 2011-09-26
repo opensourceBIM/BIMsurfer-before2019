@@ -262,11 +262,14 @@
 	    box-flex: 1;
     }
     #main-menu {
+      /*-webkit-box-flex: 1;
+    	-moz-box-flex: 1;
+    	box-flex: 1;*/
       position: absolute;
+      width: 100%;
       z-index: 1;
       border-bottom: 1px solid #e2e2e2;
       height: 120px;
-      width: 100%;
     }
     #main-menu div {
       display: inline-block;
@@ -302,9 +305,12 @@
       display: -webkit-box;
       display: -moz-box;
       display: box;
-    	-webkit-box-flex: 1;
-    	-moz-box-flex: 1;
-    	box-flex: 1;
+      -webkit-box-orient: horizontal;
+      -moz-box-orient: horizontal;
+      box-orient: horizontal;
+      -webkit-box-flex: 1;
+      -moz-box-flex: 1;
+      box-flex: 1;
       background: rgb(235,235,235); /* Old browsers */
       background: -moz-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* FF3.6+ */
       background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(60%,rgba(255,255,255,1)), color-stop(100%,rgba(235,235,235,1))); /* Chrome,Safari4+ */
