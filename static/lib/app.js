@@ -418,7 +418,10 @@
   controlsPropertiesSelectObject = function(id) {
     var html, key, objectProperties, properties, tableItem, value;
     properties = state.scene.data().properties;
-    if (!properties) {
+    if (!(id != null)) {
+      return ($('#controls-properties')).html("<p class='controls-message'>Select an object to see its properties.</p>");
+    }
+    if (!(properties != null)) {
       return ($('#controls-properties')).html("<p class='controls-message'>No properties could be found in the scene.</p>");
     }
     objectProperties = properties[id];
@@ -439,7 +442,7 @@
     }
     html += "</ul>";
     if (!objectProperties) {
-      html += "<p class='controls-message'>No properties could be found for the object with id '" + id + "'.</em>";
+      html += "<p class='controls-message'>No additional properties could be found for the object with id '" + id + "'.</p>";
     }
     return ($('#controls-properties')).html(html);
   };
@@ -543,6 +546,7 @@
       return _results;
     })();
     ($('#controls-layers')).html(layersHtml.join(''));
+    controlsPropertiesSelectObject();
     ($('#controls-accordion')).accordion({
       header: 'h3'
     });

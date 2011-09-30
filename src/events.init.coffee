@@ -14,12 +14,18 @@ sceneInit = () ->
   #highlightNode = 
 
 controlsInit = () ->
-  # Initialize controls
   sceneData = state.scene.data()
+
+  # Populate the layers tab
   layersHtml = ("<div><input id='layer-" + ifcType.toLowerCase() + "' type='checkbox' checked='checked'> " + ifcType + "</div>" for ifcType in sceneData.ifcTypes)
   ($ '#controls-layers').html layersHtml.join ''
+
+  # Clear the properties tab
+  controlsPropertiesSelectObject()
+
+  # Initialize the accordion control
   ($ '#controls-accordion').accordion { header: 'h3' }
-  
+
   # Make controls visible
   ($ '#main-view-controls').removeAttr 'style'
 

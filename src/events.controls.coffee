@@ -3,7 +3,9 @@
 
 controlsPropertiesSelectObject = (id) ->
   properties = state.scene.data().properties
-  if !properties
+  if not id?
+    return ($ '#controls-properties').html "<p class='controls-message'>Select an object to see its properties.</p>"
+  if not properties?
     return ($ '#controls-properties').html "<p class='controls-message'>No properties could be found in the scene.</p>"
   objectProperties = properties[id]
 
@@ -23,7 +25,7 @@ controlsPropertiesSelectObject = (id) ->
 
 
   if not objectProperties
-    html += "<p class='controls-message'>No properties could be found for the object with id '" + id + "'.</p>"
+    html += "<p class='controls-message'>No additional properties could be found for the object with id '" + id + "'.</p>"
 
   ($ '#controls-properties').html html
 
