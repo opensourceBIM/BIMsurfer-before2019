@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -449,6 +449,9 @@
     parentSel.toggleClass('controls-tree-selected');
     return controlsPropertiesSelectObject(parentSel.attr('id'));
   };
+  controlsShowProperties = function() {
+    return ($('#controls-accordion')).accordion('activate', 1);
+  };
   controlsToggleLayer = function(event) {
     var el, elements, tags;
     elements = ($('#controls-layers input:checked')).toArray();
@@ -504,6 +507,7 @@
     ($('#top-menu-mode-advanced')).click(topmenuModeAdvanced);
     ($('#top-menu-help')).click(topmenuHelp);
     ($('#controls-relationships')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
+    ($('#controls-relationships')).delegate('.controls-tree-item', 'dblclick', controlsShowProperties);
     ($('#controls-layers input')).change(controlsToggleLayer);
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);

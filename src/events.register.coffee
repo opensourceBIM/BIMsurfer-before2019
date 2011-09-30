@@ -25,6 +25,7 @@ registerControlEvents = () ->
   ($ '#top-menu-help').click topmenuHelp
 
   ($ '#controls-relationships').delegate '.controls-tree-item', 'click', controlsToggleTreeOpen
+  ($ '#controls-relationships').delegate '.controls-tree-item', 'dblclick', controlsShowProperties
   ($ '#controls-layers input').change controlsToggleLayer
 
   ($ '#snapshot-placeholder').click snapshotsPush

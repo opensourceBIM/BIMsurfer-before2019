@@ -31,6 +31,9 @@ controlsToggleTreeSelected = (event) ->
   parentSel.toggleClass 'controls-tree-selected'
   controlsPropertiesSelectObject parentSel.attr 'id'
 
+controlsShowProperties = () ->
+  ($ '#controls-accordion').accordion 'activate', 1
+
 controlsToggleLayer = (event) ->
   elements = ($ '#controls-layers input:checked').toArray()
   tags = (((($ el).attr 'id').split /^layer\-/)[1] for el in elements)
