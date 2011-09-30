@@ -529,7 +529,8 @@
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
     ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
-    return ($('#snapshots-play')).click(snapshotsPlay);
+    ($('#snapshots-play')).click(snapshotsPlay);
+    return ($(state.viewport.domElement)).dblclick(controlsShowProperties);
   };
   canvasInit = function() {
     return windowResize();
@@ -561,16 +562,20 @@
     return ($('#main-view-controls')).removeAttr('style');
   };
   ifcTreeInit = function() {
-    var ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
+    var ifcContains, ifcDecomposedBy, ifcDefinedBy, ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
     sceneData = state.scene.data();
     ifcObjectDescription = function(obj, indent) {
-      return "<li class='controls-tree-rel' id='" + obj.id + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + "<input type='checkbox' checked='checked'> " + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, indent)) + "</li>";
+      return "<li class='controls-tree-rel' id='" + obj.id + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + "<input type='checkbox' checked='checked'> " + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcDefinedBy(obj.decomposedBy, 0)) + (ifcDefinedBy(obj.definedBy, 0)) + (ifcContains(obj.contains, 0)) + "</li>";
     };
-    ifcRelationships = function(rel, indent) {
+    ifcProject = function(obj) {
+      return "<li class='controls-tree-root' id='" + obj.id + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcDefinedBy(obj.decomposedBy, 0)) + (ifcDefinedBy(obj.definedBy, 0)) + (ifcContains(obj.contains, 0)) + "</li>";
+    };
+    ifcRelationships = function(type, rel, indent) {
       var html, obj, _i, _len;
       if ((rel != null) && rel.length > 0) {
         indent = Math.min(indent + 1, 4);
         html = "<ul class='controls-tree'>";
+        html += "<div class='controls-tree-heading'><hr><h4>" + type + "</h4></div>";
         for (_i = 0, _len = rel.length; _i < _len; _i++) {
           obj = rel[_i];
           html += ifcObjectDescription(obj, indent);
@@ -580,8 +585,14 @@
         return "";
       }
     };
-    ifcProject = function(obj) {
-      return "<li class='controls-tree-root' id='" + obj.id + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, 0)) + "</li>";
+    ifcDecomposedBy = function(rel, indent) {
+      return ifcRelationships('Decomposed By', rel, indent);
+    };
+    ifcDefinedBy = function(rel, indent) {
+      return ifcRelationships('Defined By', rel, indent);
+    };
+    ifcContains = function(rel, indent) {
+      return ifcRelationships('Contains', rel, indent);
     };
     treeHtml = "<ul class='controls-tree'>";
     _ref = sceneData.relationships;

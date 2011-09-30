@@ -50,3 +50,4 @@ controlsToggleLayer = (event) ->
   elements = ($ '#controls-layers input:checked').toArray()
   tags = (((($ el).attr 'id').split /^layer\-/)[1] for el in elements)
   state.scene.set 'tagMask', '(' + (tags.join '|') + ')'
+

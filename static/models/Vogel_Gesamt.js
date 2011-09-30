@@ -2694,40 +2694,700 @@ SceneJS.createScene({
     relationships: [
       {
         type: 'Project',
-        name: 'null',
+        name: 'Vogel_Gesamtansicht',
         id: '0QVyVy5q1DkuuE0mOmWq$G',
-        rel: [
+        decomposedBy: [
           {
-            type: 'null',
+            type: 'Site',
             name: 'Vogel_Gesamtansicht',
             id: '056Xd5cPH0kh4D3$kTusW$',
-            rel: [
+            decomposedBy: [
               {
-                type: 'null',
+                type: 'Building',
                 name: 'Vogel_Einzelhaus',
                 id: '0h394Xxs53rxZNxD94Tuti',
-                rel: [
+                decomposedBy: [
                   {
-                    type: 'null',
+                    type: 'BuildingStorey',
                     name: 'Vogel_EG',
                     id: '0VUC74PTz8Q97DXAnT6Ytv',
+                    contains: [
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0zIvMWG1LEKuSk5LwW79d6',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2vNF8M7QP5Yw4haf24tdRm',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2Lbdh1EZn4ExVsgrR0qHJC',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0pwgDz1bT6qvDWQF6MQ7yz',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1wV55spIf3aun_hM1dXNq0',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3w_URGu$1FgPgbvU$_Nubj',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3id7lnRxj1ruKtCcKtJMAb',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1fi3VO3$XApvJgLv3b5Zxe',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3K2U6yd5L1MxhxQD4lgLh0',
+                      },
+                      {
+                        type: 'Wall',
+                        name: 'null',
+                        id: '0NxoRHk2vFiPN0pVqA34vs',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1ehbPqfpXCbBwQ2L07V2eq',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1wwmhDTkr7hxFCaCZ1QIqk',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1RT6AqpcL19RRvVRYxdbM_',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1IQ4mWMBTAPxQ8HH0kyJ11',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '0jPrau6Jj1F9X96ngO2HGe',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '0qAnfHRmnAyuXYyLQrTfNg',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '1$TezpWNXDjecTkbzGW4MY',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '3uG5pdun9EbviqAtv3_udT',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '3dBWTgI5b8Leg8_i_1YzTa',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '0vrKXlxt96bPdcp55UoMaD',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '1CDbhwLLH1aP3OGWKd8RYR',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '1VRruvRwv9svI9E83_Kwhr',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '0N2WEwKhzBTAPzeYIjyYWR',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '0w158XTbvBnBXmoYy3dbSE',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '3QTdwYwGDALeqd_LAowZf_',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '1xh7z0EcDCHhnWYY6qM_QJ',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '1guD0_tY92IPJieo7fb85P',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '3TW0fY5Kj07g8i$l8MP$xA',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '2j2VaRIHrAxeV108vXjiXO',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '0h4kPYIlr4DPpy0amKK55Z',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '29EwButG18LBt9qAxTXWZo',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '0s4Z9PG0bApfXXvsMa6mpM',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '2qqomPoOTEZwNLUKDQ3hqA',
+                      },
+                      {
+                        type: 'Column',
+                        name: 'null',
+                        id: '0ENOPE3AzAFQHjJm6e9J9L',
+                      },
+                      {
+                        type: 'Column',
+                        name: 'null',
+                        id: '2XuHZheRL94vHU7xmgZEem',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '2W8ejls$96$R2jfvBH7tsQ',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '0GGVcAQ$b4sPBW1VP7Vzsq',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '399RAsI551mQnNhBBkjmG8',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '2h8Vmszef0GAX8$HFLSadZ',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '0Os4YpZEb0GxgLN8Vhsv4M',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '1E$s4_gF198PY4Mfbq9pjv',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '2ADVdTbUH99A4X$9TCI41s',
+                      },
+                      {
+                        type: 'Column',
+                        name: 'null',
+                        id: '2IBJNjmXfCOh5TA$07yvkx',
+                      },
+                      {
+                        type: 'Column',
+                        name: 'null',
+                        id: '2qDUPC7uD87fv07NxzrQfV',
+                      },
+                    ],
                   },
                   {
-                    type: 'null',
+                    type: 'BuildingStorey',
                     name: 'Vogel_OG',
                     id: '3CwjzCurn2$9YNKKRCyonw',
+                    contains: [
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0GcDvkWf1E6PLP0OQE0UNg',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0wOLjEu9DEOPlpkKGhQrcO',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3u1T26$fzEpgg4WdmSavc8',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3qidxPYJX3Y8oizTfaC8HK',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '38xbA34hvDV9Nond24foS$',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1yLbOteST1axD5i_6Dr8bN',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2m6pmoQYr1O92$b0TIlEaO',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3bv9ZuWj1EsxnEqhcbZR0R',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3HgIyCcnv1eAICmgzfhP19',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2ZRDJc2EnF8f$Mb3XGFNKB',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2oWoewqV11W98Srb4Gffpa',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1IvwC9cRT2FuL4kmH5$PXQ',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3ddBxrdnz1m94m_La95SOP',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3woj_wQY18GO9Lxqr0EpjL',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1mTnfCjmXA0AoSpBs8UuhL',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0nO4A91nz7e8B2Z7u6l0$d',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '2w42Qn0qD6pOgjKyXQVKP5',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '28xPEsoRn1Duwj0tMygige',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '05JUUfY51Cpf5_w0mHap3T',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '1tQRQMnIb2GOje8i$gaknr',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '2fr6Zs53nCngDmHFP_xYU5',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '0hg52E$kLB9x7xhofqj3pT',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '3a6fJdSh17LO95vIwy3uCE',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '1vUmGtpfzD$gqrI2aP0Eo9',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '3sqSTXcWbBQ8gx612bMUSp',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '23ZZaTDBT9H8MQItXILunV',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '2fcup1Ren8HwpBucZFMXM7',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '1EzXpV7fnAH83MtMH97_m2',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '3JGwPjLmvDGglhlflv$hdK',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '14fl4zCyL3iwdgXelMZ$yi',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '1mpnobVKr8iOhWh97Uwf2P',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '0_DSX_4ULCP9agO84vk7PC',
+                      },
+                      {
+                        type: 'BuildingElementProxy',
+                        name: 'null',
+                        id: '0UfWZ$as99IBXFq6_fRGoK',
+                      },
+                    ],
                   },
                   {
-                    type: 'null',
-                    name: 'Vogel_DG',
-                    id: '3PFG_wF$L23xarU_yjta9z',
-                  },
-                  {
-                    type: 'null',
+                    type: 'BuildingStorey',
                     name: 'Vogel_UG',
                     id: '3ExmyYZYn8wxd5S5z1MN_k',
+                    contains: [
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3morB0pVvELvTrPpnUQmaG',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2OF680fOP2Nugkohjrv5CX',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2MrYn$x5L5sBRul7M8ox_$',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0RjcgOAqzApf_Oj1tAiOEJ',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '247uQaMFX6xRujZiBXjmmW',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3Hy1azZ21BghzXLxuRySaM',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0CqTELMBf53Rg98XtD2dQy',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '068NRKKj53NPaj$uMtcWay',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3ogkeiy518XOjD9Uc2xJZE',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2J7tlJMGH1ROUb1JtNskG8',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0M9cf7ZZj5AxoranjZdxDc',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3fibx4ihD3CQIqrTdsvi9g',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0RsrgGh4H4zhQjfuKoObEa',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '34smNELsj1Dv9ZX10SRaSc',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1$jDliaFf0_94qp7RmI7tR',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1l8USw90vAHAahsAo3TNmL',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '128s1Bd09E68ToTGCOwwfI',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '17ee42beHAIuEb1Yh_Irw7',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '1RE56UFvz7gBpzwyyv4SBu',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '1RBu6kRyzFMh7iFbgW8lm3',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '3f2PbcIlb8EBgeUKNxvJyk',
+                      },
+                      {
+                        type: 'Stair',
+                        name: 'null',
+                        id: '016v1$5m99nOt6XVvJp0WP',
+                      },
+                      {
+                        type: 'Stair',
+                        name: 'null',
+                        id: '3hRfhr2mj9oQyknS09PmZT',
+                      },
+                      {
+                        type: 'Stair',
+                        name: 'null',
+                        id: '2FglF1Iy5D_8N1yc6rETyS',
+                      },
+                    ],
+                  },
+                  {
+                    type: 'BuildingStorey',
+                    name: 'Vogel_DG',
+                    id: '3PFG_wF$L23xarU_yjta9z',
+                    contains: [
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2PNZFUX$LFuungam3j4mMH',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2EdonmFNP97uvJFw_lqwHS',
+                      },
+                      {
+                        type: 'Wall',
+                        name: 'null',
+                        id: '1Jcs3_Zaj2yPPxH1fwCT5G',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1erluvDiDBohywHdrQv9TC',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3_buJ90hDDigz_MboE32AI',
+                      },
+                      {
+                        type: 'Wall',
+                        name: 'null',
+                        id: '15$xMDyN51cAGKHB1EP_Yn',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1ZI4cZjsz2PuY0IPWQvup2',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '1CbjLp0W92mg9SxitEBT5q',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '0SU7IhLE93WubvFgjq05TA',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3bmfKPwwL669io4O8J_Kuo',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '29ykd_Rvb20gyo3mJw9RN9',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '3B_lhPfCjF0BPzvy4HKqtj',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'null',
+                        id: '2zNxAUL5XCC9aCP8AxQLDN',
+                      },
+                      {
+                        type: 'Wall',
+                        name: 'null',
+                        id: '2u6GPlksH2NRf4TcTwl5Sb',
+                      },
+                      {
+                        type: 'Wall',
+                        name: 'null',
+                        id: '1CYkSY1Q96ivPJD1ZydrPv',
+                      },
+                      {
+                        type: 'Wall',
+                        name: 'null',
+                        id: '3y_DZRPXz9x84aM4EoxNiq',
+                      },
+                      {
+                        type: 'Wall',
+                        name: 'null',
+                        id: '0n6$Y3zsj6vOr_XYIL8Q3Y',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'null',
+                        id: '2r1fvqY0P6zh9vQ2VkwuTW',
+                      },
+                      {
+                        type: 'Slab',
+                        name: 'null',
+                        id: '27x1Bx5nf5Lxg1euPXINyj',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '3rovm07357lQoNdlDBJLYm',
+                      },
+                      {
+                        type: 'Slab',
+                        name: 'null',
+                        id: '2FCguWAu50Fg5Proi7B0Ac',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '121QnkHZjBkPWZrZ52OyiQ',
+                      },
+                      {
+                        type: 'Railing',
+                        name: 'null',
+                        id: '3GRgBYaz502Bhb935MMHeY',
+                      },
+                      {
+                        type: 'Window',
+                        name: 'null',
+                        id: '1KTwnzVLz41RnzAafq3ghX',
+                      },
+                    ],
                   },
                 ],
+              },
+            ],
+            contains: [
+              {
+                type: 'Slab',
+                name: 'null',
+                id: '0aPeoxafL6HhKc27oBx0aB',
+              },
+              {
+                type: 'Slab',
+                name: 'null',
+                id: '0AF5zS6Tf0AA8AZaB3bCYY',
+              },
+              {
+                type: 'Slab',
+                name: 'null',
+                id: '11Y9a53lj1Yw_El17S0YSG',
+              },
+              {
+                type: 'Slab',
+                name: 'null',
+                id: '3DfPIv6yr4Sg7Yztx0FEIg',
+              },
+              {
+                type: 'Slab',
+                name: 'null',
+                id: '2QolRCVe92kg3ozJfbAOUM',
               },
             ],
           },

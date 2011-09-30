@@ -149,8 +149,9 @@
     menu li:hover menu {
       display: block;
     }
-    hr {
-      border: solid 1px #666;
+    menu hr {
+      border: none;
+      height: 1px;
       background-color: #666;
       color: #666;
       width: 60%;
@@ -338,6 +339,15 @@
     #controls-accordion-objects {
       padding: 0;
       font-size: 12px;
+      overflow-y: scroll;
+    }
+    .scroll::-webkit-scrollbar {
+      width: 2px;
+      height: 13px;
+    }
+    #controls-accordion-objects::-webkit-scrollbar-thumb:vertical {
+        height: 50px;
+        background-color: #bbb;
     }
     #controls-accordion-properties {
       padding: 4px;
@@ -369,6 +379,27 @@
     }
     .controls-tree-selected {
       background: #c8e0f9;
+    }
+    .controls-tree-heading {
+      display: none; /* Hide it for now - doesn't look good enough yet */
+      width: 100%;
+      text-align: right;
+    }
+    .controls-tree-heading h4 {
+      display: inline-block;
+      color: #88b;
+      font-size: 10px;
+      font-weight: normal;
+      margin: -2px 2px;
+    }
+    .controls-tree-heading hr {
+      border: none;
+      height: 1px;
+      background-color: #88b;
+      color: #88b;
+      display: inline-block;
+      width: 20%;
+      vertical-align: middle;
     }
     .controls-table {
       display: table;

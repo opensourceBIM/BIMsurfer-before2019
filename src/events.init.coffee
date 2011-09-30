@@ -36,21 +36,34 @@ ifcTreeInit = () ->
   ifcObjectDescription = (obj, indent) ->
     "<li class='controls-tree-rel' id='" + obj.id + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + 
       "<input type='checkbox' checked='checked'> " +
-      obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, indent) + "</li>"
+      obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" +
+      (ifcDefinedBy obj.decomposedBy, 0) +
+      (ifcDefinedBy obj.definedBy, 0) +
+      (ifcContains obj.contains, 0) +
+      "</li>"
   
-  ifcRelationships = (rel, indent) ->
+  ifcProject = (obj) ->
+    "<li class='controls-tree-root' id='" + obj.id + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" +
+      (ifcDefinedBy obj.decomposedBy, 0) +
+      (ifcDefinedBy obj.definedBy, 0) +
+      (ifcContains obj.contains, 0) +
+      "</li>"
+
+  ifcRelationships = (type, rel, indent) ->
     if rel? and rel.length > 0
       indent = Math.min(indent + 1, 4)
       html = "<ul class='controls-tree'>"
+      html += "<div class='controls-tree-heading'><hr><h4>" + type + "</h4></div>"
       for obj in rel
         html += ifcObjectDescription obj, indent
       html += "</ul>"
     else
       ""
   
-  ifcProject = (obj) ->
-    "<li class='controls-tree-root' id='" + obj.id + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, 0) + "</li>"
-  
+  ifcDecomposedBy = (rel, indent) -> ifcRelationships 'Decomposed By', rel, indent
+  ifcDefinedBy = (rel, indent) -> ifcRelationships 'Defined By', rel, indent
+  ifcContains = (rel, indent) -> ifcRelationships 'Contains', rel, indent
+    
   treeHtml = "<ul class='controls-tree'>"
   for project in sceneData.relationships
     treeHtml += ifcProject project
