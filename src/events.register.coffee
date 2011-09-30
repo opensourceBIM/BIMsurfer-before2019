@@ -33,3 +33,4 @@ registerControlEvents = () ->
   ($ '#snapshots').delegate '.snapshot-delete', 'click', snapshotsDelete
   ($ '#snapshots-play').click snapshotsPlay
 
+  ($ state.viewport.domElement).dblclick controlsShowProperties

@@ -23,7 +23,6 @@ controlsPropertiesSelectObject = (id) ->
       html += tableItem key, value
   html += "</ul>"
 
-
   if not objectProperties
     html += "<p class='controls-message'>No additional properties could be found for the object with id '" + id + "'.</p>"
 
