@@ -10,4 +10,5 @@ windowResize = ->
       state.canvas.width = ($ '#viewport').width()
       state.canvas.height = ($ '#viewport').height()
     # TODO: reconfigure camera
+    #topOffset
 

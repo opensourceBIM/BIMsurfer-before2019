@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -14,10 +14,10 @@
     thumbCtx = thumbCanvas.getContext('2d');
     w = ($(srcCanvas)).width();
     h = ($(srcCanvas)).height();
-    clipHeight = Math.min(h, srcHeight);
     clipWidth = Math.min(w, srcWidth);
-    clipX = Math.floor((w - srcWidth) / 2);
-    clipY = Math.floor((h - srcHeight) / 2);
+    clipHeight = Math.min(h, srcHeight);
+    clipX = Math.floor((w - clipWidth) / 2);
+    clipY = Math.floor((h - clipHeight) / 2);
     thumbCtx.drawImage(srcCanvas, clipX, clipY, clipWidth, clipHeight, 0, 0, destWidth, destHeight);
     imgURI = thumbCanvas.toDataURL('image/png');
     return imgURI;
@@ -269,7 +269,8 @@
       zoomSpeedFactor: 0.05
     },
     canvas: {
-      defaultSize: [1024, 512]
+      defaultSize: [1024, 512],
+      topOffset: 122
     },
     thumbnails: {
       size: [125, 100],
@@ -414,11 +415,39 @@
     ($('#main-view-help')).toggle();
     return ($('#main-view-keys')).toggle();
   };
+  controlsPropertiesSelectObject = function(id) {
+    var html, key, objectProperties, properties, value;
+    properties = state.scene.data().properties;
+    if (!properties) {
+      return ($('#controls-properties')).html("<em>No IFC properties could be found in the scene.</em>");
+    }
+    objectProperties = properties[id];
+    if (!objectProperties) {
+      return ($('#controls-properties')).html("<em>No IFC properties could be found for the object with id '" + id + "'.</em>");
+    }
+    html = "<ul class='controls-tree controls-table'>";
+    console.log(objectProperties);
+    for (key in objectProperties) {
+      value = objectProperties[key];
+      html += "<li class='controls-table-item'>";
+      html += "<label class='controls-table-label'>" + key + "</label>";
+      html += "<div class='controls-table-value'>" + value + "</div>";
+      html += "</li>";
+    }
+    html += "</ul>";
+    return ($('#controls-properties')).html(html);
+  };
   controlsToggleTreeOpen = function(event) {
-    return ($(event.target)).parent().toggleClass('controls-tree-open');
+    var parentSel;
+    parentSel = ($(event.target)).parent();
+    parentSel.toggleClass('controls-tree-open');
+    return controlsPropertiesSelectObject(parentSel.attr('id'));
   };
   controlsToggleTreeSelected = function(event) {
-    return ($(event.target)).parent().toggleClass('controls-tree-selected');
+    var parentSel;
+    parentSel = ($(event.target)).parent();
+    parentSel.toggleClass('controls-tree-selected');
+    return controlsPropertiesSelectObject(parentSel.attr('id'));
   };
   controlsToggleLayer = function(event) {
     var el, elements, tags;
@@ -436,9 +465,13 @@
   };
   snapshotsPush = function() {
     var imgURI, node, thumbSize;
-    node = state.scene.findNode('main-lookAt');
+    if ($.browser.webkit) {
+      orbitLookAtNode(state.scene.findNode('main-lookAt'), [0.0, 0.0], [0.0, 0.0, 1.0]);
+      window.__scenejs_sceneLoopScene();
+    }
     thumbSize = constants.thumbnails.size;
     imgURI = canvasCaptureThumbnail(state.canvas, 512 * thumbSize[0] / thumbSize[1], 512, constants.thumbnails.scale * thumbSize[0], constants.thumbnails.scale * thumbSize[1]);
+    node = state.scene.findNode('main-lookAt');
     state.snapshots.lookAts.push({
       eye: node.get('eye'),
       look: node.get('look'),
@@ -470,7 +503,7 @@
     ($('#top-menu-mode-basic')).click(topmenuModeBasic);
     ($('#top-menu-mode-advanced')).click(topmenuModeAdvanced);
     ($('#top-menu-help')).click(topmenuHelp);
-    ($('#controls-decomposition')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
+    ($('#controls-relationships')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
     ($('#controls-layers input')).change(controlsToggleLayer);
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
@@ -509,7 +542,7 @@
     var ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
     sceneData = state.scene.data();
     ifcObjectDescription = function(obj, indent) {
-      return "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + "<input type='checkbox' checked='checked'> " + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, indent)) + "</li>";
+      return "<li class='controls-tree-rel' id='" + obj.id + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + "<input type='checkbox' checked='checked'> " + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, indent)) + "</li>";
     };
     ifcRelationships = function(rel, indent) {
       var html, obj, _i, _len;
@@ -526,7 +559,7 @@
       }
     };
     ifcProject = function(obj) {
-      return "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, 0)) + "</li>";
+      return "<li class='controls-tree-root' id='" + obj.id + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships(obj.rel, 0)) + "</li>";
     };
     treeHtml = "<ul class='controls-tree'>";
     _ref = sceneData.relationships;

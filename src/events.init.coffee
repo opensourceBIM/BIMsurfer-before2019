@@ -28,7 +28,7 @@ ifcTreeInit = () ->
   sceneData = state.scene.data()
   
   ifcObjectDescription = (obj, indent) ->
-    "<li class='controls-tree-rel' id='" + obj.name + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + 
+    "<li class='controls-tree-rel' id='" + obj.id + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + 
       "<input type='checkbox' checked='checked'> " +
       obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, indent) + "</li>"
   
@@ -43,8 +43,8 @@ ifcTreeInit = () ->
       ""
   
   ifcProject = (obj) ->
-    "<li class='controls-tree-root' id='" + obj.name + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, 0) + "</li>"
-
+    "<li class='controls-tree-root' id='" + obj.id + "'><div class='controls-tree-item'>" + obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" + (ifcRelationships obj.rel, 0) + "</li>"
+  
   treeHtml = "<ul class='controls-tree'>"
   for project in sceneData.relationships
     treeHtml += ifcProject project

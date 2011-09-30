@@ -339,6 +339,10 @@
       padding: 0;
       font-size: 12px;
     }
+    #controls-accordion-properties {
+      padding: 0;
+      font-size: 12px;
+    }
     #controls-relationships {
       min-height: 200px;
     }
@@ -362,6 +366,26 @@
     }
     .controls-tree-open > .controls-tree, .controls-tree-selected > .controls-tree {
       display: block;
+    }
+    .controls-table {
+      display: table;
+      widhth: 100%;
+    }
+    .controls-table-item {
+      display: table-row;
+    }
+    .controls-table-label, .controls-table-value {
+      display: table-cell;
+      border: 1px solid #999;
+      width: 50%;
+      padding: 4px;
+    }
+    .controls-table-label {
+      background: #ddd;
+    }
+    .controls-table-value {
+      background: #fff;
+      color: #222;
     }
     #main-view-keys {
       position: absolute;
@@ -609,7 +633,11 @@
               <form id='controls-relationships'></form>
             </div>
             <h3><a href='#'>Properties</a></h3>
-            <div></div>
+            <div id='controls-accordion-properties'>
+              <form id='controls-properties'>
+
+              </form>
+            </div>
             <h3><a href='#'>Layers</a></h3>
             <div><form id='controls-layers'></form></div>
             <h3><a href='#'>Annotations</a></h3>
