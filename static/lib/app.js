@@ -416,25 +416,31 @@
     return ($('#main-view-keys')).toggle();
   };
   controlsPropertiesSelectObject = function(id) {
-    var html, key, objectProperties, properties, value;
+    var html, key, objectProperties, properties, tableItem, value;
     properties = state.scene.data().properties;
     if (!properties) {
-      return ($('#controls-properties')).html("<em>No IFC properties could be found in the scene.</em>");
+      return ($('#controls-properties')).html("<p class='controls-message'>No properties could be found in the scene.</p>");
     }
     objectProperties = properties[id];
-    if (!objectProperties) {
-      return ($('#controls-properties')).html("<em>No IFC properties could be found for the object with id '" + id + "'.</em>");
-    }
-    html = "<ul class='controls-tree controls-table'>";
-    console.log(objectProperties);
-    for (key in objectProperties) {
-      value = objectProperties[key];
-      html += "<li class='controls-table-item'>";
+    tableItem = function(key, value) {
+      var html;
+      html = "<li class='controls-table-item'>";
       html += "<label class='controls-table-label'>" + key + "</label>";
       html += "<div class='controls-table-value'>" + value + "</div>";
-      html += "</li>";
+      return html += "</li>";
+    };
+    html = "<ul class='controls-table'>";
+    html += tableItem('Global Id', id);
+    if (objectProperties != null) {
+      for (key in objectProperties) {
+        value = objectProperties[key];
+        html += tableItem(key, value);
+      }
     }
     html += "</ul>";
+    if (!objectProperties) {
+      html += "<p class='controls-message'>No properties could be found for the object with id '" + id + "'.</em>";
+    }
     return ($('#controls-properties')).html(html);
   };
   controlsToggleTreeOpen = function(event) {
