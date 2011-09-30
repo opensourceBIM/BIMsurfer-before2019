@@ -37,9 +37,9 @@ ifcTreeInit = () ->
     "<li class='controls-tree-rel' id='" + obj.id + "'><div class='controls-tree-item'><span class='indent-" + String(indent) + "'/>" + 
       "<input type='checkbox' checked='checked'> " +
       obj.name + "<span class='controls-tree-postfix'>(" + obj.type + ")</span></div>" +
-      (ifcDefinedBy obj.decomposedBy, 0) +
-      (ifcDefinedBy obj.definedBy, 0) +
-      (ifcContains obj.contains, 0) +
+      (ifcDefinedBy obj.decomposedBy, indent) +
+      (ifcDefinedBy obj.definedBy, indent) +
+      (ifcContains obj.contains, indent) +
       "</li>"
   
   ifcProject = (obj) ->
@@ -51,7 +51,7 @@ ifcTreeInit = () ->
 
   ifcRelationships = (type, rel, indent) ->
     if rel? and rel.length > 0
-      indent = Math.min(indent + 1, 4)
+      indent = Math.min(indent + 1, 6)
       html = "<ul class='controls-tree'>"
       html += "<div class='controls-tree-heading'><hr><h4>" + type + "</h4></div>"
       for obj in rel

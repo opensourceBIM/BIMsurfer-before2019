@@ -184,6 +184,22 @@
       display: inline-block;
       padding: 0 0 0 40px;
     }
+    .indent-5 {
+      display: inline-block;
+      padding: 0 0 0 50px;
+    }
+    .indent-6 {
+      display: inline-block;
+      padding: 0 0 0 55px;
+    }
+    .unobtrusive-scroll::-webkit-scrollbar {
+      width: 2px;
+      height: 13px;
+    }
+    .unobtrusive-scroll::-webkit-scrollbar-thumb:vertical {
+        height: 50px;
+        background-color: #bbb;
+    }
 
     /* Application styling */
     #top-menu {
@@ -340,14 +356,6 @@
       padding: 0;
       font-size: 12px;
       overflow-y: scroll;
-    }
-    .scroll::-webkit-scrollbar {
-      width: 2px;
-      height: 13px;
-    }
-    #controls-accordion-objects::-webkit-scrollbar-thumb:vertical {
-        height: 50px;
-        background-color: #bbb;
     }
     #controls-accordion-properties {
       padding: 4px;
@@ -670,7 +678,7 @@
         <div id='main-view-controls' style='visibility: hidden;'>
           <div id='controls-accordion'>
             <h3><a href='#'>Objects</a></h3>
-            <div id='controls-accordion-objects'>
+            <div id='controls-accordion-objects' class='unobtrusive-scroll'>
               <form id='controls-relationships'></form>
             </div>
             <h3><a href='#'>Properties</a></h3>
