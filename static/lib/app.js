@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeSelected, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsTreeSelectObject, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -364,8 +364,10 @@
         oldHighlight.splice();
       }
       if (pickRecord) {
-        console.log("Picked 'name' node with id '" + pickRecord.nodeId + "' at canvasX=" + pickRecord.canvasX + ", canvasY=" + pickRecord.canvasY);
-        return (state.scene.findNode(pickRecord.nodeId)).insert('node', constants.highlightMaterial);
+        (state.scene.findNode(pickRecord.nodeId)).insert('node', constants.highlightMaterial);
+        return controlsTreeSelectObject(pickRecord.nodeId);
+      } else {
+        return controlsTreeSelectObject();
       }
     }
   };
@@ -447,16 +449,22 @@
     return ($('#controls-properties')).html(html);
   };
   controlsToggleTreeOpen = function(event) {
-    var parentSel;
+    var id, parentSel;
     parentSel = ($(event.target)).parent();
+    id = parentSel.attr('id');
     parentSel.toggleClass('controls-tree-open');
-    return controlsPropertiesSelectObject(parentSel.attr('id'));
+    controlsTreeSelectObject(id);
+    return controlsPropertiesSelectObject(id);
   };
-  controlsToggleTreeSelected = function(event) {
-    var parentSel;
-    parentSel = ($(event.target)).parent();
-    parentSel.toggleClass('controls-tree-selected');
-    return controlsPropertiesSelectObject(parentSel.attr('id'));
+  controlsTreeSelectObject = function(id) {
+    var elementSel, parentElement;
+    ($('.controls-tree-selected')).removeClass('controls-tree-selected');
+    if (id != null) {
+      parentElement = document.getElementById(id);
+      elementSel = ($(parentElement)).children('.controls-tree-item');
+      elementSel.addClass('controls-tree-selected');
+      return controlsPropertiesSelectObject(id);
+    }
   };
   controlsShowProperties = function() {
     return ($('#controls-accordion')).accordion('activate', 1);

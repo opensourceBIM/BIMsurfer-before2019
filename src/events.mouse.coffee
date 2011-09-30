@@ -19,10 +19,10 @@ mouseUp = (event) ->
     oldHighlight.splice() if oldHighlight?
     # Apply the highlight material to the node
     if pickRecord
-      console.log "Picked 'name' node with id '" + pickRecord.nodeId + "' at canvasX=" + pickRecord.canvasX + ", canvasY=" + pickRecord.canvasY
       (state.scene.findNode pickRecord.nodeId).insert 'node', constants.highlightMaterial
-    #else
-    #  console.log "Nothing picked"
+      controlsTreeSelectObject pickRecord.nodeId
+    else
+      controlsTreeSelectObject()
 
 mouseMove = (event) ->
   # TODO: Get an accurate time measurement since the last mouseMove event

@@ -31,13 +31,18 @@ controlsPropertiesSelectObject = (id) ->
 
 controlsToggleTreeOpen = (event) ->
   parentSel = ($ event.target).parent()
+  id = parentSel.attr 'id'
   parentSel.toggleClass 'controls-tree-open'
-  controlsPropertiesSelectObject parentSel.attr 'id'
+  controlsTreeSelectObject id
+  controlsPropertiesSelectObject id
 
-controlsToggleTreeSelected = (event) ->
-  parentSel = ($ event.target).parent()
-  parentSel.toggleClass 'controls-tree-selected'
-  controlsPropertiesSelectObject parentSel.attr 'id'
+controlsTreeSelectObject = (id) ->
+  ($ '.controls-tree-selected').removeClass 'controls-tree-selected'
+  if id?
+    parentElement = document.getElementById id
+    elementSel = ($ parentElement).children '.controls-tree-item'
+    elementSel.addClass 'controls-tree-selected'
+    controlsPropertiesSelectObject id
 
 controlsShowProperties = () ->
   ($ '#controls-accordion').accordion 'activate', 1
