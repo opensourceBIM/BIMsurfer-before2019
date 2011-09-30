@@ -459,10 +459,12 @@
   controlsTreeSelectObject = function(id) {
     var $treeItem, parentEl;
     ($('.controls-tree-selected')).removeClass('controls-tree-selected');
+    ($('.controls-tree-selected-parent')).removeClass('controls-tree-selected-parent');
     if (id != null) {
       parentEl = document.getElementById(id);
       $treeItem = ($(parentEl)).children('.controls-tree-item');
       $treeItem.addClass('controls-tree-selected');
+      ($('.controls-tree:has(.controls-tree-selected)')).addClass('controls-tree-selected-parent');
       return controlsPropertiesSelectObject(id);
     }
   };

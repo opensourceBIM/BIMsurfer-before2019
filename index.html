@@ -367,6 +367,7 @@
       list-style: none;
       list-style-image: none;
       cursor: pointer;
+      display: none;
     }
     .controls-tree-item {
       padding: 4px 2px 4px 10px;
@@ -378,14 +379,17 @@
       float: right;
       color: #aaa;
     }
-    .controls-tree-root ul {
-      display: none;
+    #controls-relationships > .controls-tree {
+      display: block;
     }
-    .controls-tree-open > .controls-tree, .controls-tree-selected > .controls-tree {
+    .controls-tree-open > .controls-tree {
       display: block;
     }
     .controls-tree-selected, .controls-tree-selected:hover {
       background: #c8e0f9;
+    }
+    .controls-tree-selected-parent {
+      display: block;
     }
     .controls-tree-heading {
       display: none; /* Hide it for now - doesn't look good enough yet */
