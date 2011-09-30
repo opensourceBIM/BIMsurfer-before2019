@@ -30,18 +30,18 @@ controlsPropertiesSelectObject = (id) ->
   ($ '#controls-properties').html html
 
 controlsToggleTreeOpen = (event) ->
-  parentSel = ($ event.target).parent()
-  id = parentSel.attr 'id'
-  parentSel.toggleClass 'controls-tree-open'
+  $parent = ($ event.target).parent()
+  id = $parent.attr 'id'
+  $parent.toggleClass 'controls-tree-open'
   controlsTreeSelectObject id
   controlsPropertiesSelectObject id
 
 controlsTreeSelectObject = (id) ->
   ($ '.controls-tree-selected').removeClass 'controls-tree-selected'
   if id?
-    parentElement = document.getElementById id
-    elementSel = ($ parentElement).children '.controls-tree-item'
-    elementSel.addClass 'controls-tree-selected'
+    parentEl = document.getElementById id
+    $treeItem = ($ parentEl).children '.controls-tree-item'
+    $treeItem.addClass 'controls-tree-selected'
     controlsPropertiesSelectObject id
 
 controlsShowProperties = () ->

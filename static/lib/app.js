@@ -449,20 +449,20 @@
     return ($('#controls-properties')).html(html);
   };
   controlsToggleTreeOpen = function(event) {
-    var id, parentSel;
-    parentSel = ($(event.target)).parent();
-    id = parentSel.attr('id');
-    parentSel.toggleClass('controls-tree-open');
+    var $parent, id;
+    $parent = ($(event.target)).parent();
+    id = $parent.attr('id');
+    $parent.toggleClass('controls-tree-open');
     controlsTreeSelectObject(id);
     return controlsPropertiesSelectObject(id);
   };
   controlsTreeSelectObject = function(id) {
-    var elementSel, parentElement;
+    var $treeItem, parentEl;
     ($('.controls-tree-selected')).removeClass('controls-tree-selected');
     if (id != null) {
-      parentElement = document.getElementById(id);
-      elementSel = ($(parentElement)).children('.controls-tree-item');
-      elementSel.addClass('controls-tree-selected');
+      parentEl = document.getElementById(id);
+      $treeItem = ($(parentEl)).children('.controls-tree-item');
+      $treeItem.addClass('controls-tree-selected');
       return controlsPropertiesSelectObject(id);
     }
   };
@@ -500,10 +500,10 @@
     return ($('#snapshots')).append("<div class='snapshot'><div class='snapshot-thumb'><a href='#' class='snapshot-delete'>x</a><img width='" + thumbSize[0] + "px' height='" + thumbSize[1] + "px' src='" + imgURI + "'></div><div class='snapshot-swap'><a href='#'>&lt;</a><a href='#'>&gt;</a></div></div>");
   };
   snapshotsDelete = function(event) {
-    var parent;
-    parent = ($(event.target)).parent();
-    state.snapshots.lookAts.slice(parent.index() + 1);
-    return parent.remove();
+    var $parent;
+    $parent = ($(event.target)).parent();
+    state.snapshots.lookAts.slice($parent.index() + 1);
+    return $parent.remove();
   };
   snapshotsToggle = function(event) {};
   snapshotsPlay = function(event) {

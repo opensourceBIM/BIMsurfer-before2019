@@ -28,9 +28,9 @@ snapshotsPush = () ->
 </div>"
 
 snapshotsDelete = (event) ->
-  parent = ($ event.target).parent()
-  state.snapshots.lookAts.slice parent.index() + 1
-  parent.remove()
+  $parent = ($ event.target).parent()
+  state.snapshots.lookAts.slice $parent.index() + 1
+  $parent.remove()
 
 snapshotsToggle = (event) ->
   # TODO: SceneJS.FX.transition (state.scene.findNode 'main-lookAt'), state.snapshots, { interpolation: 'linear' }
