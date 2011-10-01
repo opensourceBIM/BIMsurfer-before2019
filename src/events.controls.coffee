@@ -26,6 +26,10 @@ controlsPropertiesSelectObject = (id) ->
   if not objectProperties
     html += "<p class='controls-message'>No additional properties could be found for the object with id '" + id + "'.</p>"
 
+  # DEBUG: Print debug information
+  #scenejsNode = state.scene.findNode id
+  #console.log scenejsNode
+
   ($ '#controls-properties').html html
 
 controlsToggleTreeOpen = (event) ->
@@ -51,5 +55,5 @@ controlsShowProperties = () ->
 controlsToggleLayer = (event) ->
   elements = ($ '#controls-layers input:checked').toArray()
   tags = (((($ el).attr 'id').split /^layer\-/)[1] for el in elements)
-  state.scene.set 'tagMask', '(' + (tags.join '|') + ')'
+  state.scene.set 'tagMask', '(' + (tags.join '$|') + '$)'
 
