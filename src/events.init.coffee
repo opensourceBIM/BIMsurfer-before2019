@@ -82,3 +82,4 @@ $ () ->
   registerDOMEvents()
   registerControlEvents()
   ifcTreeInit()
+  state.application.initialized = true

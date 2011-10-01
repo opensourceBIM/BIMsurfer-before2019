@@ -311,6 +311,9 @@
     },
     snapshots: {
       lookAts: []
+    },
+    application: {
+      initialized: false
     }
   };
   mouseCoordsWithinElement = function(event) {
@@ -339,7 +342,12 @@
         return state.canvas.height = constants.canvas.defaultSize[1];
       case 'quality':
         state.canvas.width = ($('#viewport')).width();
-        return state.canvas.height = ($('#viewport')).height();
+        state.canvas.height = ($('#viewport')).height();
+        if (state.application.initialized) {
+          return state.scene.renderFrame({
+            force: true
+          });
+        }
     }
   };
   mouseDown = function(event) {
@@ -614,6 +622,7 @@
     controlsInit();
     registerDOMEvents();
     registerControlEvents();
-    return ifcTreeInit();
+    ifcTreeInit();
+    return state.application.initialized = true;
   });
 }).call(this);

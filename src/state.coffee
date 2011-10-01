@@ -18,3 +18,5 @@ state =
     distanceLimits: [0.0, 0.0]    # Min / Max limits
   snapshots: 
     lookAts: []
+  application:
+    initialized: false
