@@ -358,7 +358,6 @@
     if (event.which === 1) {
       coords = mouseCoordsWithinElement(event);
       pickRecord = state.scene.pick(coords[0], coords[1]);
-      console.log(coords);
       oldHighlight = state.scene.findNode(constants.highlightMaterial.id);
       if (oldHighlight != null) {
         oldHighlight.splice();
@@ -483,13 +482,14 @@
       }
       return _results;
     })();
-    return state.scene.set('tagMask', '(' + (tags.join('|')) + ')');
+    return state.scene.set('tagMask', '(' + (tags.join('$|')) + '$)');
   };
   snapshotsPush = function() {
     var imgURI, node, thumbSize;
     if ($.browser.webkit) {
-      orbitLookAtNode(state.scene.findNode('main-lookAt'), [0.0, 0.0], [0.0, 0.0, 1.0]);
-      window.__scenejs_sceneLoopScene();
+      state.scene.renderFrame({
+        force: true
+      });
     }
     thumbSize = constants.thumbnails.size;
     imgURI = canvasCaptureThumbnail(state.canvas, 512 * thumbSize[0] / thumbSize[1], 512, constants.thumbnails.scale * thumbSize[0], constants.thumbnails.scale * thumbSize[1]);

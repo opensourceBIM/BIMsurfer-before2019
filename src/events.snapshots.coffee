@@ -2,14 +2,11 @@
 # Program state should not be manipulated outside events files
 
 snapshotsPush = () ->
-  #############
-  # Hack to fix issue #19
-  # TODO: Replace with more elegant solution
-  # See discussion at https://groups.google.com/forum/?pli=1#!topic/scenejs/YjZy3Dd5mbA
+  # Force rendering a frame in webkit
+  # See issue #19 (https://github.com/bimserver/BIMsurfer/issues/19)
+  # And also discussion at https://groups.google.com/forum/?pli=1#!topic/scenejs/YjZy3Dd5mbA
   if $.browser.webkit
-    orbitLookAtNode (state.scene.findNode 'main-lookAt'), [0.0,0.0], [0.0,0.0,1.0]
-    window.__scenejs_sceneLoopScene()
-  #############
+    state.scene.renderFrame { force: true }
 
   thumbSize = constants.thumbnails.size  
   imgURI = canvasCaptureThumbnail state.canvas, 512 * thumbSize[0] / thumbSize[1], 512, constants.thumbnails.scale * thumbSize[0], constants.thumbnails.scale * thumbSize[1]

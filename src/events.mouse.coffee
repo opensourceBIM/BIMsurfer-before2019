@@ -13,7 +13,6 @@ mouseUp = (event) ->
   if event.which == 1 # Left mouse button
     coords = mouseCoordsWithinElement event
     pickRecord = state.scene.pick coords[0], coords[1]
-    console.log coords
     # Delete the old highlight material
     oldHighlight = state.scene.findNode constants.highlightMaterial.id
     oldHighlight.splice() if oldHighlight?
