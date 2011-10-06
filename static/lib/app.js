@@ -360,18 +360,13 @@
     }
   };
   mouseUp = function(event) {
-    var coords, oldHighlight, pickRecord;
+    var coords, pickRecord;
     state.viewport.mouse.leftDragging = false;
     state.viewport.mouse.middleDragging = false;
     if (event.which === 1) {
       coords = mouseCoordsWithinElement(event);
       pickRecord = state.scene.pick(coords[0], coords[1]);
-      oldHighlight = state.scene.findNode(constants.highlightMaterial.id);
-      if (oldHighlight != null) {
-        oldHighlight.splice();
-      }
       if (pickRecord) {
-        (state.scene.findNode(pickRecord.nodeId)).insert('node', constants.highlightMaterial);
         return controlsTreeSelectObject(pickRecord.nodeId);
       } else {
         return controlsTreeSelectObject();
@@ -464,15 +459,20 @@
     return controlsPropertiesSelectObject(id);
   };
   controlsTreeSelectObject = function(id) {
-    var $treeItem, parentEl;
+    var $treeItem, oldHighlight, parentEl;
     ($('.controls-tree-selected')).removeClass('controls-tree-selected');
     ($('.controls-tree-selected-parent')).removeClass('controls-tree-selected-parent');
+    oldHighlight = state.scene.findNode(constants.highlightMaterial.id);
+    if (oldHighlight != null) {
+      oldHighlight.splice();
+    }
     if (id != null) {
       parentEl = document.getElementById(id);
       $treeItem = ($(parentEl)).children('.controls-tree-item');
       $treeItem.addClass('controls-tree-selected');
       ($('.controls-tree:has(.controls-tree-selected)')).addClass('controls-tree-selected-parent');
-      return controlsPropertiesSelectObject(id);
+      controlsPropertiesSelectObject(id);
+      return (state.scene.findNode(id)).insert('node', constants.highlightMaterial);
     }
   };
   controlsShowProperties = function() {

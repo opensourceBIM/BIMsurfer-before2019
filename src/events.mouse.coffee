@@ -13,12 +13,7 @@ mouseUp = (event) ->
   if event.which == 1 # Left mouse button
     coords = mouseCoordsWithinElement event
     pickRecord = state.scene.pick coords[0], coords[1]
-    # Delete the old highlight material
-    oldHighlight = state.scene.findNode constants.highlightMaterial.id
-    oldHighlight.splice() if oldHighlight?
-    # Apply the highlight material to the node
     if pickRecord
-      (state.scene.findNode pickRecord.nodeId).insert 'node', constants.highlightMaterial
       controlsTreeSelectObject pickRecord.nodeId
     else
       controlsTreeSelectObject()

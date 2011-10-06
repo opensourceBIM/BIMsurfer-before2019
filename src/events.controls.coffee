@@ -42,12 +42,17 @@ controlsToggleTreeOpen = (event) ->
 controlsTreeSelectObject = (id) ->
   ($ '.controls-tree-selected').removeClass 'controls-tree-selected'
   ($ '.controls-tree-selected-parent').removeClass 'controls-tree-selected-parent'
+  # Delete the old highlight material
+  oldHighlight = state.scene.findNode constants.highlightMaterial.id
+  oldHighlight.splice() if oldHighlight?
   if id?
     parentEl = document.getElementById id
     $treeItem = ($ parentEl).children '.controls-tree-item'
     $treeItem.addClass 'controls-tree-selected'
     ($ '.controls-tree:has(.controls-tree-selected)').addClass 'controls-tree-selected-parent'
     controlsPropertiesSelectObject id
+    # Apply the highlight material to the selected node
+    (state.scene.findNode id).insert 'node', constants.highlightMaterial
 
 controlsShowProperties = () ->
   ($ '#controls-accordion').accordion 'activate', 1
