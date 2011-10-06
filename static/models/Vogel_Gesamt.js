@@ -59,6 +59,17 @@ SceneJS.createScene({
         },
         {
           type: 'material',
+          coreId: 'WallStandardCaseMaterial',
+          baseColor: {
+            r: 1.0,
+            g: 1.0,
+            b: 1.0,
+          },
+          alpha: 1.0,
+          emit: 0.0,
+        },
+        {
+          type: 'material',
           coreId: 'DoorMaterial',
           baseColor: {
             r: 0.637255,
@@ -2439,156 +2450,162 @@ SceneJS.createScene({
                   tag: 'window',
                   nodes: [
                     {
-                      type: 'material',
-                      coreId: 'WindowMaterial',
+                      type: 'flags',
+                      flags: { transparent: true },
                       nodes: [
                         {
-                          type: 'name',
-                          id: '3a6fJdSh17LO95vIwy3uCE',
+                          type: 'material',
+                          coreId: 'WindowMaterial',
                           nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '3a6fJdSh17LO95vIwy3uCE',
+                              type: 'name',
+                              id: '3a6fJdSh17LO95vIwy3uCE',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '3a6fJdSh17LO95vIwy3uCE',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '3TW0fY5Kj07g8i$l8MP$xA',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '3TW0fY5Kj07g8i$l8MP$xA',
+                              type: 'name',
+                              id: '3TW0fY5Kj07g8i$l8MP$xA',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '3TW0fY5Kj07g8i$l8MP$xA',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '0h4kPYIlr4DPpy0amKK55Z',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '0h4kPYIlr4DPpy0amKK55Z',
+                              type: 'name',
+                              id: '0h4kPYIlr4DPpy0amKK55Z',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '0h4kPYIlr4DPpy0amKK55Z',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '3QTdwYwGDALeqd_LAowZf_',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '3QTdwYwGDALeqd_LAowZf_',
+                              type: 'name',
+                              id: '3QTdwYwGDALeqd_LAowZf_',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '3QTdwYwGDALeqd_LAowZf_',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '2fr6Zs53nCngDmHFP_xYU5',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '2fr6Zs53nCngDmHFP_xYU5',
+                              type: 'name',
+                              id: '2fr6Zs53nCngDmHFP_xYU5',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '2fr6Zs53nCngDmHFP_xYU5',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '0hg52E$kLB9x7xhofqj3pT',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '0hg52E$kLB9x7xhofqj3pT',
+                              type: 'name',
+                              id: '0hg52E$kLB9x7xhofqj3pT',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '0hg52E$kLB9x7xhofqj3pT',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '121QnkHZjBkPWZrZ52OyiQ',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '121QnkHZjBkPWZrZ52OyiQ',
+                              type: 'name',
+                              id: '121QnkHZjBkPWZrZ52OyiQ',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '121QnkHZjBkPWZrZ52OyiQ',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '1tQRQMnIb2GOje8i$gaknr',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '1tQRQMnIb2GOje8i$gaknr',
+                              type: 'name',
+                              id: '1tQRQMnIb2GOje8i$gaknr',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '1tQRQMnIb2GOje8i$gaknr',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '2j2VaRIHrAxeV108vXjiXO',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '2j2VaRIHrAxeV108vXjiXO',
+                              type: 'name',
+                              id: '2j2VaRIHrAxeV108vXjiXO',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '2j2VaRIHrAxeV108vXjiXO',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '1xh7z0EcDCHhnWYY6qM_QJ',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '1xh7z0EcDCHhnWYY6qM_QJ',
+                              type: 'name',
+                              id: '1xh7z0EcDCHhnWYY6qM_QJ',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '1xh7z0EcDCHhnWYY6qM_QJ',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '3rovm07357lQoNdlDBJLYm',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '3rovm07357lQoNdlDBJLYm',
+                              type: 'name',
+                              id: '3rovm07357lQoNdlDBJLYm',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '3rovm07357lQoNdlDBJLYm',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '1vUmGtpfzD$gqrI2aP0Eo9',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '1vUmGtpfzD$gqrI2aP0Eo9',
+                              type: 'name',
+                              id: '1vUmGtpfzD$gqrI2aP0Eo9',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '1vUmGtpfzD$gqrI2aP0Eo9',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '1KTwnzVLz41RnzAafq3ghX',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '1KTwnzVLz41RnzAafq3ghX',
+                              type: 'name',
+                              id: '1KTwnzVLz41RnzAafq3ghX',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '1KTwnzVLz41RnzAafq3ghX',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '1guD0_tY92IPJieo7fb85P',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '1guD0_tY92IPJieo7fb85P',
+                              type: 'name',
+                              id: '1guD0_tY92IPJieo7fb85P',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '1guD0_tY92IPJieo7fb85P',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        {
-                          type: 'name',
-                          id: '3sqSTXcWbBQ8gx612bMUSp',
-                          nodes: [
                             {
-                              type: 'geometry',
-                              coreId: '3sqSTXcWbBQ8gx612bMUSp',
+                              type: 'name',
+                              id: '3sqSTXcWbBQ8gx612bMUSp',
+                              nodes: [
+                                {
+                                  type: 'geometry',
+                                  coreId: '3sqSTXcWbBQ8gx612bMUSp',
+                                },
+                              ],
                             },
                           ],
                         },
@@ -2714,222 +2731,222 @@ SceneJS.createScene({
                     contains: [
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0zIvMWG1LEKuSk5LwW79d6',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2vNF8M7QP5Yw4haf24tdRm',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2Lbdh1EZn4ExVsgrR0qHJC',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0pwgDz1bT6qvDWQF6MQ7yz',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1wV55spIf3aun_hM1dXNq0',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3w_URGu$1FgPgbvU$_Nubj',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3id7lnRxj1ruKtCcKtJMAb',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1fi3VO3$XApvJgLv3b5Zxe',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3K2U6yd5L1MxhxQD4lgLh0',
                       },
                       {
                         type: 'Wall',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0NxoRHk2vFiPN0pVqA34vs',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1ehbPqfpXCbBwQ2L07V2eq',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1wwmhDTkr7hxFCaCZ1QIqk',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1RT6AqpcL19RRvVRYxdbM_',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1IQ4mWMBTAPxQ8HH0kyJ11',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0jPrau6Jj1F9X96ngO2HGe',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0qAnfHRmnAyuXYyLQrTfNg',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1$TezpWNXDjecTkbzGW4MY',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3uG5pdun9EbviqAtv3_udT',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3dBWTgI5b8Leg8_i_1YzTa',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0vrKXlxt96bPdcp55UoMaD',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1CDbhwLLH1aP3OGWKd8RYR',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1VRruvRwv9svI9E83_Kwhr',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0N2WEwKhzBTAPzeYIjyYWR',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0w158XTbvBnBXmoYy3dbSE',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3QTdwYwGDALeqd_LAowZf_',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1xh7z0EcDCHhnWYY6qM_QJ',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1guD0_tY92IPJieo7fb85P',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3TW0fY5Kj07g8i$l8MP$xA',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2j2VaRIHrAxeV108vXjiXO',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0h4kPYIlr4DPpy0amKK55Z',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '29EwButG18LBt9qAxTXWZo',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0s4Z9PG0bApfXXvsMa6mpM',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2qqomPoOTEZwNLUKDQ3hqA',
                       },
                       {
                         type: 'Column',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0ENOPE3AzAFQHjJm6e9J9L',
                       },
                       {
                         type: 'Column',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2XuHZheRL94vHU7xmgZEem',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2W8ejls$96$R2jfvBH7tsQ',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0GGVcAQ$b4sPBW1VP7Vzsq',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '399RAsI551mQnNhBBkjmG8',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2h8Vmszef0GAX8$HFLSadZ',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0Os4YpZEb0GxgLN8Vhsv4M',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1E$s4_gF198PY4Mfbq9pjv',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2ADVdTbUH99A4X$9TCI41s',
                       },
                       {
                         type: 'Column',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2IBJNjmXfCOh5TA$07yvkx',
                       },
                       {
                         type: 'Column',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2qDUPC7uD87fv07NxzrQfV',
                       },
                     ],
@@ -2941,167 +2958,167 @@ SceneJS.createScene({
                     contains: [
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0GcDvkWf1E6PLP0OQE0UNg',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0wOLjEu9DEOPlpkKGhQrcO',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3u1T26$fzEpgg4WdmSavc8',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3qidxPYJX3Y8oizTfaC8HK',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '38xbA34hvDV9Nond24foS$',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1yLbOteST1axD5i_6Dr8bN',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2m6pmoQYr1O92$b0TIlEaO',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3bv9ZuWj1EsxnEqhcbZR0R',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3HgIyCcnv1eAICmgzfhP19',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2ZRDJc2EnF8f$Mb3XGFNKB',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2oWoewqV11W98Srb4Gffpa',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1IvwC9cRT2FuL4kmH5$PXQ',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3ddBxrdnz1m94m_La95SOP',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3woj_wQY18GO9Lxqr0EpjL',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1mTnfCjmXA0AoSpBs8UuhL',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0nO4A91nz7e8B2Z7u6l0$d',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2w42Qn0qD6pOgjKyXQVKP5',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '28xPEsoRn1Duwj0tMygige',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '05JUUfY51Cpf5_w0mHap3T',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1tQRQMnIb2GOje8i$gaknr',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2fr6Zs53nCngDmHFP_xYU5',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0hg52E$kLB9x7xhofqj3pT',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3a6fJdSh17LO95vIwy3uCE',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1vUmGtpfzD$gqrI2aP0Eo9',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3sqSTXcWbBQ8gx612bMUSp',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '23ZZaTDBT9H8MQItXILunV',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2fcup1Ren8HwpBucZFMXM7',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1EzXpV7fnAH83MtMH97_m2',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3JGwPjLmvDGglhlflv$hdK',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '14fl4zCyL3iwdgXelMZ$yi',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1mpnobVKr8iOhWh97Uwf2P',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0_DSX_4ULCP9agO84vk7PC',
                       },
                       {
                         type: 'BuildingElementProxy',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0UfWZ$as99IBXFq6_fRGoK',
                       },
                     ],
@@ -3113,122 +3130,122 @@ SceneJS.createScene({
                     contains: [
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3morB0pVvELvTrPpnUQmaG',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2OF680fOP2Nugkohjrv5CX',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2MrYn$x5L5sBRul7M8ox_$',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0RjcgOAqzApf_Oj1tAiOEJ',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '247uQaMFX6xRujZiBXjmmW',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3Hy1azZ21BghzXLxuRySaM',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0CqTELMBf53Rg98XtD2dQy',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '068NRKKj53NPaj$uMtcWay',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3ogkeiy518XOjD9Uc2xJZE',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2J7tlJMGH1ROUb1JtNskG8',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0M9cf7ZZj5AxoranjZdxDc',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3fibx4ihD3CQIqrTdsvi9g',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0RsrgGh4H4zhQjfuKoObEa',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '34smNELsj1Dv9ZX10SRaSc',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1$jDliaFf0_94qp7RmI7tR',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1l8USw90vAHAahsAo3TNmL',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '128s1Bd09E68ToTGCOwwfI',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '17ee42beHAIuEb1Yh_Irw7',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1RE56UFvz7gBpzwyyv4SBu',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1RBu6kRyzFMh7iFbgW8lm3',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3f2PbcIlb8EBgeUKNxvJyk',
                       },
                       {
                         type: 'Stair',
-                        name: 'null',
+                        name: 'unknown',
                         id: '016v1$5m99nOt6XVvJp0WP',
                       },
                       {
                         type: 'Stair',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3hRfhr2mj9oQyknS09PmZT',
                       },
                       {
                         type: 'Stair',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2FglF1Iy5D_8N1yc6rETyS',
                       },
                     ],
@@ -3240,122 +3257,122 @@ SceneJS.createScene({
                     contains: [
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2PNZFUX$LFuungam3j4mMH',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2EdonmFNP97uvJFw_lqwHS',
                       },
                       {
                         type: 'Wall',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1Jcs3_Zaj2yPPxH1fwCT5G',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1erluvDiDBohywHdrQv9TC',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3_buJ90hDDigz_MboE32AI',
                       },
                       {
                         type: 'Wall',
-                        name: 'null',
+                        name: 'unknown',
                         id: '15$xMDyN51cAGKHB1EP_Yn',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1ZI4cZjsz2PuY0IPWQvup2',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1CbjLp0W92mg9SxitEBT5q',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0SU7IhLE93WubvFgjq05TA',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3bmfKPwwL669io4O8J_Kuo',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '29ykd_Rvb20gyo3mJw9RN9',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3B_lhPfCjF0BPzvy4HKqtj',
                       },
                       {
                         type: 'WallStandardCase',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2zNxAUL5XCC9aCP8AxQLDN',
                       },
                       {
                         type: 'Wall',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2u6GPlksH2NRf4TcTwl5Sb',
                       },
                       {
                         type: 'Wall',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1CYkSY1Q96ivPJD1ZydrPv',
                       },
                       {
                         type: 'Wall',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3y_DZRPXz9x84aM4EoxNiq',
                       },
                       {
                         type: 'Wall',
-                        name: 'null',
+                        name: 'unknown',
                         id: '0n6$Y3zsj6vOr_XYIL8Q3Y',
                       },
                       {
                         type: 'Door',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2r1fvqY0P6zh9vQ2VkwuTW',
                       },
                       {
                         type: 'Slab',
-                        name: 'null',
+                        name: 'unknown',
                         id: '27x1Bx5nf5Lxg1euPXINyj',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3rovm07357lQoNdlDBJLYm',
                       },
                       {
                         type: 'Slab',
-                        name: 'null',
+                        name: 'unknown',
                         id: '2FCguWAu50Fg5Proi7B0Ac',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '121QnkHZjBkPWZrZ52OyiQ',
                       },
                       {
                         type: 'Railing',
-                        name: 'null',
+                        name: 'unknown',
                         id: '3GRgBYaz502Bhb935MMHeY',
                       },
                       {
                         type: 'Window',
-                        name: 'null',
+                        name: 'unknown',
                         id: '1KTwnzVLz41RnzAafq3ghX',
                       },
                     ],
@@ -3366,27 +3383,27 @@ SceneJS.createScene({
             contains: [
               {
                 type: 'Slab',
-                name: 'null',
+                name: 'unknown',
                 id: '0aPeoxafL6HhKc27oBx0aB',
               },
               {
                 type: 'Slab',
-                name: 'null',
+                name: 'unknown',
                 id: '0AF5zS6Tf0AA8AZaB3bCYY',
               },
               {
                 type: 'Slab',
-                name: 'null',
+                name: 'unknown',
                 id: '11Y9a53lj1Yw_El17S0YSG',
               },
               {
                 type: 'Slab',
-                name: 'null',
+                name: 'unknown',
                 id: '3DfPIv6yr4Sg7Yztx0FEIg',
               },
               {
                 type: 'Slab',
-                name: 'null',
+                name: 'unknown',
                 id: '2QolRCVe92kg3ozJfbAOUM',
               },
             ],
@@ -3397,6 +3414,13 @@ SceneJS.createScene({
     properties: {
       '056Xd5cPH0kh4D3$kTusW$': {
         'Description': 'Ifc2xImport #0',
+      },
+      '0QVyVy5q1DkuuE0mOmWq$G': {
+        'Description': 'Ifc2xImport #0',
+        'Representation Contexts': [
+          'TestGeometricContext',
+        ],
+        'Phase': 'null',
       },
       '0aPeoxafL6HhKc27oBx0aB': {
         'Description': '',
