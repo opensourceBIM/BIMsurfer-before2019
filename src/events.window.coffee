@@ -9,8 +9,9 @@ windowResize = ->
     when 'quality'
       state.canvas.width = ($ '#viewport').width()
       state.canvas.height = ($ '#viewport').height()
-  # TODO: reconfigure camera (don't force render when camera is updated)
-  if state.application.initialized
-    state.scene.renderFrame { force: true }
-  #topOffset
 
+  # Reconfigure the camera
+  cameraNode = (state.scene.findNode 'main-camera')
+  cameraOptics = cameraNode.get 'optics'
+  cameraOptics.aspect = state.canvas.width / state.canvas.height
+  cameraNode.set 'optics', cameraOptics

@@ -336,19 +336,20 @@
     return coords;
   };
   windowResize = function() {
+    var cameraNode, cameraOptics;
     switch (state.settings.performance) {
       case 'performance':
         state.canvas.width = constants.canvas.defaultSize[0];
-        return state.canvas.height = constants.canvas.defaultSize[1];
+        state.canvas.height = constants.canvas.defaultSize[1];
+        break;
       case 'quality':
         state.canvas.width = ($('#viewport')).width();
         state.canvas.height = ($('#viewport')).height();
-        if (state.application.initialized) {
-          return state.scene.renderFrame({
-            force: true
-          });
-        }
     }
+    cameraNode = state.scene.findNode('main-camera');
+    cameraOptics = cameraNode.get('optics');
+    cameraOptics.aspect = state.canvas.width / state.canvas.height;
+    return cameraNode.set('optics', cameraOptics);
   };
   mouseDown = function(event) {
     state.viewport.mouse.last = [event.clientX, event.clientY];
