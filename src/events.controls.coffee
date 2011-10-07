@@ -78,7 +78,7 @@ controlsToggleTreeVisibility = (event) ->
         parentNode = node.parent()
         disableNode = (parentNode.node disableTagJson.id) ? (parentNode.add 'node', disableTagJson).node disableTagJson.id
         disableNode.add 'node', node.disconnect()
-  return true
+  return false
 
 controlsTreeSelectObject = (id) ->
   ($ '.controls-tree-selected').removeClass 'controls-tree-selected'
@@ -97,7 +97,10 @@ controlsTreeSelectObject = (id) ->
     if node?
       node.insert 'node', constants.highlightMaterial
 
-controlsShowProperties = () ->
+controlsShowProperties = (event) ->
+  # Don't show the properties when double clicking on the checkboxes
+  if event? and event.target.nodeName == 'INPUT'
+    return
   ($ '#controls-accordion').accordion 'activate', 1
 
 controlsToggleLayer = (event) ->

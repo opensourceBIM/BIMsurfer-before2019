@@ -513,7 +513,7 @@
         }
       }
     }
-    return true;
+    return false;
   };
   controlsTreeSelectObject = function(id) {
     var $treeItem, node, oldHighlight, parentEl;
@@ -535,7 +535,10 @@
       }
     }
   };
-  controlsShowProperties = function() {
+  controlsShowProperties = function(event) {
+    if ((event != null) && event.target.nodeName === 'INPUT') {
+      return;
+    }
     return ($('#controls-accordion')).accordion('activate', 1);
   };
   controlsToggleLayer = function(event) {
