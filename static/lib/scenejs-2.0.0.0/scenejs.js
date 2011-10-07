@@ -1360,7 +1360,7 @@ SceneJS.Services = new (function() {
             SceneJS_errorModule.fatalError("node param 'node' should be either an index number or an ID string");
         }
         if (!nodeGot) {
-            throw "node not found: '" + node + "'";
+            return null;
         }
         return SceneJS._selectNode(nodeGot);
     };
@@ -1542,6 +1542,12 @@ SceneJS.Services = new (function() {
             this._callNodeMethods("remove", attr, this._targetNode);
         }
         return this;
+    };
+
+    /** Disconnect a node from the scene graph
+     */
+    NodeSelector.prototype.disconnect = function() {
+        return this._targetNode.disconnect();
     };
 
     /** Returns the value of an attribute of the selected node
