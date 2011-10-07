@@ -39,6 +39,47 @@ controlsToggleTreeOpen = (event) ->
   controlsTreeSelectObject id
   controlsPropertiesSelectObject id
 
+controlsToggleTreeVisibility = (event) ->
+  $parent = ($ event.target).closest '.controls-tree-rel'
+  parentId = $parent.attr 'id'
+  #console.log $parent
+  ids = [parentId]
+
+  # Remove 'disabled' tag nodes if the checkbox has been ticked
+  if event.target.checked
+    disabledNodes = state.scene.findNodes '^disable-.*?-' + (RegExp.escape parentId) + '$'
+    for node in disabledNodes
+      node.splice()
+    return
+
+  # Collect all the child ids in the tree
+  ($parent.find '.controls-tree-rel').each () ->
+    ids.push this.id
+  #console.log ids
+
+  # Insert 'disabled' tag nodes above each collection name nodes that are children of the toggled node
+  for tag in state.scene.data().ifcTypes
+    tag = tag.toLowerCase()
+    tagNode = state.scene.findNode tag
+    disableTagJson = 
+      type: 'tag'
+      tag: 'disable'
+      id: 'disable-' + tag + '-' + parentId
+    if tagNode?
+      # Collect all the sub-nodes of the tag and the tree item
+      collectNodes = []
+      tagNode.eachNode (() ->
+        if (this.get 'type') == 'name' and (this.get 'id') in ids and (this.parent().get 'id') != disableTagJson.id
+          collectNodes.push this
+        return false),
+        { depthFirst: true }
+      # Reconnect all the sub-nodes to 'disable' tag node
+      for node in collectNodes
+        parentNode = node.parent()
+        disableNode = (parentNode.node disableTagJson.id) ? (parentNode.add 'node', disableTagJson).node disableTagJson.id
+        disableNode.add 'node', node.disconnect()
+  return true
+
 controlsTreeSelectObject = (id) ->
   ($ '.controls-tree-selected').removeClass 'controls-tree-selected'
   ($ '.controls-tree-selected-parent').removeClass 'controls-tree-selected-parent'
@@ -52,7 +93,9 @@ controlsTreeSelectObject = (id) ->
     ($ '.controls-tree:has(.controls-tree-selected)').addClass 'controls-tree-selected-parent'
     controlsPropertiesSelectObject id
     # Apply the highlight material to the selected node
-    (state.scene.findNode id).insert 'node', constants.highlightMaterial
+    node = (state.scene.findNode id)
+    if node?
+      node.insert 'node', constants.highlightMaterial
 
 controlsShowProperties = () ->
   ($ '#controls-accordion').accordion 'activate', 1

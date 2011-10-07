@@ -5,7 +5,16 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsTreeSelectObject, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var __indexOf = Array.prototype.indexOf || function(item) {
+    for (var i = 0, l = this.length; i < l; i++) {
+      if (this[i] === item) return i;
+    }
+    return -1;
+  };
+  RegExp.escape = function(str) {
+    return str.replace(/[[\]\\$().{},?*+|^-]/g, "\\$&");
+  };
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -459,8 +468,55 @@
     controlsTreeSelectObject(id);
     return controlsPropertiesSelectObject(id);
   };
+  controlsToggleTreeVisibility = function(event) {
+    var $parent, collectNodes, disableNode, disableTagJson, disabledNodes, ids, node, parentId, parentNode, tag, tagNode, _i, _j, _k, _len, _len2, _len3, _ref, _ref2;
+    $parent = ($(event.target)).closest('.controls-tree-rel');
+    parentId = $parent.attr('id');
+    ids = [parentId];
+    if (event.target.checked) {
+      disabledNodes = state.scene.findNodes('^disable-.*?-' + (RegExp.escape(parentId)) + '$');
+      for (_i = 0, _len = disabledNodes.length; _i < _len; _i++) {
+        node = disabledNodes[_i];
+        node.splice();
+      }
+      return;
+    }
+    ($parent.find('.controls-tree-rel')).each(function() {
+      return ids.push(this.id);
+    });
+    _ref = state.scene.data().ifcTypes;
+    for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
+      tag = _ref[_j];
+      tag = tag.toLowerCase();
+      tagNode = state.scene.findNode(tag);
+      disableTagJson = {
+        type: 'tag',
+        tag: 'disable',
+        id: 'disable-' + tag + '-' + parentId
+      };
+      if (tagNode != null) {
+        collectNodes = [];
+        tagNode.eachNode((function() {
+          var _ref2;
+          if ((this.get('type')) === 'name' && (_ref2 = this.get('id'), __indexOf.call(ids, _ref2) >= 0) && (this.parent().get('id')) !== disableTagJson.id) {
+            collectNodes.push(this);
+          }
+          return false;
+        }), {
+          depthFirst: true
+        });
+        for (_k = 0, _len3 = collectNodes.length; _k < _len3; _k++) {
+          node = collectNodes[_k];
+          parentNode = node.parent();
+          disableNode = (_ref2 = parentNode.node(disableTagJson.id)) != null ? _ref2 : (parentNode.add('node', disableTagJson)).node(disableTagJson.id);
+          disableNode.add('node', node.disconnect());
+        }
+      }
+    }
+    return true;
+  };
   controlsTreeSelectObject = function(id) {
-    var $treeItem, oldHighlight, parentEl;
+    var $treeItem, node, oldHighlight, parentEl;
     ($('.controls-tree-selected')).removeClass('controls-tree-selected');
     ($('.controls-tree-selected-parent')).removeClass('controls-tree-selected-parent');
     oldHighlight = state.scene.findNode(constants.highlightMaterial.id);
@@ -473,7 +529,10 @@
       $treeItem.addClass('controls-tree-selected');
       ($('.controls-tree:has(.controls-tree-selected)')).addClass('controls-tree-selected-parent');
       controlsPropertiesSelectObject(id);
-      return (state.scene.findNode(id)).insert('node', constants.highlightMaterial);
+      node = state.scene.findNode(id);
+      if (node != null) {
+        return node.insert('node', constants.highlightMaterial);
+      }
     }
   };
   controlsShowProperties = function() {
@@ -536,6 +595,7 @@
     ($('#top-menu-help')).click(topmenuHelp);
     ($('#controls-relationships')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
     ($('#controls-relationships')).delegate('.controls-tree-item', 'dblclick', controlsShowProperties);
+    ($('#controls-relationships')).delegate('input', 'change', controlsToggleTreeVisibility);
     ($('#controls-layers input')).change(controlsToggleLayer);
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
