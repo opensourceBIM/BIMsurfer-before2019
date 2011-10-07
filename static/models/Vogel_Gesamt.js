@@ -1274,6 +1274,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'wallstandardcase',
+                  id: 'wallstandardcase',
                   nodes: [
                     {
                       type: 'material',
@@ -1846,6 +1847,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'wall',
+                  id: 'wall',
                   nodes: [
                     {
                       type: 'material',
@@ -1928,6 +1930,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'door',
+                  id: 'door',
                   nodes: [
                     {
                       type: 'material',
@@ -2070,6 +2073,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'slab',
+                  id: 'slab',
                   nodes: [
                     {
                       type: 'material',
@@ -2132,6 +2136,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'buildingelementproxy',
+                  id: 'buildingelementproxy',
                   nodes: [
                     {
                       type: 'material',
@@ -2384,6 +2389,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'stair',
+                  id: 'stair',
                   nodes: [
                     {
                       type: 'material',
@@ -2426,6 +2432,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'railing',
+                  id: 'railing',
                   nodes: [
                     {
                       type: 'material',
@@ -2448,6 +2455,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'window',
+                  id: 'window',
                   nodes: [
                     {
                       type: 'flags',
@@ -2616,6 +2624,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'roof',
+                  id: 'roof',
                   nodes: [
                     {
                       type: 'material',
@@ -2648,6 +2657,7 @@ SceneJS.createScene({
                 {
                   type: 'tag',
                   tag: 'column',
+                  id: 'column',
                   nodes: [
                     {
                       type: 'material',
@@ -3125,133 +3135,6 @@ SceneJS.createScene({
                   },
                   {
                     type: 'BuildingStorey',
-                    name: 'Vogel_UG',
-                    id: '3ExmyYZYn8wxd5S5z1MN_k',
-                    contains: [
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '3morB0pVvELvTrPpnUQmaG',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '2OF680fOP2Nugkohjrv5CX',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '2MrYn$x5L5sBRul7M8ox_$',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '0RjcgOAqzApf_Oj1tAiOEJ',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '247uQaMFX6xRujZiBXjmmW',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '3Hy1azZ21BghzXLxuRySaM',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '0CqTELMBf53Rg98XtD2dQy',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '068NRKKj53NPaj$uMtcWay',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '3ogkeiy518XOjD9Uc2xJZE',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '2J7tlJMGH1ROUb1JtNskG8',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '0M9cf7ZZj5AxoranjZdxDc',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '3fibx4ihD3CQIqrTdsvi9g',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '0RsrgGh4H4zhQjfuKoObEa',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '34smNELsj1Dv9ZX10SRaSc',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '1$jDliaFf0_94qp7RmI7tR',
-                      },
-                      {
-                        type: 'WallStandardCase',
-                        name: 'unknown',
-                        id: '1l8USw90vAHAahsAo3TNmL',
-                      },
-                      {
-                        type: 'Door',
-                        name: 'unknown',
-                        id: '128s1Bd09E68ToTGCOwwfI',
-                      },
-                      {
-                        type: 'Door',
-                        name: 'unknown',
-                        id: '17ee42beHAIuEb1Yh_Irw7',
-                      },
-                      {
-                        type: 'Door',
-                        name: 'unknown',
-                        id: '1RE56UFvz7gBpzwyyv4SBu',
-                      },
-                      {
-                        type: 'Door',
-                        name: 'unknown',
-                        id: '1RBu6kRyzFMh7iFbgW8lm3',
-                      },
-                      {
-                        type: 'Door',
-                        name: 'unknown',
-                        id: '3f2PbcIlb8EBgeUKNxvJyk',
-                      },
-                      {
-                        type: 'Stair',
-                        name: 'unknown',
-                        id: '016v1$5m99nOt6XVvJp0WP',
-                      },
-                      {
-                        type: 'Stair',
-                        name: 'unknown',
-                        id: '3hRfhr2mj9oQyknS09PmZT',
-                      },
-                      {
-                        type: 'Stair',
-                        name: 'unknown',
-                        id: '2FglF1Iy5D_8N1yc6rETyS',
-                      },
-                    ],
-                  },
-                  {
-                    type: 'BuildingStorey',
                     name: 'Vogel_DG',
                     id: '3PFG_wF$L23xarU_yjta9z',
                     contains: [
@@ -3377,6 +3260,133 @@ SceneJS.createScene({
                       },
                     ],
                   },
+                  {
+                    type: 'BuildingStorey',
+                    name: 'Vogel_UG',
+                    id: '3ExmyYZYn8wxd5S5z1MN_k',
+                    contains: [
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '3morB0pVvELvTrPpnUQmaG',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '2OF680fOP2Nugkohjrv5CX',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '2MrYn$x5L5sBRul7M8ox_$',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '0RjcgOAqzApf_Oj1tAiOEJ',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '247uQaMFX6xRujZiBXjmmW',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '3Hy1azZ21BghzXLxuRySaM',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '0CqTELMBf53Rg98XtD2dQy',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '068NRKKj53NPaj$uMtcWay',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '3ogkeiy518XOjD9Uc2xJZE',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '2J7tlJMGH1ROUb1JtNskG8',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '0M9cf7ZZj5AxoranjZdxDc',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '3fibx4ihD3CQIqrTdsvi9g',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '0RsrgGh4H4zhQjfuKoObEa',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '34smNELsj1Dv9ZX10SRaSc',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '1$jDliaFf0_94qp7RmI7tR',
+                      },
+                      {
+                        type: 'WallStandardCase',
+                        name: 'unknown',
+                        id: '1l8USw90vAHAahsAo3TNmL',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'unknown',
+                        id: '128s1Bd09E68ToTGCOwwfI',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'unknown',
+                        id: '17ee42beHAIuEb1Yh_Irw7',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'unknown',
+                        id: '1RE56UFvz7gBpzwyyv4SBu',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'unknown',
+                        id: '1RBu6kRyzFMh7iFbgW8lm3',
+                      },
+                      {
+                        type: 'Door',
+                        name: 'unknown',
+                        id: '3f2PbcIlb8EBgeUKNxvJyk',
+                      },
+                      {
+                        type: 'Stair',
+                        name: 'unknown',
+                        id: '016v1$5m99nOt6XVvJp0WP',
+                      },
+                      {
+                        type: 'Stair',
+                        name: 'unknown',
+                        id: '3hRfhr2mj9oQyknS09PmZT',
+                      },
+                      {
+                        type: 'Stair',
+                        name: 'unknown',
+                        id: '2FglF1Iy5D_8N1yc6rETyS',
+                      },
+                    ],
+                  },
                 ],
               },
             ],
@@ -3427,11 +3437,11 @@ SceneJS.createScene({
           'TestGeometricContext',
         ],
         'Units in Context': [
-          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@3e3a2b03',
-          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@5cddf1df',
-          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@6f32971a',
-          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@625e64fe',
-          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@23389226',
+          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@559373fb',
+          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@43a38fa1',
+          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@272ab5b8',
+          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@6500571e',
+          'org.bimserver.models.ifc2x3.impl.IfcSIUnitImpl@7957a65f',
         ],
       },
       '0aPeoxafL6HhKc27oBx0aB': {
