@@ -10,6 +10,9 @@ sceneInit = () ->
   # Calculate camera attributes
   sceneDiameter = SceneJS_math_lenVec3 state.scene.data().bounds
   state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0]
+  # Initialize the tag mask (for layers / hidden objects)
+  tags = (tag.toLowerCase() for tag in state.scene.data().ifcTypes)
+  state.scene.set 'tagMask', '^(' + (tags.join '|') + ')$'
   # Add useful nodes to the library
   #highlightNode = 
 

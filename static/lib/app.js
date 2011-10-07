@@ -550,7 +550,7 @@
       }
       return _results;
     })();
-    return state.scene.set('tagMask', '(' + (tags.join('$|')) + '$)');
+    return state.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
   };
   snapshotsPush = function() {
     var imgURI, node, thumbSize;
@@ -607,10 +607,21 @@
     return windowResize();
   };
   sceneInit = function() {
-    var sceneDiameter;
+    var sceneDiameter, tag, tags;
     modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
     sceneDiameter = SceneJS_math_lenVec3(state.scene.data().bounds);
-    return state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0];
+    state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0];
+    tags = (function() {
+      var _i, _len, _ref, _results;
+      _ref = state.scene.data().ifcTypes;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tag = _ref[_i];
+        _results.push(tag.toLowerCase());
+      }
+      return _results;
+    })();
+    return state.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
   };
   controlsInit = function() {
     var ifcType, layersHtml, sceneData;
