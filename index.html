@@ -505,8 +505,8 @@
 	    -webkit-box-orient: vertical;
 	    -moz-box-orient: vertical;
 	    box-orient: vertical;
-      padding: 6px 0 0 30px;
-      width: 158px;
+      padding: 6px 0 0 25px;
+      width: 150px;
       vertical-align: top;
       background: rgb(245,245,245); /* Old browsers */
       background: -moz-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* FF3.6+ */
@@ -514,7 +514,7 @@
       background: -webkit-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* Chrome10+,Safari5.1+ */
     }
     #snapshots {
-      width: 140px;
+      width: 125px;
     }
     #snapshots-area {
 	    -webkit-box-flex: 1;
@@ -526,8 +526,6 @@
       display: inline-block;
       vertical-align: middle;
       position: relative;
-      border: 1px solid #aaa;
-      color: #444;
       margin-top: 10px;
       width: 125px;
       height: 100px;
@@ -538,20 +536,8 @@
       display: none;
       right: 4px;
     }
-    .snapshot-swap {
-      display: none;
-      letter-spacing: 4px;
-      width: 10px;
-      -moz-transform:    rotate(90deg);
-      -o-transform:      rotate(90deg);
-      -webkit-transform: rotate(90deg);
-      transform:         rotate(90deg);
-    }
     .snapshot:hover .snapshot-delete {
       display: block;
-    }
-    .snapshot:hover .snapshot-swap {
-      display: inline-block;
     }
     #snapshot-placeholder  {
       display: block;
@@ -676,7 +662,7 @@
           <div class='shortcut'><div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Rotate the view</span></div>
           <div class='shortcut'><div class='shortcut-key'>Shift</div>+<div class='shortcut-mouse-middle'></div><span class='shortcut-description'>Pan the view</span></div>
           <div class='shortcut'><div class='shortcut-mouse-scroll'></div><span class='shortcut-description'>Zoom in and out</span></div>
-          <div class='shortcut'><div class='shortcut-key'>spacebar</div><span class='shortcut-description'>Fullscreen mode</span></div>
+          <div class='shortcut'><div class='shortcut-key'>F11</div><span class='shortcut-description'>Fullscreen mode</span></div>
         </div>
         <div id='main-view-controls' style='visibility: hidden;'>
           <div id='controls-accordion'>

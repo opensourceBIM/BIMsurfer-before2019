@@ -21,7 +21,6 @@ snapshotsPush = () ->
 <a href='#' class='snapshot-delete'>x</a>
 <img width='" + thumbSize[0] + "px' height='" + thumbSize[1] + "px' src='" + imgURI + "'>
 </div>
-<div class='snapshot-swap'><a href='#'>&lt;</a><a href='#'>&gt;</a></div>
 </div>"
 
 snapshotsDelete = (event) ->
