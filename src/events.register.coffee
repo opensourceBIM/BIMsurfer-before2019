@@ -14,6 +14,7 @@ registerDOMEvents = () ->
   state.viewport.domElement.addEventListener 'mousemove', mouseMove, true
   state.viewport.domElement.addEventListener 'mousewheel', mouseWheel, true
   state.viewport.domElement.addEventListener 'DOMMouseScroll', mouseWheel, true
+  document.addEventListener 'keydown', keyDown, true
   window.addEventListener 'resize', windowResize, true
 
 # Register UI controls events

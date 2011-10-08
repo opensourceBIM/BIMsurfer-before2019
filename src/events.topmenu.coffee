@@ -25,7 +25,7 @@ topmenuModeAdvanced = (event) ->
   ($ '#top-menu-mode-basic').removeClass 'top-menu-activated'
   state.settings.mode = 'performance'
 
-topmenuHelp = (event) ->
-  ($ event.target).toggleClass 'top-menu-activated'
+topmenuHelp = () ->
+  ($ '#top-menu-help').toggleClass 'top-menu-activated'
   ($ '#main-view-help').toggle()
   ($ '#main-view-keys').toggle()

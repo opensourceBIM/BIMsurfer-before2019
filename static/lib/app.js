@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, ifcTreeInit, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -400,6 +400,12 @@
     zoomDistance = event.wheelDelta / -120.0 * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
     return zoomLookAtNode(state.scene.findNode('main-lookAt'), zoomDistance, state.camera.distanceLimits);
   };
+  keyDown = function(event) {
+    switch (event.which) {
+      case 72:
+        return topmenuHelp();
+    }
+  };
   topmenuPerformanceQuality = function(event) {
     ($(event.target)).addClass('top-menu-activated');
     ($('#top-menu-performance-performance')).removeClass('top-menu-activated');
@@ -424,8 +430,8 @@
     ($('#top-menu-mode-basic')).removeClass('top-menu-activated');
     return state.settings.mode = 'performance';
   };
-  topmenuHelp = function(event) {
-    ($(event.target)).toggleClass('top-menu-activated');
+  topmenuHelp = function() {
+    ($('#top-menu-help')).toggleClass('top-menu-activated');
     ($('#main-view-help')).toggle();
     return ($('#main-view-keys')).toggle();
   };
@@ -588,6 +594,7 @@
     state.viewport.domElement.addEventListener('mousemove', mouseMove, true);
     state.viewport.domElement.addEventListener('mousewheel', mouseWheel, true);
     state.viewport.domElement.addEventListener('DOMMouseScroll', mouseWheel, true);
+    document.addEventListener('keydown', keyDown, true);
     return window.addEventListener('resize', windowResize, true);
   };
   registerControlEvents = function() {
