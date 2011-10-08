@@ -284,7 +284,10 @@
       position: absolute;
       width: 100%;
       z-index: 1;
-      border-bottom: 1px solid #e2e2e2;
+      /*border-bottom: 1px solid #e2e2e2;*/
+      background: -moz-linear-gradient(top, rgba(50,50,50,0.1) 0%, rgba(50,50,50,0) 10%); /* FF3.6+ */
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(50,50,50,0.1)), color-stop(10%,rgba(50,50,50,0))); /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(top, rgba(50,50,50,0.1) 0%, rgba(50,50,50,0) 10%); /* Chrome10+,Safari5.1+ */
       height: 120px;
     }
     #main-menu div {
