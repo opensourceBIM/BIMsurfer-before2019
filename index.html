@@ -199,6 +199,10 @@
       height: 50px;
       background-color: #bbb;
     }
+    .position-right {
+      position: absolute;
+      right: 0;
+    }
 
     /* Application styling */
     #top-menu {
@@ -208,6 +212,8 @@
       padding-top: 3px;
       height:22px;
       border-bottom: 1px solid black;
+      /* Alternate table layout */
+      display: table-row;
     }
     #top-menu li {
       position: relative;
@@ -260,22 +266,26 @@
       padding: 0;
     }
     #main-layout {
-      display: -webkit-box;
+      /*display: -webkit-box;
       display: -moz-box;
       display: box;
-	    -webkit-box-orient: vertical;
-	    -moz-box-orient: vertical;
-	    box-orient: vertical;
+      -webkit-box-orient: vertical;
+      -moz-box-orient: vertical;
+      box-orient: vertical;*/
       width: 100%;
       height: 100%;
+      /* Alternate table layout */
+      display: table;
     }
     .main-layout-row {
-      display: -webkit-box;
+      /*display: -webkit-box;
       display: -moz-box;
       display: box;
-	    -webkit-box-flex: 1;
-	    -moz-box-flex: 1;
-	    box-flex: 1;
+      -webkit-box-flex: 1;
+      -moz-box-flex: 1;
+      box-flex: 1;*/
+      /* Alternate table layout */
+      display: table-row;
     }
     #main-menu {
       /*-webkit-box-flex: 1;
@@ -321,7 +331,7 @@
     }
     #main-view {
       position: relative;
-      display: -webkit-box;
+      /*display: -webkit-box;
       display: -moz-box;
       display: box;
       -webkit-box-orient: horizontal;
@@ -329,11 +339,13 @@
       box-orient: horizontal;
       -webkit-box-flex: 1;
       -moz-box-flex: 1;
-      box-flex: 1;
+      box-flex: 1;*/
       background: rgb(235,235,235); /* Old browsers */
       background: -moz-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* FF3.6+ */
       background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(60%,rgba(255,255,255,1)), color-stop(100%,rgba(235,235,235,1))); /* Chrome,Safari4+ */
       background: -webkit-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* Chrome10+,Safari5.1+ */
+      /* Alternate table layout */
+      display: table-cell;
     }
     #viewport {
       position: absolute;
@@ -502,12 +514,12 @@
       width: 100%;
     }
     #snapshots-fold {
-      display: -webkit-box;
+      /*display: -webkit-box;
       display: -moz-box;
       display: box;
-	    -webkit-box-orient: vertical;
-	    -moz-box-orient: vertical;
-	    box-orient: vertical;
+      -webkit-box-orient: vertical;
+      -moz-box-orient: vertical;
+      box-orient: vertical;*/
       padding: 6px 0 0 25px;
       width: 150px;
       vertical-align: top;
@@ -515,15 +527,27 @@
       background: -moz-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* FF3.6+ */
       background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(211,211,211,1)), color-stop(20%,rgba(245,245,245,1)), color-stop(100%,rgba(245,245,245,1))); /* Chrome,Safari4+ */
       background: -webkit-linear-gradient(left, rgba(211,211,211,1) 0%, rgba(245,245,245,1) 20%, rgba(245,245,245,1) 100%); /* Chrome10+,Safari5.1+ */
+      border-left: 1px solid #ccc;
+      /* Alternate table layout */
+      position: relative;
+      display: table-cell;
+      height: 100%;
+      max-height: 100%;
     }
     #snapshots {
       width: 125px;
     }
     #snapshots-area {
-	    -webkit-box-flex: 1;
-	    -moz-box-flex: 1;
-	    box-flex: 1;
+      /*-webkit-box-flex: 1;
+      -moz-box-flex: 1;
+      box-flex: 1;*/
       overflow-y: auto;
+      /* Alternate table layout */
+      position: absolute;
+      width: 150px;
+      top: 40px;
+      bottom: 30px;
+      right: 0;
     }
     .snapshot-thumb {
       display: inline-block;
@@ -560,6 +584,11 @@
     #snapshots-toolbar {
       position: relative;
       padding: 1px 0 0 0;
+      /* Alternate table layout */
+      width: 150px;
+      position: absolute;
+      bottom: 0;
+      right: 0;
     }
     #snapshots-toolbar li {
       font-size: 15px;
@@ -631,8 +660,8 @@
       </li>
       <li><a href='#' id='top-menu-about'>About</a></li>
       <li><a href='#' id='top-menu-help' class='top-menu-activated'>Help</a></li>
-  	</menu>
-    <div class='main-layout-row'>
+    </menu>
+    <div class='main-layout-row'><div style='display:table;width:100%;height:100%'><div style='display:table-row;width:100%;height:100%'>
       <div id='main-view'>
         <div id='main-menu'>
           <div id='main-menu-logo'></div>
@@ -699,15 +728,15 @@
         </div>
         <menu id='snapshots-toolbar' class='horizontal-list' type='toolbar'>
           <li id='snapshots-toolbar-play'><a id='snapshots-play' href='#'>&gt; Play</a></li>
-          <li id='snapshots-toolbar-export' style='float:right'>
+          <li id='snapshots-toolbar-export' class='position-right'>
             <a href='#'>Export</a>
             <menu type='toolbar' class='snapshots-toolbar-pullup'>
               <li><a href='#'>PDF</a></li>
             </menu>
           </li>
-        </div>
+        </menu>
       </div>
-    </div>
+    </div></div></div>
   </div>
 
   <!-- Prompt IE users to install Chrome Frame. chromium.org/developers/how-tos/chrome-frame-getting-started -->
