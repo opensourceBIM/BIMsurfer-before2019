@@ -203,6 +203,12 @@
       position: absolute;
       right: 0;
     }
+    .firefox-relative-cell { 
+      /* This class is added to a div in a table cell in order to get relative positioning in firefox. It is not needed in chrome. */
+      position: relative;
+      width: 100%;
+      height: 100%
+    }
 
     /* Application styling */
     #top-menu {
@@ -534,6 +540,10 @@
       height: 100%;
       max-height: 100%;
     }
+    #snapshots-fold h2 {
+      text-align: center;
+      width: 125px;
+    }
     #snapshots {
       width: 125px;
     }
@@ -545,7 +555,7 @@
       /* Alternate table layout */
       position: absolute;
       width: 150px;
-      top: 40px;
+      top: 20px;
       bottom: 30px;
       right: 0;
     }
@@ -662,7 +672,7 @@
       <li><a href='#' id='top-menu-help' class='top-menu-activated'>Help</a></li>
     </menu>
     <div class='main-layout-row'><div style='display:table;width:100%;height:100%'><div style='display:table-row;width:100%;height:100%'>
-      <div id='main-view'>
+      <div id='main-view'><div class='firefox-relative-cell'>
         <div id='main-menu'>
           <div id='main-menu-logo'></div>
           <div class='main-menu-panel ui-widget-content'>
@@ -714,8 +724,8 @@
           </div>
         </div>
         <div id='main-view-help'></div>
-      </div>
-      <div id='snapshots-fold'>
+      </div></div>
+      <div id='snapshots-fold'><div class='firefox-relative-cell'>
         <div><h2>Snapshots</h2></div>
         <div id='snapshots-area'>
           <div id='snapshots-animframe'>
@@ -735,7 +745,7 @@
             </menu>
           </li>
         </menu>
-      </div>
+      </div></div>
     </div></div></div>
   </div>
 
