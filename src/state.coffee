@@ -12,8 +12,11 @@ state =
     selectedIfcObject: null
     mouse:
       last: [0, 0]
-      leftDragging: false
-      middleDragging: false
+      leftDown: false
+      middleDown: false
+      leftDragDistance: 0
+      middleDragDistance: 0
+      pickRecord: null
   camera:
     distanceLimits: [0.0, 0.0]    # Min / Max limits
   snapshots: 
