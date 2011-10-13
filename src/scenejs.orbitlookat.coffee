@@ -10,40 +10,43 @@ orbitLookAt = (dAngles, orbitUp, lookAt) ->
   up0 = recordToVec3 lookAt.up
   look = recordToVec3 lookAt.look
 
-  # Create an axis-angle rotation transformation
-  eye0len = SceneJS_math_lenVec3 eye0
-  eye0norm = [0.0,0.0,0.0]
-  SceneJS_math_mulVec3Scalar eye0, 1.0 / eye0len, eye0norm
+  # Calculate the view axes
+  axes = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
+  axesNorm = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
+  SceneJS_math_subVec3 eye0, look, axes[2]
+  SceneJS_math_cross3Vec3 up0, axes[2], axes[0]
+  SceneJS_math_normalizeVec3 axes[0], axesNorm[0]
+  SceneJS_math_normalizeVec3 axes[2], axesNorm[2]
+  SceneJS_math_cross3Vec3 axesNorm[2], axesNorm[0], axesNorm[1]
+  #[axes[1][0], axes[1][1], axes[1][2]] = [axesNorm[1][0],axesNorm[1][1],axesNorm[1][2]] (not needed)
 
-  tangent0 = [0.0,0.0,0.0]
-  SceneJS_math_cross3Vec3 up0, eye0, tangent0
-  tangent0norm = SceneJS_math_normalizeVec3 tangent0
-
-  up0norm = [0.0,0.0,0.0]
-  SceneJS_math_cross3Vec3 eye0norm, tangent0norm, up0norm
-
-  # (Transform axis out of the local space of the lookat)
-  axis = [
-    tangent0norm[0] * -dAngles[1] + up0norm[0] * -dAngles[0]
-    tangent0norm[1] * -dAngles[1] + up0norm[1] * -dAngles[0]
-    tangent0norm[2] * -dAngles[1] + up0norm[2] * -dAngles[0]
+  # Transform rotation axis from view space to world space
+  rotAxis = [
+    axesNorm[0][0] * -dAngles[1] + axesNorm[1][0] * -dAngles[0]
+    axesNorm[0][1] * -dAngles[1] + axesNorm[1][1] * -dAngles[0]
+    axesNorm[0][2] * -dAngles[1] + axesNorm[1][2] * -dAngles[0]
   ]
   dAngle = SceneJS_math_lenVec2 dAngles
-  rotMat = SceneJS_math_rotationMat4v dAngle, axis
+  rotMat = SceneJS_math_rotationMat4v dAngle, rotAxis
 
-  # Transform the eye vector of the lookat
-  eye1 = SceneJS_math_transformVector3 rotMat, eye0
+  # Transform the axes of the view (but without normalizing the Z-axis)
+  transformedX = SceneJS_math_transformVector3 rotMat, axesNorm[0]
+  transformedZ = SceneJS_math_transformVector3 rotMat, axes[2]
+
+  # Calculate lookat parameters (eye, up)
+  eye1 = [0.0,0.0,0.0]
+  SceneJS_math_addVec3 look, transformedZ, eye1
 
   # Transform the tangent vector of the lookat and then correct for drift
   # (Drift is the deviation of the tangent vector from the plane that forms an orthogonal complement to the orbitUp vector)
-  tangent1 = SceneJS_math_transformVector3 rotMat, tangent0
+  tangent1 = transformedX
   tangentError = [0.0,0.0,0.0]
   SceneJS_math_mulVec3 tangent1, orbitUp, tangentError
   SceneJS_math_subVec3 tangent1, tangentError
 
-  # Transform the up vector using the corrected tangent
+  # Calculate the up vector using the corrected tangent
   up1 = [0.0,0.0,0.0]
-  SceneJS_math_cross3Vec3 eye1, tangent1, up1
+  SceneJS_math_cross3Vec3 transformedZ, tangent1, up1
   
   result =
     eye: vec3ToRecord eye1

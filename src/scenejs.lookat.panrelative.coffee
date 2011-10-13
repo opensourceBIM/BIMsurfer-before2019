@@ -9,7 +9,6 @@ lookAtPanRelative = (dPosition, lookAt) ->
 
   # Calculate the view axes
   axes = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
-  axesNorm = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
   SceneJS_math_subVec3 eye, look, axes[2]
   SceneJS_math_cross3Vec3 up, axes[2], axes[0]
   SceneJS_math_normalizeVec3 axes[0]

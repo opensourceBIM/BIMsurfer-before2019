@@ -75,7 +75,7 @@
     return SceneJS_math_newQuaternionFromMat3(x.concat(y, z));
   };
   orbitLookAt = function(dAngles, orbitUp, lookAt) {
-    var axis, dAngle, eye0, eye0len, eye0norm, eye1, look, result, rotMat, tangent0, tangent0norm, tangent1, tangentError, up0, up0norm, up1;
+    var axes, axesNorm, dAngle, eye0, eye1, look, result, rotAxis, rotMat, tangent1, tangentError, transformedX, transformedZ, up0, up1;
     if (dAngles[0] === 0.0 && dAngles[1] === 0.0) {
       return {
         eye: lookAt.eye,
@@ -86,24 +86,26 @@
     eye0 = recordToVec3(lookAt.eye);
     up0 = recordToVec3(lookAt.up);
     look = recordToVec3(lookAt.look);
-    eye0len = SceneJS_math_lenVec3(eye0);
-    eye0norm = [0.0, 0.0, 0.0];
-    SceneJS_math_mulVec3Scalar(eye0, 1.0 / eye0len, eye0norm);
-    tangent0 = [0.0, 0.0, 0.0];
-    SceneJS_math_cross3Vec3(up0, eye0, tangent0);
-    tangent0norm = SceneJS_math_normalizeVec3(tangent0);
-    up0norm = [0.0, 0.0, 0.0];
-    SceneJS_math_cross3Vec3(eye0norm, tangent0norm, up0norm);
-    axis = [tangent0norm[0] * -dAngles[1] + up0norm[0] * -dAngles[0], tangent0norm[1] * -dAngles[1] + up0norm[1] * -dAngles[0], tangent0norm[2] * -dAngles[1] + up0norm[2] * -dAngles[0]];
+    axes = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]];
+    axesNorm = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]];
+    SceneJS_math_subVec3(eye0, look, axes[2]);
+    SceneJS_math_cross3Vec3(up0, axes[2], axes[0]);
+    SceneJS_math_normalizeVec3(axes[0], axesNorm[0]);
+    SceneJS_math_normalizeVec3(axes[2], axesNorm[2]);
+    SceneJS_math_cross3Vec3(axesNorm[2], axesNorm[0], axesNorm[1]);
+    rotAxis = [axesNorm[0][0] * -dAngles[1] + axesNorm[1][0] * -dAngles[0], axesNorm[0][1] * -dAngles[1] + axesNorm[1][1] * -dAngles[0], axesNorm[0][2] * -dAngles[1] + axesNorm[1][2] * -dAngles[0]];
     dAngle = SceneJS_math_lenVec2(dAngles);
-    rotMat = SceneJS_math_rotationMat4v(dAngle, axis);
-    eye1 = SceneJS_math_transformVector3(rotMat, eye0);
-    tangent1 = SceneJS_math_transformVector3(rotMat, tangent0);
+    rotMat = SceneJS_math_rotationMat4v(dAngle, rotAxis);
+    transformedX = SceneJS_math_transformVector3(rotMat, axesNorm[0]);
+    transformedZ = SceneJS_math_transformVector3(rotMat, axes[2]);
+    eye1 = [0.0, 0.0, 0.0];
+    SceneJS_math_addVec3(look, transformedZ, eye1);
+    tangent1 = transformedX;
     tangentError = [0.0, 0.0, 0.0];
     SceneJS_math_mulVec3(tangent1, orbitUp, tangentError);
     SceneJS_math_subVec3(tangent1, tangentError);
     up1 = [0.0, 0.0, 0.0];
-    SceneJS_math_cross3Vec3(eye1, tangent1, up1);
+    SceneJS_math_cross3Vec3(transformedZ, tangent1, up1);
     return result = {
       eye: vec3ToRecord(eye1),
       look: lookAt.look,
@@ -139,7 +141,7 @@
     }));
   };
   lookAtPanRelative = function(dPosition, lookAt) {
-    var axes, axesNorm, dPositionProj, eye, look, result, up;
+    var axes, dPositionProj, eye, look, result, up;
     if (dPosition[0] === 0.0 && dPosition[1] === 0.0) {
       return {
         eye: lookAt.eye,
@@ -151,7 +153,6 @@
     look = recordToVec3(lookAt.look);
     up = recordToVec3(lookAt.up);
     axes = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]];
-    axesNorm = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]];
     SceneJS_math_subVec3(eye, look, axes[2]);
     SceneJS_math_cross3Vec3(up, axes[2], axes[0]);
     SceneJS_math_normalizeVec3(axes[0]);
