@@ -277,6 +277,9 @@
       orbitSpeedFactor: 0.01,
       zoomSpeedFactor: 0.05
     },
+    mouse: {
+      pickDragThreshold: 10
+    },
     canvas: {
       defaultSize: [1024, 512],
       topOffset: 122
@@ -311,8 +314,11 @@
       selectedIfcObject: null,
       mouse: {
         last: [0, 0],
-        leftDragging: false,
-        middleDragging: false
+        leftDown: false,
+        middleDown: false,
+        leftDragDistance: 0,
+        middleDragDistance: 0,
+        pickRecord: null
       }
     },
     camera: {
@@ -361,43 +367,63 @@
     return cameraNode.set('optics', cameraOptics);
   };
   mouseDown = function(event) {
+    var coords;
     state.viewport.mouse.last = [event.clientX, event.clientY];
     switch (event.which) {
       case 1:
-        return state.viewport.mouse.leftDragging = true;
+        state.viewport.mouse.leftDown = true;
+        break;
       case 2:
-        return state.viewport.mouse.middleDragging = true;
+        state.viewport.mouse.middleDown = true;
+    }
+    if (event.which === 1) {
+      coords = mouseCoordsWithinElement(event);
+      return state.viewport.mouse.pickRecord = state.scene.pick(coords[0], coords[1]);
     }
   };
   mouseUp = function(event) {
-    var coords, pickRecord;
-    state.viewport.mouse.leftDragging = false;
-    state.viewport.mouse.middleDragging = false;
-    if (event.which === 1) {
-      coords = mouseCoordsWithinElement(event);
-      pickRecord = state.scene.pick(coords[0], coords[1]);
-      if (pickRecord) {
-        return controlsTreeSelectObject(pickRecord.nodeId);
+    if (event.which === 1 && state.viewport.mouse.leftDragDistance < constants.mouse.pickDragThreshold) {
+      if (state.viewport.mouse.pickRecord != null) {
+        controlsTreeSelectObject(state.viewport.mouse.pickRecord.nodeId);
       } else {
-        return controlsTreeSelectObject();
+        controlsTreeSelectObject();
       }
+      state.viewport.mouse.pickRecord = null;
+    }
+    switch (event.which) {
+      case 1:
+        state.viewport.mouse.leftDown = false;
+        return state.viewport.mouse.leftDragDistance = 0;
+      case 2:
+        state.viewport.mouse.middleDown = false;
+        return state.viewport.mouse.middleDragDistance = 0;
     }
   };
   mouseMove = function(event) {
-    var delta, deltaLength, orbitAngles;
-    if (state.viewport.mouse.middleDragging) {
-      delta = [event.clientX - state.viewport.mouse.last[0], event.clientY - state.viewport.mouse.last[1]];
-      deltaLength = SceneJS_math_lenVec2(delta);
+    var delta, deltaLength, orbitAngles, panVector;
+    delta = [event.clientX - state.viewport.mouse.last[0], event.clientY - state.viewport.mouse.last[1]];
+    deltaLength = SceneJS_math_lenVec2(delta);
+    if (state.viewport.mouse.leftDown) {
+      state.viewport.mouse.leftDragDistance += deltaLength;
+    }
+    if (state.viewport.mouse.middleDown) {
+      state.viewport.mouse.middleDragDistance += deltaLength;
+    }
+    if (state.viewport.mouse.leftDown) {
       orbitAngles = [0.0, 0.0];
       SceneJS_math_mulVec2Scalar(delta, constants.camera.orbitSpeedFactor / deltaLength, orbitAngles);
       orbitAngles = [Math.clamp(orbitAngles[0], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed), Math.clamp(orbitAngles[1], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed)];
       orbitLookAtNode(state.scene.findNode('main-lookAt'), orbitAngles, [0.0, 0.0, 1.0]);
+    } else if (state.viewport.mouse.middleDown) {
+      panVector = [0.0, 0.0];
+      SceneJS_math_mulVec2Scalar(delta, constants.camera.panSpeedFactor / deltaLength, panVector);
     }
     return state.viewport.mouse.last = [event.clientX, event.clientY];
   };
   mouseWheel = function(event) {
-    var zoomDistance;
-    zoomDistance = event.wheelDelta / -120.0 * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
+    var delta, zoomDistance;
+    delta = event.wheelDelta != null ? event.wheelDelta / -120.0 : Math.clamp(event.detail, -1.0, 1.0);
+    zoomDistance = delta * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
     return zoomLookAtNode(state.scene.findNode('main-lookAt'), zoomDistance, state.camera.distanceLimits);
   };
   keyDown = function(event) {
