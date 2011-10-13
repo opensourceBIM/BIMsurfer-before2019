@@ -4,7 +4,7 @@ orbitLookAt = (dAngles, orbitUp, lookAt) ->
   # NOTE: This would probably be more elegant with quaternions, but the scenejs camera is already in a matrix-like format
 
   if dAngles[0] == 0.0 and dAngles[1] == 0.0
-    return { eye: lookAt.eye, up: lookAt.up }
+    return { eye: lookAt.eye, look: lookAt.look, up: lookAt.up }
 
   eye0 = recordToVec3 lookAt.eye
   up0 = recordToVec3 lookAt.up

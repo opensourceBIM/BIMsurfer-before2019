@@ -55,9 +55,9 @@ mouseMove = (event) ->
   else if state.viewport.mouse.middleDown
     # Pan the camera
     panVector = [0.0,0.0]
-    SceneJS_math_mulVec2Scalar delta, constants.camera.panSpeedFactor / deltaLength, panVector
-    # TODO: Pan lookAtNode
-    
+    SceneJS_math_mulVec2Scalar [-delta[0],delta[1]], constants.camera.panSpeedFactor / deltaLength, panVector
+    lookAtNodePanRelative (state.scene.findNode 'main-lookAt'), panVector
+  
   state.viewport.mouse.last = [event.clientX, event.clientY]
 
 mouseWheel = (event) ->

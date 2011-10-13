@@ -10,6 +10,7 @@ appFiles  = [
   'scenejs.conversion'
   'scenejs.orbitlookat'
   'scenejs.zoomlookat'
+  'scenejs.lookat.panrelative'
   'scenejs.interpolate.lookat'
   'scenejs.fx'
   'scenejs.fx.tween.lookat.spline'

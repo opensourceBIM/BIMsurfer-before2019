@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -79,6 +79,7 @@
     if (dAngles[0] === 0.0 && dAngles[1] === 0.0) {
       return {
         eye: lookAt.eye,
+        look: lookAt.look,
         up: lookAt.up
       };
     }
@@ -132,6 +133,42 @@
   };
   zoomLookAtNode = function(node, distance, limits) {
     return node.set(zoomLookAt(distance, limits, {
+      eye: node.get('eye'),
+      look: node.get('look'),
+      up: node.get('up')
+    }));
+  };
+  lookAtPanRelative = function(dPosition, lookAt) {
+    var axes, axesNorm, dPositionProj, eye, look, result, up;
+    if (dPosition[0] === 0.0 && dPosition[1] === 0.0) {
+      return {
+        eye: lookAt.eye,
+        look: lookAt.look,
+        up: lookAt.up
+      };
+    }
+    eye = recordToVec3(lookAt.eye);
+    look = recordToVec3(lookAt.look);
+    up = recordToVec3(lookAt.up);
+    axes = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]];
+    axesNorm = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]];
+    SceneJS_math_subVec3(eye, look, axes[2]);
+    SceneJS_math_cross3Vec3(up, axes[2], axes[0]);
+    SceneJS_math_normalizeVec3(axes[0]);
+    SceneJS_math_cross3Vec3(axes[2], axes[0], axes[1]);
+    SceneJS_math_normalizeVec3(axes[1]);
+    SceneJS_math_mulVec3Scalar(axes[0], dPosition[0]);
+    SceneJS_math_mulVec3Scalar(axes[1], dPosition[1]);
+    dPositionProj = [0.0, 0.0, 0.0];
+    SceneJS_math_addVec3(axes[0], axes[1], dPositionProj);
+    return result = {
+      eye: vec3ToRecord(SceneJS_math_addVec3(eye, dPositionProj)),
+      look: vec3ToRecord(SceneJS_math_addVec3(look, dPositionProj)),
+      up: lookAt.up
+    };
+  };
+  lookAtNodePanRelative = function(node, dPosition) {
+    return node.set(lookAtPanRelative(dPosition, {
       eye: node.get('eye'),
       look: node.get('look'),
       up: node.get('up')
@@ -275,7 +312,8 @@
     camera: {
       maxOrbitSpeed: Math.PI * 0.1,
       orbitSpeedFactor: 0.01,
-      zoomSpeedFactor: 0.05
+      zoomSpeedFactor: 0.05,
+      panSpeedFactor: 0.1
     },
     mouse: {
       pickDragThreshold: 10
@@ -416,7 +454,8 @@
       orbitLookAtNode(state.scene.findNode('main-lookAt'), orbitAngles, [0.0, 0.0, 1.0]);
     } else if (state.viewport.mouse.middleDown) {
       panVector = [0.0, 0.0];
-      SceneJS_math_mulVec2Scalar(delta, constants.camera.panSpeedFactor / deltaLength, panVector);
+      SceneJS_math_mulVec2Scalar([-delta[0], delta[1]], constants.camera.panSpeedFactor / deltaLength, panVector);
+      lookAtNodePanRelative(state.scene.findNode('main-lookAt'), panVector);
     }
     return state.viewport.mouse.last = [event.clientX, event.clientY];
   };

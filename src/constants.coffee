@@ -9,6 +9,7 @@ constants =
     maxOrbitSpeed: Math.PI * 0.1
     orbitSpeedFactor: 0.01
     zoomSpeedFactor: 0.05
+    panSpeedFactor: 0.1
   mouse:
     pickDragThreshold: 10 # Distance that the mouse can be dragged while picking
   canvas:
