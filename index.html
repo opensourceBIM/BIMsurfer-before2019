@@ -216,7 +216,6 @@
       background: #2d2d2d;
       text-align: right;
       width: 100%;
-      padding-top: 3px;
       height:22px;
       border-bottom: 1px solid black;
       /* Alternate table layout */
@@ -225,13 +224,24 @@
     #top-menu li {
       position: relative;
       text-align: left;
-      padding: 0 10px;
+      padding: 3px 10px;
     }
     #top-menu h4 {
       color: #666;
       text-align: right;
       font-size: 11px;
       font-weight: normal;
+    }
+    #top-menu a {
+      display: block;
+      color: #ddd;
+      line-height: 18px;
+      margin: 0 5px;
+      padding: 0 13px;
+      font-size: 13px;
+    }
+    #top-menu a:hover {
+      color: #fff;
     }
     .top-menu-dropdown {
       position: absolute;
@@ -247,22 +257,14 @@
       border-radius: 5px;
       padding: 8px 10px;
     }
-    #top-menu a {
-      display: block;
-      color: #ddd;
-      line-height: 18px;
-      margin: 0 5px;
-      padding: 0 13px;
-      font-size: 13px;
-    }
-    #top-menu a:hover {
-      color: #fff;
+    #top-menu .top-menu-float li {
+      padding: 0 10px;
     }
     .top-menu-activated {
       background: #667;
       background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#556), to(#666673));
       background: -webkit-linear-gradient(top, #556, #666673);
-      background:    -moz-linear-gradient(top, #556, #666673);
+      background: -moz-linear-gradient(top, #556, #666673);
       -webkit-background-clip: padding-box;
       border-radius: 7px;
       -moz-border-radius: 7px;
