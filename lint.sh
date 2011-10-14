@@ -8,3 +8,6 @@ grep "\!\= \[\]" src/* -r
 # Search for debugging helpers
 grep "console.log" src/* -r
 grep "alert" src/* -r
+
+# Search for redundant semicolons
+grep "\;" src/* -r

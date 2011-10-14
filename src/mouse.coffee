@@ -14,4 +14,4 @@ mouseCoordsWithinElement = (event) ->
       totalOffsetTop += element.offsetTop
       element = element.offsetParent
     coords = [event.pageX - totalOffsetLeft, event.pageY - totalOffsetTop]
-  return coords;
+  return coords
