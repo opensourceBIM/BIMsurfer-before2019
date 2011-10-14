@@ -7,8 +7,27 @@ bimserverImportDialogClearMessages = () ->
   ($ '.error').removeClass 'error'
 
 bimserverImportDialogShow = () ->
-  bimserverImportDialogClearMessages()
+  bimserverImportDialogShowTab1()
   ($ '#dialog-background').show()
+
+bimserverImportDialogShowTab1 = () ->
+  bimserverImportDialogClearMessages()
+  $stepElements = $ '#dialog-bimserver-import .dialog-step'
+  ($ $stepElements.get(0)).addClass 'dialog-step-active'
+  ($ $stepElements.get(1)).removeClass 'dialog-step-active'
+  ($ '#dialog-tab-bimserver1').show()
+  ($ '#dialog-tab-bimserver2').hide()
+
+bimserverImportDialogShowTab2 = () ->
+  bimserverImportDialogClearMessages()
+  $stepElements = $ '#dialog-bimserver-import .dialog-step'
+  ($ $stepElements.get(0)).removeClass 'dialog-step-active'
+  ($ $stepElements.get(1)).addClass 'dialog-step-active'
+  ($ '#dialog-tab-bimserver1').hide()
+  ($ '#dialog-tab-bimserver2').show()
+
+bimserverImportDialogToggleTab2 = () ->
+  # TODO: Test whether server bimserver connection is active
 
 bimserverImportDialogLogin = () ->
   # Clear the message fields
@@ -58,6 +77,7 @@ bimserverImportDialogLogin = () ->
       ($ '#bimserver-import-message-error').html 'Login request failed'
     .always (jqXHR, textStatus, errorThrown) -> 
       ($ '#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button').removeAttr 'disabled'
+      bimserverImportDialogShowTab2()
 
   pwd = null
   return true

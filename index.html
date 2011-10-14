@@ -746,7 +746,7 @@
         <a class='dialog-step' href='#'>Choose a project</a>
       </div>
       <div class='dialog-main'>
-        <form id='dialog-tab-bimserver1' class='dialog-tab' onsubmit='return false;'>
+        <form id='dialog-tab-bimserver1' class='dialog-tab' onsubmit='return false;' style='display:none;'>
           <div><label for='bimserver-import-url'>BIMserver</label><input id='bimserver-import-url' name='bimserver-import-url' type='url' value='http://localhost:8082'></div>
           <div><label for='bimserver-import-username'>Username</label><input id='bimserver-import-username' name='bimserver-import-username' type='email' placeholder='user@website.com'></div>
           <div><label for='bimserver-import-password'>Password</label><input id='bimserver-import-password' name='bimserver-import-password' type='password'></div>
@@ -755,6 +755,9 @@
             <p id='bimserver-import-message-info'></p>
             <p id='bimserver-import-message-error'></p>
           </div>
+        </form>
+        <form id='dialog-tab-bimserver2' class='dialog-tab' style='display:none;'>
+          <p>Projects come here...</p>
         </form>
       </div>
     </div>
