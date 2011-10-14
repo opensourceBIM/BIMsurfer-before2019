@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var bimserverImportDialogLogin, bimserverImportDialogShow, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var bimserverImportDialogClearMessages, bimserverImportDialogLogin, bimserverImportDialogShow, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -660,32 +660,50 @@
   hideDialog = function() {
     return ($('#dialog-background')).hide();
   };
+  bimserverImportDialogClearMessages = function() {
+    ($('#bimserver-import-message-info')).html('');
+    ($('#bimserver-import-message-error')).html('');
+    return ($('.error')).removeClass('error');
+  };
   bimserverImportDialogShow = function() {
+    bimserverImportDialogClearMessages();
     return ($('#dialog-background')).show();
   };
   bimserverImportDialogLogin = function() {
-    var pwd, url, user;
+    var pwd, url, user, valid;
+    bimserverImportDialogClearMessages();
     url = ($('#bimserver-import-url')).val();
     user = ($('#bimserver-import-username')).val();
     pwd = ($('#bimserver-import-password')).val();
+    valid = true;
     if (url.length < 1) {
-      return false;
+      ($('#bimserver-import-url')).addClass('error');
+      valid = false;
     }
     if (user.length < 1) {
-      return false;
+      ($('#bimserver-import-username')).addClass('error');
+      valid = false;
     }
     if (pwd.length < 1) {
+      ($('#bimserver-import-password')).addClass('error');
+      valid = false;
+    }
+    if (!valid) {
+      ($('#bimserver-import-message-error')).html('Some fields are incorrect');
       return false;
     }
+    ($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).attr('disabled', 'disabled');
     if (url[url.length - 1] !== '/') {
       url += '/';
     }
+    ($('#bimserver-import-message-info')).html('Sending login request...');
     ($.get(url + 'rest/login', 'username=' + (encodeURIComponent(user)) + '&password=' + (encodeURIComponent(pwd)))).done(function(data, textStatus, jqXHR) {
-      return console.log('Login request succeeded');
+      return ($('#bimserver-import-message-info')).html('Login request succeeded');
     }).fail(function(jqXHR, textStatus, errorThrown) {
-      return console.log('Login request failed');
+      ($('#bimserver-import-message-info')).html('');
+      return ($('#bimserver-import-message-error')).html('Login request failed');
     }).always(function(jqXHR, textStatus, errorThrown) {
-      return console.log('Login request completed');
+      return ($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).removeAttr('disabled');
     });
     pwd = null;
     return true;
@@ -701,7 +719,7 @@
   };
   registerControlEvents = function() {
     ($('.dialog-close')).click(hideDialog);
-    ($('#bimserver-import-login')).click(bimserverImportDialogLogin);
+    ($('#dialog-tab-bimserver1')).submit(bimserverImportDialogLogin);
     ($('#top-menu-import-bimserver')).click(topmenuImportBimserver);
     ($('#top-menu-performance-quality')).click(topmenuPerformanceQuality);
     ($('#top-menu-performance-performance')).click(topmenuPerformancePerformance);

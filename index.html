@@ -162,6 +162,13 @@
       border: solid 1px #ccc;
       padding: 2px ;
     }
+    button[disabled]{
+      color: #ccc;
+    }
+    input.error {
+      background: #fee;
+      border: solid 1px #f44;
+    }
 
     /* Generic classes */
     .clickable {
@@ -219,7 +226,7 @@
       width: 100%;
       height: 100%
     }
-
+    
     /* Application styling */
     #dialog-background {
       position: absolute;
@@ -264,6 +271,11 @@
       text-align: right;
       padding: 6px 8px;
     }
+    .dialog-messages {
+      margin: 8px 0;
+      text-align: right;
+      font-size: 13px;
+    }
     #dialog-logo-bimserver {
       background: url('static/images/bimserver-logo.png');
       height: 70px;
@@ -278,10 +290,8 @@
       margin: -150px 0 0 -250px;
       width: 500px;
       height: 300px;
-
       background: #fff;
       border: solid 1px #aaa;
-
       -moz-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
       -webkit-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
       box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
@@ -289,6 +299,13 @@
     #bimserver-import-login {
       float: right;
       padding: 4px 8px;
+      margin: 0 0 0 10px;
+    }
+    #bimserver-import-message-info {
+      color: #44f;      
+    }
+    #bimserver-import-message-error {
+      color: #f44;
     }
     #main-layout {
       /*display: -webkit-box;
@@ -729,11 +746,15 @@
         <a class='dialog-step' href='#'>Choose a project</a>
       </div>
       <div class='dialog-main'>
-        <form id='dialog-tab-bimserver1' class='dialog-tab'>
+        <form id='dialog-tab-bimserver1' class='dialog-tab' onsubmit='return false;'>
           <div><label for='bimserver-import-url'>BIMserver</label><input id='bimserver-import-url' name='bimserver-import-url' type='url' value='http://localhost:8082'></div>
           <div><label for='bimserver-import-username'>Username</label><input id='bimserver-import-username' name='bimserver-import-username' type='email' placeholder='user@website.com'></div>
           <div><label for='bimserver-import-password'>Password</label><input id='bimserver-import-password' name='bimserver-import-password' type='password'></div>
-          <button id='bimserver-import-login' type='button'>Login</button>
+          <button id='bimserver-import-login' type='submit'>Login</button>
+          <div class='dialog-messages'>
+            <p id='bimserver-import-message-info'></p>
+            <p id='bimserver-import-message-error'></p>
+          </div>
         </form>
       </div>
     </div>
