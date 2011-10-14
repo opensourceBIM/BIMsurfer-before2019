@@ -29,7 +29,7 @@
       list-style: none;
       list-style-image: none;
     }
-
+    
     /* Normalization (taken from http://necolas.github.com/normalize.css/ and a little bit from html5 boilerplate) */
     html {
       -webkit-text-size-adjust: 100%;
@@ -157,6 +157,11 @@
       width: 60%;
       margin: 8px auto;
     }
+    input[type='url'], input[type='email'], input[type='password'] {
+      background: #eee;
+      border: solid 1px #ccc;
+      padding: 2px ;
+    }
 
     /* Generic classes */
     .clickable {
@@ -228,6 +233,44 @@
       top: 0;
       right: 4px;
     }
+    .dialog-steps {
+      padding: 10px 0 0 4px;
+      width: 150px;
+      float: left;
+    }
+    .dialog-step {
+      display: block;
+      background: #ccc;
+      background: -webkit-gradient(linear, 0% 0%, 100% 0%, from(#ccc), to(#fff));
+      background: -webkit-linear-gradient(left, #ccc, #fff);
+      background: -moz-linear-gradient(left, #ccc, #fff);
+      color: #444;
+      padding: 8px 6px;
+    }
+    .dialog-step-active {
+      background: #3a74ae; /*gradient? 2d5b89 */
+      background: -webkit-gradient(linear, 0% 0%, 100% 0%, from(#3a74ae), to(#fff));
+      background: -webkit-linear-gradient(left, #3a74ae, #fff);
+      background: -moz-linear-gradient(left, #3a74ae, #fff);
+      color: #fff;
+    }
+    .dialog-main {
+      padding: 10px 0 0 10px;
+      display: inline-block;
+    }
+    .dialog-main label {
+      display: inline-block;
+      width: 80px;
+      text-align: right;
+      padding: 6px 8px;
+    }
+    #dialog-logo-bimserver {
+      background: url('static/images/bimserver-logo.png');
+      height: 70px;
+      width: 256px;
+      margin: 4px auto;
+      border-bottom: solid 1px #ccc;
+    }
     #dialog-bimserver-import {
       position: absolute;
       top: 50%;
@@ -242,6 +285,10 @@
       -moz-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
       -webkit-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
       box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
+    }
+    #bimserver-import-login {
+      float: right;
+      padding: 4px 8px;
     }
     #main-layout {
       /*display: -webkit-box;
@@ -676,12 +723,18 @@
   <div id='dialog-background' style='display:none;'>
     <div id='dialog-bimserver-import'>
       <a class='dialog-close' href='#'>x</a>
+      <div id='dialog-logo-bimserver'></div>
       <div class='dialog-steps'>
-        <div class='dialog-step-1'></div>
-        <div class='dialog-step-2'></div>
-        <div class='dialog-step-4'></div>
+        <a class='dialog-step dialog-step-active' href='#'>Login</a>
+        <a class='dialog-step' href='#'>Choose a project</a>
       </div>
       <div class='dialog-main'>
+        <form id='dialog-tab-bimserver1' class='dialog-tab'>
+          <div><label for='bimserver-import-url'>BIMserver</label><input id='bimserver-import-url' name='bimserver-import-url' type='url' value='http://localhost:8082'></div>
+          <div><label for='bimserver-import-username'>Username</label><input id='bimserver-import-username' name='bimserver-import-username' type='email' value='user@site.com'></div>
+          <div><label for='bimserver-import-password'>Password</label><input id='bimserver-import-password' name='bimserver-import-password' type='password'></div>
+          <button id='bimserver-import-login' type='button'>Login</button>
+        </form>
       </div>
     </div>
   </div>
