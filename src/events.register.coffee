@@ -19,6 +19,9 @@ registerDOMEvents = () ->
 
 # Register UI controls events
 registerControlEvents = () ->
+  ($ '.dialog-close').click hideDialog
+
+  ($ '#top-menu-import-bimserver').click topmenuImportBimserver
   ($ '#top-menu-performance-quality').click topmenuPerformanceQuality
   ($ '#top-menu-performance-performance').click topmenuPerformancePerformance
   ($ '#top-menu-mode-basic').click topmenuModeBasic

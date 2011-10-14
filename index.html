@@ -199,6 +199,10 @@
       height: 50px;
       background-color: #bbb;
     }
+    .position-left {
+      position: absolute;
+      left: 0;
+    }
     .position-top-right {
       position: absolute;
       top: 0;
@@ -212,6 +216,55 @@
     }
 
     /* Application styling */
+    #dialog-background {
+      position: absolute;
+      z-index: 999;
+      width: 100%;
+      height: 100%;
+      background: rgba(220,220,220, 0.3);
+    }
+    .dialog-close {
+      position: absolute;
+      top: 0;
+      right: 4px;
+    }
+    #dialog-bimserver-import {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin: -150px 0 0 -250px;
+      width: 500px;
+      height: 300px;
+
+      background: #fff;
+      border: solid 1px #aaa;
+
+      -moz-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
+      -webkit-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
+      box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
+    }
+    #main-layout {
+      /*display: -webkit-box;
+      display: -moz-box;
+      display: box;
+      -webkit-box-orient: vertical;
+      -moz-box-orient: vertical;
+      box-orient: vertical;*/
+      width: 100%;
+      height: 100%;
+      /* Alternate table layout */
+      display: table;
+    }
+    .main-layout-row {
+      /*display: -webkit-box;
+      display: -moz-box;
+      display: box;
+      -webkit-box-flex: 1;
+      -moz-box-flex: 1;
+      box-flex: 1;*/
+      /* Alternate table layout */
+      display: table-row;
+    }
     #top-menu {
       background: #2d2d2d;
       text-align: right;
@@ -243,13 +296,19 @@
     #top-menu a:hover {
       color: #fff;
     }
+    .top-menu-left {
+      float: left;
+      margin: 0 0 0 1px; /* This 1px margin prevents chrome from assuming you're hovering at (0,0) over the menu when the page opens */
+    }
     .top-menu-dropdown {
       position: absolute;
       padding: 5px 0 0 0;
+      margin: 0 0 0 3px;
       width: 150px;
       left: 0;
-      z-index: 99999;
+      z-index: 100;
     }
+
     .top-menu-float {
       border: 1px black;
       background: #2d2d2d;
@@ -273,28 +332,6 @@
     #top-menu .top-menu-dropdown a {
       margin: 0;
       padding: 0;
-    }
-    #main-layout {
-      /*display: -webkit-box;
-      display: -moz-box;
-      display: box;
-      -webkit-box-orient: vertical;
-      -moz-box-orient: vertical;
-      box-orient: vertical;*/
-      width: 100%;
-      height: 100%;
-      /* Alternate table layout */
-      display: table;
-    }
-    .main-layout-row {
-      /*display: -webkit-box;
-      display: -moz-box;
-      display: box;
-      -webkit-box-flex: 1;
-      -moz-box-flex: 1;
-      box-flex: 1;*/
-      /* Alternate table layout */
-      display: table-row;
     }
     #main-menu {
       /*-webkit-box-flex: 1;
@@ -636,10 +673,30 @@
   <!-- Screen layout -->
 
   <div id='scenejsLog'></div>
+  <div id='dialog-background' style='display:none;'>
+    <div id='dialog-bimserver-import'>
+      <a class='dialog-close' href='#'>x</a>
+      <div class='dialog-steps'>
+        <div class='dialog-step-1'></div>
+        <div class='dialog-step-2'></div>
+        <div class='dialog-step-4'></div>
+      </div>
+      <div class='dialog-main'>
+      </div>
+    </div>
+  </div>
 
   <div id='main-layout'>
     <menu id='top-menu' class='horizontal-list' type='toolbar'>
-      <li style='float: left;'><a href='#'>&lt; BiMserver</a></li>
+      <li class='top-menu-left'>
+        <a id='top-menu-return-bimserver' href='http://localhost:8082/' style='display: none'>&lt; BiMserver</a>
+        <a href='#'>File</a>
+        <menu class='top-menu-dropdown vertical-list'><div class='top-menu-float'>
+          <h4>Import</h4>
+          <li><a href='#' id='top-menu-import-bimserver'>BIMserver Project</a></li>
+          <li><a href='#' id='top-menu-import-scenejs'>SceneJS File</a></li>
+        </div></menu>
+      </li>
       <li>
         <a href='#'>Display</a>
         <menu class='top-menu-dropdown vertical-list'><div class='top-menu-float'>

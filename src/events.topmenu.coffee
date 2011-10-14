@@ -1,6 +1,9 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+topmenuImportBimserver = (event) ->
+  showBimserverImportDialog()
+
 topmenuPerformanceQuality = (event) ->
   ($ event.target).addClass 'top-menu-activated'
   ($ '#top-menu-performance-performance').removeClass 'top-menu-activated'
