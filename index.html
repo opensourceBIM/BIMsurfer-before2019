@@ -296,7 +296,7 @@
       -webkit-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
       box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
     }
-    #bimserver-import-login {
+    #bimserver-login-submit {
       float: right;
       padding: 4px 8px;
       margin: 0 0 0 10px;
@@ -747,17 +747,19 @@
       </div>
       <div class='dialog-main'>
         <form id='dialog-tab-bimserver1' class='dialog-tab' onsubmit='return false;' style='display:none;'>
-          <div><label for='bimserver-import-url'>BIMserver</label><input id='bimserver-import-url' name='bimserver-import-url' type='url' value='http://localhost:8082'></div>
-          <div><label for='bimserver-import-username'>Username</label><input id='bimserver-import-username' name='bimserver-import-username' type='email' placeholder='user@website.com'></div>
-          <div><label for='bimserver-import-password'>Password</label><input id='bimserver-import-password' name='bimserver-import-password' type='password'></div>
-          <button id='bimserver-import-login' type='submit'>Login</button>
+          <div><label for='bimserver-login-url'>BIMserver</label><input id='bimserver-login-url' name='bimserver-login-url' type='url' value='http://localhost:8082'></div>
+          <div><label for='bimserver-login-username'>Username</label><input id='bimserver-login-username' name='bimserver-login-username' type='email' placeholder='user@website.com'></div>
+          <div><label for='bimserver-login-password'>Password</label><input id='bimserver-login-password' name='bimserver-login-password' type='password'></div>
+          <button id='bimserver-login-submit' type='submit'>Login</button>
           <div class='dialog-messages'>
             <p id='bimserver-import-message-info'></p>
             <p id='bimserver-import-message-error'></p>
           </div>
         </form>
-        <form id='dialog-tab-bimserver2' class='dialog-tab' style='display:none;'>
+        <form id='dialog-tab-bimserver2' class='dialog-tab' onsubmit='return false;' style='display:none;'>
           <p>Projects come here...</p>
+          <button id='bimserver-projects-refresh'>Refresh</button>
+          <button id='bimserver-projects-submit' disabled='disabled'>Open</button>
         </form>
       </div>
     </div>

@@ -33,20 +33,20 @@ bimserverImportDialogLogin = () ->
   # Clear the message fields
   bimserverImportDialogClearMessages()
 
-  url = ($ '#bimserver-import-url').val()
-  user = ($ '#bimserver-import-username').val()
-  pwd = ($ '#bimserver-import-password').val()
+  url = ($ '#bimserver-login-url').val()
+  user = ($ '#bimserver-login-username').val()
+  pwd = ($ '#bimserver-login-password').val()
 
   # Validate inputs
   valid = true
   if url.length < 1
-    ($ '#bimserver-import-url').addClass 'error'
+    ($ '#bimserver-login-url').addClass 'error'
     valid = false
   if user.length < 1
-    ($ '#bimserver-import-username').addClass 'error'
+    ($ '#bimserver-login-username').addClass 'error'
     valid = false
   if pwd.length < 1
-    ($ '#bimserver-import-password').addClass 'error'
+    ($ '#bimserver-login-password').addClass 'error'
     valid = false
   
   if not valid
@@ -64,6 +64,7 @@ bimserverImportDialogLogin = () ->
   if url[url.length - 1] != '/'
     url += '/'
   
+
   # TODO: Ping the url to make sure it's correct? (Is it necessary?)
 
   # Call the REST api
@@ -72,13 +73,36 @@ bimserverImportDialogLogin = () ->
   ($.get url + 'rest/login', 'username=' + (encodeURIComponent user) + '&password=' + (encodeURIComponent pwd))
     .done (data, textStatus, jqXHR) -> 
       ($ '#bimserver-import-message-info').html 'Login request succeeded'
+      bimserverImportDialogShowTab2()
+      bimserverImportDialogRefresh()
     .fail (jqXHR, textStatus, errorThrown) -> 
       ($ '#bimserver-import-message-info').html ''
       ($ '#bimserver-import-message-error').html 'Login request failed'
     .always (jqXHR, textStatus, errorThrown) -> 
       ($ '#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button').removeAttr 'disabled'
-      bimserverImportDialogShowTab2()
 
   pwd = null
   return true
+
+bimserverImportDialogOpen = () ->
+  
+bimserverImportDialogRefresh = () ->
+  url = ($ '#bimserver-login-url').val()
+
+  # Ensure root url ends with /
+  if url[url.length - 1] != '/'
+    url += '/'
+  
+  ($ '#dialog-tab-bimserver2 button').attr 'disabled', 'disabled'
+  
+  # Refresh list of projects using the bimserver rest interface
+  ($.get url + 'rest/getAllProjects')
+    .done (data, textStatus, jqXHR) -> 
+      #console.log data
+      ($ '#bimserver-import-message-info').html 'Fetched all projects'
+    .fail (jqXHR, textStatus, errorThrown) -> 
+      ($ '#bimserver-import-message-info').html ''
+      ($ '#bimserver-import-message-error').html 'Couldn\'t fetch projects'
+    .always (jqXHR, textStatus, errorThrown) -> 
+      ($ '#dialog-tab-bimserver2 button').removeAttr 'disabled'
 
