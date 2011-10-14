@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, showBimserverImportDialog, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var bimserverImportDialogLogin, bimserverImportDialogShow, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -473,7 +473,7 @@
     }
   };
   topmenuImportBimserver = function(event) {
-    return showBimserverImportDialog();
+    return bimserverImportDialogShow();
   };
   topmenuPerformanceQuality = function(event) {
     ($(event.target)).addClass('top-menu-activated');
@@ -660,8 +660,35 @@
   hideDialog = function() {
     return ($('#dialog-background')).hide();
   };
-  showBimserverImportDialog = function() {
+  bimserverImportDialogShow = function() {
     return ($('#dialog-background')).show();
+  };
+  bimserverImportDialogLogin = function() {
+    var pwd, url, user;
+    url = ($('#bimserver-import-url')).val();
+    user = ($('#bimserver-import-username')).val();
+    pwd = ($('#bimserver-import-password')).val();
+    if (url.length < 1) {
+      return false;
+    }
+    if (user.length < 1) {
+      return false;
+    }
+    if (pwd.length < 1) {
+      return false;
+    }
+    if (url[url.length - 1] !== '/') {
+      url += '/';
+    }
+    ($.get(url + 'rest/login', 'username=' + (encodeURIComponent(user)) + '&password=' + (encodeURIComponent(pwd)))).done(function(data, textStatus, jqXHR) {
+      return console.log('Login request succeeded');
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+      return console.log('Login request failed');
+    }).always(function(jqXHR, textStatus, errorThrown) {
+      return console.log('Login request completed');
+    });
+    pwd = null;
+    return true;
   };
   registerDOMEvents = function() {
     state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
@@ -674,6 +701,7 @@
   };
   registerControlEvents = function() {
     ($('.dialog-close')).click(hideDialog);
+    ($('#bimserver-import-login')).click(bimserverImportDialogLogin);
     ($('#top-menu-import-bimserver')).click(topmenuImportBimserver);
     ($('#top-menu-performance-quality')).click(topmenuPerformanceQuality);
     ($('#top-menu-performance-performance')).click(topmenuPerformancePerformance);

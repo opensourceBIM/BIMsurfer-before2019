@@ -21,6 +21,8 @@ registerDOMEvents = () ->
 registerControlEvents = () ->
   ($ '.dialog-close').click hideDialog
 
+  ($ '#bimserver-import-login').click bimserverImportDialogLogin
+
   ($ '#top-menu-import-bimserver').click topmenuImportBimserver
   ($ '#top-menu-performance-quality').click topmenuPerformanceQuality
   ($ '#top-menu-performance-performance').click topmenuPerformancePerformance

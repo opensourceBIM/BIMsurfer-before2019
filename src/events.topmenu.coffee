@@ -2,7 +2,7 @@
 # Program state should not be manipulated outside events files
 
 topmenuImportBimserver = (event) ->
-  showBimserverImportDialog()
+  bimserverImportDialogShow()
 
 topmenuPerformanceQuality = (event) ->
   ($ event.target).addClass 'top-menu-activated'
