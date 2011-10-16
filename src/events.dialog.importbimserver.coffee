@@ -28,10 +28,12 @@ bimserverImportDialogShowTab2 = () ->
 
 bimserverImportDialogToggleTab2 = () ->
   # TODO: Test whether server bimserver connection is active
+  bimserverImportDialogShowTab2()
 
 bimserverImportDialogLogin = () ->
   # Clear the message fields
   bimserverImportDialogClearMessages()
+  ($ 'bimserver-projects').html ''
 
   url = ($ '#bimserver-login-url').val()
   user = ($ '#bimserver-login-username').val()
@@ -64,7 +66,6 @@ bimserverImportDialogLogin = () ->
   if url[url.length - 1] != '/'
     url += '/'
   
-
   # TODO: Ping the url to make sure it's correct? (Is it necessary?)
 
   # Call the REST api
@@ -84,7 +85,7 @@ bimserverImportDialogLogin = () ->
   pwd = null
   return true
 
-bimserverImportDialogOpen = () ->
+bimserverImportDialogSelect = () ->
   
 bimserverImportDialogRefresh = () ->
   url = ($ '#bimserver-login-url').val()
@@ -96,10 +97,14 @@ bimserverImportDialogRefresh = () ->
   ($ '#dialog-tab-bimserver2 button').attr 'disabled', 'disabled'
   
   # Refresh list of projects using the bimserver rest interface
-  ($.get url + 'rest/getAllProjects')
+  $projectList = $ '#bimserver-projects'
+  $projectList.html ''
+
+  ($.get url + 'rest/getAllProjects', undefined, undefined, 'xml')
     .done (data, textStatus, jqXHR) -> 
-      #console.log data
       ($ '#bimserver-import-message-info').html 'Fetched all projects'
+      (($ data).find 'sProject').each () ->
+        $projectList.append '<li>' + (($ this).find 'name').text() + '</li>'
     .fail (jqXHR, textStatus, errorThrown) -> 
       ($ '#bimserver-import-message-info').html ''
       ($ '#bimserver-import-message-error').html 'Couldn\'t fetch projects'

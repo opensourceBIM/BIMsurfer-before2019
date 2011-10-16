@@ -742,8 +742,8 @@
       <a class='dialog-close' href='#'>x</a>
       <div id='dialog-logo-bimserver'></div>
       <div class='dialog-steps'>
-        <a class='dialog-step dialog-step-active' href='#'>Login</a>
-        <a class='dialog-step' href='#'>Choose a project</a>
+        <a id='bimserver-import-step1' class='dialog-step dialog-step-active' href='#'>Login</a>
+        <a id='bimserver-import-step2' class='dialog-step' href='#'>Choose a project</a>
       </div>
       <div class='dialog-main'>
         <form id='dialog-tab-bimserver1' class='dialog-tab' onsubmit='return false;' style='display:none;'>
@@ -757,7 +757,7 @@
           </div>
         </form>
         <form id='dialog-tab-bimserver2' class='dialog-tab' onsubmit='return false;' style='display:none;'>
-          <p>Projects come here...</p>
+          <ul id='bimserver-projects'></ul>
           <button id='bimserver-projects-refresh'>Refresh</button>
           <button id='bimserver-projects-submit' disabled='disabled'>Open</button>
         </form>
