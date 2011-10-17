@@ -25,6 +25,7 @@ appFiles  = [
   'events.topmenu'
   'events.controls'
   'events.snapshots'
+  'events.bimserver'
   'events.dialog'
   'events.dialog.importbimserver'
   'events.register'

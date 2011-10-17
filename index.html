@@ -276,6 +276,13 @@
       text-align: right;
       font-size: 13px;
     }
+    .dialog-button {
+      float: right;
+      padding: 4px 8px;
+    }
+    .dialog-buttons {
+      margin: 0 0 0 10px;
+    }
     #dialog-logo-bimserver {
       background: url('static/images/bimserver-logo.png');
       height: 70px;
@@ -296,11 +303,6 @@
       -webkit-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
       box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
     }
-    #bimserver-login-submit {
-      float: right;
-      padding: 4px 8px;
-      margin: 0 0 0 10px;
-    }
     #bimserver-import-message-info {
       color: #44f;      
     }
@@ -309,20 +311,28 @@
     }
     #bimserver-projects {
       border: solid 1px #ccc;
+      height: 150px;
+      width: 272px;
+      padding: 3px;
+      overflow-y: auto;
     }
-    #bimserver-projects li {
+    .bimserver-project {
       list-style: none;
       list-style-image: none;
       display: block;
+      -moz-box-sizing: border-box;
+      -ms-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
       cursor: pointer;
-      width: 272px;
       padding: 4px 8px;
       font-size: 13px;
+      width: 100%;
     }
-    #bimserver-projects li:hover {
+    .bimserver-project:hover {
       background: #eff5fb;
     }
-    #bimserver-projects li.bimserver-selected-project {
+    .bimserver-project-selected, .bimserver-project-selected:hover {
       background: #c8e0f9;
     }
     #main-layout {
@@ -768,7 +778,7 @@
           <div><label for='bimserver-login-url'>BIMserver</label><input id='bimserver-login-url' name='bimserver-login-url' type='url' value='http://localhost:8082'></div>
           <div><label for='bimserver-login-username'>Username</label><input id='bimserver-login-username' name='bimserver-login-username' type='email' placeholder='user@website.com'></div>
           <div><label for='bimserver-login-password'>Password</label><input id='bimserver-login-password' name='bimserver-login-password' type='password'></div>
-          <button id='bimserver-login-submit' type='submit'>Login</button>
+          <div class='dialog-buttons'><button id='bimserver-login-submit' type='submit' class='dialog-button'>Login</button></div>
           <div class='dialog-messages'>
             <p id='bimserver-import-message-info'></p>
             <p id='bimserver-import-message-error'></p>
@@ -776,8 +786,10 @@
         </form>
         <form id='dialog-tab-bimserver2' class='dialog-tab' onsubmit='return false;' style='display:none;'>
           <ul id='bimserver-projects'></ul>
-          <button id='bimserver-projects-refresh'>Refresh</button>
-          <button id='bimserver-projects-submit' disabled='disabled'>Open</button>
+          <div class='dialog-buttons'>
+            <button id='bimserver-projects-submit' class='dialog-button' disabled='disabled'>Open</button>
+            <button id='bimserver-projects-refresh' class='dialog-button'>Refresh</button>
+          </div>
         </form>
       </div>
     </div>

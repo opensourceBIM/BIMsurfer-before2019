@@ -33,7 +33,7 @@ bimserverImportDialogToggleTab2 = () ->
 bimserverImportDialogLogin = () ->
   # Clear the message fields
   bimserverImportDialogClearMessages()
-  ($ 'bimserver-projects').html ''
+  ($ 'bimserver-projects').html ""
 
   url = ($ '#bimserver-login-url').val()
   user = ($ '#bimserver-login-username').val()
@@ -52,7 +52,7 @@ bimserverImportDialogLogin = () ->
     valid = false
   
   if not valid
-    ($ '#bimserver-import-message-error').html 'Some fields are incorrect'
+    ($ '#bimserver-import-message-error').html "Some fields are incorrect"
     return false
 
   # Disable the login button and all form elements once the login button has been hit
@@ -70,23 +70,21 @@ bimserverImportDialogLogin = () ->
 
   # Call the REST api
   # TODO: Would be nice to find a more secure way to login (without using clear text)
-  ($ '#bimserver-import-message-info').html 'Sending login request...'
+  ($ '#bimserver-import-message-info').html "Sending login request..."
   ($.get url + 'rest/login', 'username=' + (encodeURIComponent user) + '&password=' + (encodeURIComponent pwd))
     .done (data, textStatus, jqXHR) -> 
-      ($ '#bimserver-import-message-info').html 'Login request succeeded'
+      ($ '#bimserver-import-message-info').html "Login request succeeded"
       bimserverImportDialogShowTab2()
       bimserverImportDialogRefresh()
     .fail (jqXHR, textStatus, errorThrown) -> 
-      ($ '#bimserver-import-message-info').html ''
-      ($ '#bimserver-import-message-error').html 'Login request failed'
+      ($ '#bimserver-import-message-info').html ""
+      ($ '#bimserver-import-message-error').html "Login request failed"
     .always (jqXHR, textStatus, errorThrown) -> 
       ($ '#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button').removeAttr 'disabled'
 
   pwd = null
   return true
 
-bimserverImportDialogSelect = () ->
-  
 bimserverImportDialogRefresh = () ->
   url = ($ '#bimserver-login-url').val()
 
@@ -95,19 +93,41 @@ bimserverImportDialogRefresh = () ->
     url += '/'
   
   ($ '#dialog-tab-bimserver2 button').attr 'disabled', 'disabled'
+  ($ '#bimserver-projects-submit').attr 'disabled', 'disabled'
   
   # Refresh list of projects using the bimserver rest interface
   $projectList = $ '#bimserver-projects'
-  $projectList.html ''
+  $projectList.html ""
 
   ($.get url + 'rest/getAllProjects', undefined, undefined, 'xml')
     .done (data, textStatus, jqXHR) -> 
-      ($ '#bimserver-import-message-info').html 'Fetched all projects'
+      ($ '#bimserver-import-message-info').html "Fetched all projects"
       (($ data).find 'sProject').each () ->
-        $projectList.append '<li>' + (($ this).find 'name').text() + '</li>'
+        $projectList.append "<li class='bimserver-project' bimserveroid='" + (($ this).find 'oid').text() + "'>" + (($ this).find 'name').text() + "</li>"
     .fail (jqXHR, textStatus, errorThrown) -> 
       ($ '#bimserver-import-message-info').html ''
-      ($ '#bimserver-import-message-error').html 'Couldn\'t fetch projects'
+      ($ '#bimserver-import-message-error').html "Couldn't fetch projects"
     .always (jqXHR, textStatus, errorThrown) -> 
       ($ '#dialog-tab-bimserver2 button').removeAttr 'disabled'
+
+bimserverImportDialogSelect = (event) ->
+  ($ '.bimserver-project-selected').removeClass 'bimserver-project-selected'
+  ($ event.target).addClass 'bimserver-project-selected'
+  ($ '#bimserver-projects-submit').removeAttr 'disabled'
+
+bimserverImportDialogOpen = () ->
+  $selectedProject = $ '.bimserver-project-selected'
+  if $selectedProject.length == 0
+    ($ '#bimserver-import-message-error').html "No project selected"
+  else
+    # Close the dialog
+    hideDialog()
+
+    # Ensure root url ends with /
+    url = ($ '#bimserver-login-url').val()
+    if url[url.length - 1] != '/'
+      url += '/'
+    
+    # Load the model
+    bimserverImport url, $selectedProject.attr 'bimserveroid'
 
