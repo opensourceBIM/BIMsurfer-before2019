@@ -71,7 +71,11 @@ bimserverImportDialogLogin = () ->
   # Call the REST api
   # TODO: Would be nice to find a more secure way to login (without using clear text)
   ($ '#bimserver-import-message-info').html "Sending login request..."
-  ($.get url + 'rest/login', 'username=' + (encodeURIComponent user) + '&password=' + (encodeURIComponent pwd))
+  ($.ajax
+    username: encodeURIComponent user
+    password: encodeURIComponent pwd
+    url: url + 'rest/login'
+    data: 'username=' + (encodeURIComponent user) + '&password=' + (encodeURIComponent pwd))
     .done (data, textStatus, jqXHR) -> 
       ($ '#bimserver-import-message-info').html "Login request succeeded"
       bimserverImportDialogShowTab2()

@@ -726,10 +726,13 @@
       url += '/';
     }
     ($('#bimserver-import-message-info')).html("Sending login request...");
-    ($.get(url + 'rest/login', 'username=' + (encodeURIComponent(user)) + '&password=' + (encodeURIComponent(pwd)))).done(function(data, textStatus, jqXHR) {
-      ($('#bimserver-import-message-info')).html("Login request succeeded");
-      bimserverImportDialogShowTab2();
-      return bimserverImportDialogRefresh();
+    ($.ajax({
+      username: encodeURIComponent(user),
+      password: encodeURIComponent(pwd),
+      url: url + 'rest/login',
+      data: 'username=' + (encodeURIComponent(user)) + '&password=' + (encodeURIComponent(pwd))
+    })).done(function(data, textStatus, jqXHR) {
+      return ($('#bimserver-import-message-info')).html("Login request succeeded", bimserverImportDialogShowTab2(), bimserverImportDialogRefresh());
     }).fail(function(jqXHR, textStatus, errorThrown) {
       ($('#bimserver-import-message-info')).html("");
       return ($('#bimserver-import-message-error')).html("Login request failed");
