@@ -4,6 +4,7 @@
 loadScene = (scene) ->
   if state.scene?
     state.scene.destroy()
+    state.scene = null
   try 
     console?.log? 'Create scene...'
     SceneJS.createScene scene
