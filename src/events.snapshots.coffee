@@ -2,6 +2,9 @@
 # Program state should not be manipulated outside events files
 
 snapshotsPush = () ->
+  if not state.scene?  
+    return
+  
   # Force rendering a frame in webkit
   # See issue #19 (https://github.com/bimserver/BIMsurfer/issues/19)
   # And also discussion at https://groups.google.com/forum/?pli=1#!topic/scenejs/YjZy3Dd5mbA
@@ -29,8 +32,12 @@ snapshotsDelete = (event) ->
   $parent.remove()
 
 snapshotsToggle = (event) ->
+  if not state.scene?  
+    return
   # TODO: SceneJS.FX.transition (state.scene.findNode 'main-lookAt'), state.snapshots, { interpolation: 'linear' }
 
 snapshotsPlay = (event) ->
+  if not state.scene?  
+    return
   (SceneJS.FX.TweenSpline state.scene.findNode 'main-lookAt').sequence state.snapshots.lookAts
 

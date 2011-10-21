@@ -19,15 +19,18 @@ registerDOMEvents = () ->
 
 # Register UI controls events
 registerControlEvents = () ->
+  ($ '#upload-form').submit fileImportDialogLoad
+  
   ($ '.dialog-close').click hideDialog
   ($ '#dialog-tab-bimserver1').submit bimserverImportDialogLogin
-  ($ '#dialog-tab-bimserver2').submit bimserverImportDialogOpen
+  ($ '#dialog-tab-bimserver2').submit bimserverImportDialogLoad
   ($ '#bimserver-import-step1').click bimserverImportDialogShowTab1
   ($ '#bimserver-import-step2').click bimserverImportDialogToggleTab2
   ($ '#bimserver-projects-refresh').click bimserverImportDialogRefresh
   ($ '#bimserver-projects').delegate 'li', 'click', bimserverImportDialogSelect
 
   ($ '#top-menu-import-bimserver').click topmenuImportBimserver
+  ($ '#top-menu-import-scenejs').click topmenuImportSceneJS
   ($ '#top-menu-performance-quality').click topmenuPerformanceQuality
   ($ '#top-menu-performance-performance').click topmenuPerformancePerformance
   ($ '#top-menu-mode-basic').click topmenuModeBasic

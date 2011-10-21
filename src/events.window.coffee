@@ -11,7 +11,8 @@ windowResize = ->
       state.canvas.height = ($ '#viewport').height()
 
   # Reconfigure the camera
-  cameraNode = (state.scene.findNode 'main-camera')
-  cameraOptics = cameraNode.get 'optics'
-  cameraOptics.aspect = state.canvas.width / state.canvas.height
-  cameraNode.set 'optics', cameraOptics
+  if state.scene?
+    cameraNode = (state.scene.findNode 'main-camera')
+    cameraOptics = cameraNode.get 'optics'
+    cameraOptics.aspect = state.canvas.width / state.canvas.height
+    cameraNode.set 'optics', cameraOptics

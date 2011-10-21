@@ -22,14 +22,17 @@ appFiles  = [
   'events.window'
   'events.mouse'
   'events.keyboard'
+  'events.help'
   'events.topmenu'
   'events.controls'
   'events.snapshots'
   'events.bimserver'
   'events.dialog'
   'events.dialog.importbimserver'
+  'events.dialog.importfile'
   'events.register'
   'events.init'
+  'events.load'
 ]
 
 task 'build', "Build single application file from source files", ->

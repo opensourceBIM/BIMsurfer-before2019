@@ -4,6 +4,9 @@
 topmenuImportBimserver = (event) ->
   bimserverImportDialogShow()
 
+topmenuImportSceneJS = (event) ->
+  fileImportDialogShow()
+
 topmenuPerformanceQuality = (event) ->
   ($ event.target).addClass 'top-menu-activated'
   ($ '#top-menu-performance-performance').removeClass 'top-menu-activated'

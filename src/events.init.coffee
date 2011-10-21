@@ -75,14 +75,19 @@ ifcTreeInit = () ->
 
 # Start rendering as soon as possible
 canvasInit()
-sceneInit()
-state.scene.start
-  idleFunc: SceneJS.FX.idle
+if state.scene?
+  sceneInit()
+  state.scene.start
+    idleFunc: SceneJS.FX.idle
 
 # Initialize the gui controls and register events once the rest of the document has completely loaded
 $ () -> 
-  controlsInit()
+  if state.scene?
+    controlsInit()
+    ifcTreeInit()
+  else
+    helpStatus "Please load a project from the <strong>File</strong> menu in the top left-hand corner."
   registerDOMEvents()
   registerControlEvents()
-  ifcTreeInit()
   state.application.initialized = true
+

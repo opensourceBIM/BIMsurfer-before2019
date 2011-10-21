@@ -169,6 +169,10 @@
       background: #fee;
       border: solid 1px #f44;
     }
+    input[type='file'] {
+      cursor: pointer;
+      display: inline;
+    }
 
     /* Generic classes */
     .clickable {
@@ -235,6 +239,19 @@
       height: 100%;
       background: rgba(220,220,220, 0.3);
     }
+    .dialog-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin: -150px 0 0 -250px;
+      width: 500px;
+      height: 300px;
+      background: #fff;
+      border: solid 1px #aaa;
+      -moz-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
+      -webkit-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
+      box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
+    }
     .dialog-close {
       position: absolute;
       top: 0;
@@ -283,31 +300,27 @@
     .dialog-buttons {
       margin: 0 0 0 10px;
     }
+    .dialog-message-info {
+      color: #44f;      
+    }
+    .dialog-message-error {
+      color: #f44;
+    }
     #dialog-logo-bimserver {
       background: url('static/images/bimserver-logo.png');
       height: 70px;
       width: 256px;
-      margin: 4px auto;
+      margin: 4px auto 10px auto;
       border-bottom: solid 1px #ccc;
     }
-    #dialog-bimserver-import {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      margin: -150px 0 0 -250px;
-      width: 500px;
-      height: 300px;
-      background: #fff;
-      border: solid 1px #aaa;
-      -moz-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
-      -webkit-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
-      box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
-    }
-    #bimserver-import-message-info {
-      color: #44f;      
-    }
-    #bimserver-import-message-error {
-      color: #f44;
+    #dialog-logo-file {
+      text-align: center;
+      font-size: 32px;
+      height: 70px;
+      line-height: 70px;
+      width: 256px;
+      margin: 4px auto 10px auto;
+      border-bottom: solid 1px #ccc;
     }
     #bimserver-projects {
       border: solid 1px #ccc;
@@ -334,6 +347,15 @@
     }
     .bimserver-project-selected, .bimserver-project-selected:hover {
       background: #c8e0f9;
+    }
+    #upload-file {
+      margin: 7px 0 0 0;
+    }
+    #upload-file-info {
+      height: 50px;
+      width: 272px;
+      margin: 10px 0 0 0;
+      border: 1px solid #ccc;
     }
     #main-layout {
       /*display: -webkit-box;
@@ -433,9 +455,6 @@
       width: 100%;
       z-index: 1;
       /*border-bottom: 1px solid #e2e2e2;*/
-      background: -moz-linear-gradient(top, rgba(50,50,50,0.1) 0%, rgba(50,50,50,0) 10%); /* FF3.6+ */
-      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(50,50,50,0.1)), color-stop(10%,rgba(50,50,50,0))); /* Chrome,Safari4+ */
-      background: -webkit-linear-gradient(top, rgba(50,50,50,0.1) 0%, rgba(50,50,50,0) 10%); /* Chrome10+,Safari5.1+ */
       height: 120px;
     }
     #main-menu div {
@@ -482,6 +501,12 @@
       background: -moz-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* FF3.6+ */
       background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(60%,rgba(255,255,255,1)), color-stop(100%,rgba(235,235,235,1))); /* Chrome,Safari4+ */
       background: -webkit-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%); /* Chrome10+,Safari5.1+ */
+      /*background: -moz-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%),
+                  -moz-linear-gradient(top, rgba(50,50,50,0.1) 0%, rgba(50,50,50,0) 10%, rgba(50,50,50,0) 90%, rgba(50,50,50,0.1) 100%); /* FF3.6+ * /
+      background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(60%,rgba(255,255,255,1)), color-stop(100%,rgba(235,235,235,1))),
+                  -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(50,50,50,0.1)), color-stop(10%,rgba(50,50,50,0)), color-stop(90%,rgba(50,50,50,0)), color-stop(100%,rgba(50,50,50,0.1))); /* Chrome,Safari4+ * /
+      background: -webkit-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 60%, rgba(235,235,235,1) 100%),
+                  -webkit-linear-gradient(top, rgba(50,50,50,0.1) 0%, rgba(50,50,50,0) 10%, rgba(50,50,50,0) 90%, rgba(50,50,50,0.1) 100%); /* Chrome10+,Safari5.1+ */
       /* Alternate table layout */
       display: table-cell;
     }
@@ -766,7 +791,25 @@
 
   <div id='scenejsLog'></div>
   <div id='dialog-background' style='display:none;'>
-    <div id='dialog-bimserver-import'>
+    <div id='dialog-file-import' class='dialog-frame' style='display:none;'>
+      <a class='dialog-close' href='#'>x</a>
+      <div id='dialog-logo-file'>SceneJS File</div>
+      <div class='dialog-steps'>
+        <a id='file-import-step1' class='dialog-step dialog-step-active' href='#'>Select file</a>
+      </div>
+      <div class='dialog-main'>
+        <form id='upload-form' class='dialog-tab' onsubmit='return false;'>
+          <input type='file' id='upload-file' name='upload-file'>
+          <div id='upload-file-info'></div>
+          <div class='dialog-buttons'><button type='submit' class='dialog-button'>Open</input></div>
+          <div class='dialog-messages'>
+            <p id='file-import-message-info' class='dialog-message-info'></p>
+            <p id='file-import-message-error' class='dialog-message-error'></p>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id='dialog-bimserver-import' class='dialog-frame' style='display:none;'>
       <a class='dialog-close' href='#'>x</a>
       <div id='dialog-logo-bimserver'></div>
       <div class='dialog-steps'>
@@ -780,8 +823,8 @@
           <div><label for='bimserver-login-password'>Password</label><input id='bimserver-login-password' name='bimserver-login-password' type='password'></div>
           <div class='dialog-buttons'><button id='bimserver-login-submit' type='submit' class='dialog-button'>Login</button></div>
           <div class='dialog-messages'>
-            <p id='bimserver-import-message-info'></p>
-            <p id='bimserver-import-message-error'></p>
+            <p id='bimserver-import-message-info' class='dialog-message-info'></p>
+            <p id='bimserver-import-message-error' class='dialog-message-error'></p>
           </div>
         </form>
         <form id='dialog-tab-bimserver2' class='dialog-tab' onsubmit='return false;' style='display:none;'>
@@ -957,7 +1000,7 @@
   
   <!-- Resources -->
 
-  <!-- -->
+  <!-- --
   <script src='static/models/Vogel_Gesamt.js'></script>
   <!-- --
   <script src='static/models/WallOnly.js'></script>

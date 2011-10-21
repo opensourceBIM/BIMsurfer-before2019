@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLogin, bimserverImportDialogOpen, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -342,7 +342,13 @@
     return Math.min(Math.max(s, min), max);
   };
   state = {
-    scene: SceneJS.scene('Scene'),
+    scene: (function() {
+      try {
+        return SceneJS.scene('Scene');
+      } catch (error) {
+        return null;
+      }
+    })(),
     canvas: document.getElementById('scenejsCanvas'),
     settings: {
       performance: 'quality',
@@ -400,13 +406,18 @@
         state.canvas.width = ($('#viewport')).width();
         state.canvas.height = ($('#viewport')).height();
     }
-    cameraNode = state.scene.findNode('main-camera');
-    cameraOptics = cameraNode.get('optics');
-    cameraOptics.aspect = state.canvas.width / state.canvas.height;
-    return cameraNode.set('optics', cameraOptics);
+    if (state.scene != null) {
+      cameraNode = state.scene.findNode('main-camera');
+      cameraOptics = cameraNode.get('optics');
+      cameraOptics.aspect = state.canvas.width / state.canvas.height;
+      return cameraNode.set('optics', cameraOptics);
+    }
   };
   mouseDown = function(event) {
     var coords;
+    if (!(state.scene != null)) {
+      return;
+    }
     state.viewport.mouse.last = [event.clientX, event.clientY];
     switch (event.which) {
       case 1:
@@ -421,6 +432,9 @@
     }
   };
   mouseUp = function(event) {
+    if (!(state.scene != null)) {
+      return;
+    }
     if (event.which === 1 && state.viewport.mouse.leftDragDistance < constants.mouse.pickDragThreshold) {
       if (state.viewport.mouse.pickRecord != null) {
         controlsTreeSelectObject(state.viewport.mouse.pickRecord.nodeId);
@@ -462,6 +476,9 @@
   };
   mouseWheel = function(event) {
     var delta, zoomDistance;
+    if (!(state.scene != null)) {
+      return;
+    }
     delta = event.wheelDelta != null ? event.wheelDelta / -120.0 : Math.clamp(event.detail, -1.0, 1.0);
     zoomDistance = delta * state.camera.distanceLimits[1] * constants.camera.zoomSpeedFactor;
     return zoomLookAtNode(state.scene.findNode('main-lookAt'), zoomDistance, state.camera.distanceLimits);
@@ -472,8 +489,17 @@
         return topmenuHelp();
     }
   };
+  helpStatus = function(str) {
+    return ($('#main-view-help')).html(str);
+  };
+  helpStatusClear = function() {
+    return ($('#main-view-help')).html("");
+  };
   topmenuImportBimserver = function(event) {
     return bimserverImportDialogShow();
+  };
+  topmenuImportSceneJS = function(event) {
+    return fileImportDialogShow();
   };
   topmenuPerformanceQuality = function(event) {
     ($(event.target)).addClass('top-menu-activated');
@@ -632,6 +658,9 @@
   };
   snapshotsPush = function() {
     var imgURI, node, thumbSize;
+    if (!(state.scene != null)) {
+      return;
+    }
     if ($.browser.webkit) {
       state.scene.renderFrame({
         force: true
@@ -653,8 +682,13 @@
     state.snapshots.lookAts.slice($parent.index() + 1);
     return $parent.remove();
   };
-  snapshotsToggle = function(event) {};
+  snapshotsToggle = function(event) {
+    if (!(state.scene != null)) {}
+  };
   snapshotsPlay = function(event) {
+    if (!(state.scene != null)) {
+      return;
+    }
     return (SceneJS.FX.TweenSpline(state.scene.findNode('main-lookAt'))).sequence(state.snapshots.lookAts);
   };
   bimserverImport = function(url, oid) {
@@ -665,7 +699,7 @@
     });
   };
   hideDialog = function() {
-    return ($('#dialog-background')).hide();
+    return ($('#dialog-background,#dialog-bimserver-import,#dialog-file-import')).hide();
   };
   bimserverImportDialogClearMessages = function() {
     ($('#bimserver-import-message-info')).html('');
@@ -674,7 +708,7 @@
   };
   bimserverImportDialogShow = function() {
     bimserverImportDialogShowTab1();
-    return ($('#dialog-background')).show();
+    return ($('#dialog-background,#dialog-bimserver-import')).show();
   };
   bimserverImportDialogShowTab1 = function() {
     var $stepElements;
@@ -769,7 +803,7 @@
     ($(event.target)).addClass('bimserver-project-selected');
     return ($('#bimserver-projects-submit')).removeAttr('disabled');
   };
-  bimserverImportDialogOpen = function() {
+  bimserverImportDialogLoad = function() {
     var $selectedProject, url;
     $selectedProject = $('.bimserver-project-selected');
     if ($selectedProject.length === 0) {
@@ -783,6 +817,33 @@
       return bimserverImport(url, $selectedProject.attr('bimserveroid'));
     }
   };
+  fileImportDialogShow = function(event) {
+    return ($('#dialog-background,#dialog-file-import')).show();
+  };
+  fileImportDialogLoad = function(event) {
+    var file, reader, _ref;
+    reader = new FileReader();
+    reader.onloadend = function(f) {
+      try {
+        loadScene($.parseJSON(f.target.result));
+        return helpStatusClear();
+      } catch (error) {
+        if (typeof console !== "undefined" && console !== null) {
+          if (typeof console.log === "function") {
+            console.log(error);
+          }
+        }
+      }
+    };
+    file = (_ref = ($('#upload-file')).get(0)) != null ? _ref.files[0] : void 0;
+    if (file != null) {
+      reader.readAsText(file);
+      return hideDialog();
+    } else {
+      ($('#file-import-message-error')).html("No file selected");
+      return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("No file selected") : void 0 : void 0;
+    }
+  };
   registerDOMEvents = function() {
     state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
     state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
@@ -793,14 +854,16 @@
     return window.addEventListener('resize', windowResize, true);
   };
   registerControlEvents = function() {
+    ($('#upload-form')).submit(fileImportDialogLoad);
     ($('.dialog-close')).click(hideDialog);
     ($('#dialog-tab-bimserver1')).submit(bimserverImportDialogLogin);
-    ($('#dialog-tab-bimserver2')).submit(bimserverImportDialogOpen);
+    ($('#dialog-tab-bimserver2')).submit(bimserverImportDialogLoad);
     ($('#bimserver-import-step1')).click(bimserverImportDialogShowTab1);
     ($('#bimserver-import-step2')).click(bimserverImportDialogToggleTab2);
     ($('#bimserver-projects-refresh')).click(bimserverImportDialogRefresh);
     ($('#bimserver-projects')).delegate('li', 'click', bimserverImportDialogSelect);
     ($('#top-menu-import-bimserver')).click(topmenuImportBimserver);
+    ($('#top-menu-import-scenejs')).click(topmenuImportSceneJS);
     ($('#top-menu-performance-quality')).click(topmenuPerformanceQuality);
     ($('#top-menu-performance-performance')).click(topmenuPerformancePerformance);
     ($('#top-menu-mode-basic')).click(topmenuModeBasic);
@@ -899,15 +962,67 @@
     return ($('#controls-relationships')).html(treeHtml);
   };
   canvasInit();
-  sceneInit();
-  state.scene.start({
-    idleFunc: SceneJS.FX.idle
-  });
+  if (state.scene != null) {
+    sceneInit();
+    state.scene.start({
+      idleFunc: SceneJS.FX.idle
+    });
+  }
   $(function() {
-    controlsInit();
+    if (state.scene != null) {
+      controlsInit();
+      ifcTreeInit();
+    } else {
+      helpStatus("Please load a project from the <strong>File</strong> menu in the top left-hand corner.");
+    }
     registerDOMEvents();
     registerControlEvents();
-    ifcTreeInit();
     return state.application.initialized = true;
   });
+  loadScene = function(scene) {
+    if (state.scene != null) {
+      state.scene.destroy();
+    }
+    try {
+      SceneJS.createScene(scene);
+      if (typeof console !== "undefined" && console !== null) {
+        if (typeof console.log === "function") {
+          console.log('Scene created...');
+        }
+      }
+      state.scene = SceneJS.scene('Scene');
+      if (state.scene != null) {
+        sceneInit();
+        if (typeof console !== "undefined" && console !== null) {
+          if (typeof console.log === "function") {
+            console.log('Scene init...');
+          }
+        }
+        state.scene.start({
+          idleFunc: SceneJS.FX.idle
+        });
+        if (typeof console !== "undefined" && console !== null) {
+          if (typeof console.log === "function") {
+            console.log('Scene started...');
+          }
+        }
+        controlsInit();
+        if (typeof console !== "undefined" && console !== null) {
+          if (typeof console.log === "function") {
+            console.log('Controls init...');
+          }
+        }
+        ifcTreeInit();
+      }
+      if (typeof console !== "undefined" && console !== null) {
+        if (typeof console.log === "function") {
+          console.log('Scene loaded...');
+        }
+      }
+      return state.scene;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  };
 }).call(this);

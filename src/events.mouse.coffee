@@ -2,6 +2,9 @@
 # Program state should not be manipulated outside events files
 
 mouseDown = (event) ->
+  if not state.scene?  
+    return
+  
   state.viewport.mouse.last = [event.clientX, event.clientY]
   
   # Activate the appropriate mouse button mode
@@ -15,6 +18,9 @@ mouseDown = (event) ->
     state.viewport.mouse.pickRecord = state.scene.pick coords[0], coords[1]
 
 mouseUp = (event) ->
+  if not state.scene?  
+    return
+  
   # If the mouse was not dragged, select the object that was picked
   if event.which == 1 and state.viewport.mouse.leftDragDistance < constants.mouse.pickDragThreshold
     if state.viewport.mouse.pickRecord?
@@ -61,6 +67,9 @@ mouseMove = (event) ->
   state.viewport.mouse.last = [event.clientX, event.clientY]
 
 mouseWheel = (event) ->
+  if not state.scene?  
+    return
+
   # TODO: When the camera projection mode is ortho then this will need to scale the view
   # See http://www.javascriptkit.com/javatutors/onmousewheel.shtml
   # But also note, unfortunately firefox actually appears to give different values of event.detail some times.

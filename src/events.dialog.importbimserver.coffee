@@ -8,7 +8,7 @@ bimserverImportDialogClearMessages = () ->
 
 bimserverImportDialogShow = () ->
   bimserverImportDialogShowTab1()
-  ($ '#dialog-background').show()
+  ($ '#dialog-background,#dialog-bimserver-import').show()
 
 bimserverImportDialogShowTab1 = () ->
   bimserverImportDialogClearMessages()
@@ -119,7 +119,7 @@ bimserverImportDialogSelect = (event) ->
   ($ event.target).addClass 'bimserver-project-selected'
   ($ '#bimserver-projects-submit').removeAttr 'disabled'
 
-bimserverImportDialogOpen = () ->
+bimserverImportDialogLoad = () ->
   $selectedProject = $ '.bimserver-project-selected'
   if $selectedProject.length == 0
     ($ '#bimserver-import-message-error').html "No project selected"

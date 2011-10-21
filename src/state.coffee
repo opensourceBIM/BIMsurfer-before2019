@@ -2,7 +2,11 @@
 # No global state is allowed to exist outside of this structure
 
 state =
-  scene: SceneJS.scene 'Scene'
+  scene: do () -> 
+    try 
+      return SceneJS.scene 'Scene' 
+    catch error
+      return null
   canvas: document.getElementById 'scenejsCanvas'
   settings:
     performance: 'quality'
