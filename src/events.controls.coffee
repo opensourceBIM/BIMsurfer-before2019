@@ -1,6 +1,7 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+# Display ifc object with the given id in the properties tab
 controlsPropertiesSelectObject = (id) ->
   properties = state.scene.data().properties
   if not id?
@@ -32,6 +33,7 @@ controlsPropertiesSelectObject = (id) ->
 
   ($ '#controls-properties').html html
 
+# Toggle an IFC object's tree node in the objects tab to open/closed state
 controlsToggleTreeOpen = (event) ->
   $parent = ($ event.target).parent()
   id = $parent.attr 'id'
@@ -39,6 +41,7 @@ controlsToggleTreeOpen = (event) ->
   controlsTreeSelectObject id
   controlsPropertiesSelectObject id
 
+# Toggle visibility of an IFC object in the scene based on the state of its checkbox in the IFC tree
 controlsToggleTreeVisibility = (event) ->
   $parent = ($ event.target).closest '.controls-tree-rel'
   parentId = $parent.attr 'id'
@@ -80,6 +83,7 @@ controlsToggleTreeVisibility = (event) ->
         disableNode.add 'node', node.disconnect()
   return false
 
+# Select an IFC object in the objects tree
 controlsTreeSelectObject = (id) ->
   ($ '.controls-tree-selected').removeClass 'controls-tree-selected'
   ($ '.controls-tree-selected-parent').removeClass 'controls-tree-selected-parent'
@@ -97,12 +101,14 @@ controlsTreeSelectObject = (id) ->
     if node?
       node.insert 'node', constants.highlightMaterial
 
+# Open up the properties tab of the controls accordion
 controlsShowProperties = (event) ->
   # Don't show the properties when double clicking on the checkboxes
   if event? and event.target.nodeName == 'INPUT'
     return
   ($ '#controls-accordion').accordion 'activate', 1
 
+# Toggle the visibility of a layer based on the state of its checkbox in the layers tab
 controlsToggleLayer = (event) ->
   elements = ($ '#controls-layers input:checked').toArray()
   tags = (((($ el).attr 'id').split /^layer\-/)[1] for el in elements)

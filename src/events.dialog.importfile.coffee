@@ -1,9 +1,11 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+# Display the import file dialog
 fileImportDialogShow = (event) ->
   ($ '#dialog-background,#dialog-file-import').show()
 
+# Load the selected file from disk
 fileImportDialogLoad = (event) ->
   reader = new FileReader()
   reader.onloadend = (f) -> 

@@ -1,15 +1,18 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+# Clear info/error/warning (etc) messages in the dialog
 bimserverImportDialogClearMessages = () ->
   ($ '#bimserver-import-message-info').html ''
   ($ '#bimserver-import-message-error').html ''
   ($ '.error').removeClass 'error'
 
+# Display the dialog
 bimserverImportDialogShow = () ->
   bimserverImportDialogShowTab1()
   ($ '#dialog-background,#dialog-bimserver-import').show()
 
+# Display the first tab
 bimserverImportDialogShowTab1 = () ->
   bimserverImportDialogClearMessages()
   $stepElements = $ '#dialog-bimserver-import .dialog-step'
@@ -18,6 +21,7 @@ bimserverImportDialogShowTab1 = () ->
   ($ '#dialog-tab-bimserver1').show()
   ($ '#dialog-tab-bimserver2').hide()
 
+# Display the second tab
 bimserverImportDialogShowTab2 = () ->
   bimserverImportDialogClearMessages()
   $stepElements = $ '#dialog-bimserver-import .dialog-step'
@@ -26,10 +30,12 @@ bimserverImportDialogShowTab2 = () ->
   ($ '#dialog-tab-bimserver1').hide()
   ($ '#dialog-tab-bimserver2').show()
 
+# Open the second tab (if the bimserver connection is active)
 bimserverImportDialogToggleTab2 = () ->
   # TODO: Test whether server bimserver connection is active
   bimserverImportDialogShowTab2()
 
+# Send a login request to the bimserver
 bimserverImportDialogLogin = () ->
   # Clear the message fields
   bimserverImportDialogClearMessages()
@@ -89,6 +95,7 @@ bimserverImportDialogLogin = () ->
   pwd = null
   return true
 
+# Send a request to the bimserver to refresh the list of available projects
 bimserverImportDialogRefresh = () ->
   url = ($ '#bimserver-login-url').val()
 
@@ -114,11 +121,13 @@ bimserverImportDialogRefresh = () ->
     .always (jqXHR, textStatus, errorThrown) -> 
       ($ '#dialog-tab-bimserver2 button').removeAttr 'disabled'
 
+# Select a project in the list and enable the load button
 bimserverImportDialogSelect = (event) ->
   ($ '.bimserver-project-selected').removeClass 'bimserver-project-selected'
   ($ event.target).addClass 'bimserver-project-selected'
   ($ '#bimserver-projects-submit').removeAttr 'disabled'
 
+# Load the selected project from the bimserver
 bimserverImportDialogLoad = () ->
   $selectedProject = $ '.bimserver-project-selected'
   if $selectedProject.length == 0

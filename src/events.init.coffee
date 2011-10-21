@@ -1,9 +1,11 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+# Initialize the canvas DOM element
 canvasInit = () ->
   windowResize()
 
+# Initialize the scene graph (defaults etc)
 sceneInit = () ->
   # Set the correct aspect ratio
   modifySubAttr (state.scene.findNode 'main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height
@@ -16,6 +18,7 @@ sceneInit = () ->
   # Add useful nodes to the library
   #highlightNode = 
 
+# Create and initialize form/html controls related to the loaded scene
 controlsInit = () ->
   sceneData = state.scene.data()
 
@@ -32,6 +35,7 @@ controlsInit = () ->
   # Make controls visible
   ($ '#main-view-controls').removeAttr 'style'
 
+# Create and initialize the IFC objects tree (tab)
 ifcTreeInit = () ->
   # Initialize the IFC tree control
   sceneData = state.scene.data()
@@ -73,7 +77,7 @@ ifcTreeInit = () ->
   treeHtml += "</ul>"
   ($ '#controls-relationships').html treeHtml
 
-# Start rendering as soon as possible
+# Start rendering as soon as possible (if a scene is already loaded)
 canvasInit()
 if state.scene?
   sceneInit()

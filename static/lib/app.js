@@ -982,6 +982,7 @@
   loadScene = function(scene) {
     if (state.scene != null) {
       state.scene.destroy();
+      state.scene = null;
     }
     try {
       if (typeof console !== "undefined" && console !== null) {

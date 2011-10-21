@@ -1,6 +1,7 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+# Load the scene and initialize controls
 loadScene = (scene) ->
   if state.scene?
     state.scene.destroy()

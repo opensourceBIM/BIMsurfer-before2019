@@ -31,6 +31,7 @@ snapshotsDelete = (event) ->
   state.snapshots.lookAts.slice $parent.index() + 1
   $parent.remove()
 
+# Show a toggled snapshot in the main view
 snapshotsToggle = (event) ->
   if not state.scene?  
     return

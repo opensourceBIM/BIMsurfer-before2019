@@ -1,6 +1,7 @@
 # Eventful code comes here
 # Program state should not be manipulated outside events files
 
+# Resize dom elements and SceneJS (camera) parameters when the window resizes
 windowResize = ->
   switch state.settings.performance
     when 'performance'
