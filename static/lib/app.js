@@ -984,18 +984,23 @@
       state.scene.destroy();
     }
     try {
-      SceneJS.createScene(scene);
       if (typeof console !== "undefined" && console !== null) {
         if (typeof console.log === "function") {
-          console.log('Scene created...');
+          console.log('Create scene...');
         }
       }
+      SceneJS.createScene(scene);
       state.scene = SceneJS.scene('Scene');
       if (state.scene != null) {
+        if (typeof console !== "undefined" && console !== null) {
+          if (typeof console.log === "function") {
+            console.log('Initialize scene...');
+          }
+        }
         sceneInit();
         if (typeof console !== "undefined" && console !== null) {
           if (typeof console.log === "function") {
-            console.log('Scene init...');
+            console.log('Start scene...');
           }
         }
         state.scene.start({
@@ -1003,26 +1008,35 @@
         });
         if (typeof console !== "undefined" && console !== null) {
           if (typeof console.log === "function") {
-            console.log('Scene started...');
+            console.log('Initialize controls...');
           }
         }
         controlsInit();
         if (typeof console !== "undefined" && console !== null) {
           if (typeof console.log === "function") {
-            console.log('Controls init...');
+            console.log('Initialize IFC object tree...');
           }
         }
         ifcTreeInit();
+        if (typeof console !== "undefined" && console !== null) {
+          if (typeof console.log === "function") {
+            console.log('...Done');
+          }
+        }
+        return state.scene;
+      }
+    } catch (error) {
+      if (typeof console !== "undefined" && console !== null) {
+        if (typeof console.log === "function") {
+          console.log(error);
+        }
       }
       if (typeof console !== "undefined" && console !== null) {
         if (typeof console.log === "function") {
-          console.log('Scene loaded...');
+          console.log('...Errors occured');
         }
       }
-      return state.scene;
-    } catch (error) {
-      console.log(error);
-      return null;
     }
+    return null;
   };
 }).call(this);

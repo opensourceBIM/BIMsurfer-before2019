@@ -5,21 +5,23 @@ loadScene = (scene) ->
   if state.scene?
     state.scene.destroy()
   try 
+    console?.log? 'Create scene...'
     SceneJS.createScene scene
-    console?.log? 'Scene created...'
     state.scene = SceneJS.scene 'Scene' 
     # Re-initialize controls and scene
     if state.scene?
+      console?.log? 'Initialize scene...'
       sceneInit()
-      console?.log? 'Scene init...'
+      console?.log? 'Start scene...'
       state.scene.start
         idleFunc: SceneJS.FX.idle
-      console?.log? 'Scene started...'
+      console?.log? 'Initialize controls...'
       controlsInit()
-      console?.log? 'Controls init...'
+      console?.log? 'Initialize IFC object tree...'
       ifcTreeInit()
-    console?.log? 'Scene loaded...'
-    return state.scene
+      console?.log? '...Done'
+      return state.scene
   catch error
-    console.log error
-    return null
+    console?.log? error
+    console?.log? '...Errors occured'
+  return null
