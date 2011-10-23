@@ -112,3 +112,9 @@ task 'remove:tools', "Remove all tools from the tools directory", ->
     console.log stdout + stderr
     console.log "Done."
 
+task 'optimize:images', "Optimize all PNG's and JPEG's", ->
+  exec "optipng static/images/*.png -o7", (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+    console.log "Done."
+
