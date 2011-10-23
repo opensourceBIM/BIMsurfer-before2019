@@ -462,12 +462,12 @@
     if (state.viewport.mouse.middleDown) {
       state.viewport.mouse.middleDragDistance += deltaLength;
     }
-    if (state.viewport.mouse.leftDown) {
+    if (state.viewport.mouse.leftDown && event.which === 1) {
       orbitAngles = [0.0, 0.0];
       SceneJS_math_mulVec2Scalar(delta, constants.camera.orbitSpeedFactor / deltaLength, orbitAngles);
       orbitAngles = [Math.clamp(orbitAngles[0], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed), Math.clamp(orbitAngles[1], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed)];
       orbitLookAtNode(state.scene.findNode('main-lookAt'), orbitAngles, [0.0, 0.0, 1.0]);
-    } else if (state.viewport.mouse.middleDown) {
+    } else if (state.viewport.mouse.middleDown && event.which === 2) {
       panVector = [0.0, 0.0];
       SceneJS_math_mulVec2Scalar([-delta[0], delta[1]], constants.camera.panSpeedFactor / deltaLength, panVector);
       lookAtNodePanRelative(state.scene.findNode('main-lookAt'), panVector);

@@ -49,7 +49,8 @@ mouseMove = (event) ->
   state.viewport.mouse.middleDragDistance += deltaLength if state.viewport.mouse.middleDown
   
   # Manipulate the camera when dragging
-  if state.viewport.mouse.leftDown
+  # See http://stackoverflow.com/questions/4065992/jquery-detecting-pressed-mouse-button-during-mousemove-event 
+  if state.viewport.mouse.leftDown and event.which == 1
     # Calculate the orbit angle to apply to the lookAt
     orbitAngles = [0.0,0.0]
     SceneJS_math_mulVec2Scalar delta, constants.camera.orbitSpeedFactor / deltaLength, orbitAngles
@@ -58,7 +59,7 @@ mouseMove = (event) ->
       Math.clamp orbitAngles[1], -constants.camera.maxOrbitSpeed, constants.camera.maxOrbitSpeed
     ]
     orbitLookAtNode (state.scene.findNode 'main-lookAt'), orbitAngles, [0.0,0.0,1.0]
-  else if state.viewport.mouse.middleDown
+  else if state.viewport.mouse.middleDown and event.which == 2
     # Pan the camera
     panVector = [0.0,0.0]
     SceneJS_math_mulVec2Scalar [-delta[0],delta[1]], constants.camera.panSpeedFactor / deltaLength, panVector
