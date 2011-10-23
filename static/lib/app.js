@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, windowResize, zoomLookAt, zoomLookAtNode;
+  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -692,10 +692,29 @@
     return (SceneJS.FX.TweenSpline(state.scene.findNode('main-lookAt'))).sequence(state.snapshots.lookAts);
   };
   bimserverImport = function(url, oid) {
+    if (typeof console !== "undefined" && console !== null) {
+      if (typeof console.log === "function") {
+        console.log("Load BIMserver project with oid" + oid + "...");
+      }
+    }
     return ($.get(url + 'download?poid=' + oid + '&serializerName=SceneJS', void 0, void 0, 'text')).done(function(data, textStatus, jqXHR) {
-      console.log(data);
+      if (typeof console !== "undefined" && console !== null) {
+        if (typeof console.log === "function") {
+          console.log(data);
+        }
+      }
+      if (typeof console !== "undefined" && console !== null) {
+        if (typeof console.log === "function") {
+          console.log("...Done (TODO: now load scene...)");
+        }
+      }
     }).fail(function(jqXHR, textStatus, errorThrown) {
       console.log(textStatus);
+      if (typeof console !== "undefined" && console !== null) {
+        if (typeof console.log === "function") {
+          console.log("...BIMserver import failed");
+        }
+      }
     });
   };
   hideDialog = function() {
@@ -919,6 +938,9 @@
     });
     return ($('#main-view-controls')).removeAttr('style');
   };
+  viewportInit = function() {
+    return $('#viewport').toggleClass('bimsurfer-empty-watermark', !(state.scene != null));
+  };
   ifcTreeInit = function() {
     var ifcContains, ifcDecomposedBy, ifcDefinedBy, ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
     sceneData = state.scene.data();
@@ -969,6 +991,7 @@
     });
   }
   $(function() {
+    viewportInit();
     if (state.scene != null) {
       controlsInit();
       ifcTreeInit();
@@ -992,6 +1015,7 @@
       }
       SceneJS.createScene(scene);
       state.scene = SceneJS.scene('Scene');
+      viewportInit();
       if (state.scene != null) {
         if (typeof console !== "undefined" && console !== null) {
           if (typeof console.log === "function") {

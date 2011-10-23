@@ -35,6 +35,10 @@ controlsInit = () ->
   # Make controls visible
   ($ '#main-view-controls').removeAttr 'style'
 
+# Initialize the viewport div
+viewportInit = () ->
+  $('#viewport').toggleClass 'bimsurfer-empty-watermark', not state.scene?
+
 # Create and initialize the IFC objects tree (tab)
 ifcTreeInit = () ->
   # Initialize the IFC tree control
@@ -85,7 +89,8 @@ if state.scene?
     idleFunc: SceneJS.FX.idle
 
 # Initialize the gui controls and register events once the rest of the document has completely loaded
-$ () -> 
+$ () ->
+  viewportInit()
   if state.scene?
     controlsInit()
     ifcTreeInit()

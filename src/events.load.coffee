@@ -10,6 +10,7 @@ loadScene = (scene) ->
     console?.log? 'Create scene...'
     SceneJS.createScene scene
     state.scene = SceneJS.scene 'Scene' 
+    viewportInit()
     # Re-initialize controls and scene
     if state.scene?
       console?.log? 'Initialize scene...'
