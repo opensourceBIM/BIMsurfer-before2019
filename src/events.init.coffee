@@ -94,8 +94,10 @@ $ () ->
   if state.scene?
     controlsInit()
     ifcTreeInit()
+    helpShortcuts 'standard', 'navigation'    
   else
     helpStatus "Please load a project from the <strong>File</strong> menu in the top left-hand corner."
+    helpShortcuts 'standard'
   registerDOMEvents()
   registerControlEvents()
   state.application.initialized = true

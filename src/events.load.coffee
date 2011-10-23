@@ -22,9 +22,11 @@ loadScene = (scene) ->
       controlsInit()
       console?.log? 'Initialize IFC object tree...'
       ifcTreeInit()
+      helpShortcuts 'standard', 'navigation'
       console?.log? '...Done'
       return state.scene
   catch error
     console?.log? error
     console?.log? '...Errors occured'
+  helpShortcuts 'standard'
   return null
