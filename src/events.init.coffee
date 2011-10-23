@@ -37,7 +37,7 @@ controlsInit = () ->
 
 # Initialize the viewport div
 viewportInit = () ->
-  $('#viewport').toggleClass 'bimsurfer-empty-watermark', not state.scene?
+  $('#scenejsCanvas').toggleClass 'bimsurfer-empty-watermark', not state.scene?
 
 # Create and initialize the IFC objects tree (tab)
 ifcTreeInit = () ->

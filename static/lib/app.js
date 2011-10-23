@@ -939,7 +939,7 @@
     return ($('#main-view-controls')).removeAttr('style');
   };
   viewportInit = function() {
-    return $('#viewport').toggleClass('bimsurfer-empty-watermark', !(state.scene != null));
+    return $('#scenejsCanvas').toggleClass('bimsurfer-empty-watermark', !(state.scene != null));
   };
   ifcTreeInit = function() {
     var ifcContains, ifcDecomposedBy, ifcDefinedBy, ifcObjectDescription, ifcProject, ifcRelationships, project, sceneData, treeHtml, _i, _len, _ref;
