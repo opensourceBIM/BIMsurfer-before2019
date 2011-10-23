@@ -27,6 +27,7 @@ mouseUp = (event) ->
       controlsTreeSelectObject state.viewport.mouse.pickRecord.nodeId
     else
       controlsTreeSelectObject()
+      helpShortcutsHide 'selection'
     state.viewport.mouse.pickRecord = null
 
   # De-activate the appropriate mouse button and dragging modes

@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
+  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -440,6 +440,7 @@
         controlsTreeSelectObject(state.viewport.mouse.pickRecord.nodeId);
       } else {
         controlsTreeSelectObject();
+        helpShortcutsHide('selection');
       }
       state.viewport.mouse.pickRecord = null;
     }
@@ -502,6 +503,15 @@
     for (_i = 0, _len = arguments.length; _i < _len; _i++) {
       postfix = arguments[_i];
       _results.push(($('.shortcut-' + postfix)).show());
+    }
+    return _results;
+  };
+  helpShortcutsHide = function() {
+    var postfix, _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = arguments.length; _i < _len; _i++) {
+      postfix = arguments[_i];
+      _results.push(($('.shortcut-' + postfix)).hide());
     }
     return _results;
   };
@@ -642,7 +652,11 @@
       controlsPropertiesSelectObject(id);
       node = state.scene.findNode(id);
       if (node != null) {
-        return node.insert('node', constants.highlightMaterial);
+        node.insert('node', constants.highlightMaterial);
+        helpShortcuts('selection', 'navigation', 'standard');
+        if (($('#controls-accordion-properties')).hasClass('ui-accordion-content-active')) {
+          return helpShortcutsHide('inspection');
+        }
       }
     }
   };
@@ -650,7 +664,8 @@
     if ((event != null) && event.target.nodeName === 'INPUT') {
       return;
     }
-    return ($('#controls-accordion')).accordion('activate', 1);
+    ($('#controls-accordion')).accordion('activate', 1);
+    return helpShortcutsHide('inspection');
   };
   controlsToggleLayer = function(event) {
     var el, elements, tags;

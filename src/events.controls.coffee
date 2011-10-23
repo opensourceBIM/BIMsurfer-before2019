@@ -100,6 +100,8 @@ controlsTreeSelectObject = (id) ->
     node = (state.scene.findNode id)
     if node?
       node.insert 'node', constants.highlightMaterial
+      helpShortcuts 'selection','navigation','standard'
+      helpShortcutsHide 'inspection' if ($ '#controls-accordion-properties').hasClass 'ui-accordion-content-active'
 
 # Open up the properties tab of the controls accordion
 controlsShowProperties = (event) ->
@@ -107,6 +109,8 @@ controlsShowProperties = (event) ->
   if event? and event.target.nodeName == 'INPUT'
     return
   ($ '#controls-accordion').accordion 'activate', 1
+  # TODO: Unfortunately this line below doesn't seem to work correctly because the click event is sent after dblclick, but before ui-accordion-content-active is set
+  helpShortcutsHide 'inspection' 
 
 # Toggle the visibility of a layer based on the state of its checkbox in the layers tab
 controlsToggleLayer = (event) ->
