@@ -259,19 +259,23 @@
       };
       TweenSpline.prototype.update = function() {
         var dt, i;
-        if (this._sequence.length === 0 || !this._play) {
-          return;
+        if (this._sequence.length === 0) {
+          return false;
+        }
+        if (!this._play) {
+          return true;
         }
         if (this._t >= this.totalTime() || this._sequence.length === 1) {
-          return this._target.set(this._sequence[this._sequence.length - 1]);
-        } else {
-          i = 0;
-          while (this._timeline[i] <= this._t) {
-            ++i;
-          }
-          dt = this._timeline[i] - this._timeline[i - 1];
-          return lerpLookAtNode(this._target, (this._t - this._timeline[i - 1]) / dt, this._sequence[i - 1], this._sequence[i]);
+          this._target.set(this._sequence[this._sequence.length - 1]);
+          return false;
         }
+        i = 0;
+        while (this._timeline[i] <= this._t) {
+          ++i;
+        }
+        dt = this._timeline[i] - this._timeline[i - 1];
+        lerpLookAtNode(this._target, (this._t - this._timeline[i - 1]) / dt, this._sequence[i - 1], this._sequence[i]);
+        return true;
       };
       return TweenSpline;
     })();
@@ -289,17 +293,21 @@
     _r = function(lookAtNode, interval) {
       var tween;
       _dt = interval || 50;
+      if (_intervalID !== null) {
+        clearInterval(_intervalID);
+      }
       _intervalID = setInterval(_tick, _dt);
       tween = new TweenSpline(lookAtNode);
       _tweens.push(tween);
       return tween;
     };
     _r.update = function() {
-      var tween, _i, _len, _results;
+      var i, tween, _results;
+      i = 0;
       _results = [];
-      for (_i = 0, _len = _tweens.length; _i < _len; _i++) {
-        tween = _tweens[_i];
-        _results.push(tween._t < tween.totalTime() ? tween.update() : void 0);
+      while (i < _tweens.length) {
+        tween = _tweens[i];
+        _results.push(!tween.update() ? _tweens.splice(i, 1) : i += 1);
       }
       return _results;
     };

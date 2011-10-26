@@ -57,18 +57,26 @@ SceneJS.FX.TweenSpline = do () ->
       return 0
 
     update: () ->
-      return if @_sequence.length == 0 || not @_play
+      # Remove from tweens if the sequence is empty
+      return false if @_sequence.length == 0
+      
+      # Check if the animation is paused
+      return true if not @_play
+
+      # Remove from tweens if the sequence is complete
       if @_t >= @totalTime() || @_sequence.length == 1
         @_target.set @_sequence[@_sequence.length - 1]
-        # TODO: remove from the list if tween is done        
-      else
-        i = 0
-        ++i while @_timeline[i] <= @_t        
-        dt = @_timeline[i] - @_timeline[i - 1]
-        lerpLookAtNode @_target, 
-          (@_t - @_timeline[i - 1]) / dt,
-          @_sequence[i - 1], 
-          @_sequence[i]
+        return false
+      
+      # Perform interpolation
+      i = 0
+      ++i while @_timeline[i] <= @_t        
+      dt = @_timeline[i] - @_timeline[i - 1]
+      lerpLookAtNode @_target, 
+        (@_t - @_timeline[i - 1]) / dt,
+        @_sequence[i - 1], 
+        @_sequence[i]
+      return true
   
   _tweens = []
   _intervalID = null
@@ -81,14 +89,20 @@ SceneJS.FX.TweenSpline = do () ->
   
   _r = (lookAtNode, interval) ->
     _dt = interval || 50                       # The default interval is 50 ms equivalent to 20 FPS
+    if _intervalID != null
+      clearInterval _intervalID
     _intervalID = setInterval _tick, _dt
     tween = new TweenSpline lookAtNode
     _tweens.push tween
     return tween
   
   _r.update = () ->
-    for tween in _tweens
-      if tween._t < tween.totalTime()
-        tween.update()
+    i = 0
+    while i < _tweens.length
+      tween = _tweens[i]
+      if not tween.update()
+        _tweens.splice i, 1
+      else
+        i += 1
   
   return _r
