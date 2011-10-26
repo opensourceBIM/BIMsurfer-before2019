@@ -37,6 +37,8 @@ registerControlEvents = () ->
   ($ '#top-menu-mode-advanced').click topmenuModeAdvanced
   ($ '#top-menu-help').click topmenuHelp
 
+  ($ '#main-views-reset').click mainmenuViewsReset
+
   ($ '#controls-relationships').delegate '.controls-tree-item', 'click', controlsToggleTreeOpen
   ($ '#controls-relationships').delegate '.controls-tree-item', 'dblclick', controlsShowProperties
   ($ '#controls-relationships').delegate 'input', 'change', controlsToggleTreeVisibility

@@ -479,13 +479,16 @@
       box-shadow: 0 0 5px rgba(20,20,20,0.2);*/
     }
     .main-menu-panel h3 {
-      color: #888;
+      color: #666;
       font-size: 20px;
       text-shadow: 1px 1px 0px #fff;
     }
     .main-menu-panel a {
       color: #ccc;
       font-size: 14px;
+    }
+    .main-menu-panel a:hover {
+      color: #3a74ae;
     }
     #main-view {
       position: relative;
@@ -901,7 +904,7 @@
           <div class='main-menu-panel ui-widget-content'>
             <h3>Views</h3>
             <menu type='toolbar'>
-              <li><a href='#'>+ Reset</a></li>
+              <li><a href='#' id='main-views-reset'>+ Reset</a></li>
               <!-- --
               <li><a href='#'>+ 4 Views</a></li>
               <li><a href='#'>+ Orthogonal</a></li>

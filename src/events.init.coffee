@@ -17,6 +17,11 @@ sceneInit = () ->
   state.scene.set 'tagMask', '^(' + (tags.join '|') + ')$'
   # Add useful nodes to the library
   #highlightNode = 
+  # Store the initial lookAt parameters
+  lookAtNode = state.scene.findNode 'main-lookAt'
+  state.lookAt.defaultParameters.eye = lookAtNode.get 'eye'
+  state.lookAt.defaultParameters.look = lookAtNode.get 'look'
+  state.lookAt.defaultParameters.up = lookAtNode.get 'up'
 
 # Create and initialize form/html controls related to the loaded scene
 controlsInit = () ->

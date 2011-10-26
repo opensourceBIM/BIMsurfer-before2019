@@ -23,6 +23,11 @@ state =
       pickRecord: null
   camera:
     distanceLimits: [0.0, 0.0]    # Min / Max limits
+  lookAt:
+    defaultParameters: 
+      look: { x: 0.0, y: 0.0, z: 0.0 }
+      eye: { x: 10.0, y: 10.0, z: 10.0 }
+      up: { x: 0.0, y: 0.0, z: 1.0 }
   snapshots: 
     lookAts: []
   application:

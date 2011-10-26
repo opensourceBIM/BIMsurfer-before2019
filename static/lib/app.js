@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
+  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, mainmenuViewsReset, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -369,6 +369,25 @@
     camera: {
       distanceLimits: [0.0, 0.0]
     },
+    lookAt: {
+      defaultParameters: {
+        look: {
+          x: 0.0,
+          y: 0.0,
+          z: 0.0
+        },
+        eye: {
+          x: 10.0,
+          y: 10.0,
+          z: 10.0
+        },
+        up: {
+          x: 0.0,
+          y: 0.0,
+          z: 1.0
+        }
+      }
+    },
     snapshots: {
       lookAts: []
     },
@@ -550,6 +569,15 @@
     ($('#main-view-help')).toggle();
     return ($('#main-view-keys')).toggle();
   };
+  mainmenuViewsReset = function(event) {
+    var lookAtNode;
+    if (state.scene != null) {
+      lookAtNode = state.scene.findNode('main-lookAt');
+      lookAtNode.set('eye', state.lookAt.defaultParameters.eye);
+      lookAtNode.set('look', state.lookAt.defaultParameters.look);
+      return lookAtNode.set('up', state.lookAt.defaultParameters.up);
+    }
+  };
   controlsPropertiesSelectObject = function(id) {
     var html, key, objectProperties, properties, tableItem, value;
     properties = state.scene.data().properties;
@@ -717,29 +745,24 @@
     return (SceneJS.FX.TweenSpline(state.scene.findNode('main-lookAt'))).sequence(state.snapshots.lookAts);
   };
   bimserverImport = function(url, oid) {
+    var pwd, user;
     if (typeof console !== "undefined" && console !== null) {
       if (typeof console.log === "function") {
-        console.log("Load BIMserver project with oid" + oid + "...");
+        console.log("Load BIMserver project with oid " + oid + "...");
       }
     }
-    return ($.get(url + 'download?poid=' + oid + '&serializerName=SceneJS', void 0, void 0, 'text')).done(function(data, textStatus, jqXHR) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log(data);
-        }
-      }
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log("...Done (TODO: now load scene...)");
-        }
-      }
+    user = ($('#bimserver-login-username')).val();
+    pwd = ($('#bimserver-login-password')).val();
+    return ($.ajax({
+      username: encodeURIComponent(user),
+      password: encodeURIComponent(pwd),
+      url: 'http://localhost:8082/download',
+      data: 'poid=' + oid
+    })).done(function(data, textStatus, jqXHR) {
+      return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log(data, typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("...Done (TODO: now load scene...)") : void 0 : void 0) : void 0 : void 0;
     }).fail(function(jqXHR, textStatus, errorThrown) {
       console.log(textStatus);
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log("...BIMserver import failed");
-        }
-      }
+      return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("...BIMserver import failed") : void 0 : void 0;
     });
   };
   hideDialog = function() {
@@ -913,6 +936,7 @@
     ($('#top-menu-mode-basic')).click(topmenuModeBasic);
     ($('#top-menu-mode-advanced')).click(topmenuModeAdvanced);
     ($('#top-menu-help')).click(topmenuHelp);
+    ($('#main-views-reset')).click(mainmenuViewsReset);
     ($('#controls-relationships')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
     ($('#controls-relationships')).delegate('.controls-tree-item', 'dblclick', controlsShowProperties);
     ($('#controls-relationships')).delegate('input', 'change', controlsToggleTreeVisibility);
@@ -927,7 +951,7 @@
     return windowResize();
   };
   sceneInit = function() {
-    var sceneDiameter, tag, tags;
+    var lookAtNode, sceneDiameter, tag, tags;
     modifySubAttr(state.scene.findNode('main-camera'), 'optics', 'aspect', state.canvas.width / state.canvas.height);
     sceneDiameter = SceneJS_math_lenVec3(state.scene.data().bounds);
     state.camera.distanceLimits = [sceneDiameter * 0.1, sceneDiameter * 2.0];
@@ -941,7 +965,11 @@
       }
       return _results;
     })();
-    return state.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
+    state.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
+    lookAtNode = state.scene.findNode('main-lookAt');
+    state.lookAt.defaultParameters.eye = lookAtNode.get('eye');
+    state.lookAt.defaultParameters.look = lookAtNode.get('look');
+    return state.lookAt.defaultParameters.up = lookAtNode.get('up');
   };
   controlsInit = function() {
     var ifcType, layersHtml, sceneData;

@@ -24,6 +24,7 @@ appFiles  = [
   'events.keyboard'
   'events.help'
   'events.topmenu'
+  'events.mainmenu'
   'events.controls'
   'events.snapshots'
   'events.bimserver'
