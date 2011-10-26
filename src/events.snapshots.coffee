@@ -28,7 +28,7 @@ snapshotsPush = () ->
 
 snapshotsDelete = (event) ->
   $parent = ($ event.target).parent()
-  state.snapshots.lookAts.slice $parent.index() + 1
+  state.snapshots.lookAts.splice $parent.index() + 1, 1
   $parent.remove()
 
 # Show a toggled snapshot in the main view
