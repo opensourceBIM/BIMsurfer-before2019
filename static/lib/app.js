@@ -940,7 +940,7 @@
     ($('#controls-relationships')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
     ($('#controls-relationships')).delegate('.controls-tree-item', 'dblclick', controlsShowProperties);
     ($('#controls-relationships')).delegate('input', 'change', controlsToggleTreeVisibility);
-    ($('#controls-layers input')).change(controlsToggleLayer);
+    ($('#controls-layers')).delegate('input', 'change', controlsToggleLayer);
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);
     ($('#snapshots')).delegate('.snapshot-delete', 'click', snapshotsDelete);
