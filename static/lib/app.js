@@ -912,9 +912,9 @@
     }
   };
   registerDOMEvents = function() {
-    state.viewport.domElement.addEventListener('mousedown', mouseDown, true);
-    state.viewport.domElement.addEventListener('mouseup', mouseUp, true);
-    state.viewport.domElement.addEventListener('mousemove', mouseMove, true);
+    ($(state.viewport.domElement)).mousedown(mouseDown);
+    ($(state.viewport.domElement)).mouseup(mouseUp);
+    ($(state.viewport.domElement)).mousemove(mouseMove);
     state.viewport.domElement.addEventListener('mousewheel', mouseWheel, true);
     state.viewport.domElement.addEventListener('DOMMouseScroll', mouseWheel, true);
     document.addEventListener('keydown', keyDown, true);
