@@ -1,6 +1,6 @@
 /*
- * BIM Viewer
- * Copyright 2011, Bimserver.org.
+ * BIMsurfer
+ * Copyright 2011, BIMserver.org.
  */
 "use strict";
 
@@ -464,7 +464,7 @@
     }
     if (event.which === 1 && state.viewport.mouse.leftDragDistance < constants.mouse.pickDragThreshold) {
       if (state.viewport.mouse.pickRecord != null) {
-        controlsTreeSelectObject(state.viewport.mouse.pickRecord.nodeId);
+        controlsTreeSelectObject(state.viewport.mouse.pickRecord.name);
       } else {
         controlsTreeSelectObject();
         helpShortcutsHide('selection');
@@ -759,7 +759,7 @@
     return (SceneJS.FX.TweenSpline(state.scene.findNode('main-lookAt'))).sequence(state.snapshots.lookAts);
   };
   bimserverImport = function(url, oid) {
-    var pwd, user;
+    var downloadDone, pwd, user;
     if (typeof console !== "undefined" && console !== null) {
       if (typeof console.log === "function") {
         console.log("Load BIMserver project with oid " + oid + "...");
@@ -767,14 +767,31 @@
     }
     user = ($('#bimserver-login-username')).val();
     pwd = ($('#bimserver-login-password')).val();
-    return ($.ajax({
+    downloadDone = function(data, textStatus, jqXHR) {
+      if (typeof console !== "undefined" && console !== null) {
+        if (typeof console.log === "function") {
+          console.log("...Download complete");
+        }
+      }
+      try {
+        loadScene(data);
+        helpStatusClear();
+      } catch (error) {
+        if (typeof console !== "undefined" && console !== null) {
+          if (typeof console.log === "function") {
+            console.log(error);
+          }
+        }
+      }
+    };
+    return (($.ajax({
       username: encodeURIComponent(user),
       password: encodeURIComponent(pwd),
-      url: 'http://localhost:8082/download',
-      data: 'poid=' + oid
-    })).done(function(data, textStatus, jqXHR) {
-      return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log(data, typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("...Done (TODO: now load scene...)") : void 0 : void 0) : void 0 : void 0;
-    }).fail(function(jqXHR, textStatus, errorThrown) {
+      type: 'GET',
+      url: url + 'download',
+      dataType: 'json',
+      data: 'poid=' + oid + '&serializerName=SceneJS'
+    })).done(downloadDone)).fail(function(jqXHR, textStatus, errorThrown) {
       console.log(textStatus);
       return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("...BIMserver import failed") : void 0 : void 0;
     });
