@@ -31,6 +31,8 @@
   <!-- Screen layout -->
   <h1>BIMsurfer Embedded API</h1>
 
+  <div id='bimsurfer'>BIMsurfer</div>
+
   <!-- Framework -->
   <script src='../static/api/api.embed.js'></script>
 
@@ -38,7 +40,7 @@
 
   <!-- BIMsurfer loader -->
   <script>  
-    var surfer = new BimSurferEmbedded();
+    var surfer = new BimSurferEmbedded('../index.html', 'bimsurfer');
   </script>
 
   <!-- Application logic -->
