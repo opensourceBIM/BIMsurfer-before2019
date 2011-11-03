@@ -5,6 +5,9 @@
 loadScene = (scene) ->
   if state.scene?
     state.scene.destroy()
+    # TODO: This might be necessary in the future
+    # Ensure that the scene is destroyed by forcing a render frame
+    #state.scene.renderFrame { force: true }
     state.scene = null
   try 
     console?.log? 'Create scene...'
