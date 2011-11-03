@@ -1,6 +1,6 @@
 /*
- * BIM Viewer
- * Copyright 2011, Bimserver.org.
+ * BIMsurfer
+ * Copyright 2011, BIMserver.org.
  */
 "use strict";
 
