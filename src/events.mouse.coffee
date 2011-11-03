@@ -24,7 +24,7 @@ mouseUp = (event) ->
   # If the mouse was not dragged, select the object that was picked
   if event.which == 1 and state.viewport.mouse.leftDragDistance < constants.mouse.pickDragThreshold
     if state.viewport.mouse.pickRecord?
-      controlsTreeSelectObject state.viewport.mouse.pickRecord.nodeId
+      controlsTreeSelectObject state.viewport.mouse.pickRecord.name
     else
       controlsTreeSelectObject()
       helpShortcutsHide 'selection'
