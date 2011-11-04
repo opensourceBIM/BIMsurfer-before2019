@@ -3,18 +3,32 @@
 
 # Display ifc object with the given id in the properties tab
 controlsPropertiesSelectObject = (id) ->
+  # Check the inputs
   properties = state.scene.data().properties
   if not id?
     return ($ '#controls-properties').html "<p class='controls-message'>Select an object to see its properties.</p>"
   if not properties?
     return ($ '#controls-properties').html "<p class='controls-message'>No properties could be found in the scene.</p>"
-  objectProperties = properties[id]
+
+  # Load properties for the given id
+  keyStack = id.split '/'
+  objectProperties = properties
+  objectProperties = objectProperties[key] for key in keyStack
 
   tableItem = (key, value) -> 
     html = "<li class='controls-table-item'>"
-    html += "<label class='controls-table-label'>" + key + "</label>"
+    html += "<label class='controls-table-label'>#{key}</label>"
     #html += "<div class='controls-table-value'><input disabled='disabled' value='" + value + "'></div>"
-    html += "<div class='controls-table-value'>" + value + "</div>"
+    html += "<div class='controls-table-value'>"
+    if Array.isArray value
+      html += value
+    else if typeof value == 'object'
+      html += "<a class='ifc-link' href='#"
+      html += k + "/" for k in keyStack
+      html += key + "'>...</a>"
+    else
+      html += value
+    html += "</div>"
     html += "</li>"
   
   html = "<ul class='controls-table'>"
@@ -26,12 +40,18 @@ controlsPropertiesSelectObject = (id) ->
 
   if not objectProperties
     html += "<p class='controls-message'>No additional properties could be found for the object with id '" + id + "'.</p>"
-
-  # DEBUG: Print debug information
-  #scenejsNode = state.scene.findNode id
-  #console.log scenejsNode
-
+  
   ($ '#controls-properties').html html
+
+# Display the selected link 
+controlsPropertiesSelectLink = (object) ->
+  # Check that the object is valid
+  if not object?
+    return
+
+  # Add the link to the stack
+  state.controls.properties.stack.push object
+
 
 # Toggle an IFC object's tree node in the objects tab to open/closed state
 controlsToggleTreeOpen = (event) ->

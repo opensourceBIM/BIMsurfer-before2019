@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, mainmenuViewsReset, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
+  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectLink, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, mainmenuViewsReset, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -593,7 +593,7 @@
     }
   };
   controlsPropertiesSelectObject = function(id) {
-    var html, key, objectProperties, properties, tableItem, value;
+    var html, key, keyStack, objectProperties, properties, tableItem, value, _i, _len;
     properties = state.scene.data().properties;
     if (!(id != null)) {
       return ($('#controls-properties')).html("<p class='controls-message'>Select an object to see its properties.</p>");
@@ -601,12 +601,30 @@
     if (!(properties != null)) {
       return ($('#controls-properties')).html("<p class='controls-message'>No properties could be found in the scene.</p>");
     }
-    objectProperties = properties[id];
+    keyStack = id.split('/');
+    objectProperties = properties;
+    for (_i = 0, _len = keyStack.length; _i < _len; _i++) {
+      key = keyStack[_i];
+      objectProperties = objectProperties[key];
+    }
     tableItem = function(key, value) {
-      var html;
+      var html, k, _j, _len2;
       html = "<li class='controls-table-item'>";
       html += "<label class='controls-table-label'>" + key + "</label>";
-      html += "<div class='controls-table-value'>" + value + "</div>";
+      html += "<div class='controls-table-value'>";
+      if (Array.isArray(value)) {
+        html += value;
+      } else if (typeof value === 'object') {
+        html += "<a class='ifc-link' href='#";
+        for (_j = 0, _len2 = keyStack.length; _j < _len2; _j++) {
+          k = keyStack[_j];
+          html += k + "/";
+        }
+        html += key + "'>...</a>";
+      } else {
+        html += value;
+      }
+      html += "</div>";
       return html += "</li>";
     };
     html = "<ul class='controls-table'>";
@@ -622,6 +640,12 @@
       html += "<p class='controls-message'>No additional properties could be found for the object with id '" + id + "'.</p>";
     }
     return ($('#controls-properties')).html(html);
+  };
+  controlsPropertiesSelectLink = function(object) {
+    if (!(object != null)) {
+      return;
+    }
+    return state.controls.properties.stack.push(object);
   };
   controlsToggleTreeOpen = function(event) {
     var $parent, id;
