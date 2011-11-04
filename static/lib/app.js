@@ -5,7 +5,7 @@
 "use strict";
 
 (function() {
-  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsPropertiesSelectLink, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, mainmenuViewsReset, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
+  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsNavigateLink, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, mainmenuViewsReset, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -628,7 +628,9 @@
       return html += "</li>";
     };
     html = "<ul class='controls-table'>";
-    html += tableItem('Global Id', id);
+    if (keyStack.length === 1) {
+      html += tableItem('Global Id', id);
+    }
     if (objectProperties != null) {
       for (key in objectProperties) {
         value = objectProperties[key];
@@ -640,12 +642,6 @@
       html += "<p class='controls-message'>No additional properties could be found for the object with id '" + id + "'.</p>";
     }
     return ($('#controls-properties')).html(html);
-  };
-  controlsPropertiesSelectLink = function(object) {
-    if (!(object != null)) {
-      return;
-    }
-    return state.controls.properties.stack.push(object);
   };
   controlsToggleTreeOpen = function(event) {
     var $parent, id;
@@ -732,6 +728,10 @@
     }
     ($('#controls-accordion')).accordion('activate', 1);
     return helpShortcutsHide('inspection');
+  };
+  controlsNavigateLink = function(event) {
+    controlsPropertiesSelectObject((($(event.target)).attr('href')).slice(1));
+    return false;
   };
   controlsToggleLayer = function(event) {
     var el, elements, tags;
@@ -995,6 +995,7 @@
     ($('#controls-relationships')).delegate('.controls-tree-item', 'click', controlsToggleTreeOpen);
     ($('#controls-relationships')).delegate('.controls-tree-item', 'dblclick', controlsShowProperties);
     ($('#controls-relationships')).delegate('input', 'change', controlsToggleTreeVisibility);
+    ($('#controls-properties')).delegate('.ifc-link', 'click', controlsNavigateLink);
     ($('#controls-layers')).delegate('input', 'change', controlsToggleLayer);
     ($('#snapshot-placeholder')).click(snapshotsPush);
     ($('#snapshots')).delegate('.snapshot', 'click', snapshotsToggle);

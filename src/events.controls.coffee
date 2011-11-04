@@ -32,7 +32,8 @@ controlsPropertiesSelectObject = (id) ->
     html += "</li>"
   
   html = "<ul class='controls-table'>"
-  html += tableItem 'Global Id', id
+  if keyStack.length == 1
+    html += tableItem 'Global Id', id
   if objectProperties?
     for key, value of objectProperties
       html += tableItem key, value
@@ -42,16 +43,6 @@ controlsPropertiesSelectObject = (id) ->
     html += "<p class='controls-message'>No additional properties could be found for the object with id '" + id + "'.</p>"
   
   ($ '#controls-properties').html html
-
-# Display the selected link 
-controlsPropertiesSelectLink = (object) ->
-  # Check that the object is valid
-  if not object?
-    return
-
-  # Add the link to the stack
-  state.controls.properties.stack.push object
-
 
 # Toggle an IFC object's tree node in the objects tab to open/closed state
 controlsToggleTreeOpen = (event) ->
@@ -131,6 +122,11 @@ controlsShowProperties = (event) ->
   ($ '#controls-accordion').accordion 'activate', 1
   # TODO: Unfortunately this line below doesn't seem to work correctly because the click event is sent after dblclick, but before ui-accordion-content-active is set
   helpShortcutsHide 'inspection' 
+
+# Navigate the selected link (display its properties)
+controlsNavigateLink = (event) ->
+  controlsPropertiesSelectObject (($ event.target).attr 'href').slice 1
+  return false
 
 # Toggle the visibility of a layer based on the state of its checkbox in the layers tab
 controlsToggleLayer = (event) ->

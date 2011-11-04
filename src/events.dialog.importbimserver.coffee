@@ -66,7 +66,7 @@ bimserverImportDialogLogin = () ->
 
   # NOTE: Writing a correct url validation regex (with no false positives or false negatives) is close to impossible.
   # Instead we are relying on the browsers validation on the field itself and then simply try to use the url.
-  # If the server answers the url is clearly correct.
+  # If the server answers, the url is clearly correct.
 
   # Ensure root url ends with /
   if url[url.length - 1] != '/'
