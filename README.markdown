@@ -1,42 +1,83 @@
-BIMsurfer
+# BIMsurfer
 Copyright 2011, Bimserver.org
  
-# License
+## License
 
 BIMsurfer is licensed under the GNU Affero General Public License, version 3.0. 
 (Please find the license under `licenses/LICENSE-bimsurfer-agpl3`)
  
-# Installation
+## Installation
 
-## BIMsurfer installation
+### BIMsurfer installation
 
-To install BIMsurfer locally on your machine:
+#### To deploy BIMsurfer locally on your machine:
 
-* Download a release and extract it into a folder somewhere.
-* Open the file `index.html` using a compatible web browser.
+1. Download a release and extract it into a folder somewhere.
+2. Open the file `index.html` using a compatible web browser (see below).
 
-To install BIMsurfer on a web server:
+#### To deploy BIMsurfer on a web server (e.g. apache):
 
-* Simply extract the release (e.g. `BIMsurfer_1_0_0.tar.gz`) into a statically accessible directory on the server.
+BIMsurfer is a client-side application. Thus, it is very easy to deploy on a web server.
 
-## BIMserver
+1. Simply extract the release (e.g. `BIMsurfer_1_0_0.tar.gz`) into a statically accessible directory on your server. 
+2. Point a compatible web browser (see below) to the url.
+
+One advantage of deploying BIMsurfer on a web server is that it obviates the need to circumvent certain cross-domain
+security policies that crop up when running the application locally.
+
+### BIMserver Installation
 
 In order to load IFC models into BIMsurfer you will first need to export them using the BIMserver software.
 
-* TODO...
+For now it is recommended to use the latest version of BIMserver in development. These instructions will change as
+soon as the next official version of BIMserver is released.
 
-## Compatble web browsers
+Please read these instructions for checking out a development version of the BIMserver:
+http://code.google.com/p/bimserver/wiki/Eclipse
+
+## Exporting and loading a model
+
+There is currently two methods for loading IFC models into BIMsurfer, both using the opensource BIMserver project.
+
+### Connecting directly to a BIMserver
+
+1. First, you must have an instance of a BIMserver running somewhere.
+   Let's say that you have BIMserver running at http://localhost:8080.
+2. Open BIMsurfer in your web browser
+3. Open the **File** menu in the top left-hand corner and select **BIMserver Project**
+4. In the dialog that comes up:
+  1. Enter the BIMserver url (e.g. `http://localhost:8080`)
+  2. Enter your username (e.g. `admin@bimserver.org`)
+  3. Enter your password (e.g. `admin`)
+  4. Click **Login**
+5. If you've been succesfully authenticated, a list of available projects will be shown.
+  1. Select the project you want to view (e.g. `Vogel-Gesamt`)
+  2. Click on **Open**
+
+### Exporting and loading a SceneJS file
+
+TODO...
+
+## Embedding BIMsurfer into another web page
+
+TODO...
+
+## Linking to a BIMsurfer model in another web page
+
+TODO...
+
+## Compatible web browsers
 
 Currently the folowing browsers are known to work with BIMsurfer.
 
-* Up-to-date versions of Google-Chrome
+* Up-to-date versions of Google Chrome.
 * Firefox 4.0 or later
+* Internet Explorer is supported through the Google Chrome Frame plugin.
 
-Please note all of the browsers above work fine, however we've found that google-chrome has consistently demonstrated the best performance and also the fewest bugs.
-Support for Opera is forth coming... 
+Please note all of the browsers above work fine, however we've found that google chrome consistently demonstrates
+the best performance and also the fewest bugs. Support for Opera is forth coming...
 
-
-# Third party libraries and licenses
+## Third party libraries and licenses
 
 Third party libraries used in this project:
 
@@ -51,3 +92,7 @@ Third party libraries used in this project:
 
 * glMatrix
   Licenses: See the inline license in `static/lib/scenejs/scenejs.math.js`
+
+** How to report bugs
+
+TODO...
