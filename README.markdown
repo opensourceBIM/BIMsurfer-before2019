@@ -74,7 +74,7 @@ Now the file is saved to your computer. To open the file in BIMsurfer, follow th
 1. Open BIMsurfer in your web browser
 2. Open the **File** menu in the top left-hand corner and select **SceneJS File**
 4. In the dialog that comes up:
-  1. Click on `Choose File`
+  1. Click on **Choose File**
   2. Select the file you exported previously from BIMserver (e.g. `Vogel-Gesamt.json`)
   3. Click on **Open**
 
@@ -84,7 +84,7 @@ Now the file is saved to your computer. To open the file in BIMsurfer, follow th
 
 ## Linking to a BIMsurfer model in another web page
 
-TODO...
+* TODO...
 
 ## Compatible web browsers
 
