@@ -1,8 +1,8 @@
 <img src="http://bimsurfer.org/files/2011/11/bimsurfer-logo-245x85.png" alt="BIMsurfer">
 
-<pre>Copyright 2011, Bimserver.org
-BIMsurfer is licensed under the GNU Affero General Public License, version 3.0. 
-(Please find the license under `licenses/LICENSE-bimsurfer-agpl3`)</pre>
+    Copyright 2011, Bimserver.org
+    BIMsurfer is licensed under the GNU Affero General Public License, version 3.0. 
+    (Please find the license under licenses/LICENSE-bimsurfer-agpl3)
  
 ## Installation
 
