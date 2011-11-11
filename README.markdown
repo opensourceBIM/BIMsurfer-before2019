@@ -42,25 +42,45 @@ There is currently two methods for loading IFC models into BIMsurfer, both using
 ### Connecting directly to a BIMserver
 
 1. First, you must have an instance of a BIMserver running somewhere.
-   Let's say that you have BIMserver running at http://localhost:8080.
+   Let's say that you have BIMserver running at `http://localhost:8080`.
 2. Open BIMsurfer in your web browser
 3. Open the **File** menu in the top left-hand corner and select **BIMserver Project**
 4. In the dialog that comes up:
   1. Enter the BIMserver url (e.g. `http://localhost:8080`)
   2. Enter your username (e.g. `admin@bimserver.org`)
   3. Enter your password (e.g. `admin`)
-  4. Click **Login**
+  4. Click on **Login**
 5. If you've been succesfully authenticated, a list of available projects will be shown.
   1. Select the project you want to view (e.g. `Vogel-Gesamt`)
   2. Click on **Open**
 
 ### Exporting and loading a SceneJS file
 
-TODO...
+1. First, you must have an instance of a BIMserver running somewhere.
+   Let's say that you have BIMserver running at `http://localhost:8080`;
+2. Point your web browser to the BIMserver application (e.g. `http://localhost:8080`)
+3. Login to the BIMserver
+4. Create a new project (E.g. `Vogel-Gesamt`)
+5. Upload an IFC file to the project (E.g. `Vogel_Gesamt.ifc`)
+6. Once the IFC file is completely uploaded, *Refresh the page*...
+7. To download the model to your computer:
+  1. Select **SceneJS** from the dropdown box
+  2. Click on **Download**
+  3. Once the raw file is displayed in your web browser, right click and select **Save As...** (or the equivalent command in your web browser)
+  4. Select a location on your computer to place the file, and give it a name ending in the `.json` extension.
+
+Now the file is saved to your computer. To open the file in BIMsurfer, follow these steps:
+
+1. Open BIMsurfer in your web browser
+2. Open the **File** menu in the top left-hand corner and select **SceneJS File**
+4. In the dialog that comes up:
+  1. Click on `Choose File`
+  2. Select the file you exported previously from BIMserver (e.g. `Vogel-Gesamt.json`)
+  3. Click on **Open**
 
 ## Embedding BIMsurfer into another web page
 
-TODO...
+* TODO...
 
 ## Linking to a BIMsurfer model in another web page
 
@@ -93,6 +113,6 @@ Third party libraries used in this project:
 * glMatrix
   Licenses: See the inline license in `static/lib/scenejs/scenejs.math.js`
 
-** How to report bugs
+## How to report bugs
 
-TODO...
+* TODO...
