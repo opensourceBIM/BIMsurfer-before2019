@@ -33,9 +33,13 @@ soon as the next official version of BIMserver is released.
 Please read these instructions for checking out a development version of the BIMserver:
 http://code.google.com/p/bimserver/wiki/Eclipse
 
-## Exporting and loading a model
+## Importing a model
 
-There is currently two methods for loading IFC models into BIMsurfer, both using the opensource BIMserver project.
+For detailed instructions with screenshots, please see the Wiki: https://github.com/bimserver/BIMsurfer/wiki/Import-IFC-models
+
+(However, if you are not connected to the internet, simply keep reading...)
+
+There are currently two methods for loading IFC models into BIMsurfer, both using the opensource BIMserver project.
 
 ### Connecting directly to a BIMserver
 
