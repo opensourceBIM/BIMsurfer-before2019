@@ -80,7 +80,8 @@ bimserverImportDialogLogin = () ->
   ($.ajax
     username: encodeURIComponent user
     password: encodeURIComponent pwd
-    url: url + 'rest/login'
+    #url: url + 'rest/login'
+    url: url + 'login.jsp'
     data: 'username=' + (encodeURIComponent user) + '&password=' + (encodeURIComponent pwd))
     .done (data, textStatus, jqXHR) -> 
       ($ '#bimserver-import-message-info').html "Login request succeeded"
@@ -112,9 +113,10 @@ bimserverImportDialogRefresh = () ->
 
   ($.get url + 'rest/getAllProjects', undefined, undefined, 'xml')
     .done (data, textStatus, jqXHR) -> 
+      #console.log data
       ($ '#bimserver-import-message-info').html "Fetched all projects"
       (($ data).find 'sProject').each () ->
-        $projectList.append "<li class='bimserver-project' bimserveroid='" + (($ this).find 'oid').text() + "'>" + (($ this).find 'name').text() + "</li>"
+        $projectList.append "<li class='bimserver-project' bimserveroid='" + (($ this).find 'oid').text() + "' bimserverroid='" + (($ this).find 'revisions').text() + "'>" + (($ this).find 'name').text() + "</li>"
     .fail (jqXHR, textStatus, errorThrown) -> 
       ($ '#bimserver-import-message-info').html ''
       ($ '#bimserver-import-message-error').html "Couldn't fetch projects"
@@ -142,5 +144,5 @@ bimserverImportDialogLoad = () ->
       url += '/'
     
     # Load the model
-    bimserverImport url, $selectedProject.attr 'bimserveroid'
+    bimserverImport url, $selectedProject.attr 'bimserverroid'
 
