@@ -33,6 +33,12 @@ soon as the next official version of BIMserver is released.
 Please read these instructions for checking out a development version of the BIMserver:
 http://code.google.com/p/bimserver/wiki/Eclipse
 
+## Running BIMsurfer locally on your computer
+
+Modern web browsers have security measures built in to prevent applications from accessing your computer. 
+For this reason, if you wish to run BIMsurfer locally on your computer you should follow these instructions: 
+https://github.com/bimserver/BIMsurfer/wiki/How-to-run-BIMsurfer-on-your-local-computer
+
 ## Importing a model
 
 For detailed instructions with screenshots, please see the Wiki: https://github.com/bimserver/BIMsurfer/wiki/Import-IFC-models
@@ -72,21 +78,6 @@ There are currently two methods for loading IFC models into BIMsurfer, both usin
   4. Select a location on your computer to place the file, and give it a name ending in the `.json` extension.
 
 Now the file is saved to your computer. To open the file in BIMsurfer, follow these steps:
-
-    SIDE NOTE: If you're running chrome or chromium you need to explicitly allow the browser to open local file on your machine.
-    
-    To do this for chrome, please run chrome with these flags:
-    
-    > google-chrome --enable-webgl --allow-file-access-from-files
-    
-    or for chromium:
-    
-    > chromium-browser --enable-webgl --allow-file-access-from-files
-    
-    (You could also create shortcuts similar to these on Ubuntu)
-    /opt/google/chrome/google-chrome %U --enable-webgl --allow-file-access-from-files
-    or
-    /usr/bin/chromium-browser %U --enable-webgl --allow-file-access-from-files
 
 1. Open BIMsurfer in your web browser
 2. Open the **File** menu in the top left-hand corner and select **SceneJS File**
