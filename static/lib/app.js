@@ -812,8 +812,6 @@
     user = ($('#bimserver-login-username')).val();
     pwd = ($('#bimserver-login-password')).val();
     getDownloadDataDone = function(data, textStatus, jqXHR) {
-      console.log(data);
-      console.log($.parseJSON(window.atob(data.sCheckoutResult.file)));
       if (typeof console !== "undefined" && console !== null) {
         if (typeof console.log === "function") {
           console.log("...Download completed");
@@ -831,7 +829,6 @@
       }
     };
     downloadDone = function(data, textStatus, jqXHR) {
-      console.log(data);
       if (typeof console !== "undefined" && console !== null) {
         if (typeof console.log === "function") {
           console.log("...Got download action id '" + data + "'");
@@ -963,7 +960,6 @@
     $projectList = $('#bimserver-projects');
     $projectList.html("");
     return ($.get(url + 'rest/getAllProjects', void 0, void 0, 'xml')).done(function(data, textStatus, jqXHR) {
-      console.log(data);
       ($('#bimserver-import-message-info')).html("Fetched all projects");
       return (($(data)).find('sProject')).each(function() {
         return $projectList.append("<li class='bimserver-project' bimserveroid='" + (($(this)).find('oid')).text() + "' bimserverroid='" + (($(this)).find('revisions')).text() + "'>" + (($(this)).find('name')).text() + "</li>");
