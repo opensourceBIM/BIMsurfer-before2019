@@ -73,6 +73,21 @@ There are currently two methods for loading IFC models into BIMsurfer, both usin
 
 Now the file is saved to your computer. To open the file in BIMsurfer, follow these steps:
 
+    SIDE NOTE: If you're running chrome or chromium you need to explicitly allow the browser to open local file on your machine.
+    
+    To do this for chrome, please run chrome with these flags:
+    
+    > google-chrome --enable-webgl --allow-file-access-from-files
+    
+    or for chromium:
+    
+    > chromium-browser --enable-webgl --allow-file-access-from-files
+    
+    (You could also create shortcuts similar to these on Ubuntu)
+    /opt/google/chrome/google-chrome %U --enable-webgl --allow-file-access-from-files
+    or
+    /usr/bin/chromium-browser %U --enable-webgl --allow-file-access-from-files
+
 1. Open BIMsurfer in your web browser
 2. Open the **File** menu in the top left-hand corner and select **SceneJS File**
 4. In the dialog that comes up:
