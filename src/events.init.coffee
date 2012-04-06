@@ -93,8 +93,41 @@ if state.scene?
   state.scene.start
     idleFunc: SceneJS.FX.idle
 
+# Parse the uri for query arguments (and return them as a dictionary object)
+parseQueryArguments = ->
+  args = {}
+  argsParts = (document.location.search.substring 1).split '&'
+  for part in argsParts
+    arg = unescape part
+    if (arg.indexOf '=') == -1
+      args[arg.trim()] = true
+    else
+      argKeyVal = arg.split '='
+      args[argKeyVal[0].trim()] = argKeyVal[1].trim()
+
+  # Make sure url's don't end in a trailing /
+  # TODO: Is there a more elegant way of preventing the browser from appending the slash?
+  if args.model? and (args.model.substr -1) == '/'
+    args.model = args.model.substr 0, args.model.length - 1
+
+  args
+
+# Initialize the application by loading a model
+initLoadModel = (modelUrl) ->
+  ($.get modelUrl, undefined, undefined, 'json')
+    .done (data, textStatus, jqXHR) -> 
+      try
+        loadScene data
+      catch error
+        console?.log? error
+    .fail (jqXHR, textStatus, errorThrown) -> 
+      console?.log? textStatus
+      return # TODO
+  return
+
 # Initialize the gui controls and register events once the rest of the document has completely loaded
 $ () ->
+  state.queryArgs = parseQueryArguments()
   viewportInit()
   if state.scene?
     controlsInit()
@@ -106,4 +139,7 @@ $ () ->
   registerDOMEvents()
   registerControlEvents()
   state.application.initialized = true
+  console.log state.queryArgs
+  if state.queryArgs.model? and state.queryArgs.format == 'scenejson'
+    initLoadModel state.queryArgs.model
 

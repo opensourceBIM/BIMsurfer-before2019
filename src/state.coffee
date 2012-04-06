@@ -21,6 +21,7 @@ state =
       leftDragDistance: 0
       middleDragDistance: 0
       pickRecord: null
+  queryArgs: {}
   camera:
     distanceLimits: [0.0, 0.0]    # Min / Max limits
   lookAt:
