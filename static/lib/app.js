@@ -1,6 +1,6 @@
 /*
  * BIMsurfer
- * Copyright 2011, BIMserver.org.
+ * Copyright 2012, Bimsurfer.org.
  */
 "use strict";
 

@@ -1,6 +1,6 @@
 /*
  * BIMsurfer Embedded API
- * Copyright 2011, Bimserver.org.
+ * Copyright 2012, Bimsurfer.org.
  */
 "use strict";
 
