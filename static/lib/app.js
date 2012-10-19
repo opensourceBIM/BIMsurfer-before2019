@@ -8,10 +8,12 @@
   var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsNavigateLink, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, initLoadModel, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, mainmenuViewsReset, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, parseQueryArguments, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode,
     __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
+  var bimServerApi = null;
+    
   RegExp.escape = function(str) {
     return str.replace(/[[\]\\$().{},?*+|^-]/g, "\\$&");
   };
-
+  
   canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
     thumbCanvas = document.createElement('canvas');
@@ -842,58 +844,22 @@
     }
     user = ($('#bimserver-login-username')).val();
     pwd = ($('#bimserver-login-password')).val();
-    getDownloadDataDone = function(data, textStatus, jqXHR) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log("...Download completed");
-        }
-      }
-      try {
-        loadScene($.parseJSON(window.atob(data.sCheckoutResult.file)));
-        helpStatusClear();
-      } catch (error) {
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log(error);
-        }
-      }
-    };
-    downloadDone = function(data, textStatus, jqXHR) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log("...Got download action id '" + data + "'");
-        }
-      }
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log("Fetch download data...");
-        }
-      }
-      (($.ajax({
-        username: encodeURIComponent(user),
-        password: encodeURIComponent(pwd),
-        type: 'GET',
-        url: url + 'rest/getDownloadData',
-        dataType: 'json',
-        data: 'actionId=' + data
-      })).done(getDownloadDataDone)).fail(function(jqXHR, textStatus, errorThrown) {
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log(textStatus);
-        }
-        return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("...BIMserver import failed") : void 0 : void 0;
-      });
-    };
-    return (($.ajax({
-      username: encodeURIComponent(user),
-      password: encodeURIComponent(pwd),
-      type: 'GET',
-      url: url + 'rest/download',
-      dataType: 'text',
-      data: "roid=" + oid + "&serializerName=SceneJS&sync=true"
-    })).done(downloadDone)).fail(function(jqXHR, textStatus, errorThrown) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log(textStatus);
-      }
-      return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("...BIMserver import failed") : void 0 : void 0;
+    bimServerApi.call("ServiceInterface", "getSerializerByContentType", {contentType: "application/json"}, function(serializer){
+  	  bimServerApi.call("ServiceInterface", "download", {
+  		  roid: oid,
+  		  serializerOid: serializer.oid,
+  		  showOwn: true,
+  		  sync: true
+  	  }, function(laid){
+  		  var url = bimServerApi.generateRevisionDownloadUrl({
+  			  serializerOid: serializer.oid,
+  			  laid: laid
+  		  });
+          $.getJSON(url, function(data){
+        	  loadScene(data);
+        	  helpStatusClear();
+          });
+  	  });
     });
   };
 
@@ -961,22 +927,17 @@
       return false;
     }
     ($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).attr('disabled', 'disabled');
-    if (url[url.length - 1] !== '/') url += '/';
     ($('#bimserver-import-message-info')).html("Sending login request...");
-    ($.ajax({
-      username: encodeURIComponent(user),
-      password: encodeURIComponent(pwd),
-      url: url + 'login.jsp',
-      data: 'username=' + (encodeURIComponent(user)) + '&password=' + (encodeURIComponent(pwd))
-    })).done(function(data, textStatus, jqXHR) {
-      ($('#bimserver-import-message-info')).html("Login request succeeded");
-      bimserverImportDialogShowTab2();
-      return bimserverImportDialogRefresh();
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-      ($('#bimserver-import-message-info')).html("");
-      return ($('#bimserver-import-message-error')).html("Login request failed");
-    }).always(function(jqXHR, textStatus, errorThrown) {
-      return ($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).removeAttr('disabled');
+    bimServerApi = new BimServerApi(url);
+    bimServerApi.login(user, pwd, false, function(){
+        ($('#bimserver-import-message-info')).html("Login request succeeded");
+        bimserverImportDialogShowTab2();
+        ($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).removeAttr('disabled');
+        return bimserverImportDialogRefresh();
+    }, function(){
+        ($('#bimserver-import-message-info')).html("");
+        ($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).removeAttr('disabled');
+        return ($('#bimserver-import-message-error')).html("Login request failed");
     });
     pwd = null;
     return true;
@@ -990,16 +951,14 @@
     ($('#bimserver-projects-submit')).attr('disabled', 'disabled');
     $projectList = $('#bimserver-projects');
     $projectList.html("");
-    return ($.get(url + 'rest/getAllProjects', void 0, void 0, 'xml')).done(function(data, textStatus, jqXHR) {
-      ($('#bimserver-import-message-info')).html("Fetched all projects");
-      return (($(data)).find('sProject')).each(function() {
-        return $projectList.append("<li class='bimserver-project' bimserveroid='" + (($(this)).find('oid')).text() + "' bimserverroid='" + (($(this)).find('revisions')).text() + "'>" + (($(this)).find('name')).text() + "</li>");
-      });
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-      ($('#bimserver-import-message-info')).html('');
-      return ($('#bimserver-import-message-error')).html("Couldn't fetch projects");
-    }).always(function(jqXHR, textStatus, errorThrown) {
-      return ($('#dialog-tab-bimserver2 button')).removeAttr('disabled');
+    bimServerApi.call("ServiceInterface", "getAllProjects", {onlyTopLevel: false}, function(data){
+        ($('#bimserver-import-message-info')).html("Fetched all projects");
+        return data.forEach(function(project) {
+          return $projectList.append("<li class='bimserver-project' bimserveroid='" + project.oid + "' bimserverroid='" + project.lastRevisionId + "'>" + project.name + "</li>");
+        });
+    }, function(){
+    	($('#bimserver-import-message-info')).html('');
+    	return ($('#bimserver-import-message-error')).html("Couldn't fetch projects");
     });
   };
 
