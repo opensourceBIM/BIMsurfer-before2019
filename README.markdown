@@ -6,10 +6,12 @@
 
 ## New version 2012-10
 A new version of Bimsurfer is developed within MOST (Monitoring System Toolkit) 
-http://most.bpi.tuwien.ac.at
-Kaltenriner Christoph (mailchriska@gmail.com) \\
-Leichtfried Michael (leichtfried.michael@gmail.com)
-From TU Vienna
+http://most.bpi.tuwien.ac.at <br>
+Robert Zach (robert.zach@tuwien.ac.at) <br>
+Kaltenriner Christoph (mailchriska@gmail.com) <br>
+Leichtfried Michael (leichtfried.michael@gmail.com) <br>
+From TU Vienna - Institute BPI <br>
+http://www.bpi.tuwien.ac.at/
 
 ### Demo
 Some features are shown here http://www.youtube.com/watch?v=PV1LDgVCU6E
@@ -23,8 +25,6 @@ Some features are shown here http://www.youtube.com/watch?v=PV1LDgVCU6E
   Objects of special interest have to begin with dp_; This will be changed to IfcSensor/IfcActor soon.
   
 ###Fixes:
-- special characters in JQuery
-   IDs with special characters like the $ sign needs to be escaped. In case of $ in ids, a jquery statement will fail.
 - Scrolling to selected Object in Project Tree
    When in 3D View an Object is selected, the Project tree is scrolled to this object
 - loading of Projects from BIM Server Repository (thanks to DLabz designlabz@gmail.com,veljko@sigidev.com)
