@@ -5,11 +5,24 @@
 "use strict";
 
 (function() {
-  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsNavigateLink, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, hideDialog, ifcTreeInit, initLoadModel, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, mainmenuViewsReset, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, parseQueryArguments, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode,
+  var bimserverImport, bimserverImportDialogClearMessages, bimserverImportDialogLoad, bimserverImportDialogLogin, bimserverImportDialogRefresh, bimserverImportDialogSelect, bimserverImportDialogShow, bimserverImportDialogShowTab1, bimserverImportDialogShowTab2, bimserverImportDialogToggleTab2, canvasCaptureThumbnail, canvasInit, constants, controlsInit, controlsNavigateLink, controlsPropertiesSelectObject, controlsShowProperties, controlsToggleLayer, controlsToggleTreeOpen, controlsToggleTreeVisibility, controlsTreeSelectObject, fileImportDialogLoad, fileImportDialogShow, helpShortcuts, helpShortcutsHide, helpStatus, helpStatusClear, loadType, hideDialog, ifcTreeInit, initLoadModel, keyDown, lerpLookAt, lerpLookAtNode, loadScene, lookAtNodePanRelative, lookAtPanRelative, lookAtToQuaternion, mainmenuViewsReset, modifySubAttr, mouseCoordsWithinElement, mouseDown, mouseMove, mouseUp, mouseWheel, orbitLookAt, orbitLookAtNode, parseQueryArguments, recordToVec3, recordToVec4, registerControlEvents, registerDOMEvents, sceneInit, snapshotsDelete, snapshotsPlay, snapshotsPush, snapshotsToggle, state, topmenuHelp, topmenuImportBimserver, topmenuImportSceneJS, topmenuModeAdvanced, topmenuModeBasic, topmenuPerformancePerformance, topmenuPerformanceQuality, vec3ToRecord, vec4ToRecord, viewportInit, windowResize, zoomLookAt, zoomLookAtNode,
     __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   var bimServerApi = null;
-    
+  var typeList = [
+	  "IfcSite",
+	  "IfcColumn",
+	  "IfcStair",
+	  "IfcFurnishingElement",
+	  "IfcSlab",
+	  "IfcWindow",
+	  "IfcDoor",
+	  "IfcBuildingElementProxy",
+	  "IfcWall",
+	  "IfcRoof",
+	  "IfcDistributionControlElement"
+	];
+
   RegExp.escape = function(str) {
     return str.replace(/[[\]\\$().{},?*+|^-]/g, "\\$&");
   };
@@ -835,34 +848,55 @@
     return (SceneJS.FX.TweenSpline(state.scene.findNode('main-lookAt'))).sequence(state.snapshots.lookAts);
   };
 
-  bimserverImport = function(url, oid) {
+  bimserverImport = function(url, roid) {
     var downloadDone, getDownloadDataDone, pwd, user;
-    if (typeof console !== "undefined" && console !== null) {
-      if (typeof console.log === "function") {
-        console.log("Load BIMserver project with revision # " + oid + "...");
-      }
-    }
+    console.log("Load BIMserver project with revision # " + roid + "...");
     user = ($('#bimserver-login-username')).val();
     pwd = ($('#bimserver-login-password')).val();
     bimServerApi.call("ServiceInterface", "getSerializerByContentType", {contentType: "application/json"}, function(serializer){
-  	  bimServerApi.call("ServiceInterface", "download", {
-  		  roid: oid,
-  		  serializerOid: serializer.oid,
-  		  showOwn: true,
-  		  sync: true
-  	  }, function(laid){
-  		  var url = bimServerApi.generateRevisionDownloadUrl({
-  			  serializerOid: serializer.oid,
-  			  laid: laid
-  		  });
-          $.getJSON(url, function(data){
-        	  loadScene(data);
-        	  helpStatusClear();
-          });
-  	  });
+    	for (var i in typeList) {
+    		loadType(roid, serializer.oid, i);    		
+    	}
     });
   };
 
+  loadType = function(roid, soid, typeIndex) {
+    bimServerApi.call("ServiceInterface", "downloadByTypes", {
+  	  roids: [roid],
+  	  classNames: [typeList[typeIndex]],
+  	  serializerOid: soid,
+  	  includeAllSubtypes: true,
+  	  sync: true
+	  }, function(laid){
+		  var url = bimServerApi.generateRevisionDownloadUrl({
+			  serializerOid: soid,
+			  laid: laid
+		  });
+        $.getJSON(url, function(data){
+        	if (typeIndex == 0) {
+           	  loadScene(data);
+           	  helpStatusClear();
+        	} else {
+        		state.scene.stop();
+        		data.nodes[0].nodes.forEach(function(node){
+        			if (node.type == "geometry" || node.type == "material") {
+        				state.scene.findNode("library").add("node", node);
+        			}
+        		});
+        		var parent = data.nodes[1].nodes[0].nodes[0].nodes;
+        		if (parent.length > 1) {
+        			parent.forEach(function(item){
+            			if (item.type == "tag") {
+           					state.scene.findNode("sun-light").add("node", item);
+            			}
+            		});
+        		}
+        		state.scene.start();
+        	}
+        });
+	  });
+  }
+  
   hideDialog = function() {
     return ($('#dialog-background,#dialog-bimserver-import,#dialog-file-import')).hide();
   };
@@ -993,9 +1027,7 @@
         loadScene($.parseJSON(f.target.result));
         return helpStatusClear();
       } catch (error) {
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log(error);
-        }
+        console.log(error);
       }
     };
     file = (_ref = ($('#upload-file')).get(0)) != null ? _ref.files[0] : void 0;
@@ -1004,7 +1036,8 @@
       return hideDialog();
     } else {
       ($('#file-import-message-error')).html("No file selected");
-      return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("No file selected") : void 0 : void 0;
+      console.log("No file selected")
+      return null;
     }
   };
 
@@ -1066,7 +1099,7 @@
       }
       return _results;
     })();
-    state.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
+//    state.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
     lookAtNode = state.scene.findNode('main-lookAt');
     state.lookAt.defaultParameters.eye = lookAtNode.get('eye');
     state.lookAt.defaultParameters.look = lookAtNode.get('look');
@@ -1178,9 +1211,7 @@
         return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log(error) : void 0 : void 0;
       }
     }).fail(function(jqXHR, textStatus, errorThrown) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log(textStatus);
-      }
+      console.log(textStatus);
     });
   };
 
@@ -1210,50 +1241,28 @@
       state.scene = null;
     }
     try {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log('Create scene...');
-      }
+      console.log('Create scene...');
       SceneJS.createScene(scene);
       state.scene = SceneJS.scene('Scene');
       viewportInit();
       if (state.scene != null) {
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") {
-            console.log('Initialize scene...');
-          }
-        }
+        console.log('Initialize scene...');
         sceneInit();
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log('Start scene...');
-        }
+        console.log('Start scene...');
         state.scene.start({
           idleFunc: SceneJS.FX.idle
         });
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") {
-            console.log('Initialize controls...');
-          }
-        }
+        console.log('Initialize controls...');
         controlsInit();
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") {
-            console.log('Initialize IFC object tree...');
-          }
-        }
+        console.log('Initialize IFC object tree...');
         ifcTreeInit();
         helpShortcuts('standard', 'navigation');
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log('...Done');
-        }
+        console.log('...Done');
         return state.scene;
       }
     } catch (error) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log(error);
-      }
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log('...Errors occured');
-      }
+      console.log(error);
+      console.log('...Errors occured');
     }
     helpShortcuts('standard');
     return null;
