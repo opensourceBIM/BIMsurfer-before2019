@@ -849,18 +849,45 @@
   };
 
   bimserverImport = function(url, roid) {
-    var downloadDone, getDownloadDataDone, pwd, user;
-    console.log("Load BIMserver project with revision # " + roid + "...");
-    user = ($('#bimserver-login-username')).val();
-    pwd = ($('#bimserver-login-password')).val();
-    bimServerApi.call("ServiceInterface", "getSerializerByContentType", {contentType: "application/json"}, function(serializer){
-    	for (var i in typeList) {
-    		loadType(roid, serializer.oid, i);    		
-    	}
-    });
+	  if (true) {
+		  var downloadDone, getDownloadDataDone, pwd, user;
+		  console.log("Load BIMserver project with revision # " + roid + "...");
+		  user = ($('#bimserver-login-username')).val();
+		  pwd = ($('#bimserver-login-password')).val();
+		  bimServerApi.call("ServiceInterface", "getSerializerByContentType", {contentType: "application/json"}, function(serializer){
+			 bimServerApi.call("ServiceInterface", "download", {
+			    	  roid: roid,
+			    	  serializerOid: serializer.oid,
+			    	  showOwn: true,
+			    	  sync: true
+			  	  }, function(laid){
+
+			  var url = bimServerApi.generateRevisionDownloadUrl({
+				  serializerOid: serializer.oid,
+				  laid: laid
+			  });
+	        $.getJSON(url, function(data){
+           	  loadScene(data);
+           	  helpStatusClear();
+		  });
+		  });
+		  });
+	  } else {
+		  var downloadDone, getDownloadDataDone, pwd, user;
+		  console.log("Load BIMserver project with revision # " + roid + "...");
+		  user = ($('#bimserver-login-username')).val();
+		  pwd = ($('#bimserver-login-password')).val();
+		  bimServerApi.call("ServiceInterface", "getSerializerByContentType", {contentType: "application/json"}, function(serializer){
+			  bimServerApi.call("ServiceInterface", "getBoundsOfRevision", {roid: roid}, function(bounds){
+				  for (var i in typeList) {
+					  loadType(roid, serializer.oid, i, bounds);    		
+				  }
+			  });
+		  });
+	  }
   };
 
-  loadType = function(roid, soid, typeIndex) {
+  loadType = function(roid, soid, typeIndex, bounds) {
     bimServerApi.call("ServiceInterface", "downloadByTypes", {
   	  roids: [roid],
   	  classNames: [typeList[typeIndex]],
@@ -873,8 +900,10 @@
 			  laid: laid
 		  });
         $.getJSON(url, function(data){
-        	if (typeIndex == 0) {
-           	  loadScene(data);
+        	if (state.scene == null) {
+           	  loadScene(data, bounds);
+           	  console.log(bounds);
+           	  state.scene.data().bounds = [bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y, bounds.max.z - bounds.min.z];
            	  helpStatusClear();
         	} else {
         		state.scene.stop();
