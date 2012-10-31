@@ -25,6 +25,8 @@
 	  	orbitLookAtNodeSnapshots, handleStart, setZoomLevelAbsolut, deleteHighlights, controlsDoubleClickFilter, controlsDoubleClickOverview, doSetViewToObject, setExposeSlider,
 	    __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
+	   var bimServerApi;
+	    
   /*
    * IDs with special characters like the $ sign needs to be escaped. In the case of $ in ids, a jquery statement will fail.
    */
@@ -1637,70 +1639,28 @@
    * designlabz@gmail.com 
    * veljko@sigidev.com  
    * * * * * * * * * * * * * * */
-   bimserverImport = function(url, oid) {
+   bimserverImport = function(url, roid) {
     var downloadDone, getDownloadDataDone, pwd, user;
-    if (typeof console !== "undefined" && console !== null) {
-      if (typeof console.log === "function") {
-        console.log("Load BIMserver project with revision # " + oid + "...");
-      }
-    }
-    user = ($('#bimserver-login-username')).val();
-    pwd = ($('#bimserver-login-password')).val();
-    getDownloadDataDone = function(data, textStatus, jqXHR) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log("...Download completed");
-        }
-      }
-      try {
-        loadScene($.parseJSON(data));
-        helpStatusClear();
-      } catch (error) {
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log(error);
-        }
-      }
-    };
-    downloadDone = function(data, textStatus, jqXHR) {
-    	data = eval('(' + data + ')');
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log("...Got download action id '" + data.laid + "'");
-        }
-      }
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") {
-          console.log("Fetch download data...");
-        }
-      }
-      (($.ajax({
-        username: encodeURIComponent(user),
-        password: encodeURIComponent(pwd),
-        type: 'GET',
-        url: url + 'download?',//url: url + 'rest/getDownloadData',
-        dataType: 'text',
-        data: 'longActionId=' + data.laid + '&serializerName=SceneJS'
-      })).done(getDownloadDataDone)).fail(function(jqXHR, textStatus, errorThrown) {
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log(textStatus);
-        }
-        return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("...BIMserver import failed") : void 0 : void 0;
-      });
-    };
-    return (($.ajax({
-      username: encodeURIComponent(user),
-      password: encodeURIComponent(pwd),
-      type: 'GET',
-      url: url + 'initiatedownload.jsp',
-      dataType: 'text',
-      /* data={"roid":65,"downloadType":"single","serializerName":"SceneJS","sync":true} */
-      data: 'data={"roid":' + oid + ',"downloadType":"single","serializerName":"SceneJS","sync":true}'
-    })).done(downloadDone)).fail(function(jqXHR, textStatus, errorThrown) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log(textStatus);
-      }
-      return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("...BIMserver import failed") : void 0 : void 0;
-    });
+      
+    console.log("Load BIMserver project with revision # " + roid + "...");
+    
+	bimServerApi.call("ServiceInterface", "getSerializerByName", {serializerName: "StreamingSceneJS"}, function(serializer){
+		bimServerApi.call("ServiceInterface", "download", {
+			roid: roid,
+			serializerOid: serializer.oid,
+			showOwn: true,
+			sync: true
+		}, function(laid){
+			var url = bimServerApi.generateRevisionDownloadUrl({
+				serializerOid: serializer.oid,
+				laid: laid
+			});
+			$.getJSON(url, function(data){
+				loadScene(data);
+		        helpStatusClear();
+			});
+		});
+	});
   };
   
  /* end fix */
@@ -1773,48 +1733,48 @@
       return false;
     }
     ($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).attr('disabled', 'disabled');
-    if (url[url.length - 1] !== '/') url += '/';
     ($('#bimserver-import-message-info')).html("Sending login request...");
 
-    ($.ajax({
-      username: encodeURIComponent(user),
-      password: encodeURIComponent(pwd),
-      url: url + 'login.jsp',
-      data: 'username=' + (encodeURIComponent(user)) + '&password=' + (encodeURIComponent(pwd)) + '&login=Login'// + '&origurl=' + encodeURIComponent('/bimserver/main.jsp')
-    })).done(function(data, textStatus, jqXHR) {
-      ($('#bimserver-import-message-info')).html("Login request succeeded");
-      console.log("hallo request success");
-      bimserverImportDialogShowTab2();
-      return bimserverImportDialogRefresh();
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-      ($('#bimserver-import-message-info')).html("");
-      return ($('#bimserver-import-message-error')).html("Login request failed");
-    }).always(function(jqXHR, textStatus, errorThrown) {
-      return ($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).removeAttr('disabled');
-    })
-    pwd = null;
+	var timeoutId; // timeout id is a global variable
+	timeoutId = window.setTimeout(function() {
+		console.log("Could not connect");
+	}, 3000);
+	$.getScript(url + "/js/bimserverapi.js")
+	.done(function(script, textStatus) {
+		window.clearTimeout(timeoutId);
+		bimServerApi = new BimServerApi(url, null);
+		bimServerApi.login(user, pwd, false, function(){
+	      ($('#bimserver-import-message-info')).html("Login request succeeded");
+	      bimserverImportDialogShowTab2();
+	      return bimserverImportDialogRefresh();
+		}, function(){
+	      ($('#bimserver-import-message-info')).html("");
+	      return ($('#bimserver-import-message-error')).html("Login request failed");
+		});
+	});
     return true;
   };
   
-
   bimserverImportDialogRefresh = function() {
     var $projectList, url;
     url = ($('#bimserver-login-url')).val();
-    if (url[url.length - 1] !== '/') url += '/';
     ($('#dialog-tab-bimserver2 button')).attr('disabled', 'disabled');
     ($('#bimserver-projects-submit')).attr('disabled', 'disabled');
     $projectList = $('#bimserver-projects');
     $projectList.html("");
-    return ($.get(url + 'rest/getAllProjects', void 0, void 0, 'xml')).done(function(data, textStatus, jqXHR) {
-      ($('#bimserver-import-message-info')).html("Fetched all projects");
-      return (($(data)).find('sProject')).each(function() {
-        return $projectList.append("<li class='bimserver-project' bimserveroid='" + (($(this)).find('oid')).text() + "' bimserverroid='" + (($(this)).find('revisions')).text() + "'>" + (($(this)).find('name')).text() + "</li>");
-      });
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-      ($('#bimserver-import-message-info')).html('');
-      return ($('#bimserver-import-message-error')).html("Couldn't fetch projects");
-    }).always(function(jqXHR, textStatus, errorThrown) {
-      return ($('#dialog-tab-bimserver2 button')).removeAttr('disabled');
+    
+    bimServerApi.call("ServiceInterface", "getAllProjects", {onlyTopLevel: true}, function(data){
+    	($('#bimserver-import-message-info')).html("Fetched all projects");
+    	data.forEach(function(project){
+    		if (project.lastRevisionId != -1) {
+    			$projectList.append("<li class='bimserver-project' bimserveroid='" + project.oid + "' bimserverroid='" + project.lastRevisionId + "'>" + project.name + "</li>")
+    		}
+    	});
+        return ($('#dialog-tab-bimserver2 button')).removeAttr('disabled');
+    }, function(){
+        ($('#bimserver-import-message-info')).html('');
+        ($('#dialog-tab-bimserver2 button')).removeAttr('disabled');
+        return ($('#bimserver-import-message-error')).html("Couldn't fetch projects");
     });
   };
 
@@ -1849,9 +1809,7 @@
         loadScene($.parseJSON(f.target.result));
         return helpStatusClear();
       } catch (error) {
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log(error);
-        }
+        console.log(error);
       }
     };
     file = (_ref = ($('#upload-file')).get(0)) != null ? _ref.files[0] : void 0;
@@ -1860,7 +1818,8 @@
       return hideDialog();
     } else {
       ($('#file-import-message-error')).html("No file selected");
-      return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("No file selected") : void 0 : void 0;
+      console.log("No file selected");
+      return void 0;
     }
   };
 
@@ -2060,12 +2019,11 @@
       try {
         return loadScene(data);
       } catch (error) {
-        return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log(error) : void 0 : void 0;
+    	  console.log(error) 
+        return void 0;
       }
     }).fail(function(jqXHR, textStatus, errorThrown) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log(textStatus);
-      }
+      console.log(textStatus);
     });
   };
 
@@ -2095,41 +2053,27 @@
       state.scene = null;
     }
     try {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log('Create scene...');
-      }
+      console.log('Create scene...');
       SceneJS.createScene(scene);
       state.scene = SceneJS.scene('Scene');
       viewportInit();
       if (state.scene != null) {
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") {
-            console.log('Initialize scene...');
-          }
-        }
+        console.log('Initialize scene...');
         sceneInit();
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log('Start scene...');
-        }
+        
+        console.log('Start scene...');
         state.scene.start({
           idleFunc: SceneJS.FX.idle
         });
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") {
-            console.log('Initialize controls...');
-          }
-        }
+          
+        console.log('Initialize controls...');
         controlsInit();
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") {
-            console.log('Initialize IFC object tree...');
-          }
-        }
+          
+        console.log('Initialize IFC object tree...');
         ifcTreeInit();
         helpShortcuts('standard', 'navigation');
-        if (typeof console !== "undefined" && console !== null) {
-          if (typeof console.log === "function") console.log('...Done');
-        }
+        
+        console.log('...Done');
         
 		//Calculate Scalefactor
 		var ref, len, i, unit, sizingFactor;
@@ -2158,12 +2102,8 @@
         return state.scene;
       }
     } catch (error) {
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log(error);
-      }
-      if (typeof console !== "undefined" && console !== null) {
-        if (typeof console.log === "function") console.log('...Errors occured');
-      }
+      console.log(error);
+      console.log('...Errors occured');
     }
     helpShortcuts('standard');
     return null;
