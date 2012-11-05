@@ -11,8 +11,22 @@
 function BimSurfer() {
 	var othis = this;
 	
-	var __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-	var bimServerApi;
+	this.bimServerApi = null;
+	this.classNames = [
+	   "IfcSite",
+	   "IfcColumn",
+	   "IfcStair",
+	   "IfcFurnishingElement",
+	   "IfcSlab",
+	   "IfcOpeningElement",
+	   "IfcWindow",
+	   "IfcDoor",
+	   "IfcBuildingElementProxy",
+	   "IfcWallStandardCase",
+	   "IfcWall",
+	   "IfcBeam",
+	   "IfcRoof"
+	];
 
   this.canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
     var clipHeight, clipWidth, clipX, clipY, h, imgURI, thumbCanvas, thumbCtx, w;
@@ -164,8 +178,8 @@ function BimSurfer() {
 
   this.lerpLookAt = function(t, lookAt0, lookAt1) {
     var q, q0, q1, result;
-    q0 = lookAtToQuaternion(lookAt0);
-    q1 = lookAtToQuaternion(lookAt1);
+    q0 = othis.lookAtToQuaternion(lookAt0);
+    q1 = othis.lookAtToQuaternion(lookAt1);
     q = SceneJS_math_slerp(t, q0, q1);
     return result = {
       eye: SceneJS_math_lerpVec3(t, 0.0, 1.0, lookAt0.eye, lookAt1.eye),
@@ -175,7 +189,7 @@ function BimSurfer() {
   };
 
   this.lerpLookAtNode = function(node, t, lookAt0, lookAt1) {
-    return node.set(lerpLookAt(t, lookAt0, lookAt1));
+    return node.set(othis.lerpLookAt(t, lookAt0, lookAt1));
   };
 
   SceneJS.FX = {};
@@ -260,7 +274,7 @@ function BimSurfer() {
           ++i;
         }
         dt = this._timeline[i] - this._timeline[i - 1];
-        lerpLookAtNode(this._target, (this._t - this._timeline[i - 1]) / dt, this._sequence[i - 1], this._sequence[i]);
+        othis.lerpLookAtNode(this._target, (this._t - this._timeline[i - 1]) / dt, this._sequence[i - 1], this._sequence[i]);
         return true;
       };
 
@@ -500,11 +514,11 @@ function BimSurfer() {
       if (othis.viewport.mouse.pickRecord != null) {
     	  picknode = othis.scene.findNode(othis.viewport.mouse.pickRecord.name);
     	  // if selected element begins with dp_ (marks special object)
-    	  if ($('#'+RegExp.escape(picknode.get("id"))).text().match(/^ dp_/)){
-    		  if(othis.propertyValues.selectedObj == ($('#'+RegExp.escape(picknode.get("id"))).text())) {
+    	  if ($('#' + picknode.get("id")).text().match(/^ dp_/)){
+    		  if(othis.propertyValues.selectedObj == ($('#'+picknode.get("id")).text())) {
     			  console.log("No special object selected");
     		  } else {
-    			  othis.propertyValues.selectedObj = ($('#'+RegExp.escape(picknode.get("id"))).text());  
+    			  othis.propertyValues.selectedObj = ($('#'+picknode.get("id")).text());  
     		  }		  	  
     		  othis.viewport.mouse.leftDown = false;
     		  event.preventDefault();
@@ -612,7 +626,7 @@ function BimSurfer() {
 	 * @param _mouseRotate
 	 *            an Integer: 0...Rotate, 1...Pan
 	 */
-  window.setNavigationMode = function (_mouseRotate){
+  this.setNavigationMode = function (_mouseRotate){
 	  othis.propertyValues.mouseRotate = _mouseRotate;
   }
   
@@ -626,7 +640,7 @@ function BimSurfer() {
   this.keyDown = function(event) {
     switch (event.which) {
       case 72:
-        return topmenuHelp();
+        return othis.topmenuHelp();
     }
   };
 
@@ -708,7 +722,7 @@ function BimSurfer() {
 	 * @param view
 	 *            an Integer: 0...reset, 1...front, 2...side, 3...top
 	 */
-  window.setView = function(view){
+  this.setView = function(view){
 	  var lookAtNode;
 	  if (othis.scene != null) {
 		  switch(view){
@@ -741,7 +755,7 @@ function BimSurfer() {
 		  }
 	  }
 	  return 0;
-  }
+  };
   
   /**
 	 * Resets the view to predesignd Position.
@@ -758,28 +772,28 @@ function BimSurfer() {
 	 * Set View to start view
 	 */
   this.mainmenuViewsReset = function(event) {
-	  window.setView(0);
+	  othis.setView(0);
   };
   
   /**
 	 * Set View to front view
 	 */
   this.mainmenuViewsFront = function(event) {
-	  window.setView(1);
+	  othis.setView(1);
   };
   
   /**
 	 * Set View to side view
 	 */
   this.mainmenuViewsSide = function(event) {
-	  window.setView(2);
+	  othis.setView(2);
   };
   
   /**
 	 * Set View to top view
 	 */
   this.mainmenuViewsTop = function(event) {
-	  window.setView(3);
+	  othis.setView(3);
   };
   
   /**
@@ -787,9 +801,9 @@ function BimSurfer() {
 	 */
   this.togglePanRotate = function(event)  {
 	  if (othis.getNavigationMode() == 1){
-		  window.setNavigationMode(0);
+		  othis.setNavigationMode(0);
 	  }else{
-		  window.setNavigationMode(1);
+		  othis.setNavigationMode(1);
 	  }
   };
   
@@ -799,7 +813,7 @@ function BimSurfer() {
 	 * @param zoomVal
 	 *            an int, -1 for zoom in, 1 for zoom out
 	 */
-  window.setZoomLevel = function(zoomVal){
+  this.setZoomLevel = function(zoomVal){
 	   var zoomDistance;
 	   zoomDistance = zoomVal * othis.camera.distanceLimits[1] * othis.constants.camera.zoomSpeedFactor;
 	   return othis.zoomLookAtNode(othis.scene.findNode('main-lookAt'), zoomDistance, othis.camera.distanceLimits);
@@ -811,7 +825,7 @@ function BimSurfer() {
 	 * @param zoomVal
 	 *            an int in range 0 to 20
 	 */
-  window.setZoomLevelAbsolute = function(zoomVal){
+  this.setZoomLevelAbsolute = function(zoomVal){
 	  
 	  var zoomDistance;
 	  
@@ -834,7 +848,7 @@ function BimSurfer() {
 	 * @param names
 	 *            a String Array with all Objects to Highlight
 	 */
-  window.setWarning = function(names){
+  this.setWarning = function(names){
 	  
 	  var oldHighlight;
 	  
@@ -863,9 +877,9 @@ function BimSurfer() {
 	 *            a String with the name of an Object
 	 * @returns doSetViewToObject a Function to do the setView to Object Action
 	 */
-  window.setViewToObject = function(objName){
+  this.setViewToObject = function(objName){
 	  var objID = ($("ul.controls-tree").find("div:contains(" + objName + ")").parent().attr("id"));
-	  return doSetViewToObject(objID);
+	  return othis.doSetViewToObject(objID);
   }
   
   /**
@@ -889,7 +903,7 @@ function BimSurfer() {
 	  
 	  // if there is no scenejs node (node is not a physical object)
 	  if (nodeID == null){
-		  console.log("No physical Object found!");
+		  console.log("No physical Object found!", objID);
 		  return;
 	  }
 	  childnode = nodeID.node(0);
@@ -931,24 +945,24 @@ function BimSurfer() {
 		  oldSnapshots = othis.snapshots.lookAts.length
 		  // delete all old snapshots
 		  for (var i = 0; i < oldSnapshots; i++){
-			  snapshotsDelete(i);
+			  othis.snapshotsDelete(i);
 		  }
 		  
 		  // make snapshot from actual position (with parameter false that no
 			// thumb is created)
-		  snapshotsPush(false);
+		  othis.snapshotsPush(false);
 		  // make snapshot from calculated position (end of camera-movement)
-		  snapshotsPushObject(deltaPosX, deltaPosY + addTranslate, deltaPosZ);
+		  othis.snapshotsPushObject(deltaPosX, deltaPosY + addTranslate, deltaPosZ);
 		  
 		  // Highlight object
 		  oldHighlight = othis.scene.findNode('highlightspecialobject-' + nodeID.get("id"));
 		  if (oldHighlight != null) oldHighlight.splice();
-		  if($('#'+RegExp.escape(nodeID.get("id"))).text().match(/^ dp_/))
+		  if($('#'+nodeID.get("id")).text().match(/^ dp_/))
 			  nodeID.insert('node', othis.constants.highlightSelectedSpecialObject);
 		  else
 			  nodeID.insert('node', othis.constants.highlightMaterial);
     	  // do camera movement
-      	  snapshotsPlay();
+      	  othis.snapshotsPlay();
 		  
 	  }
 	  return 0;
@@ -970,7 +984,7 @@ function BimSurfer() {
 	 */
   this.getSelectedStoreyWalls = function ()
   {
-	  return ($('.controls-tree').find('.controls-tree-selected')).closest(".controls-tree-rel:contains('(BuildingStorey)')").find(".controls-tree-rel:contains('(WallStandardCase)')");
+	  return ($('.controls-tree').find('.controls-tree-selected')).closest(".controls-tree-rel:contains('(IfcBuildingStorey)')").find(".controls-tree-rel:contains('(IfcWallStandardCase)')");
   }
   
   
@@ -980,7 +994,7 @@ function BimSurfer() {
 	 * @param factor
 	 *            the transparency factor (0 - 100)
 	 */
-  window.setTransparentLevel = function(factor)
+  this.setTransparentLevel = function(factor)
   {
 	if(othis.scene == null) return;
 	
@@ -988,13 +1002,13 @@ function BimSurfer() {
 	// one transparent
     if($('.controls-tree-selected').find(".controls-tree-postfix").text() != "")
     {
-    	 var storeyElements = getSelectedStoreyWalls();
+    	 var storeyElements = othis.getSelectedStoreyWalls();
     	 for(var i=0; i<storeyElements.size(); i++)
 		 {
-    		 if($(storeyElements[i]).find(".controls-tree-postfix").text() == "(WallStandardCase)")
+    		 if($(storeyElements[i]).find(".controls-tree-postfix").text() == "(IfcWallStandardCase)")
 			 {
 	    		 var nodeId = ($(storeyElements[i])).attr("id");
-	    		 insertTransparentNodes(othis.scene.findNode(nodeId), factor);
+	    		 othis.insertTransparentNodes(othis.scene.findNode(nodeId), factor);
 			 }
 		 }
     }
@@ -1004,19 +1018,19 @@ function BimSurfer() {
     else
 	{
     	var sceneData = othis.scene.data();
-    	var index = sceneData.ifcTypes.indexOf('WallStandardCase');
+    	var index = sceneData.ifcTypes.indexOf('IfcWallStandardCase');
     	var wallCase = sceneData.ifcTypes[index];
         var wallNode = othis.scene.findNode(wallCase.toLowerCase());
         
         // also set the roof transparent
-        var roofIndex = sceneData.ifcTypes.indexOf('Roof');
+        var roofIndex = sceneData.ifcTypes.indexOf('IfcRoof');
         var roof = sceneData.ifcTypes[roofIndex];
         var roofNode = othis.scene.findNode(roof.toLowerCase());
     	
   	  	wallNode.eachNode(
 			    function() {
 			    	if(this.get('type') === 'name')
-			    		insertTransparentNodes(this, factor);
+			    		othis.insertTransparentNodes(this, factor);
 				    },
 				    {
 				        depthFirst: true   // Descend depth-first into tree
@@ -1026,7 +1040,7 @@ function BimSurfer() {
   	  	roofNode.eachNode(
 			    function() {
 			    	if(this.get('type') === 'name')
-			    		insertTransparentNodes(this, factor);
+			    		othis.insertTransparentNodes(this, factor);
 				    },
 				    {
 				        depthFirst: true   // Descend depth-first into tree
@@ -1095,7 +1109,7 @@ function BimSurfer() {
 	 * @param factor
 	 *            the expose factor (0 - 150)
 	 */
-  window.setExposeLevel = function(factor)
+  this.setExposeLevel = function(factor)
   {
 		if(othis.scene == null) return;
 		
@@ -1108,14 +1122,14 @@ function BimSurfer() {
 	    {
 	    	// find the parent node of the selected one, which holds the node id
 	    	var parent = ($('.controls-tree').find('.controls-tree-selected')).closest(".controls-tree-rel:contains('(BuildingStorey)')");
-	    	exposeSelectedStorey($(parent),distance*-1);
+	    	othis.exposeSelectedStorey($(parent),distance*-1);
 	    }
 	    else
     	{
-	    	storeyElems = getBuildingStoreys();
+	    	storeyElems = othis.getBuildingStoreys();
 	    	for(var i=0; i<storeyElems.size(); i++)
 	    	{
-				exposeSelectedStorey($(storeyElems[i]),distance*-i);
+				othis.exposeSelectedStorey($(storeyElems[i]),distance*-i);
 	    	}
     	}
   };
@@ -1138,7 +1152,7 @@ function BimSurfer() {
 	// are defined in ifcTreeInit() when tree on the left side is built up;
 	// there also the object's ids are defined
     ($parent.find('.controls-tree-rel')).each(function() {  
-      return ids.push(this.id);
+      ids[this.id] = true;
     });
     _ref = othis.scene.data().ifcTypes;  // ifc types; WallStandardCase,
 											// Roof, Window, Stair
@@ -1148,7 +1162,9 @@ function BimSurfer() {
 						// othis.scene.data()
       tag = tag.toLowerCase();
       tagNode = othis.scene.findNode(tag);
-      if (tagNode != null) {
+      if (tagNode == null) {
+    	  console.log("tag node not found", tag);
+      } else {
         tagNode.eachNode((function() {  // for each node (scenejs) under the
 										// parent tag node (= ifc Type eg.
 										// WallStandardCase)
@@ -1167,14 +1183,14 @@ function BimSurfer() {
                   y: distance,
                   z: 0
           };
-          
-          if ((this.get('type')) === 'name' && (_ref1 = this.get('id'), __indexOf.call(ids, _ref1) >= 0)) {
-        	  
+          if (this.get('type') === 'name' && ids[this.get('id')] != null) {
         	var insertedTranslateNode = othis.scene.findNode(translateNodeJson.id);
-        	if(insertedTranslateNode == null)
-        		 insertedTranslateNode = this.insert("node", translateNodeJson);
-        	else
+        	if(insertedTranslateNode == null) {
+        		insertedTranslateNode = this.insert("node", translateNodeJson);
+        	}
+        	else {
         		insertedTranslateNode.set('y', distance);
+        	}
           }
           return false;
         }), {
@@ -1190,7 +1206,7 @@ function BimSurfer() {
 	 * element
 	 */
   this.setExposeSlider = function (id) {
-	  var parentId = $('#'+RegExp.escape(id)).parentsUntil('li.controls-tree-rel').parent().attr('id');
+	  var parentId = $('#'+ id).parentsUntil('li.controls-tree-rel').parent().attr('id');
 	  var translateNode = othis.scene.findNode('translateZone-' + id + '-' + parentId);
 	  if(translateNode != null) {
 		  var sliderMax = ($('#expose')).slider("option" , "max");
@@ -1254,7 +1270,7 @@ function BimSurfer() {
 		  // insert default special-object highlight
 		  var materialNode = othis.constants.highlightSpecialObject;
 		  materialNode.id = 'highlightspecialobject-' + oldHighlight.parent().get("id");
-		  if(othis.scene.findNode(RegExp.escape(materialNode.id)) == null)  // if
+		  if(othis.scene.findNode(materialNode.id) == null)  // if
 																			// default
 																			// special-object
 																			// highlight
@@ -1326,11 +1342,11 @@ function BimSurfer() {
     if (!(properties != null)) {
       return ($('#controls-properties')).html("<p class='controls-message'>No properties could be found in the scene.</p>");
     }
-    keyStack = id.split('/');
+    keyStack = [id];
     objectProperties = properties;
     for (_i = 0, _len = keyStack.length; _i < _len; _i++) {
       key = keyStack[_i];
-      objectProperties = objectProperties[key];
+     objectProperties = objectProperties[key];
     }
     tableItemObject = function(keyStack, key, value) {
       var html, k, _j, _len2;
@@ -1411,14 +1427,14 @@ function BimSurfer() {
       ($('.controls-tree:has(.controls-tree-selected)')).addClass('controls-tree-selected-parent');
       
       // set filter element selected if there is any corresponding
-      var filterElem = $('#filtered-list').find('#' + RegExp.escape(id));
+      var filterElem = $('#filtered-list').find('#' + id);
       if(filterElem != null)
     	  filterElem.addClass("controls-tree-selected");
       othis.controlsPropertiesSelectObject(id);
       node = othis.scene.findNode(id);
       if (node != null) {
         // if selected element begins with dp_ (= special object)
-  	  	if ($('#'+RegExp.escape(node.get("id"))).text().match(/^ dp_/))
+  	  	if ($('#'+node.get("id")).text().match(/^ dp_/))
   		{
   	  		var oldHighlight = othis.scene.findNode('highlightspecialobject-' + node.get("id"));
   	  		// delete default highlight
@@ -1502,7 +1518,7 @@ function BimSurfer() {
 																										// listed
 			  var html = "<li id='"+id+"' class='filtered-item controls-tree-item'>"+text+"</li>";
 			  $('#filtered-list').append(html);
-			  $('#filtered-list').find('#' + RegExp.escape(id)).click(function () {  // append
+			  $('#filtered-list').find('#' + id).click(function () {  // append
 																						// filtered
 																						// element
 																						// to
@@ -1532,7 +1548,7 @@ function BimSurfer() {
 	 */
   this.controlsDoubleClickFilter = function(event) {
 	  if ((event != null) && event.target.nodeName === 'INPUT') return;
-	  return doSetViewToObject(event.target.id);
+	  return othis.doSetViewToObject(event.target.id);
   };
   
   /**
@@ -1540,7 +1556,7 @@ function BimSurfer() {
 	 */
   this.controlsDoubleClickOverview = function(event) {
 	  if ((event != null) && event.target.nodeName === 'INPUT') return;
-	  return doSetViewToObject($(event.target).parent().attr('id'));
+	  return othis.doSetViewToObject($(event.target).parent().attr('id'));
   };
 
   this.controlsNavigateLink = function(event) {
@@ -1572,7 +1588,7 @@ function BimSurfer() {
       });
     }
     thumbSize = othis.constants.thumbnails.size;
-    imgURI = canvasCaptureThumbnail(othis.canvas, 512 * thumbSize[0] / thumbSize[1], 512, othis.constants.thumbnails.scale * thumbSize[0], othis.constants.thumbnails.scale * thumbSize[1]);
+    imgURI = othis.canvasCaptureThumbnail(othis.canvas, 512 * thumbSize[0] / thumbSize[1], 512, othis.constants.thumbnails.scale * thumbSize[0], othis.constants.thumbnails.scale * thumbSize[1]);
     node = othis.scene.findNode('main-lookAt');
     othis.snapshots.lookAts.push({
       eye: node.get('eye'),
@@ -1650,7 +1666,7 @@ function BimSurfer() {
 		// + imgURI + "'></div></div>");
 	  };
 	  
-	  this.snapshotsDelete = function(event) {
+  this.snapshotsDelete = function(event) {
     var $parent;
     $parent = ($(event.target)).parent();
     othis.snapshots.lookAts.splice($parent.index() + 1, 1);
@@ -1666,15 +1682,15 @@ function BimSurfer() {
     return (SceneJS.FX.TweenSpline(othis.scene.findNode('main-lookAt'))).sequence(othis.snapshots.lookAts);
   };
 
-  this.loadBimServerModelOld = function(url, roid) {
-	bimServerApi.call("ServiceInterface", "getSerializerByName", {serializerName: "StreamingSceneJS"}, function(serializer){
-		bimServerApi.call("ServiceInterface", "download", {
+  this.loadBimServerModelOld = function(roid) {
+	othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {serializerName: "StreamingSceneJS"}, function(serializer){
+		othis.bimServerApi.call("ServiceInterface", "download", {
 			roid: roid,
 			serializerOid: serializer.oid,
 			showOwn: true,
 			sync: true
 		}, function(laid){
-			var url = bimServerApi.generateRevisionDownloadUrl({
+			var url = othis.bimServerApi.generateRevisionDownloadUrl({
 				serializerOid: serializer.oid,
 				laid: laid
 			});
@@ -1684,27 +1700,101 @@ function BimSurfer() {
 			});
 		});
 	});
-  }
+  };
 
-  this.loadBimServerModelNew = function(url, roid) {
-		bimServerApi.call("ServiceInterface", "getSerializerByName", {serializerName: "SceneJsShellSerializer"}, function(serializer){
-			bimServerApi.call("ServiceInterface", "download", {
+  this.loadBimServerModelNew = function(roid) {
+		othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {serializerName: "SceneJsShellSerializer"}, function(serializer){
+			othis.bimServerApi.call("ServiceInterface", "download", {
 				roid: roid,
 				serializerOid: serializer.oid,
 				showOwn: true,
 				sync: true
 			}, function(laid){
-				var url = bimServerApi.generateRevisionDownloadUrl({
+				var url = othis.bimServerApi.generateRevisionDownloadUrl({
 					serializerOid: serializer.oid,
 					laid: laid
 				});
 				$.getJSON(url, function(data){
 					othis.loadScene(data);
 			        othis.helpStatusClear();
+			        
+					othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {serializerName: "JsonGeometrySerializer"}, function(serializer){
+						othis.typeDownloadQueue = othis.classNames.slice(0);
+						othis.loadGeometry(roid, serializer.oid);
+						othis.loadGeometry(roid, serializer.oid);
+					});
 				});
 			});
 		});
-  }
+  };
+  
+  this.loadGeometry = function(roid, serializerOid) {
+		if (othis.typeDownloadQueue.length == 0) {
+			return;
+		}
+		var className = othis.typeDownloadQueue[0];
+		othis.typeDownloadQueue = othis.typeDownloadQueue.slice(1);
+		othis.bimServerApi.call("ServiceInterface", "downloadByTypes", {
+			roids: [roid],
+			classNames: [className],
+			serializerOid: serializerOid,
+			includeAllSubtypes: false,
+			useObjectIDM: false,
+			sync: true
+		}, function(laid){
+			var url = othis.bimServerApi.generateRevisionDownloadUrl({
+				serializerOid: serializerOid,
+				laid: laid
+			});
+			$.getJSON(url, function(data){
+				var typeNode = {
+					type: "tag",
+					tag: className.toLowerCase(),
+					id: className.toLowerCase(),
+					nodes: []
+				};
+				var library = othis.scene.findNode("library");
+				var bounds = othis.scene.data().bounds2;
+				console.log(roid, "geometry", className, data.geometry.length);
+				data.geometry.forEach(function(geometry){
+					for (var i=0; i<geometry.positions.length; i+=3) {
+						geometry.positions[i] = geometry.positions[i] - bounds[0];
+						geometry.positions[i+1] = geometry.positions[i+1] - bounds[1];
+						geometry.positions[i+2] = geometry.positions[i+2] - bounds[2];
+					}
+					library.add("node", geometry);
+					var material = {
+						type: "material",
+						coreId: geometry.material + "Material",
+						nodes: [
+						    {
+								id: geometry.coreId,
+								type: "name",
+								nodes: [
+								    {
+								    	type: "geometry",
+								    	coreId: geometry.coreId
+								    }
+								]
+						    }
+						]
+					};
+					if (geometry.material == "IfcWindow") {
+						var flags = {
+							type: "flags",
+							flags: {transparent: true},
+							nodes: [material]
+						};
+						typeNode.nodes.push(flags);
+					} else {
+						typeNode.nodes.push(material);
+					}
+				});
+				othis.scene.findNode("main-renderer").add("node", typeNode);
+				othis.loadGeometry(roid, serializerOid);
+			});
+		});
+  };
   
   // Fixes download of objects from BIM Server Repository
   /*
@@ -1715,7 +1805,7 @@ function BimSurfer() {
       
     console.log("Load BIMserver project with revision # " + roid + "...");
     
-    othis.loadBimServerModelOld(url, roid);
+    othis.loadBimServerModelNew(roid);
   };
 
  /* end fix */
@@ -1766,10 +1856,6 @@ function BimSurfer() {
     url = ($('#bimserver-login-url')).val();
     user = ($('#bimserver-login-username')).val();
     pwd = ($('#bimserver-login-password')).val();
-    console.log("login");
-    console.log("url: " + url);
-    console.log("user: " + user);
-    console.log("pwd: " + pwd);
     valid = true;
     if (url.length < 1) {
       ($('#bimserver-login-url')).addClass('error');
@@ -1797,8 +1883,18 @@ function BimSurfer() {
 	$.getScript(url + "/js/bimserverapi.js")
 	.done(function(script, textStatus) {
 		window.clearTimeout(timeoutId);
-		bimServerApi = new BimServerApi(url, null);
-		bimServerApi.login(user, pwd, false, function(){
+		othis.bimServerApi = new BimServerApi(url, {
+			error: function(message){
+				console.log("error", message);
+			},
+			info: function(message) {
+				console.log("info", message);
+			},
+			clear: function() {
+				console.log("clear");
+			}
+		});
+		othis.bimServerApi.login(user, pwd, false, function(){
 	      ($('#bimserver-import-message-info')).html("Login request succeeded");
 	      othis.bimserverImportDialogShowTab2();
 	      return othis.bimserverImportDialogRefresh();
@@ -1818,7 +1914,7 @@ function BimSurfer() {
     $projectList = $('#bimserver-projects');
     $projectList.html("");
     
-    bimServerApi.call("ServiceInterface", "getAllProjects", {onlyTopLevel: true}, function(data){
+    othis.bimServerApi.call("ServiceInterface", "getAllProjects", {onlyTopLevel: true}, function(data){
     	($('#bimserver-import-message-info')).html("Fetched all projects");
     	data.forEach(function(project){
     		if (project.lastRevisionId != -1) {
@@ -1911,12 +2007,12 @@ function BimSurfer() {
     ($('#main-views-top')).click(othis.mainmenuViewsTop);
     ($('#expose')).slider({
     	   slide: function(event, ui) {
-    		   window.setExposeLevel(ui.value);
+    		   othis.setExposeLevel(ui.value);
     	   }
     });
     ($('#transparent')).slider({
  	   slide: function(event, ui) {
-		   window.setTransparentLevel(100-ui.value);
+		   othis.setTransparentLevel(100-ui.value);
 	   }
     });	
     ($('#toggle-Pan-Rotate')).click(othis.togglePanRotate);
@@ -1926,7 +2022,7 @@ function BimSurfer() {
     ($('#controls-relationships')).delegate('input', 'change', othis.controlsToggleTreeVisibility);
     ($('#controls-layers')).delegate('input', 'change', othis.controlsToggleLayer);
     ($('#snapshot-placeholder')).click(function () {
-    	(snapshotsPush(true));
+    	othis.snapshotsPush(true);
     });
     ($('#snapshots')).delegate('.snapshot', 'click', othis.snapshotsToggle);
     ($('#snapshots')).delegate('.snapshot-delete', 'click', othis.snapshotsDelete);
@@ -2150,7 +2246,7 @@ function BimSurfer() {
 		othis.propertyValues.viewfactor = SceneJS_math_lenVec3(othis.scene.data().bounds);
 		
 		// set Navigation Mode to rotate
-		window.setNavigationMode(0);
+		othis.setNavigationMode(0);
 		
 	    // highlight all elements with specified name
 		othis.highlightElements("dp_");
