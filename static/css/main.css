@@ -362,6 +362,7 @@
       display: table-row;
     }
     #top-menu {
+      line-height: 16px;
       background: #2d2d2d;
       text-align: right;
       width: 100%;
@@ -816,6 +817,29 @@
       background: #f1f1f1;
     }
 
+.initialhide {
+	display: none;
+}
+
 a {
 	cursor: pointer;
+}
+
+.loadingdiv .text {
+	color: white;
+	padding-bottom: 2px;
+}
+
+.loadingdiv {
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	opacity: 0.6;
+	margin-left: -250px;
+	height: 42px;
+	width: 500px;
+	z-index: 5000;
+	padding: 10px;
+	background-color: #444444;
+	border-radius: 5px;
 }
