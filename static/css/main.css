@@ -226,8 +226,8 @@
       top: 50%;
       left: 50%;
       margin: -150px 0 0 -250px;
-      width: 500px;
-      height: 300px;
+      width: 700px;
+      height: 400px;
       background: #fff;
       border: solid 1px #aaa;
       -moz-box-shadow: 0 0 5px rgba(100,100,100,0.5), 0 0 100px #aaa;
@@ -263,12 +263,6 @@
     .dialog-main {
       padding: 10px 0 0 10px;
       display: inline-block;
-    }
-    .dialog-main label {
-      display: inline-block;
-      width: 80px;
-      text-align: right;
-      padding: 6px 8px;
     }
     .dialog-messages {
       margin: 8px 0;
@@ -833,7 +827,7 @@ a {
 .loadingdiv {
 	position: fixed;
 	left: 50%;
-	top: 50%;
+	bottom: 100px;
 	opacity: 0.6;
 	margin-left: -250px;
 	height: 42px;

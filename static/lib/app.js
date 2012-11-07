@@ -16,7 +16,6 @@ function BimSurfer() {
 	   "IfcSite",
 	   "IfcColumn",
 	   "IfcStair",
-//	   "IfcFurnishingElement",
 	   "IfcSlab",
 	   "IfcOpeningElement",
 	   "IfcWindow",
@@ -1710,7 +1709,6 @@ function BimSurfer() {
   };
 
   this.progressHandler = function(topicId, state) {
-	  $(".loadingdiv .progress .bar").css("width", state.progress + "%");	
 	if (state.state == "FINISHED") {
 		othis.bimServerApi.unregister(othis.progressHandler);
 		var url = othis.bimServerApi.generateRevisionDownloadUrl({
@@ -1728,6 +1726,8 @@ function BimSurfer() {
 				othis.loadGeometry(othis.currentAction.roid, serializer.oid);
 			});
 		});
+	} else {
+		$(".loadingdiv .progress .bar").css("width", state.progress + "%");	
 	}
   };
 
@@ -1737,20 +1737,21 @@ function BimSurfer() {
 		roid: roid
 	  };
 		othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {serializerName: "SceneJsShellSerializer"}, function(serializer){
-			othis.bimServerApi.call("ServiceInterface", "download", {
-				roid: roid,
-				serializerOid: serializer.oid,
-				showOwn: true,
-				sync: false
-			}, function(laid){
-				$(".loadingdiv").hide();
-				$(".loadingdiv .text").html("Loading BIM model");
-				$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
-				$(".loadingdiv").fadeIn(500);
-				othis.currentAction.serializerOid = serializer.oid;
-				othis.currentAction.laid = laid;
-				othis.currentAction.roid = roid;
-				othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandler);
+			othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandler, function(){
+				othis.bimServerApi.call("ServiceInterface", "download", {
+					roid: roid,
+					serializerOid: serializer.oid,
+					showOwn: true,
+					sync: false
+				}, function(laid){
+					$(".loadingdiv").hide();
+					$(".loadingdiv .text").html("Loading BIM model");
+					$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
+					$(".loadingdiv").fadeIn(500);
+					othis.currentAction.serializerOid = serializer.oid;
+					othis.currentAction.laid = laid;
+					othis.currentAction.roid = roid;
+				});
 			});
 		});
   };
@@ -1765,6 +1766,8 @@ function BimSurfer() {
 			});
 			$(".loadingdiv .progress").addClass("progress-striped").addClass("active");
 			$.getJSON(url, function(data){
+				othis.loadedTypes.push(othis.currentAction.className);
+				othis.loadGeometry(othis.currentAction.roid, othis.currentAction.serializerOid);
 				var typeNode = {
 					type: "tag",
 					tag: othis.currentAction.className.toLowerCase(),
@@ -1813,8 +1816,6 @@ function BimSurfer() {
 				});
 				othis.scene.findNode("main-renderer").add("node", typeNode);
 				$("#layer-" + othis.currentAction.className.toLowerCase()).attr("checked", "checked");
-				othis.loadedTypes.push(othis.currentAction.className);
-				othis.loadGeometry(othis.currentAction.roid, othis.currentAction.serializerOid);
 			});
 		}
   };
@@ -1830,19 +1831,20 @@ function BimSurfer() {
 		$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
 		$(".loadingdiv").show();
 		othis.typeDownloadQueue = othis.typeDownloadQueue.slice(1);
-		othis.bimServerApi.call("ServiceInterface", "downloadByTypes", {
-			roids: [roid],
-			classNames: [className],
-			serializerOid: serializerOid,
-			includeAllSubtypes: false,
-			useObjectIDM: false,
-			sync: false
-		}, function(laid){
-			othis.currentAction.serializerOid = serializerOid;
-			othis.currentAction.laid = laid;
-			othis.currentAction.roid = roid;
-			othis.currentAction.className = className;
-			othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandlerType);
+		othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandlerType, function(){
+			othis.bimServerApi.call("ServiceInterface", "downloadByTypes", {
+				roids: [roid],
+				classNames: [className],
+				serializerOid: serializerOid,
+				includeAllSubtypes: false,
+				useObjectIDM: false,
+				sync: false
+			}, function(laid){
+				othis.currentAction.serializerOid = serializerOid;
+				othis.currentAction.laid = laid;
+				othis.currentAction.roid = roid;
+				othis.currentAction.className = className;
+			});
 		});
   };
   
@@ -1872,6 +1874,28 @@ function BimSurfer() {
 
   this.bimserverImportDialogShow = function() {
     othis.bimserverImportDialogShowTab1();
+    if (othis.bimServerApi == null) {
+    	if ($.cookie("autologin") != null) {
+    		var timeoutId;
+    		timeoutId = window.setTimeout(function() {
+    			$.removeCookie("username");
+    			$.removeCookie("autologin");
+    			$.removeCookie("address");
+    		}, 3000);
+    		$.getScript($.cookie("address") + "/js/bimserverapi.js")
+    		.done(function(script, textStatus) {
+    			window.clearTimeout(timeoutId);
+    			othis.bimServerApi = new BimServerApi($.cookie("address"), null);
+    			othis.bimServerApi.autologin($.cookie("username"), $.cookie("autologin"), function(){
+    			}, function(){
+    				othis.bimserverImportDialogShowTab2();
+    			});
+    		})
+    	} else {
+    	}
+    } else {
+    	othis.bimserverImportDialogShowTab2();
+    }
     return ($('#dialog-background,#dialog-bimserver-import')).show();
   };
 
@@ -1944,7 +1968,7 @@ function BimSurfer() {
 				console.log("clear");
 			}
 		});
-		othis.bimServerApi.login(user, pwd, false, function(){
+		othis.bimServerApi.login(user, pwd, $("#bimserver-login-rememberme").is(":checked"), function(){
 	      ($('#bimserver-import-message-info')).html("Login request succeeded");
 	      othis.bimserverImportDialogShowTab2();
 	      return othis.bimserverImportDialogRefresh();
@@ -1954,7 +1978,7 @@ function BimSurfer() {
 	      return ($('#bimserver-import-message-error')).html("Login request failed");
 		});
 	});
-    return true;
+    return false;
   };
   
   this.bimserverImportDialogRefresh = function() {

@@ -50,16 +50,34 @@
         <a id='bimserver-import-step2' class='dialog-step'>Choose a project</a>
       </div>
       <div class='dialog-main'>
-        <form id='dialog-tab-bimserver1' class='dialog-tab' onsubmit='return false;' style='display:none;'>
-          <div><label for='bimserver-login-url'>BIMserver</label><input id='bimserver-login-url' name='bimserver-login-url' type='url' value='http://localhost:8080'></div>
-          <div><label for='bimserver-login-username'>Username</label><input id='bimserver-login-username' name='bimserver-login-username' type='email' placeholder='user@website.com'></div>
-          <div><label for='bimserver-login-password'>Password</label><input id='bimserver-login-password' name='bimserver-login-password' type='password'></div>
-          <div class='dialog-buttons'><button id='bimserver-login-submit' type='submit' class='dialog-button'>Login</button></div>
-          <div class='dialog-messages'>
-            <p id='bimserver-import-message-info' class='dialog-message-info'></p>
-            <p id='bimserver-import-message-error' class='dialog-message-error'></p>
-          </div>
-        </form>
+		<form id="dialog-tab-bimserver1" class="form-horizontal">
+		  <div class="control-group">
+		    <label class="control-label" for="bimserver-login-url">BIMserver</label>
+		    <div class="controls">
+		      <input type="text" id="bimserver-login-url" value="http://localhost:8080">
+		    </div>
+		  </div>
+		  <div class="control-group">
+		    <label class="control-label" for="bimserver-login-username">Email</label>
+		    <div class="controls">
+		      <input type="text" id="bimserver-login-username" placeholder="Email">
+		    </div>
+		  </div>
+		  <div class="control-group">
+		    <label class="control-label" for="bimserver-login-password">Password</label>
+		    <div class="controls">
+		      <input type="password" id="bimserver-login-password" placeholder="Password">
+		    </div>
+		  </div>
+		  <div class="control-group">
+		    <div class="controls">
+		      <label class="checkbox">
+		        <input type="checkbox" id="bimserver-login-rememberme"> Remember me
+		      </label>
+		      <button id="bimserver-login-submit" type=submit class="btn">Sign in</button>
+		    </div>
+		  </div>
+		</form>
         <form id='dialog-tab-bimserver2' class='dialog-tab' onsubmit='return false;' style='display:none;'>
           <ul id='bimserver-projects'></ul>
           <div class='dialog-buttons'>
@@ -270,6 +288,8 @@
 
   <script src='static/lib/jquery/jquery-1.8.2.min.js'></script>
   <script src='static/lib/jquery/jquery-ui-1.9.1.custom.min.js'></script>
+  <script src='static/lib/jquery/jquery.cookie.js'></script>
+  <script src='static/lib/jquery/sha256.js'></script>
   <script src='static/lib/bootstrap.min.js'></script>
   <script src='static/lib/scenejs-2.0.0.0/scenejs.math.js'></script>
   <script src='static/lib/scenejs-2.0.0.0/scenejs.math.extra.js'></script>
