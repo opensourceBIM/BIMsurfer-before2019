@@ -538,6 +538,11 @@
       width: 300px;
       font-size: 13px;
       margin-left: 10px;
+      bottom: 12px;
+      overflow-y: auto;
+      background-color: white;
+      opacity: 0.8;
+      border-radius: 5px;
     }
     #controls-accordion-properties {
       padding: 4px;
@@ -836,4 +841,14 @@ a {
 	padding: 10px;
 	background-color: #444444;
 	border-radius: 5px;
+}
+
+ul {
+	margin-left: 5px;
+	margin-bottom: 2px;
+	list-style: none;
+}
+
+h4 {
+	line-height: 10px;	
 }

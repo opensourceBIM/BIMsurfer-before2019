@@ -1733,7 +1733,7 @@ SceneJS.Services = new (function() {
     NodeSelector.prototype.destroy = function() {
         // Scene nodes should be destroyed directly
         if (this._targetNode.attr.type === "scene") {
-          this._targetNode._destroy();
+          this._targetNode.destroy();
         }
         else {
           this._targetNode.destroy();
@@ -7081,7 +7081,8 @@ new (function() {
             throw SceneJS_errorModule.fatalError(SceneJS.errors.NODE_ILLEGAL_STATE, "Scene has been destroyed");
         }
         options = options || {};
-        this._compileScene();                   // Do any pending scene recompilations
+//        this._compileScene();
+        this.renderFrame();                   // Do any pending scene recompilations
         var pickRecord = SceneJS_DrawList.pick({
             sceneId: this.attr.id,
             canvasX : canvasX,
