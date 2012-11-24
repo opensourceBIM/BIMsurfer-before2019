@@ -2,7 +2,7 @@
  * BIMsurfer
  * Copyright 2012, Bimsurfer.org.
  * 
- * started by Léon van Berlo, BIMserver.org / TNO
+ * started by Lï¿½on van Berlo, BIMserver.org / TNO
  * created by Rehno Lindeque
  * enhanced by Kaltenriner Cristoph, Leichtfried Michael, TU Vienna, 2012
  */
@@ -504,11 +504,11 @@ function BimSurfer() {
 			if (othis.viewport.mouse.pickRecord != null) {
 				picknode = othis.scene.findNode(othis.viewport.mouse.pickRecord.name);
 				// if selected element begins with dp_ (marks special object)
-				if ($('#' + picknode.get("id")).text().match(/^ dp_/)) {
-					if (othis.propertyValues.selectedObj == ($('#' + picknode.get("id")).text())) {
+				if ($('#' + RegExp.escape(picknode.get("id"))).text().match(/^ dp_/)) {
+					if (othis.propertyValues.selectedObj == ($('#' + RegExp.escape(picknode.get("id"))).text())) {
 						othis.log("No special object selected");
 					} else {
-						othis.propertyValues.selectedObj = ($('#' + picknode.get("id")).text());
+						othis.propertyValues.selectedObj = ($('#' + RegExp.escape(picknode.get("id"))).text());
 					}
 					othis.viewport.mouse.leftDown = false;
 					event.preventDefault();
@@ -979,7 +979,7 @@ function BimSurfer() {
 			oldHighlight = othis.scene.findNode('highlightspecialobject-' + nodeID.get("id"));
 			if (oldHighlight != null)
 				oldHighlight.splice();
-			if ($('#' + nodeID.get("id")).text().match(/^ dp_/))
+			if ($('#' + RegExp.escape(nodeID.get("id"))).text().match(/^ dp_/))
 				nodeID.insert('node', othis.constants.highlightSelectedSpecialObject);
 			else
 				nodeID.insert('node', othis.constants.highlightMaterial);
@@ -1004,8 +1004,8 @@ function BimSurfer() {
 	 * element in a Building Storey.
 	 */
 	this.getSelectedStoreyWalls = function() {
-		return ($('.controls-tree').find('.controls-tree-selected')).closest(".controls-tree-rel:contains('(IfcBuildingStorey)')").find(
-				".controls-tree-rel:contains('(IfcWallStandardCase)')");
+		return ($('.controls-tree').find('.controls-tree-selected')).closest(".controls-tree-rel:contains('(BuildingStorey)')").find(
+				".controls-tree-rel:contains('(WallStandardCase)')");
 	};
 
 	/**
@@ -1024,7 +1024,7 @@ function BimSurfer() {
 		if ($('.controls-tree-selected').find(".controls-tree-postfix").text() != "") {
 			var storeyElements = othis.getSelectedStoreyWalls();
 			for ( var i = 0; i < storeyElements.size(); i++) {
-				if ($(storeyElements[i]).find(".controls-tree-postfix").text() == "(IfcWallStandardCase)") {
+				if ($(storeyElements[i]).find(".controls-tree-postfix").text() == "(WallStandardCase)") {
 					var nodeId = ($(storeyElements[i])).attr("id");
 					othis.insertTransparentNodes(othis.scene.findNode(nodeId), factor);
 				}
@@ -1035,12 +1035,12 @@ function BimSurfer() {
 		// transparent
 		else {
 			var sceneData = othis.scene.data();
-			var index = sceneData.ifcTypes.indexOf('IfcWallStandardCase');
+			var index = sceneData.ifcTypes.indexOf('WallStandardCase');
 			var wallCase = sceneData.ifcTypes[index];
 			var wallNode = othis.scene.findNode(wallCase.toLowerCase());
 
 			// also set the roof transparent
-			var roofIndex = sceneData.ifcTypes.indexOf('IfcRoof');
+			var roofIndex = sceneData.ifcTypes.indexOf('Roof');
 			var roof = sceneData.ifcTypes[roofIndex];
 			var roofNode = othis.scene.findNode(roof.toLowerCase());
 
@@ -1127,7 +1127,7 @@ function BimSurfer() {
 		if ($('.controls-tree-selected').find(".controls-tree-postfix").text() != "") {
 			// find the parent node of the selected one, which holds the node id
 			var parent = ($('.controls-tree').find('.controls-tree-selected')).closest(".controls-tree-rel:contains('(BuildingStorey)')");
-			othis.exposeSelectedStorey($(parent), distance * -1);
+			othis.exposeSelectedStorey($(parent), distance);
 		} else {
 			storeyElems = othis.getBuildingStoreys();
 			for ( var i = 0; i < storeyElems.size(); i++) {
@@ -1210,7 +1210,7 @@ function BimSurfer() {
 	 * element
 	 */
 	this.setExposeSlider = function(id) {
-		var parentId = $('#' + id).parentsUntil('li.controls-tree-rel').parent().attr('id');
+		var parentId = $('#' + RegExp.escape(id)).parentsUntil('li.controls-tree-rel').parent().attr('id');
 		var translateNode = othis.scene.findNode('translateZone-' + id + '-' + parentId);
 		if (translateNode != null) {
 			var sliderMax = ($('#expose')).slider("option", "max");
@@ -1219,6 +1219,25 @@ function BimSurfer() {
 			($('#expose')).slider("value", 0);
 		}
 	};
+	
+	/**
+	   * Sets the transparent slider according to the transparent level of the selected element
+	   */
+	  this.setTransparentSlider = function (id) {
+		  var storeyId = $('#'+RegExp.escape(id)).closest(".controls-tree-rel:contains('(BuildingStorey)')").andSelf().first().attr('id');
+		  var wallId = $('#'+RegExp.escape(storeyId)).find(".controls-tree-rel:contains('(WallStandardCase)')").attr('id');
+		  var transparentNode = othis.scene.findNode(wallId + '-' + 'transparent-walls');
+		  if(transparentNode != null) {
+			  //GWT: window.callbackTransparentLevel(100 - transparentNode.get('alpha')*100);
+			  ($('#transparent')).slider("value" , 100 - transparentNode.get('alpha')*100);
+		  }
+		  else {
+			  if(wallId != null) {
+				  //GWT: window.callbackTransparentLevel(100);
+				  ($('#transparent')).slider("value" , 0);
+			  }
+		  }
+	  };
 
 	/**
 	 * Deletes all actual highlights for setting a new highlight
@@ -1270,7 +1289,7 @@ function BimSurfer() {
 			// insert default special-object highlight
 			var materialNode = othis.constants.highlightSpecialObject;
 			materialNode.id = 'highlightspecialobject-' + oldHighlight.parent().get("id");
-			if (othis.scene.findNode(materialNode.id) == null) // if
+			if (othis.scene.findNode(RegExp.escape(materialNode.id)) == null) // if
 				// default
 				// special-object
 				// highlight
@@ -1405,20 +1424,21 @@ function BimSurfer() {
 		othis.deleteHighlights();
 		if (id != null) {
 			othis.setExposeSlider(id);
+			othis.setTransparentSlider(id);
 			parentEl = document.getElementById(id);
 			$treeItem = ($(parentEl)).children('.controls-tree-item');
 			$treeItem.addClass('controls-tree-selected');
 			($('.controls-tree:has(.controls-tree-selected)')).addClass('controls-tree-selected-parent');
 
 			// set filter element selected if there is any corresponding
-			var filterElem = $('#filtered-list').find('#' + id);
+			var filterElem = $('#filtered-list').find('#' + RegExp.escape(id));
 			if (filterElem != null)
 				filterElem.addClass("controls-tree-selected");
 			othis.controlsPropertiesSelectObject(id);
 			node = othis.scene.findNode(id);
 			if (node != null) {
 				// if selected element begins with dp_ (= special object)
-				if ($('#' + node.get("id")).text().match(/^ dp_/)) {
+				if ($('#' + RegExp.escape(node.get("id"))).text().match(/^ dp_/)) {
 					var oldHighlight = othis.scene.findNode('highlightspecialobject-' + node.get("id"));
 					// delete default highlight
 					if (oldHighlight != null)
@@ -1444,8 +1464,11 @@ function BimSurfer() {
 	 * Scrolls to the selected Element in the ifc Tree.
 	 */
 	this.controlsTreeScrollToSelected = function() {
-		var list = $('#object-tabs');
+		var list = $('#main-view-controls');
+		console.log($(list));
+		//console.log($('.controls-tree-selected-parent').text());
 		var offset = list.find('.controls-tree-selected').offset();
+		console.log(offset);
 		if (offset != null) {
 			var optionTop = offset.top;
 			var selectTop = list.offset().top;
@@ -1460,7 +1483,7 @@ function BimSurfer() {
 		$('#filtered-list').find('li').remove(); // clear last filter result
 		var inputtext = $('#filterinput').val().split(';'); // get tokens
 		// delimited by ';'
-		filterObjects(inputtext);
+		othis.filterObjects(inputtext);
 	};
 
 	/**
@@ -1479,6 +1502,7 @@ function BimSurfer() {
 			var foundElements = $('div.controls-tree-item:contains-case-insensitive(' + filtertext + ')');
 			// iterate all found elements
 			for ( var i = 0; i < foundElements.length; i++) {
+				console.log(foundElements[i]);
 				var id = $(foundElements[i]).closest('.controls-tree-rel').attr('id');
 				var text = $(foundElements[i]).closest('.controls-tree-rel').text().split(")")[0] + ")"; // split
 				// ensures
@@ -1495,7 +1519,7 @@ function BimSurfer() {
 				// listed
 				var html = "<li id='" + id + "' class='filtered-item controls-tree-item'>" + text + "</li>";
 				$('#filtered-list').append(html);
-				$('#filtered-list').find('#' + id).click(function() { // append
+				$('#filtered-list').find('#' + RegExp.escape(id)).click(function() { // append
 					// filtered
 					// element
 					// to
