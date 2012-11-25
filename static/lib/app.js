@@ -722,6 +722,7 @@ function BimSurfer() {
 			case (0): // reset
 				othis.resetView();
 				othis.propertyValues.oldZoom = 15;
+				othis.setZoomSlider(75);
 				break;
 			case (1): // front
 				othis.resetView();
@@ -737,6 +738,7 @@ function BimSurfer() {
 					z : 0
 				});
 				othis.propertyValues.oldZoom = 10;
+				othis.setZoomSlider(50);
 				break;
 			case (2): // side
 				othis.resetView();
@@ -752,6 +754,7 @@ function BimSurfer() {
 					z : 0
 				});
 				othis.propertyValues.oldZoom = 10;
+				othis.setZoomSlider(50);
 				break;
 			case (3): // top
 				othis.resetView();
@@ -772,6 +775,7 @@ function BimSurfer() {
 					z : 0
 				});
 				othis.propertyValues.oldZoom = 10;
+				othis.setZoomSlider(50);
 				break;
 			}
 		}
@@ -986,6 +990,8 @@ function BimSurfer() {
 			// do camera movement
 			othis.snapshotsPlay();
 
+			//set zoom slider closer to the middle
+			othis.setZoomSlider(15);
 		}
 		return 0;
 	};
@@ -1238,6 +1244,13 @@ function BimSurfer() {
 			  }
 		  }
 	  };
+	  
+	  /**
+	   * Sets the Zoom Slider according to the Zoomlevel
+	   */
+	  this.setZoomSlider = function (value){
+		  ($('#zoom')).slider("value" , value);
+	  }
 
 	/**
 	 * Deletes all actual highlights for setting a new highlight
@@ -2119,6 +2132,12 @@ function BimSurfer() {
 				othis.setTransparentLevel(100 - ui.value);
 			}
 		});
+		($('#zoom')).slider({
+			slide : function(event, ui) {
+				//TODO only if a scene is loaded
+				othis.setZoomLevelAbsolute(Math.round(ui.value/5))
+			}
+		});
 		($('#toggle-Pan-Rotate')).click(othis.togglePanRotate);
 		($('#controls-relationships')).delegate('.controls-tree-item', 'click', othis.controlsToggleTreeOpen);
 		($('#controls-relationships')).delegate('.controls-tree-item', 'dblclick', othis.controlsDoubleClickOverview);
@@ -2334,7 +2353,9 @@ function BimSurfer() {
 
 				// highlight all elements with specified name
 				othis.highlightElements("dp_");
-
+				
+				// set ZoomSlider to middle
+				othis.setZoomSlider(75);
 				return othis.scene;
 			}
 		} catch (error) {

@@ -532,9 +532,23 @@
     margin-left: 10px;
    	z-index: 1;    
     }
+    #zoom-title{
+    postion: relative;
+    width: 290px;
+    margin-left: 10px;
+    margin-top: 10px;
+	z-index: 1;
+    }
+    #zoom{
+    postion: relative;
+    top: 0px;
+    with: 290px;
+    margin-left: 10px;
+   	z-index: 1;    
+    }
     #main-view-controls {
       position: absolute;
-      top: 140px;
+      top: 150px;
       width: 300px;
       font-size: 13px;
       margin-left: 10px;
