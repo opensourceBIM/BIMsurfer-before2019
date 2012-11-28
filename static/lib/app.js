@@ -1337,12 +1337,10 @@ function BimSurfer() {
 		      };
 			var node = othis.scene.findNode(this.id);
 			if (node != null) {
-				var parent = node.parent();
-				node.disconnect();
-				var added = parent.add("node", disableTagJson);
-				added.add("node", node);
+				node.insert("node",disableTagJson);
 			}
 		});
+			
 		return false;
 	};
 
