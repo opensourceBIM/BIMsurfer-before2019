@@ -1346,12 +1346,10 @@ function BimSurfer() {
 		      };
 			var node = othis.scene.findNode(this.id);
 			if (node != null) {
-				var parent = node.parent();
-				node.disconnect();
-				var added = parent.add("node", disableTagJson);
-				added.add("node", node);
+				node.insert("node",disableTagJson);
 			}
 		});
+			
 		return false;
 	};
 
@@ -1929,7 +1927,7 @@ function BimSurfer() {
 				}, 3000);
 				$.getScript($.cookie("address") + "/js/bimserverapi.js").done(function(script, textStatus) {
 					window.clearTimeout(timeoutId);
-					othis.bimServerApi = new BimServerApi($.cookie("address"), null);
+					othis.bimServerApi = new BimServerApi($.cookie("address"));
 					othis.bimServerApi.autologin($.cookie("username"), $.cookie("autologin"), function() {
 						othis.bimserverImportDialogShowTab2();
 						othis.bimserverImportDialogRefresh();
@@ -1968,6 +1966,12 @@ function BimSurfer() {
 		return othis.bimserverImportDialogShowTab2();
 	};
 
+	this.bimserverLogout = function(){
+		othis.bimServerApi.logout(function(){
+			othis.bimserverImportDialogShowTab1();
+		});
+	};
+	
 	this.bimserverImportDialogLogin = function() {
 		var pwd, url, user, valid;
 		othis.bimserverImportDialogClearMessages();
@@ -2001,24 +2005,14 @@ function BimSurfer() {
 		}, 3000);
 		$.getScript(url + "/js/bimserverapi.js").done(function(script, textStatus) {
 			window.clearTimeout(timeoutId);
-			othis.bimServerApi = new BimServerApi(url, {
-				error : function(message) {
-					othis.log("error", message);
-				},
-				info : function(message) {
-					othis.log("info", message);
-				},
-				clear : function() {
-					othis.log("clear");
-				}
-			});
+			othis.bimServerApi = new BimServerApi(url);
 			othis.bimServerApi.login(user, pwd, $("#bimserver-login-rememberme").is(":checked"), function() {
 				($('#bimserver-import-message-info')).html("Login request succeeded");
+				($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).removeAttr('disabled');
 				othis.bimserverImportDialogShowTab2();
 				return othis.bimserverImportDialogRefresh();
 			}, function() {
 				($('#bimserver-import-message-info')).html("");
-				($('#dialog-tab-bimserver1 input, #dialog-tab-bimserver1 button')).removeAttr('disabled');
 				return ($('#bimserver-import-message-error')).html("Login request failed");
 			});
 		});
@@ -2036,6 +2030,7 @@ function BimSurfer() {
 		othis.bimServerApi.call("ServiceInterface", "getAllProjects", {
 			onlyTopLevel : true
 		}, function(data) {
+			console.log(data);
 			($('#bimserver-import-message-info')).html("Fetched all projects");
 			data.forEach(function(project) {
 				if (project.lastRevisionId != -1) {
@@ -2115,6 +2110,7 @@ function BimSurfer() {
 		($('#bimserver-import-step1')).click(othis.bimserverImportDialogShowTab1);
 		($('#bimserver-import-step2')).click(othis.bimserverImportDialogToggleTab2);
 		($('#bimserver-projects-refresh')).click(othis.bimserverImportDialogRefresh);
+		($('#bimserver-projects-logout')).click(othis.bimserverLogout);
 		($('#bimserver-projects')).delegate('li', 'click', othis.bimserverImportDialogSelect);
 		($('#top-menu-import-bimserver')).click(othis.topmenuImportBimserver);
 		($('#top-menu-import-scenejs')).click(othis.topmenuImportSceneJS);
