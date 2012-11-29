@@ -509,8 +509,11 @@ function BimSurfer() {
 						othis.log("No special object selected");
 					} else {
 						othis.propertyValues.selectedObj = ($('#' + RegExp.escape(picknode.get("id"))).text());
+						//call GWT Application
+		    			//GWT: window.callbackAddDpWidget(othis.propertyValuesValues.selectedObj,coords[0], coords[1]);
 					}
 					othis.viewport.mouse.leftDown = false;
+					//GWT: window.callbackClickEventDatapointMove(othis.propertyValues.selectedObj);
 					event.preventDefault();
 				} else {
 					othis.propertyValues.selectedObj = 'emtpy Selection';
@@ -529,6 +532,7 @@ function BimSurfer() {
 				othis.controlsTreeSelectObject(othis.viewport.mouse.pickRecord.name);
 				othis.controlsTreeScrollToSelected();
 				if (othis.propertyValues.selectedObj != 'emtpy Selection') {
+					//GWT: window.callbackClickEventZoneMarked(othis.propertyValues.selectedObj);
 				}
 			} else {
 				othis.controlsTreeSelectObject();
@@ -609,6 +613,7 @@ function BimSurfer() {
 			return;
 		delta = event.wheelDelta != null ? event.wheelDelta / -120.0 : Math.clamp(event.detail, -1.0, 1.0);
 		othis.propertyValues.oldZoom = Math.clamp(othis.propertyValues.oldZoom + delta, 0, 20);
+		//GWT: window.callbackZoomLevelAbsolute(othis.propertyValues.oldZoom);
 		zoomDistance = delta * othis.camera.distanceLimits[1] * othis.constants.camera.zoomSpeedFactor;
 		return othis.zoomLookAtNode(othis.scene.findNode('main-lookAt'), zoomDistance, othis.camera.distanceLimits);
 	};
@@ -619,7 +624,7 @@ function BimSurfer() {
 	 * @param _mouseRotate
 	 *            an Integer: 0...Rotate, 1...Pan
 	 */
-	this.setNavigationMode = function(_mouseRotate) {
+	window.setNavigationMode = function(_mouseRotate) {
 		othis.propertyValues.mouseRotate = _mouseRotate;
 	};
 
@@ -715,7 +720,7 @@ function BimSurfer() {
 	 * @param view
 	 *            an Integer: 0...reset, 1...front, 2...side, 3...top
 	 */
-	this.setView = function(view) {
+	window.setView = function(view) {
 		var lookAtNode;
 		if (othis.scene != null) {
 			switch (view) {
@@ -723,6 +728,7 @@ function BimSurfer() {
 				othis.resetView();
 				othis.propertyValues.oldZoom = 15;
 				othis.setZoomSlider(75);
+				//GWT: window.callbackZoomLevelAbsolute(15);
 				break;
 			case (1): // front
 				othis.resetView();
@@ -739,6 +745,7 @@ function BimSurfer() {
 				});
 				othis.propertyValues.oldZoom = 10;
 				othis.setZoomSlider(50);
+				//GWT: window.callbackZoomLevelAbsolute(10);
 				break;
 			case (2): // side
 				othis.resetView();
@@ -755,6 +762,7 @@ function BimSurfer() {
 				});
 				othis.propertyValues.oldZoom = 10;
 				othis.setZoomSlider(50);
+				//GWT: window.callbackZoomLevelAbsolute(10);
 				break;
 			case (3): // top
 				othis.resetView();
@@ -776,6 +784,7 @@ function BimSurfer() {
 				});
 				othis.propertyValues.oldZoom = 10;
 				othis.setZoomSlider(50);
+				//GWT: window.callbackZoomLevelAbsolute(10);
 				break;
 			}
 		}
@@ -797,28 +806,28 @@ function BimSurfer() {
 	 * Set View to start view
 	 */
 	this.mainmenuViewsReset = function(event) {
-		othis.setView(0);
+		window.setView(0);
 	};
 
 	/**
 	 * Set View to front view
 	 */
 	this.mainmenuViewsFront = function(event) {
-		othis.setView(1);
+		window.setView(1);
 	};
 
 	/**
 	 * Set View to side view
 	 */
 	this.mainmenuViewsSide = function(event) {
-		othis.setView(2);
+		window.setView(2);
 	};
 
 	/**
 	 * Set View to top view
 	 */
 	this.mainmenuViewsTop = function(event) {
-		othis.setView(3);
+		window.setView(3);
 	};
 
 	/**
@@ -826,9 +835,9 @@ function BimSurfer() {
 	 */
 	this.togglePanRotate = function(event) {
 		if (othis.getNavigationMode() == 1) {
-			othis.setNavigationMode(0);
+			window.setNavigationMode(0);
 		} else {
-			othis.setNavigationMode(1);
+			window.setNavigationMode(1);
 		}
 	};
 
@@ -838,7 +847,7 @@ function BimSurfer() {
 	 * @param zoomVal
 	 *            an int, -1 for zoom in, 1 for zoom out
 	 */
-	this.setZoomLevel = function(zoomVal) {
+	window.setZoomLevel = function(zoomVal) {
 		var zoomDistance;
 		zoomDistance = zoomVal * othis.camera.distanceLimits[1] * othis.constants.camera.zoomSpeedFactor;
 		return othis.zoomLookAtNode(othis.scene.findNode('main-lookAt'), zoomDistance, othis.camera.distanceLimits);
@@ -850,7 +859,7 @@ function BimSurfer() {
 	 * @param zoomVal
 	 *            an int in range 0 to 20
 	 */
-	this.setZoomLevelAbsolute = function(zoomVal) {
+	window.setZoomLevelAbsolute = function(zoomVal) {
 
 		var zoomDistance;
 
@@ -903,7 +912,7 @@ function BimSurfer() {
 	 *            a String with the name of an Object
 	 * @returns doSetViewToObject a Function to do the setView to Object Action
 	 */
-	this.setViewToObject = function(objName) {
+	window.setViewToObject = function(objName) {
 		var objID = ($("ul.controls-tree").find("div:contains(" + objName + ")").parent().attr("id"));
 		return othis.doSetViewToObject(objID);
 	};
@@ -1020,7 +1029,7 @@ function BimSurfer() {
 	 * @param factor
 	 *            the transparency factor (0 - 100)
 	 */
-	this.setTransparentLevel = function(factor) {
+	window.setTransparentLevel = function(factor) {
 		if (othis.scene == null)
 			return;
 
@@ -1121,7 +1130,7 @@ function BimSurfer() {
 	 * @param factor
 	 *            the expose factor (0 - 150)
 	 */
-	this.setExposeLevel = function(factor) {
+	window.setExposeLevel = function(factor) {
 		if (othis.scene == null)
 			return;
 
@@ -1219,10 +1228,11 @@ function BimSurfer() {
 		var parentId = $('#' + RegExp.escape(id)).parentsUntil('li.controls-tree-rel').parent().attr('id');
 		var translateNode = othis.scene.findNode('translateZone-' + id + '-' + parentId);
 		if (translateNode != null) {
-			var sliderMax = ($('#expose')).slider("option", "max");
 			($('#expose')).slider("value", othis.propertyValues.scalefactor * 10 * Math.abs(translateNode.get('y')));
+			//GWT: window.callbackExposeLevel(othis.propertyValues.scalefactor*10*Math.abs(translateNode.get('y')));
 		} else {
 			($('#expose')).slider("value", 0);
+			//GWT: window.callbackExposeLevel(0);
 		}
 	};
 	
@@ -1329,7 +1339,6 @@ function BimSurfer() {
 			return;
 		}
 		$parent.find('.controls-tree-rel').andSelf().each(function() {
-			console.log(this.id);
 			var disableTagJson = {
 		        type: 'tag',
 		        tag: 'disable-' + this.id,
@@ -1478,10 +1487,7 @@ function BimSurfer() {
 	 */
 	this.controlsTreeScrollToSelected = function() {
 		var list = $('#main-view-controls');
-		console.log($(list));
-		//console.log($('.controls-tree-selected-parent').text());
 		var offset = list.find('.controls-tree-selected').offset();
-		console.log(offset);
 		if (offset != null) {
 			var optionTop = offset.top;
 			var selectTop = list.offset().top;
@@ -1515,7 +1521,6 @@ function BimSurfer() {
 			var foundElements = $('div.controls-tree-item:contains-case-insensitive(' + filtertext + ')');
 			// iterate all found elements
 			for ( var i = 0; i < foundElements.length; i++) {
-				console.log(foundElements[i]);
 				var id = $(foundElements[i]).closest('.controls-tree-rel').attr('id');
 				var text = $(foundElements[i]).closest('.controls-tree-rel').text().split(")")[0] + ")"; // split
 				// ensures
@@ -2124,18 +2129,18 @@ function BimSurfer() {
 		($('#main-views-top')).click(othis.mainmenuViewsTop);
 		($('#expose')).slider({
 			slide : function(event, ui) {
-				othis.setExposeLevel(ui.value);
+				window.setExposeLevel(ui.value);
 			}
 		});
 		($('#transparent')).slider({
 			slide : function(event, ui) {
-				othis.setTransparentLevel(100 - ui.value);
+				window.setTransparentLevel(100 - ui.value);
 			}
 		});
 		($('#zoom')).slider({
 			slide : function(event, ui) {
 				//TODO only if a scene is loaded
-				othis.setZoomLevelAbsolute(Math.round(ui.value/5))
+				window.setZoomLevelAbsolute(Math.round(ui.value/5))
 			}
 		});
 		($('#toggle-Pan-Rotate')).click(othis.togglePanRotate);
@@ -2292,7 +2297,7 @@ function BimSurfer() {
 			try {
 				return othis.loadScene(data);
 			} catch (error) {
-				othis.log(error)
+				othis.log(error);
 				return void 0;
 			}
 		}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -2349,7 +2354,7 @@ function BimSurfer() {
 				othis.propertyValues.viewfactor = SceneJS_math_lenVec3(othis.scene.data().bounds);
 
 				// set Navigation Mode to rotate
-				othis.setNavigationMode(0);
+				window.setNavigationMode(0);
 
 				// highlight all elements with specified name
 				othis.highlightElements("dp_");
