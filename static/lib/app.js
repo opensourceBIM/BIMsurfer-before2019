@@ -319,6 +319,9 @@ function BimSurfer() {
 	};
 
 	this.constants = {
+		loadingType : {
+			loadFromBimserver : 1			//to differ loading from Server or local File (0..lokal; 1..Server)
+		},
 		camera : {
 			maxOrbitSpeed : Math.PI * 0.1,
 			orbitSpeedFactor : 0.05,
@@ -672,10 +675,12 @@ function BimSurfer() {
 	};
 
 	this.topmenuImportBimserver = function(event) {
+		othis.constants.loadingType.loadFromBimserver = 1;
 		return othis.bimserverImportDialogShow();
 	};
 
 	this.topmenuImportSceneJS = function(event) {
+		othis.constants.loadingType.loadFromBimserver = 0;
 		return othis.fileImportDialogShow();
 	};
 
@@ -1591,13 +1596,15 @@ function BimSurfer() {
 			_results = [];
 			for (_i = 0, _len = elements.length; _i < _len; _i++) {
 				el = elements[_i];
-				if (othis.loadedTypes.indexOf($(el).attr("className")) == -1) {
-					othis.typeDownloadQueue = [ $(el).attr("className") ];
-					othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-						serializerName : "JsonGeometrySerializer"
-					}, function(serializer) {
-						othis.loadGeometry(othis.currentAction.roid, serializer.oid);
-					});
+				if (othis.constants.loadingType.loadFromBimserver == 1){
+					if (othis.loadedTypes.indexOf($(el).attr("className")) == -1) {
+						othis.typeDownloadQueue = [ $(el).attr("className") ];
+						othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
+							serializerName : "JsonGeometrySerializer"
+						}, function(serializer) {
+							othis.loadGeometry(othis.currentAction.roid, serializer.oid);
+						});
+					}
 				}
 				_results.push(((($(el)).attr('id')).split(/^layer\-/))[1]);
 			}
@@ -2135,7 +2142,6 @@ function BimSurfer() {
 		});
 		($('#zoom')).slider({
 			slide : function(event, ui) {
-				//TODO only if a scene is loaded
 				window.setZoomLevelAbsolute(Math.round(ui.value/5))
 			}
 		});
@@ -2196,7 +2202,12 @@ function BimSurfer() {
 			_results = [];
 			for (_i = 0, _len = _ref.length; _i < _len; _i++) {
 				ifcType = _ref[_i];
-				_results.push("<div><label>" + "<input id='layer-" + ifcType.toLowerCase() + "' className='" + ifcType + "' type='checkbox'> " + ifcType + "</label>" + "</div>");
+				//check if Layer checkboxes get info from local file or a Bimserver
+				if(othis.constants.loadingType.loadFromBimserver == 1){
+					_results.push("<div><label>" + "<input id='layer-" + ifcType.toLowerCase() + "' className='" + ifcType + "' type='checkbox'> " + ifcType + "</label>" + "</div>");
+				}else{
+					_results.push("<div><label>" + "<input id='layer-" + ifcType.toLowerCase() + "' className='" + ifcType + "' type='checkbox' checked='checked'> " + ifcType + "</label>" + "</div>");
+				}
 			}
 			return _results;
 		})();
