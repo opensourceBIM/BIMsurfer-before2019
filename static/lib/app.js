@@ -1754,6 +1754,26 @@ function BimSurfer() {
 		});
 	};
 
+	// http://stackoverflow.com/questions/1885557/simplest-code-for-array-intersection-in-javascript	
+	this.intersect_safe = function(a, b)
+	{
+	  var ai=0, bi=0;
+	  var result = new Array();
+
+	  while( ai < a.length && bi < b.length )
+	  {
+	     if      (a[ai] < b[bi] ){ ai++; }
+	     else if (a[ai] > b[bi] ){ bi++; }
+	     else /* they're equal */
+	     {
+	       result.push(a[ai]);
+	       ai++;
+	       bi++;
+	     }
+	  }
+	  return result;
+	}
+	
 	this.progressHandler = function(topicId, state) {
 		if (state.state == "FINISHED") {
 			othis.bimServerApi.unregister(othis.progressHandler);
@@ -1771,6 +1791,12 @@ function BimSurfer() {
 					serializerName : "JsonGeometrySerializer"
 				}, function(serializer) {
 					othis.typeDownloadQueue = othis.classNames.slice(0);
+
+					// Remove the types are not there anyways
+					othis.typeDownloadQueue.sort();
+					data.data.ifcTypes.sort();
+					othis.typeDownloadQueue = othis.intersect_safe(othis.typeDownloadQueue, data.data.ifcTypes);
+					
 					othis.loadGeometry(othis.currentAction.roid, serializer.oid);
 				});
 			});
