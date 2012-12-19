@@ -513,7 +513,7 @@ function BimSurfer() {
 					} else {
 						othis.propertyValues.selectedObj = ($('#' + RegExp.escape(picknode.get("id"))).text());
 						//call GWT Application
-		    			//GWT: window.callbackAddDpWidget(othis.propertyValuesValues.selectedObj,coords[0], coords[1]);
+		    			//GWT: window.callbackAddDpWidget(othis.propertyValues.selectedObj,coords[0], coords[1]);
 					}
 					othis.viewport.mouse.leftDown = false;
 					//GWT: window.callbackClickEventDatapointMove(othis.propertyValues.selectedObj);
@@ -1354,7 +1354,6 @@ function BimSurfer() {
 				node.insert("node",disableTagJson);
 			}
 		});
-			
 		return false;
 	};
 
@@ -2037,7 +2036,6 @@ function BimSurfer() {
 		othis.bimServerApi.call("ServiceInterface", "getAllProjects", {
 			onlyTopLevel : true
 		}, function(data) {
-			console.log(data);
 			($('#bimserver-import-message-info')).html("Fetched all projects");
 			data.forEach(function(project) {
 				if (project.lastRevisionId != -1) {
