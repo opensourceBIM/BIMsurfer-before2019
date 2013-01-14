@@ -2418,6 +2418,20 @@ function BimSurfer() {
 	othis.registerDOMEvents();
 	othis.registerControlEvents();
 	othis.application.initialized = true;
+	
+	if (othis.queryArgs.token != null) {
+		var timeoutId; // timeout id is a global variable
+		timeoutId = window.setTimeout(function() {
+			othis.log("Could not connect");
+		}, 3000);
+		$.getScript(othis.queryArgs.server + "/js/bimserverapi.js").done(function(script, textStatus) {
+			window.clearTimeout(timeoutId);
+			othis.bimServerApi = new BimServerApi(othis.queryArgs.server);
+			othis.bimServerApi.setToken(othis.queryArgs.token);
+			othis.loadBimServerModelNew(othis.queryArgs.roid);
+		});
+	}
+	
 	if ((othis.queryArgs.model != null) && othis.queryArgs.format === 'scenejson') {
 		return othis.initLoadModel(othis.queryArgs.model);
 	}
