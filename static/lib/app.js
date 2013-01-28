@@ -1599,8 +1599,8 @@ function BimSurfer() {
 				if (othis.constants.loadingType.loadFromBimserver == 1){
 					if (othis.loadedTypes.indexOf($(el).attr("className")) == -1) {
 						othis.typeDownloadQueue = [ $(el).attr("className") ];
-						othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-							serializerName : "JsonGeometrySerializer"
+						othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+							pluginClassName : "org.bimserver.geometry.json.JsonGeometrySerializerPlugin"
 						}, function(serializer) {
 							othis.loadGeometry(othis.currentAction.roid, serializer.oid);
 						});
@@ -1788,8 +1788,8 @@ function BimSurfer() {
 			$.ajax(url).done(function(data) {
 				othis.loadScene(data);
 				othis.helpStatusClear();
-				othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-					serializerName : "JsonGeometrySerializer"
+				othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+					pluginClassName : "org.bimserver.geometry.json.JsonGeometrySerializerPlugin"
 				}, function(serializer) {
 					othis.typeDownloadQueue = othis.classNames.slice(0);
 
@@ -1811,8 +1811,8 @@ function BimSurfer() {
 		othis.currentAction = {
 			roid : roid
 		};
-		othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-			serializerName : "SceneJsShellSerializer"
+		othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+			pluginClassName : "org.bimserver.geometry.jsonshell.SceneJsShellSerializerPlugin"
 		}, function(serializer) {
 			othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandler, function() {
 				othis.bimServerApi.call("ServiceInterface", "download", {
@@ -1914,7 +1914,8 @@ function BimSurfer() {
 				serializerOid : serializerOid,
 				includeAllSubtypes : false,
 				useObjectIDM : false,
-				sync : false
+				sync : false,
+				deep: true
 			}, function(laid) {
 				othis.currentAction.serializerOid = serializerOid;
 				othis.currentAction.laid = laid;
