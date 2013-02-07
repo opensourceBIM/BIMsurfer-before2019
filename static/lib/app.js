@@ -12,7 +12,19 @@ function BimSurfer() {
 	var othis = this;
 	this.loggingEnabled = true;
 	this.bimServerApi = null;
-	this.classNames = [ "IfcSite", "IfcColumn", "IfcStair", "IfcSlab", "IfcWindow", "IfcDoor", "IfcBuildingElementProxy", "IfcWallStandardCase", "IfcWall", "IfcBeam", "IfcRoof" ];
+	this.classNames = [ 
+       "IfcSite", 
+       "IfcColumn", 
+       "IfcStair", 
+       "IfcSlab", 
+       "IfcWindow", 
+       "IfcDoor", 
+       "IfcBuildingElementProxy", 
+       "IfcWallStandardCase", 
+       "IfcWall", 
+       "IfcBeam", 
+       "IfcRoof"
+	];
 	this.loadedTypes = [];
 
 	this.canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
@@ -1733,28 +1745,6 @@ function BimSurfer() {
 		return (SceneJS.FX.TweenSpline(othis.scene.findNode('main-lookAt'))).sequence(othis.snapshots.lookAts);
 	};
 
-	this.loadBimServerModelOld = function(roid) {
-		othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-			serializerName : "StreamingSceneJS"
-		}, function(serializer) {
-			othis.bimServerApi.call("ServiceInterface", "download", {
-				roid : roid,
-				serializerOid : serializer.oid,
-				showOwn : true,
-				sync : true
-			}, function(laid) {
-				var url = othis.bimServerApi.generateRevisionDownloadUrl({
-					serializerOid : serializer.oid,
-					laid : laid
-				});
-				$.getJSON(url, function(data) {
-					othis.loadScene(data);
-					othis.helpStatusClear();
-				});
-			});
-		});
-	};
-
 	// http://stackoverflow.com/questions/1885557/simplest-code-for-array-intersection-in-javascript	
 	this.intersect_safe = function(a, b)
 	{
@@ -1783,7 +1773,8 @@ function BimSurfer() {
 				laid : othis.currentAction.laid
 			});
 			$(".loadingdiv .text").html("Downloading BIM model");
-			$(".loadingdiv .progress").addClass("progress-striped").addClass("active");
+			$(".loadingdiv .progress").remove();
+			$(".loadingdiv").append("<div class=\"progress progress-striped active\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
 			$(".loadingdiv .progress .bar").css("width", "100%");
 			$.ajax(url).done(function(data) {
 				othis.loadScene(data);
@@ -1793,16 +1784,19 @@ function BimSurfer() {
 				}, function(serializer) {
 					othis.typeDownloadQueue = othis.classNames.slice(0);
 
-					// Remove the types are not there anyways
+					// Remove the types that are not there anyways
 					othis.typeDownloadQueue.sort();
 					data.data.ifcTypes.sort();
 					othis.typeDownloadQueue = othis.intersect_safe(othis.typeDownloadQueue, data.data.ifcTypes);
 					
 					othis.loadGeometry(othis.currentAction.roid, serializer.oid);
+					othis.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: othis.currentAction.laid}, function(){});
 				});
 			});
 		} else {
-			$(".loadingdiv .progress .bar").css("width", state.progress + "%");
+			if (state.progress != -1) {
+				$(".loadingdiv .progress .bar").css("width", state.progress + "%");
+			}
 		}
 	};
 
@@ -1892,6 +1886,7 @@ function BimSurfer() {
 				});
 				othis.scene.findNode("main-renderer").add("node", typeNode);
 				$("#layer-" + othis.currentAction.className.toLowerCase()).attr("checked", "checked");
+				othis.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: othis.currentAction.laid}, function(){});
 			});
 		}
 	};
