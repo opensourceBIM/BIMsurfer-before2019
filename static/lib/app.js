@@ -432,7 +432,8 @@ function BimSurfer() {
 		selectedObj : 'emtpy Selection',
 		mouseRotate : 0,
 		oldZoom : 15,
-		boundfactor : 0
+		boundfactor : 0,
+		autoLoadPath : ""
 	};
 	othis.lookAt = {
 		defaultParameters : {
@@ -2120,6 +2121,16 @@ function BimSurfer() {
 			return void 0;
 		}
 	};
+	
+	//window.fileImport = function(file) {		//use this for call from GWT
+	this.fileImport = function(file) {
+		var ret = $.getJSON(file, function(json) {
+			othis.loadScene(json);
+		});
+		if (ret.readyState == 0){
+			console.log("File: .../" + file + " not found!");
+		}
+	}
 
 	this.registerDOMEvents = function() {
 		($(othis.viewport.domElement)).mousedown(othis.mouseDown);
@@ -2430,6 +2441,20 @@ function BimSurfer() {
 	
 	if ((othis.queryArgs.model != null) && othis.queryArgs.format === 'scenejson') {
 		return othis.initLoadModel(othis.queryArgs.model);
+	}
+	
+	//Hardcoded Path for autoload
+	//othis.propertyValues.autoLoadPath = "models/Haus.json";
+	
+	//start Autoload-Action from GWT
+	//GWT: window.callbackImportObject();
+	
+	//if there is a string set, load Model
+	if (othis.propertyValues.autoLoadPath == ""){
+		console.log("No Model for Autoload");
+	}else{
+		console.log("Autoload Model   .../" + othis.propertyValues.autoLoadPath);
+		othis.fileImport(othis.propertyValues.autoLoadPath);
 	}
 }
 new BimSurfer();
