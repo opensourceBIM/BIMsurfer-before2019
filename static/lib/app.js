@@ -12,7 +12,19 @@ function BimSurfer() {
 	var othis = this;
 	this.loggingEnabled = true;
 	this.bimServerApi = null;
-	this.classNames = [ "IfcSite", "IfcColumn", "IfcStair", "IfcSlab", "IfcWindow", "IfcDoor", "IfcBuildingElementProxy", "IfcWallStandardCase", "IfcWall", "IfcBeam", "IfcRoof" ];
+	this.classNames = [ 
+       "IfcSite", 
+       "IfcColumn", 
+       "IfcStair", 
+       "IfcSlab", 
+       "IfcWindow", 
+       "IfcDoor", 
+       "IfcBuildingElementProxy", 
+       "IfcWallStandardCase", 
+       "IfcWall", 
+       "IfcBeam", 
+       "IfcRoof"
+	];
 	this.loadedTypes = [];
 
 	this.canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
@@ -420,7 +432,8 @@ function BimSurfer() {
 		selectedObj : 'emtpy Selection',
 		mouseRotate : 0,
 		oldZoom : 15,
-		boundfactor : 0
+		boundfactor : 0,
+		autoLoadPath : ""
 	};
 	othis.lookAt = {
 		defaultParameters : {
@@ -1733,28 +1746,6 @@ function BimSurfer() {
 		return (SceneJS.FX.TweenSpline(othis.scene.findNode('main-lookAt'))).sequence(othis.snapshots.lookAts);
 	};
 
-	this.loadBimServerModelOld = function(roid) {
-		othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-			serializerName : "StreamingSceneJS"
-		}, function(serializer) {
-			othis.bimServerApi.call("ServiceInterface", "download", {
-				roid : roid,
-				serializerOid : serializer.oid,
-				showOwn : true,
-				sync : true
-			}, function(laid) {
-				var url = othis.bimServerApi.generateRevisionDownloadUrl({
-					serializerOid : serializer.oid,
-					laid : laid
-				});
-				$.getJSON(url, function(data) {
-					othis.loadScene(data);
-					othis.helpStatusClear();
-				});
-			});
-		});
-	};
-
 	// http://stackoverflow.com/questions/1885557/simplest-code-for-array-intersection-in-javascript	
 	this.intersect_safe = function(a, b)
 	{
@@ -1783,7 +1774,8 @@ function BimSurfer() {
 				laid : othis.currentAction.laid
 			});
 			$(".loadingdiv .text").html("Downloading BIM model");
-			$(".loadingdiv .progress").addClass("progress-striped").addClass("active");
+			$(".loadingdiv .progress").remove();
+			$(".loadingdiv").append("<div class=\"progress progress-striped active\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
 			$(".loadingdiv .progress .bar").css("width", "100%");
 			$.ajax(url).done(function(data) {
 				othis.loadScene(data);
@@ -1793,16 +1785,19 @@ function BimSurfer() {
 				}, function(serializer) {
 					othis.typeDownloadQueue = othis.classNames.slice(0);
 
-					// Remove the types are not there anyways
+					// Remove the types that are not there anyways
 					othis.typeDownloadQueue.sort();
 					data.data.ifcTypes.sort();
 					othis.typeDownloadQueue = othis.intersect_safe(othis.typeDownloadQueue, data.data.ifcTypes);
 					
 					othis.loadGeometry(othis.currentAction.roid, serializer.oid);
+					othis.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: othis.currentAction.laid}, function(){});
 				});
 			});
 		} else {
-			$(".loadingdiv .progress .bar").css("width", state.progress + "%");
+			if (state.progress != -1) {
+				$(".loadingdiv .progress .bar").css("width", state.progress + "%");
+			}
 		}
 	};
 
@@ -1892,6 +1887,7 @@ function BimSurfer() {
 				});
 				othis.scene.findNode("main-renderer").add("node", typeNode);
 				$("#layer-" + othis.currentAction.className.toLowerCase()).attr("checked", "checked");
+				othis.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: othis.currentAction.laid}, function(){});
 			});
 		}
 	};
@@ -2125,6 +2121,16 @@ function BimSurfer() {
 			return void 0;
 		}
 	};
+	
+	//window.fileImport = function(file) {		//use this for call from GWT
+	this.fileImport = function(file) {
+		var ret = $.getJSON(file, function(json) {
+			othis.loadScene(json);
+		});
+		if (ret.readyState == 0){
+			console.log("File: .../" + file + " not found!");
+		}
+	}
 
 	this.registerDOMEvents = function() {
 		($(othis.viewport.domElement)).mousedown(othis.mouseDown);
@@ -2435,6 +2441,20 @@ function BimSurfer() {
 	
 	if ((othis.queryArgs.model != null) && othis.queryArgs.format === 'scenejson') {
 		return othis.initLoadModel(othis.queryArgs.model);
+	}
+	
+	//Hardcoded Path for autoload
+	//othis.propertyValues.autoLoadPath = "models/Haus.json";
+	
+	//start Autoload-Action from GWT
+	//GWT: window.callbackImportObject();
+	
+	//if there is a string set, load Model
+	if (othis.propertyValues.autoLoadPath == ""){
+		console.log("No Model for Autoload");
+	}else{
+		console.log("Autoload Model   .../" + othis.propertyValues.autoLoadPath);
+		othis.fileImport(othis.propertyValues.autoLoadPath);
 	}
 }
 new BimSurfer();
