@@ -1768,7 +1768,7 @@ function BimSurfer() {
 	
 	this.progressHandler = function(topicId, state) {
 		if (state.state == "FINISHED") {
-			othis.bimServerApi.unregister(othis.progressHandler);
+			othis.bimServerApi.unregisterProgressHandler(othis.currentAction.laid, othis.progressHandler);
 			var url = othis.bimServerApi.generateRevisionDownloadUrl({
 				serializerOid : othis.currentAction.serializerOid,
 				laid : othis.currentAction.laid
@@ -1791,7 +1791,6 @@ function BimSurfer() {
 					othis.typeDownloadQueue = othis.intersect_safe(othis.typeDownloadQueue, data.data.ifcTypes);
 					
 					othis.loadGeometry(othis.currentAction.roid, serializer.oid);
-					othis.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: othis.currentAction.laid}, function(){});
 				});
 			});
 		} else {
@@ -1809,22 +1808,21 @@ function BimSurfer() {
 		othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
 			pluginClassName : "org.bimserver.geometry.jsonshell.SceneJsShellSerializerPlugin"
 		}, function(serializer) {
-			othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandler, function() {
-				othis.bimServerApi.call("ServiceInterface", "download", {
-					roid : roid,
-					serializerOid : serializer.oid,
-					showOwn : true,
-					sync : false
-				}, function(laid) {
-					$(".loadingdiv").hide();
-					$(".loadingdiv .text").html("Loading BIM model");
-					$(".loadingdiv .progress").remove();
-					$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
-					$(".loadingdiv").fadeIn(500);
-					othis.currentAction.serializerOid = serializer.oid;
-					othis.currentAction.laid = laid;
-					othis.currentAction.roid = roid;
-				});
+			othis.bimServerApi.call("ServiceInterface", "download", {
+				roid : roid,
+				serializerOid : serializer.oid,
+				showOwn : true,
+				sync : false
+			}, function(laid) {
+				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler);
+				$(".loadingdiv").hide();
+				$(".loadingdiv .text").html("Loading BIM model");
+				$(".loadingdiv .progress").remove();
+				$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
+				$(".loadingdiv").fadeIn(500);
+				othis.currentAction.serializerOid = serializer.oid;
+				othis.currentAction.laid = laid;
+				othis.currentAction.roid = roid;
 			});
 		});
 	};
@@ -1832,7 +1830,7 @@ function BimSurfer() {
 	this.progressHandlerType = function(topicId, state) {
 		$(".loadingdiv .progress .bar").css("width", state.progress + "%");
 		if (state.state == "FINISHED") {
-			othis.bimServerApi.unregister(othis.progressHandlerType);
+			othis.bimServerApi.unregisterProgressHandler(othis.currentAction.laid, othis.progressHandlerType);
 			var url = othis.bimServerApi.generateRevisionDownloadUrl({
 				serializerOid : othis.currentAction.serializerOid,
 				laid : othis.currentAction.laid
@@ -1887,7 +1885,6 @@ function BimSurfer() {
 				});
 				othis.scene.findNode("main-renderer").add("node", typeNode);
 				$("#layer-" + othis.currentAction.className.toLowerCase()).attr("checked", "checked");
-				othis.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: othis.currentAction.laid}, function(){});
 			});
 		}
 	};
@@ -1903,21 +1900,20 @@ function BimSurfer() {
 		$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
 		$(".loadingdiv").show();
 		othis.typeDownloadQueue = othis.typeDownloadQueue.slice(1);
-		othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandlerType, function() {
-			othis.bimServerApi.call("ServiceInterface", "downloadByTypes", {
-				roids : [ roid ],
-				classNames : [ className ],
-				serializerOid : serializerOid,
-				includeAllSubtypes : false,
-				useObjectIDM : false,
-				sync : false,
-				deep: true
-			}, function(laid) {
-				othis.currentAction.serializerOid = serializerOid;
-				othis.currentAction.laid = laid;
-				othis.currentAction.roid = roid;
-				othis.currentAction.className = className;
-			});
+		othis.bimServerApi.call("ServiceInterface", "downloadByTypes", {
+			roids : [ roid ],
+			classNames : [ className ],
+			serializerOid : serializerOid,
+			includeAllSubtypes : false,
+			useObjectIDM : false,
+			sync : false,
+			deep: true
+		}, function(laid) {
+			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType);
+			othis.currentAction.serializerOid = serializerOid;
+			othis.currentAction.laid = laid;
+			othis.currentAction.roid = roid;
+			othis.currentAction.className = className;
 		});
 	};
 
