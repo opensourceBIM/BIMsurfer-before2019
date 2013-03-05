@@ -12,7 +12,19 @@ function BimSurfer() {
 	var othis = this;
 	this.loggingEnabled = true;
 	this.bimServerApi = null;
-	this.classNames = [ "IfcSite", "IfcColumn", "IfcStair", "IfcSlab", "IfcWindow", "IfcDoor", "IfcBuildingElementProxy", "IfcWallStandardCase", "IfcWall", "IfcBeam", "IfcRoof" ];
+	this.classNames = [ 
+       "IfcSite", 
+       "IfcColumn", 
+       "IfcStair", 
+       "IfcSlab", 
+       "IfcWindow", 
+       "IfcDoor", 
+       "IfcBuildingElementProxy", 
+       "IfcWallStandardCase", 
+       "IfcWall", 
+       "IfcBeam", 
+       "IfcRoof"
+	];
 	this.loadedTypes = [];
 
 	this.canvasCaptureThumbnail = function(srcCanvas, srcWidth, srcHeight, destWidth, destHeight) {
@@ -420,7 +432,8 @@ function BimSurfer() {
 		selectedObj : 'emtpy Selection',
 		mouseRotate : 0,
 		oldZoom : 15,
-		boundfactor : 0
+		boundfactor : 0,
+		autoLoadPath : ""
 	};
 	othis.lookAt = {
 		defaultParameters : {
@@ -1616,8 +1629,8 @@ function BimSurfer() {
 				if (othis.constants.loadingType.loadFromBimserver == 1){
 					if (othis.loadedTypes.indexOf($(el).attr("className")) == -1) {
 						othis.typeDownloadQueue = [ $(el).attr("className") ];
-						othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-							serializerName : "JsonGeometrySerializer"
+						othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+							pluginClassName : "org.bimserver.geometry.json.JsonGeometrySerializerPlugin"
 						}, function(serializer) {
 							othis.loadGeometry(othis.currentAction.roid, serializer.oid);
 						});
@@ -1750,28 +1763,6 @@ function BimSurfer() {
 		return (SceneJS.FX.TweenSpline(othis.scene.findNode('main-lookAt'))).sequence(othis.snapshots.lookAts);
 	};
 
-	this.loadBimServerModelOld = function(roid) {
-		othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-			serializerName : "StreamingSceneJS"
-		}, function(serializer) {
-			othis.bimServerApi.call("ServiceInterface", "download", {
-				roid : roid,
-				serializerOid : serializer.oid,
-				showOwn : true,
-				sync : true
-			}, function(laid) {
-				var url = othis.bimServerApi.generateRevisionDownloadUrl({
-					serializerOid : serializer.oid,
-					laid : laid
-				});
-				$.getJSON(url, function(data) {
-					othis.loadScene(data);
-					othis.helpStatusClear();
-				});
-			});
-		});
-	};
-
 	// http://stackoverflow.com/questions/1885557/simplest-code-for-array-intersection-in-javascript	
 	this.intersect_safe = function(a, b)
 	{
@@ -1794,23 +1785,24 @@ function BimSurfer() {
 	
 	this.progressHandler = function(topicId, state) {
 		if (state.state == "FINISHED") {
-			othis.bimServerApi.unregister(othis.progressHandler);
+			othis.bimServerApi.unregisterProgressHandler(othis.currentAction.laid, othis.progressHandler);
 			var url = othis.bimServerApi.generateRevisionDownloadUrl({
 				serializerOid : othis.currentAction.serializerOid,
 				laid : othis.currentAction.laid
 			});
 			$(".loadingdiv .text").html("Downloading BIM model");
-			$(".loadingdiv .progress").addClass("progress-striped").addClass("active");
+			$(".loadingdiv .progress").remove();
+			$(".loadingdiv").append("<div class=\"progress progress-striped active\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
 			$(".loadingdiv .progress .bar").css("width", "100%");
 			$.ajax(url).done(function(data) {
 				othis.loadScene(data);
 				othis.helpStatusClear();
-				othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-					serializerName : "JsonGeometrySerializer"
+				othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+					pluginClassName : "org.bimserver.geometry.json.JsonGeometrySerializerPlugin"
 				}, function(serializer) {
 					othis.typeDownloadQueue = othis.classNames.slice(0);
 
-					// Remove the types are not there anyways
+					// Remove the types that are not there anyways
 					othis.typeDownloadQueue.sort();
 					data.data.ifcTypes.sort();
 					othis.typeDownloadQueue = othis.intersect_safe(othis.typeDownloadQueue, data.data.ifcTypes);
@@ -1819,7 +1811,9 @@ function BimSurfer() {
 				});
 			});
 		} else {
-			$(".loadingdiv .progress .bar").css("width", state.progress + "%");
+			if (state.progress != -1) {
+				$(".loadingdiv .progress .bar").css("width", state.progress + "%");
+			}
 		}
 	};
 
@@ -1828,25 +1822,24 @@ function BimSurfer() {
 		othis.currentAction = {
 			roid : roid
 		};
-		othis.bimServerApi.call("ServiceInterface", "getSerializerByName", {
-			serializerName : "SceneJsShellSerializer"
+		othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+			pluginClassName : "org.bimserver.geometry.jsonshell.SceneJsShellSerializerPlugin"
 		}, function(serializer) {
-			othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandler, function() {
-				othis.bimServerApi.call("ServiceInterface", "download", {
-					roid : roid,
-					serializerOid : serializer.oid,
-					showOwn : true,
-					sync : false
-				}, function(laid) {
-					$(".loadingdiv").hide();
-					$(".loadingdiv .text").html("Loading BIM model");
-					$(".loadingdiv .progress").remove();
-					$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
-					$(".loadingdiv").fadeIn(500);
-					othis.currentAction.serializerOid = serializer.oid;
-					othis.currentAction.laid = laid;
-					othis.currentAction.roid = roid;
-				});
+			othis.bimServerApi.call("ServiceInterface", "download", {
+				roid : roid,
+				serializerOid : serializer.oid,
+				showOwn : true,
+				sync : false
+			}, function(laid) {
+				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler);
+				$(".loadingdiv").hide();
+				$(".loadingdiv .text").html("Loading BIM model");
+				$(".loadingdiv .progress").remove();
+				$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
+				$(".loadingdiv").fadeIn(500);
+				othis.currentAction.serializerOid = serializer.oid;
+				othis.currentAction.laid = laid;
+				othis.currentAction.roid = roid;
 			});
 		});
 	};
@@ -1854,7 +1847,7 @@ function BimSurfer() {
 	this.progressHandlerType = function(topicId, state) {
 		$(".loadingdiv .progress .bar").css("width", state.progress + "%");
 		if (state.state == "FINISHED") {
-			othis.bimServerApi.unregister(othis.progressHandlerType);
+			othis.bimServerApi.unregisterProgressHandler(othis.currentAction.laid, othis.progressHandlerType);
 			var url = othis.bimServerApi.generateRevisionDownloadUrl({
 				serializerOid : othis.currentAction.serializerOid,
 				laid : othis.currentAction.laid
@@ -1924,20 +1917,20 @@ function BimSurfer() {
 		$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
 		$(".loadingdiv").show();
 		othis.typeDownloadQueue = othis.typeDownloadQueue.slice(1);
-		othis.bimServerApi.register("NotificationInterface", "progress", othis.progressHandlerType, function() {
-			othis.bimServerApi.call("ServiceInterface", "downloadByTypes", {
-				roids : [ roid ],
-				classNames : [ className ],
-				serializerOid : serializerOid,
-				includeAllSubtypes : false,
-				useObjectIDM : false,
-				sync : false
-			}, function(laid) {
-				othis.currentAction.serializerOid = serializerOid;
-				othis.currentAction.laid = laid;
-				othis.currentAction.roid = roid;
-				othis.currentAction.className = className;
-			});
+		othis.bimServerApi.call("ServiceInterface", "downloadByTypes", {
+			roids : [ roid ],
+			classNames : [ className ],
+			serializerOid : serializerOid,
+			includeAllSubtypes : false,
+			useObjectIDM : false,
+			sync : false,
+			deep: true
+		}, function(laid) {
+			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType);
+			othis.currentAction.serializerOid = serializerOid;
+			othis.currentAction.laid = laid;
+			othis.currentAction.roid = roid;
+			othis.currentAction.className = className;
 		});
 	};
 
@@ -2140,6 +2133,16 @@ function BimSurfer() {
 			return void 0;
 		}
 	};
+	
+	//window.fileImport = function(file) {		//use this for call from GWT
+	this.fileImport = function(file) {
+		var ret = $.getJSON(file, function(json) {
+			othis.loadScene(json);
+		});
+		if (ret.readyState == 0){
+			console.log("File: .../" + file + " not found!");
+		}
+	}
 
 	this.registerDOMEvents = function() {
 		($(othis.viewport.domElement)).mousedown(othis.mouseDown);
@@ -2434,8 +2437,36 @@ function BimSurfer() {
 	othis.registerDOMEvents();
 	othis.registerControlEvents();
 	othis.application.initialized = true;
+	
+	if (othis.queryArgs.token != null) {
+		var timeoutId; // timeout id is a global variable
+		timeoutId = window.setTimeout(function() {
+			othis.log("Could not connect");
+		}, 3000);
+		$.getScript(othis.queryArgs.server + "/js/bimserverapi.js").done(function(script, textStatus) {
+			window.clearTimeout(timeoutId);
+			othis.bimServerApi = new BimServerApi(othis.queryArgs.server);
+			othis.bimServerApi.setToken(othis.queryArgs.token);
+			othis.loadBimServerModelNew(othis.queryArgs.roid);
+		});
+	}
+	
 	if ((othis.queryArgs.model != null) && othis.queryArgs.format === 'scenejson') {
 		return othis.initLoadModel(othis.queryArgs.model);
+	}
+	
+	//Hardcoded Path for autoload
+	//othis.propertyValues.autoLoadPath = "models/Haus.json";
+	
+	//start Autoload-Action from GWT
+	//GWT: window.callbackImportObject();
+	
+	//if there is a string set, load Model
+	if (othis.propertyValues.autoLoadPath == ""){
+		console.log("No Model for Autoload");
+	}else{
+		console.log("Autoload Model   .../" + othis.propertyValues.autoLoadPath);
+		othis.fileImport(othis.propertyValues.autoLoadPath);
 	}
 }
 new BimSurfer();
