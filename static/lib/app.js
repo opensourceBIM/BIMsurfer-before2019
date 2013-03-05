@@ -2361,6 +2361,8 @@ function BimSurfer() {
 		if (othis.scene != null) {
 			othis.scene.destroy();
 			othis.scene = null;
+			($('#expose')).slider("value",0);
+			($('#transparent')).slider("value",0);
 		}
 		try {
 			othis.log('Create scene...');
