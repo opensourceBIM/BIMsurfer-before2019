@@ -1043,27 +1043,44 @@ function BimSurfer() {
 		// one transparent
 		if ($('.controls-tree-selected').find(".controls-tree-postfix").text() != "") {
 			var storeyElements = othis.getSelectedStoreyWalls();
-			for ( var i = 0; i < storeyElements.size(); i++) {
-				if ($(storeyElements[i]).find(".controls-tree-postfix").text() == "(WallStandardCase)") {
-					var nodeId = ($(storeyElements[i])).attr("id");
-					othis.insertTransparentNodes(othis.scene.findNode(nodeId), factor);
+			var numStoreyElements = storeyElements.size();
+			if(numStoreyElements > 0) {
+				for ( var i = 0; i < numStoreyElements; i++) {
+					if ($(storeyElements[i]).find(".controls-tree-postfix").text() == "(WallStandardCase)") {
+						var nodeId = ($(storeyElements[i])).attr("id");
+						othis.insertTransparentNodes(othis.scene.findNode(nodeId), factor);
+					}
 				}
+			}
+			else {
+				othis.setAllWallsTransparent(factor);
 			}
 		}
 
 		// if no element is selected, make all elements of WallStandardCase
 		// transparent
 		else {
-			var sceneData = othis.scene.data();
-			var index = sceneData.ifcTypes.indexOf('WallStandardCase');
-			var wallCase = sceneData.ifcTypes[index];
-			var wallNode = othis.scene.findNode(wallCase.toLowerCase());
+			othis.setAllWallsTransparent(factor);
+		}
+	};
+	
+	
+	this.setAllWallsTransparent = function(factor) {
+	
+		var sceneData = othis.scene.data();
+		var index = sceneData.ifcTypes.indexOf('WallStandardCase');
+		var wallCase = sceneData.ifcTypes[index];
+		var wallNode = othis.scene.findNode(wallCase.toLowerCase());
 
-			// also set the roof transparent
-			var roofIndex = sceneData.ifcTypes.indexOf('Roof');
-			var roof = sceneData.ifcTypes[roofIndex];
-			var roofNode = othis.scene.findNode(roof.toLowerCase());
-
+		// also set the roof transparent
+		var roofIndex = sceneData.ifcTypes.indexOf('Roof');
+		var roof = sceneData.ifcTypes[roofIndex];
+		var roofNode;
+		
+		if(roof != null) {
+			roofNode = othis.scene.findNode(roof.toLowerCase());
+		}
+		if(wallNode != null) {
 			wallNode.eachNode(function() {
 				if (this.get('type') === 'name')
 					othis.insertTransparentNodes(this, factor);
@@ -1071,7 +1088,8 @@ function BimSurfer() {
 				depthFirst : true
 			// Descend depth-first into tree
 			});
-
+		}
+		if(roofNode != null) {
 			roofNode.eachNode(function() {
 				if (this.get('type') === 'name')
 					othis.insertTransparentNodes(this, factor);
@@ -1079,8 +1097,8 @@ function BimSurfer() {
 				depthFirst : true
 			// Descend depth-first into tree
 			});
-		}
-	};
+		};
+	}
 
 	/**
 	 * Method to insert transparent material nodes.
