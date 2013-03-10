@@ -23,6 +23,7 @@ function BimSurfer() {
        "IfcWallStandardCase", 
        "IfcWall", 
        "IfcBeam", 
+       "IfcRailing",
        "IfcRoof"
 	];
 	this.loadedTypes = [];
@@ -1832,6 +1833,9 @@ function BimSurfer() {
 				sync : false
 			}, function(laid) {
 				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler);
+				othis.bimServerApi.call("ServiceInterface", "getProgress", {topicId: laid}, function(state){
+					othis.progressHandler(null, state);
+				});
 				$(".loadingdiv").hide();
 				$(".loadingdiv .text").html("Loading BIM model");
 				$(".loadingdiv .progress").remove();
@@ -1865,28 +1869,48 @@ function BimSurfer() {
 				var library = othis.scene.findNode("library");
 				var bounds = othis.scene.data().bounds2;
 				data.geometry.forEach(function(geometry) {
-					for ( var i = 0; i < geometry.positions.length; i += 3) {
-						geometry.positions[i] = geometry.positions[i] - bounds[0];
-						geometry.positions[i + 1] = geometry.positions[i + 1] - bounds[1];
-						geometry.positions[i + 2] = geometry.positions[i + 2] - bounds[2];
-					}
-					geometry.indices = [];
-					for ( var i = 0; i < geometry.nrindices; i++) {
-						geometry.indices.push(i);
-					}
-					library.add("node", geometry);
 					var material = {
 						type : "material",
 						coreId : geometry.material + "Material",
 						nodes : [ {
 							id : geometry.coreId,
 							type : "name",
-							nodes : [ {
-								type : "geometry",
-								coreId : geometry.coreId
-							} ]
+							nodes : [  ]
 						} ]
 					};
+					if (geometry.nodes != null) {
+						geometry.nodes.forEach(function(node){
+							for (var i = 0; i < node.positions.length; i += 3) {
+								node.positions[i] = node.positions[i] - bounds[0];
+								node.positions[i + 1] = node.positions[i + 1] - bounds[1];
+								node.positions[i + 2] = node.positions[i + 2] - bounds[2];
+							}
+							node.indices = [];
+							for (var i = 0; i < node.nrindices; i++) {
+								node.indices.push(i);
+							}
+							library.add("node", node);
+							material.nodes[0].nodes.push({
+								type: "geometry",
+								coreId: node.coreId
+							});
+						});
+					} else {
+						for (var i = 0; i < geometry.positions.length; i += 3) {
+							geometry.positions[i] = geometry.positions[i] - bounds[0];
+							geometry.positions[i + 1] = geometry.positions[i + 1] - bounds[1];
+							geometry.positions[i + 2] = geometry.positions[i + 2] - bounds[2];
+						}
+						geometry.indices = [];
+						for (var i = 0; i < geometry.nrindices; i++) {
+							geometry.indices.push(i);
+						}
+						library.add("node", geometry);
+						material.nodes[0].nodes.push({
+							type: "geometry",
+							coreId: geometry.coreId
+						});
+					}
 					if (geometry.material == "IfcWindow") {
 						var flags = {
 							type : "flags",
@@ -1927,6 +1951,9 @@ function BimSurfer() {
 			deep: true
 		}, function(laid) {
 			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType);
+			othis.bimServerApi.call("ServiceInterface", "getProgress", {topicId: laid}, function(state){
+				othis.progressHandlerType(null, state);
+			});
 			othis.currentAction.serializerOid = serializerOid;
 			othis.currentAction.laid = laid;
 			othis.currentAction.roid = roid;
