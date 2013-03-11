@@ -24,6 +24,7 @@ function BimSurfer() {
        "IfcWall", 
        "IfcBeam", 
        "IfcRailing",
+       "IfcProxy",
        "IfcRoof"
 	];
 	this.loadedTypes = [];
@@ -1880,36 +1881,40 @@ function BimSurfer() {
 					};
 					if (geometry.nodes != null) {
 						geometry.nodes.forEach(function(node){
-							for (var i = 0; i < node.positions.length; i += 3) {
-								node.positions[i] = node.positions[i] - bounds[0];
-								node.positions[i + 1] = node.positions[i + 1] - bounds[1];
-								node.positions[i + 2] = node.positions[i + 2] - bounds[2];
+							if (node.positions != null) {
+								for (var i = 0; i < node.positions.length; i += 3) {
+									node.positions[i] = node.positions[i] - bounds[0];
+									node.positions[i + 1] = node.positions[i + 1] - bounds[1];
+									node.positions[i + 2] = node.positions[i + 2] - bounds[2];
+								}
+								node.indices = [];
+								for (var i = 0; i < node.nrindices; i++) {
+									node.indices.push(i);
+								}
+								library.add("node", node);
+								material.nodes[0].nodes.push({
+									type: "geometry",
+									coreId: node.coreId
+								});
 							}
-							node.indices = [];
-							for (var i = 0; i < node.nrindices; i++) {
-								node.indices.push(i);
-							}
-							library.add("node", node);
-							material.nodes[0].nodes.push({
-								type: "geometry",
-								coreId: node.coreId
-							});
 						});
 					} else {
-						for (var i = 0; i < geometry.positions.length; i += 3) {
-							geometry.positions[i] = geometry.positions[i] - bounds[0];
-							geometry.positions[i + 1] = geometry.positions[i + 1] - bounds[1];
-							geometry.positions[i + 2] = geometry.positions[i + 2] - bounds[2];
+						if (geometry.positions != null) {
+							for (var i = 0; i < geometry.positions.length; i += 3) {
+								geometry.positions[i] = geometry.positions[i] - bounds[0];
+								geometry.positions[i + 1] = geometry.positions[i + 1] - bounds[1];
+								geometry.positions[i + 2] = geometry.positions[i + 2] - bounds[2];
+							}
+							geometry.indices = [];
+							for (var i = 0; i < geometry.nrindices; i++) {
+								geometry.indices.push(i);
+							}
+							library.add("node", geometry);
+							material.nodes[0].nodes.push({
+								type: "geometry",
+								coreId: geometry.coreId
+							});
 						}
-						geometry.indices = [];
-						for (var i = 0; i < geometry.nrindices; i++) {
-							geometry.indices.push(i);
-						}
-						library.add("node", geometry);
-						material.nodes[0].nodes.push({
-							type: "geometry",
-							coreId: geometry.coreId
-						});
 					}
 					if (geometry.material == "IfcWindow") {
 						var flags = {
