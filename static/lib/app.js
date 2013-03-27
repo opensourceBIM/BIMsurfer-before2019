@@ -1631,7 +1631,7 @@ function BimSurfer() {
 				if (othis.constants.loadingType.loadFromBimserver == 1){
 					if (othis.loadedTypes.indexOf($(el).attr("className")) == -1) {
 						othis.typeDownloadQueue = [ $(el).attr("className") ];
-						othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+						othis.bimServerApi.call("PluginInterface", "getSerializerByPluginClassName", {
 							pluginClassName : "org.bimserver.geometry.json.JsonGeometrySerializerPlugin"
 						}, function(serializer) {
 							othis.loadGeometry(othis.currentAction.roid, serializer.oid);
@@ -1799,7 +1799,7 @@ function BimSurfer() {
 			$.ajax(url).done(function(data) {
 				othis.loadScene(data);
 				othis.helpStatusClear();
-				othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+				othis.bimServerApi.call("PluginInterface", "getSerializerByPluginClassName", {
 					pluginClassName : "org.bimserver.geometry.json.JsonGeometrySerializerPlugin"
 				}, function(serializer) {
 					othis.typeDownloadQueue = othis.classNames.slice(0);
@@ -1824,7 +1824,7 @@ function BimSurfer() {
 		othis.currentAction = {
 			roid : roid
 		};
-		othis.bimServerApi.call("ServiceInterface", "getSerializerByPluginClassName", {
+		othis.bimServerApi.call("PluginInterface", "getSerializerByPluginClassName", {
 			pluginClassName : "org.bimserver.geometry.jsonshell.SceneJsShellSerializerPlugin"
 		}, function(serializer) {
 			othis.bimServerApi.call("ServiceInterface", "download", {
@@ -1834,7 +1834,7 @@ function BimSurfer() {
 				sync : false
 			}, function(laid) {
 				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler);
-				othis.bimServerApi.call("ServiceInterface", "getProgress", {topicId: laid}, function(state){
+				othis.bimServerApi.call("RegistryInterface", "getProgress", {topicId: laid}, function(state){
 					othis.progressHandler(null, state);
 				});
 				$(".loadingdiv").hide();
@@ -1956,7 +1956,7 @@ function BimSurfer() {
 			deep: true
 		}, function(laid) {
 			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType);
-			othis.bimServerApi.call("ServiceInterface", "getProgress", {topicId: laid}, function(state){
+			othis.bimServerApi.call("RegistryInterface", "getProgress", {topicId: laid}, function(state){
 				othis.progressHandlerType(null, state);
 			});
 			othis.currentAction.serializerOid = serializerOid;
