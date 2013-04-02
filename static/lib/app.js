@@ -12,8 +12,8 @@ function BimSurfer() {
 	var othis = this;
 	this.loggingEnabled = true;
 	this.bimServerApi = null;
+	this.mode = "none";
 	this.classNames = [ 
-       "IfcSite", 
        "IfcColumn", 
        "IfcStair", 
        "IfcSlab", 
@@ -1833,9 +1833,10 @@ function BimSurfer() {
 				showOwn : true,
 				sync : false
 			}, function(laid) {
-				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler);
-				othis.bimServerApi.call("RegistryInterface", "getProgress", {topicId: laid}, function(state){
-					othis.progressHandler(null, state);
+				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler, function(){
+					othis.bimServerApi.call("RegistryInterface", "getProgress", {topicId: laid}, function(state){
+						othis.progressHandler(null, state);
+					});
 				});
 				$(".loadingdiv").hide();
 				$(".loadingdiv .text").html("Loading BIM model");
@@ -1851,7 +1852,8 @@ function BimSurfer() {
 
 	this.progressHandlerType = function(topicId, state) {
 		$(".loadingdiv .progress .bar").css("width", state.progress + "%");
-		if (state.state == "FINISHED") {
+		if (state.state == "FINISHED" && othis.mode == "loading") {
+			othis.mode = "processing";
 			othis.bimServerApi.unregisterProgressHandler(othis.currentAction.laid, othis.progressHandlerType);
 			var url = othis.bimServerApi.generateRevisionDownloadUrl({
 				serializerOid : othis.currentAction.serializerOid,
@@ -1955,9 +1957,11 @@ function BimSurfer() {
 			sync : false,
 			deep: true
 		}, function(laid) {
-			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType);
-			othis.bimServerApi.call("RegistryInterface", "getProgress", {topicId: laid}, function(state){
-				othis.progressHandlerType(null, state);
+			othis.mode = "loading";
+			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType, function(){
+				othis.bimServerApi.call("RegistryInterface", "getProgress", {topicId: laid}, function(state){
+					othis.progressHandlerType(null, state);
+				});
 			});
 			othis.currentAction.serializerOid = serializerOid;
 			othis.currentAction.laid = laid;
