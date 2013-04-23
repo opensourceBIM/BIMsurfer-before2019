@@ -1,27 +1,17 @@
 package org.bimsurfer;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
 import org.bimserver.models.store.ObjectDefinition;
-import org.bimserver.plugins.PluginContext;
 import org.bimserver.plugins.PluginException;
 import org.bimserver.plugins.PluginManager;
-import org.bimserver.plugins.web.WebModulePlugin;
+import org.bimserver.plugins.web.AbstractWebModulePlugin;
 
-public class BimSurferWebModulePlugin implements WebModulePlugin {
+public class BimSurferWebModulePlugin extends AbstractWebModulePlugin {
 
 	private boolean initialized;
-	private PluginContext pluginContext;
 
 	@Override
 	public void init(PluginManager pluginManager) throws PluginException {
-		pluginContext = pluginManager.getPluginContext(this);
+		super.init(pluginManager);
 		initialized = true;
 	}
 
@@ -51,25 +41,7 @@ public class BimSurferWebModulePlugin implements WebModulePlugin {
 	}
 
 	@Override
-	public void service(HttpServletRequest request, HttpServletResponse response) {
-		try {
-			String path = request.getPathInfo();
-			if (path == null || path.equals("") || path.equals("/")) {
-				path = "index.html";
-			}
-			InputStream resourceAsInputStream = pluginContext.getResourceAsInputStream(path);
-			if (resourceAsInputStream != null) {
-				IOUtils.copy(resourceAsInputStream, response.getOutputStream());
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
 	public String getContextPath() {
-		return "/bimsurfer/*";
+		return "/bimsurfer";
 	}
 }

@@ -580,11 +580,13 @@ function BimSurfer() {
 
 	this.mouseMove = function(event) {
 		var delta, deltaLength, orbitAngles, panVector;
-
+		
 		delta = [ event.clientX - othis.viewport.mouse.last[0], event.clientY - othis.viewport.mouse.last[1] ];
 		
-		if (delta[0] == 0 || delta[1] == 0)
+		if (delta[0] == 0 && delta[1] == 0) {
 			return; // avoids disappearing
+		}
+		
 		// object
 		deltaLength = SceneJS_math_lenVec2(delta);
 		if (othis.viewport.mouse.leftDown) {
@@ -2007,11 +2009,9 @@ function BimSurfer() {
 				$.getScript($.cookie("address") + "/js/bimserverapi.js").done(function(script, textStatus) {
 					window.clearTimeout(timeoutId);
 					othis.bimServerApi = new BimServerApi($.cookie("address"));
-					othis.bimServerApi.autologin($.cookie("username"), $.cookie("autologin"), function() {
-						othis.bimserverImportDialogShowTab2();
-						othis.bimserverImportDialogRefresh();
-					}, function() {
-					});
+					othis.bimServerApi.token = $.cookie("autologin");
+					othis.bimserverImportDialogShowTab2();
+					othis.bimserverImportDialogRefresh();
 				})
 			} else {
 			}
