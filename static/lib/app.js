@@ -1831,14 +1831,14 @@ function BimSurfer() {
 		othis.bimServerApi.call("PluginInterface", "getSerializerByPluginClassName", {
 			pluginClassName : "org.bimserver.geometry.jsonshell.SceneJsShellSerializerPlugin"
 		}, function(serializer) {
-			othis.bimServerApi.call("ServiceInterface", "download", {
+			othis.bimServerApi.call("Bimsie1ServiceInterface", "download", {
 				roid : roid,
 				serializerOid : serializer.oid,
 				showOwn : true,
 				sync : false
 			}, function(laid) {
 				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler, function(){
-					othis.bimServerApi.call("RegistryInterface", "getProgress", {topicId: laid}, function(state){
+					othis.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {topicId: laid}, function(state){
 						othis.progressHandler(null, state);
 					});
 				});
@@ -1855,7 +1855,6 @@ function BimSurfer() {
 	};
 
 	this.progressHandlerType = function(topicId, state) {
-		console.log(state);
 		$(".loadingdiv .progress .bar").css("width", state.progress + "%");
 		if (state.state == "FINISHED" && othis.mode == "loading") {
 			othis.mode = "processing";
@@ -1953,7 +1952,7 @@ function BimSurfer() {
 		$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
 		$(".loadingdiv").show();
 		othis.typeDownloadQueue = othis.typeDownloadQueue.slice(1);
-		othis.bimServerApi.call("ServiceInterface", "downloadByTypes", {
+		othis.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
 			roids : [ roid ],
 			classNames : [ className ],
 			serializerOid : serializerOid,
@@ -1964,8 +1963,9 @@ function BimSurfer() {
 		}, function(laid) {
 			othis.mode = "loading";
 			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType, function(){
-				othis.bimServerApi.call("RegistryInterface", "getProgress", {topicId: laid}, function(state){
-					othis.progressHandlerType(null, state);
+				othis.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {topicId: laid}, function(state){
+					console.log(state);
+					othis.progressHandlerType(laid, state);
 				});
 			});
 			othis.currentAction.serializerOid = serializerOid;
