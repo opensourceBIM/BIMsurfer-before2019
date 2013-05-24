@@ -1409,15 +1409,17 @@ function BimSurfer() {
 		}
 		tableItemObject = function(keyStack, key, value) {
 			var html, k, _j, _len2;
-			html = "<a class='ifc-link' href='#";
-			if ((value.link != null) && typeof value.link === 'number') {
-				return html += value.link + ("'>" + value.link + "</a>");
-			} else {
-				for (_j = 0, _len2 = keyStack.length; _j < _len2; _j++) {
-					k = keyStack[_j];
-					html += k + "/";
+			if (value != null) {
+				html = "<a class='ifc-link' href='#";
+				if ((value.link != null) && typeof value.link === 'number') {
+					return html += value.link + ("'>" + value.link + "</a>");
+				} else {
+					for (_j = 0, _len2 = keyStack.length; _j < _len2; _j++) {
+						k = keyStack[_j];
+						html += k + "/";
+					}
+					return html += key + "'>...</a>";
 				}
-				return html += key + "'>...</a>";
 			}
 		};
 
@@ -1853,6 +1855,7 @@ function BimSurfer() {
 	};
 
 	this.progressHandlerType = function(topicId, state) {
+		console.log(state);
 		$(".loadingdiv .progress .bar").css("width", state.progress + "%");
 		if (state.state == "FINISHED" && othis.mode == "loading") {
 			othis.mode = "processing";
