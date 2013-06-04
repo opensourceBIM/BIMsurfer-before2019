@@ -31,17 +31,12 @@ public class BimSurferWebModulePlugin extends AbstractWebModulePlugin {
 	}
 
 	@Override
-	public ObjectDefinition getSettingsDefinition() {
-		return null;
-	}
-
-	@Override
 	public boolean isInitialized() {
 		return initialized;
 	}
 
 	@Override
-	public String getContextPath() {
+	public String getDefaultContextPath() {
 		return "/bimsurfer";
 	}
 }
