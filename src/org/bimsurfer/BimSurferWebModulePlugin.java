@@ -1,6 +1,5 @@
 package org.bimsurfer;
 
-import org.bimserver.models.store.ObjectDefinition;
 import org.bimserver.plugins.PluginException;
 import org.bimserver.plugins.PluginManager;
 import org.bimserver.plugins.web.AbstractWebModulePlugin;
