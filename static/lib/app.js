@@ -1837,11 +1837,6 @@ function BimSurfer() {
 				showOwn : true,
 				sync : false
 			}, function(laid) {
-				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler, function(){
-					othis.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {topicId: laid}, function(state){
-						othis.progressHandler(null, state);
-					});
-				});
 				$(".loadingdiv").hide();
 				$(".loadingdiv .text").html("Loading BIM model");
 				$(".loadingdiv .progress").remove();
@@ -1850,6 +1845,8 @@ function BimSurfer() {
 				othis.currentAction.serializerOid = serializer.oid;
 				othis.currentAction.laid = laid;
 				othis.currentAction.roid = roid;
+				othis.bimServerApi.registerProgressHandler(laid, othis.progressHandler, function(){
+				});
 			});
 		});
 	};
@@ -1922,7 +1919,7 @@ function BimSurfer() {
 							});
 						}
 					}
-					if (geometry.material == "IfcWindow") {
+//					if (geometry.material == "IfcWindow") {
 						var flags = {
 							type : "flags",
 							flags : {
@@ -1931,9 +1928,9 @@ function BimSurfer() {
 							nodes : [ material ]
 						};
 						typeNode.nodes.push(flags);
-					} else {
-						typeNode.nodes.push(material);
-					}
+//					} else {
+//						typeNode.nodes.push(material);
+//					}
 				});
 				othis.scene.findNode("main-renderer").add("node", typeNode);
 				$("#layer-" + othis.currentAction.className.toLowerCase()).attr("checked", "checked");
@@ -1963,10 +1960,6 @@ function BimSurfer() {
 		}, function(laid) {
 			othis.mode = "loading";
 			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType, function(){
-				othis.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {topicId: laid}, function(state){
-					console.log(state);
-					othis.progressHandlerType(laid, state);
-				});
 			});
 			othis.currentAction.serializerOid = serializerOid;
 			othis.currentAction.laid = laid;
