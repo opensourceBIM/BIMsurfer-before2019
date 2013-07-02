@@ -2102,8 +2102,9 @@ function BimSurfer() {
 		$projectList = $('#bimserver-projects');
 		$projectList.html("");
 
-		othis.bimServerApi.call("ServiceInterface", "getAllProjects", {
-			onlyTopLevel : true
+		othis.bimServerApi.call("Bimsie1ServiceInterface", "getAllProjects", {
+			onlyTopLevel : true,
+			onlyActive: true
 		}, function(data) {
 			($('#bimserver-import-message-info')).html("Fetched all projects");
 			data.forEach(function(project) {
