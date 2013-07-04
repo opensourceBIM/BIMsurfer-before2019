@@ -1634,12 +1634,14 @@ function BimSurfer() {
 				el = elements[_i];
 				if (othis.constants.loadingType.loadFromBimserver == 1){
 					if (othis.loadedTypes.indexOf($(el).attr("className")) == -1) {
-						othis.typeDownloadQueue = [ $(el).attr("className") ];
-						othis.bimServerApi.call("PluginInterface", "getSerializerByPluginClassName", {
-							pluginClassName : "org.bimserver.geometry.json.JsonGeometrySerializerPlugin"
-						}, function(serializer) {
-							othis.loadGeometry(othis.currentAction.roid, serializer.oid);
-						});
+						othis.typeDownloadQueue.push($(el).attr("className"));
+						if (othis.mode != "loading" && othis.mode != "processing") {
+							othis.bimServerApi.call("PluginInterface", "getSerializerByPluginClassName", {
+								pluginClassName : "org.bimserver.geometry.json.JsonGeometrySerializerPlugin"
+							}, function(serializer) {
+								othis.loadGeometry(othis.currentAction.roid, serializer.oid);
+							});
+						}							
 					}
 				}
 				_results.push(((($(el)).attr('id')).split(/^layer\-/))[1]);
@@ -1919,18 +1921,14 @@ function BimSurfer() {
 							});
 						}
 					}
-//					if (geometry.material == "IfcWindow") {
-						var flags = {
-							type : "flags",
-							flags : {
-								transparent : true
-							},
-							nodes : [ material ]
-						};
-						typeNode.nodes.push(flags);
-//					} else {
-//						typeNode.nodes.push(material);
-//					}
+					var flags = {
+						type : "flags",
+						flags : {
+							transparent : true
+						},
+						nodes : [ material ]
+					};
+					typeNode.nodes.push(flags);
 				});
 				othis.scene.findNode("main-renderer").add("node", typeNode);
 				$("#layer-" + othis.currentAction.className.toLowerCase()).attr("checked", "checked");
@@ -1940,15 +1938,16 @@ function BimSurfer() {
 
 	this.loadGeometry = function(roid, serializerOid) {
 		if (othis.typeDownloadQueue.length == 0) {
+			othis.mode = "done";
 			$(".loadingdiv").fadeOut(800);
 			return;
 		}
 		var className = othis.typeDownloadQueue[0];
+		othis.typeDownloadQueue = othis.typeDownloadQueue.slice(1);
 		$(".loadingdiv .text").html("Loading " + className);
 		$(".loadingdiv .progress").remove();
 		$(".loadingdiv").append("<div class=\"progress\"><div class=\"bar\" style=\"width: 0%\"></div></div>");
 		$(".loadingdiv").show();
-		othis.typeDownloadQueue = othis.typeDownloadQueue.slice(1);
 		othis.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
 			roids : [ roid ],
 			classNames : [ className ],
@@ -1959,12 +1958,12 @@ function BimSurfer() {
 			deep: true
 		}, function(laid) {
 			othis.mode = "loading";
-			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType, function(){
-			});
 			othis.currentAction.serializerOid = serializerOid;
 			othis.currentAction.laid = laid;
 			othis.currentAction.roid = roid;
 			othis.currentAction.className = className;
+			othis.bimServerApi.registerProgressHandler(laid, othis.progressHandlerType, function(){
+			});
 		});
 	};
 
