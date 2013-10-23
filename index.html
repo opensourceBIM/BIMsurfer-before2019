@@ -7,20 +7,47 @@
 
 <title>BIMsurfer</title>
 
+<script type="text/javascript" src="./lib/jquery-1.10.2/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="./lib/jquery-1.10.2/jquery.cookie.js"></script>
+<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.math.js"></script>
+<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.math.extra.js"></script>
+<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.js"></script>
+<script type="text/javascript" src="./api/BIM.js"></script>
 
-<link rel="stylesheet" href="./api/bimsurfer.api.css" type="text/css" />
 <link rel="stylesheet" href="./css/example1.css" type="text/css" />
+<link rel="stylesheet" href="./lib/jquery-ui-1.10.3.custom/css/custom-theme/jquery-ui-1.10.3.custom.css">
 
-<script type="text/javascript" src="./js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="./lib/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js"></script>
 
-<script type="text/javascript" src="./api/bimsurfer.api.js"></script>
 <script type="text/javascript" src="./js/example1.js"></script>
+<!-- <script type="text/javascript" src="./lib/cssrefresh.js"></script> -->
 
 </head>
 
 <body>
 
-<div id="viewport"></div>
+<div id="header" class="ui-widget-header">
+<h1><span>BIM</span>Surfer</h1>
+</div>
+<div id="full_screen">
+
+
+<div id="leftbar">
+	<div id="left_header">
+		<h2>Explorer</h2>
+	</div>
+	<div id="layerlist">
+
+	</div>
+</div>
+
+<div id="viewport">
+
+</div>
+
+<div id="progress_bar"></div>
+
+</div>
 
 </body>
 </html>
