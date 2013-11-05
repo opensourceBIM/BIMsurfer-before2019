@@ -13,9 +13,11 @@ BIM.Control.PanOrbit = BIM.Class(
 	downX: null,
 	downY: null,
 
+	startEye: null,
+
 	yaw: 0,
 	pitch: 0,
-	zoom: 100,
+	zoom: 1,
 
 	eye: { x: 0, y: 0, z: 0 },
 	look: { x: 0, y: 0, z: 0 },
@@ -32,7 +34,6 @@ BIM.Control.PanOrbit = BIM.Class(
 			this.look = params.look || this.look;
 			this.zoom = params.zoom || this.zoom;
 		}
-		this.beginPivot = BIM.Util.glMatrix.vec3.fromValues(this.look.x, this.look.y, this.look.z);
 	},
 	setSurfer: function(surfer)
 	{
@@ -53,6 +54,11 @@ BIM.Control.PanOrbit = BIM.Class(
 			return null;
 		}
 
+		this.eye = this.surfer.scene.findNode('main-lookAt').getEye();
+		this.startEye = this.surfer.scene.findNode('main-lookAt').getEye();
+		this.look = this.surfer.scene.findNode('main-lookAt').getLook();
+		this.beginPivot = BIM.Util.glMatrix.vec3.fromValues(this.look.x, this.look.y, this.look.z);
+
 	  	this.surfer.events.register('mouseDown', this.mouseDown, this);
 		this.surfer.events.register('mouseUp', this.mouseUp, this);
 		this.surfer.events.register('mouseMove', this.mouseMove, this);
@@ -66,7 +72,7 @@ BIM.Control.PanOrbit = BIM.Class(
 		{
 			if(_this.orbiting)
 			{
-				var eye = BIM.Util.glMatrix.vec3.fromValues(0, 0, _this.zoom);
+				var eye = BIM.Util.glMatrix.vec3.fromValues(_this.startEye.x, _this.startEye.y, _this.startEye.z);
 				var look = BIM.Util.glMatrix.vec3.fromValues(_this.beginPivot[0], _this.beginPivot[1], _this.beginPivot[2]);
 
 				var eyeVec = BIM.Util.glMatrix.vec3.create();
@@ -81,6 +87,7 @@ BIM.Control.PanOrbit = BIM.Class(
 
 				// Update view transform
 				var lookAt = _this.surfer.scene.findNode('main-lookAt');
+
 				lookAt.setLook({x: look[0], y: look[1], z: look[2] });
 				lookAt.setEye({x: look[0] - eye3[0], y: look[1] - eye3[1], z: look[2] - eye3[2] });
 
