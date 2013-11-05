@@ -8,6 +8,9 @@ BIM.Surfer = BIM.Class(
 	server: null,
 	events: null,
 	controls: null,
+	lights: null,
+	scene: null,
+	sceneLoaded: false,
 	camera: null,
 	lookAt: null,
 	loadedTypes: null,
@@ -42,9 +45,15 @@ BIM.Surfer = BIM.Class(
 		this.server = server;
 		this.events = new BIM.Events(this);
 		this.controls = new Array();
+		this.lights =
+		{
+			type: 'lights',
+			id: 'myLights',
+			lights: new Array()
+		};
 		this.loadedTypes = new Array();
 
-		this.camera = {distanceLimits : new Array(0.0, 0.0 )};
+		this.camera = 	{ distanceLimits : new Array(0.0, 0.0) };
 		this.lookAt = 	{
 					   		defaultParameters :
 					 		{
@@ -66,7 +75,28 @@ BIM.Surfer = BIM.Class(
 									y : 0.0,
 									z : 1.0
 								}
-					   		}
+					   		},
+							currentParameters:
+							{
+					 			look :
+					 			{
+									x : 0.0,
+									y : 0.0,
+									z : 0.0
+								},
+								eye :
+								{
+									x : 10.0,
+									y : 10.0,
+									z : 10.0
+								},
+								up :
+								{
+									x : 0.0,
+									y : 0.0,
+									z : 1.0
+								}
+							}
 						};
 	// Variables for BPI.MOST Features (TU Vienna)
 	this.scalefactor = 0;
@@ -120,7 +150,25 @@ BIM.Surfer = BIM.Class(
 
 		control.setSurfer(this);
 	},
+	addLight: function(light)
+	{
+	   /*	if(light.CLASS.substr(0, 10) != 'BIM.Light.') return;
 
+		if(typeof this.lights._engine == 'undefined')
+		{
+			this.scene.findNode('main-renderer').addNode(this.lights);
+			this.lights = this.scene.findNode('myLights');
+		}
+
+		if(this.lights._core.lights.indexOf(light) == -1)
+		{
+			this.lights._core.lights.push(light);
+			this.lights.setLights(this.lights._core.lights);
+		}
+
+		light.setSurfer(this);
+		light.activate(); */
+	},
 	drawCanvas: function()
 	{
 		var width = $(this.div).width();
@@ -160,11 +208,10 @@ BIM.Surfer = BIM.Class(
 	{
 		if(this.scene != null)
 		{
-			var eventArguments = new Array();
-			arguments.push(this.scene);
 			this.scene.destroy();
+			this.events.trigger('sceneUnloaded', [this.scene]);
+			this.sceneLoaded = false;
 			this.scene = null;
-			this.events.trigger('unloadScene', eventArguments)
 		}
 
 		try
@@ -179,8 +226,8 @@ BIM.Surfer = BIM.Class(
 
 
 				// Calculate Scalefactor
-				var unit = this.scene.data().unit;
-				var bounds = this.scene.data().bounds;
+				var unit = this.scene.data.unit;
+				var bounds = this.scene.data.bounds;
 
 				// to decide which side is used to set view in setViewToObject
 				if(bounds[0] > bounds[1])
@@ -190,44 +237,40 @@ BIM.Surfer = BIM.Class(
 
 				// setting viewfactor for different views
 				this.viewfactor = SceneJS_math_lenVec3(bounds);
+
+				this.events.trigger('sceneLoaded', [this.scene]);
+				this.sceneLoaded = true;
 				return this.scene;
 			}
 		}
 		catch (error)
 		{
-			console.error('loadScene: ', error);
+			console.error('loadScene: ', error.stack, this, arguments);
+			console.debug('loadScene ERROR', error.stack, this, arguments);
 		}
 		return null;
 	},
 
 	sceneInit: function()
 	{
-  		var lookAtNode;
-		var tag;
-		var tags;
-
-		var nodes = new Array();;
-		nodes['main-camera'] = this.scene.findNode('main-camera');
-		nodes['main-lookAt'] = this.scene.findNode('main-lookAt');
-
-		var optics = nodes['main-camera'].get('optics');
+		var optics = this.scene.findNode('main-camera').get('optics');
 		optics['aspect'] = $(this.canvas).width() / $(this.canvas).height();
-		nodes['main-camera'].set('optics', optics);
+		this.scene.findNode('main-camera').set('optics', optics);
 
-		var sceneDiameter = SceneJS_math_lenVec3(this.scene.data().bounds);
+		var sceneDiameter = SceneJS_math_lenVec3(this.scene.data.bounds);
 		this.camera.distanceLimits = new Array(sceneDiameter * 0.1, sceneDiameter * 2.0);
 
 		var tags = new Array();
-		var ifcTypes = this.scene.data().ifcTypes
+		var ifcTypes = this.scene.data.ifcTypes
 		for(var i = 0; i < ifcTypes.length; i++)
 		{
 			tags.push(ifcTypes[i].toLowerCase());
 		}
 
 		this.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
-		this.lookAt.defaultParameters.eye = nodes['main-lookAt'].get('eye');
-		this.lookAt.defaultParameters.look = nodes['main-lookAt'].get('look');
-		this.lookAt.defaultParameters.up = nodes['main-lookAt'].get('up');
+		this.lookAt.defaultParameters.eye = this.scene.findNode('main-lookAt').get('eye');
+		this.lookAt.defaultParameters.look = this.scene.findNode('main-lookAt').get('look');
+		this.lookAt.defaultParameters.up = this.scene.findNode('main-lookAt').get('up');
 	},
 
 	loadGeometry: function(project, typesToLoad)
@@ -300,7 +343,7 @@ BIM.Surfer = BIM.Class(
 						};
 
 						var library = _this.scene.findNode("library");
-						var bounds = _this.scene.data().bounds2;
+						var bounds = _this.scene.data.bounds2;
 
 						data.geometry.forEach(function(geometry)
 						{
@@ -374,7 +417,7 @@ BIM.Surfer = BIM.Class(
 
 							typeNode.nodes.push(flags);
 						});
-						_this.scene.findNode("main-renderer").add("node", typeNode);
+						_this.scene.findNode("my-lights").add("node", typeNode);
 					});
 				}
 				_this.mode = 'loading';

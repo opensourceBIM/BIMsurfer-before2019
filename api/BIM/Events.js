@@ -42,6 +42,8 @@ BIM.Events = BIM.Class(
 	{
 		if(typeof event != 'string') return false;
 
+		if(event.substring(0, 5).toLowerCase() == 'mouse') eventArguments[0] = this.normalizeEvent(eventArguments[0]);
+
 		if(!this.listeners[event] || this.listeners[event].length == 0) return true;
 
 		eventArguments = eventArguments || new Array();
@@ -58,5 +60,15 @@ BIM.Events = BIM.Class(
 				return false;
 		}
 		return true;
+	},
+
+	normalizeEvent: function(event)
+	{
+		if(!event.offsetX)
+		{
+			event.offsetX = (event.pageX - $(event.target).offset().left);
+			event.offsetY = (event.pageY - $(event.target).offset().top);
+		}
+		return event;
 	}
 });

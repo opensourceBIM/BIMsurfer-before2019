@@ -32,7 +32,7 @@ BIM.Project = BIM.Class(
 		this.server.server.call("Bimsie1ServiceInterface", "download",
 		{
 			roid : this.lastRevisionId,
-			serializerOid : this.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJsShellSerializerPlugin').oid,
+			serializerOid : this.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJs3ShellSerializerPlugin').oid,
 			showOwn : true,
 			sync : true
 		}, function(id)
@@ -44,7 +44,7 @@ BIM.Project = BIM.Class(
 
 		var url = this.server.server.generateRevisionDownloadUrl(
 		{
-			serializerOid : this.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJsShellSerializerPlugin').oid,
+			serializerOid : this.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJs3ShellSerializerPlugin').oid,
 			laid : downloadId
 		});
 
@@ -57,7 +57,7 @@ BIM.Project = BIM.Class(
 			async: false,
 			success: function(scene)
 			{
-				console.debug('SCENE', scene);
+
 				_this.scene = scene;
 				_this.scene.data.ifcTypes.sort();
 			},

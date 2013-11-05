@@ -51,6 +51,8 @@ BIM.Class = function(baseClass, subClass)
 		'SceneJS.js',
 	  	'BIM/Constants.js',
 		'BIM/ProgressLoader.js',
+		'BIM/Types/Light.js',
+		'BIM/Types/Light/Sun.js',
 		'BIM/Control.js',
 		'BIM/Control/ProgressBar.js',
 		'BIM/Control/PanOrbit.js',

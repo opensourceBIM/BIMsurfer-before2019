@@ -1,14 +1,8 @@
-var test = null;
-var test2 = null;
-var test3 = null;
-var test4 = null;
+var BIMServer = null;
+var BIMSurfer = null;
 
 $(function()
 {
-
-	var BIMServer = null;
-	var BIMSurfer = null;
-
 	function connect(server, email, password)
 	{
 		BIMServer = new BIM.Server(server, email, password, false, true);
@@ -21,9 +15,75 @@ $(function()
 
 	var dialog = $('<div />').attr('class', 'form').attr('title', 'Conntect to a server');
 
-	$('<div />').append($('<label />').append($('<span />').text('BIMserver: ')).append($('<input />').attr('type', 'text').attr('name', 'server').val('http://bimserver.logic-labs.nl/'))).appendTo(dialog);
-	$('<div />').append($('<label />').append($('<span />').text('Email: ')).append($('<input />').attr('type', 'text').attr('name', 'email').val('admin@bimserver.org'))).appendTo(dialog);
-	$('<div />').append($('<label />').append($('<span />').text('Password: ')).append($('<input />').attr('type', 'password').attr('name', 'password').val('admin'))).appendTo(dialog);
+	var form = $('<form />').attr('action', './').attr('method', 'post').appendTo(dialog);
+	$('<div />').append($('<label />').append($('<span />').text('BIMserver: ')).append($('<input />').attr('type', 'text').attr('name', 'server').val('http://127.0.0.1:8080/'))).appendTo(form);
+	$('<div />').append($('<label />').append($('<span />').text('Email: ')).append($('<input />').attr('type', 'text').attr('name', 'email').val('admin@bimserver.org'))).appendTo(form);
+	$('<div />').append($('<label />').append($('<span />').text('Password: ')).append($('<input />').attr('type', 'password').attr('name', 'password').val('admin'))).appendTo(form);
+
+	$(form).find('input').keydown(function(e)
+	{
+		var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
+		if(keycode == 13) $(form).submit();
+	});
+
+	$(form).submit(function(e)
+	{
+		e.preventDefault();
+
+		$(dialog).find('div.state').remove();
+
+		var server = $.trim($(dialog).find('input[name="server"]').val());
+		var email = $.trim($(dialog).find('input[name="email"]').val());
+		var password = $.trim($(dialog).find('input[name="password"]').val());
+
+		var ok = true;
+
+		if(server == '')
+		{
+			ok = false;
+			$(dialog).find('input[name="server"]').addClass('ui-state-error');
+		}
+		else
+		{
+			$(dialog).find('input[name="server"]').removeClass('ui-state-error')
+		}
+
+		if(email == '')
+		{
+			ok = false;
+			$(dialog).find('input[name="email"]').addClass('ui-state-error');
+		}
+		else
+		{
+			$(dialog).find('input[name="email"]').removeClass('ui-state-error')
+		}
+
+		if(password == '')
+		{
+			ok = false;
+			$(dialog).find('input[name="password"]').addClass('ui-state-error');
+		}
+		else
+		{
+			$(dialog).find('input[name="password"]').removeClass('ui-state-error')
+		}
+
+		if(ok)
+		{
+			var connectionStatus = connect(server, email, password);
+			if( connectionStatus == 'success' )
+			{
+				$(dialog).dialog('close');
+				connected();
+			}
+			else
+			{
+				var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-alert').css({'float': 'left', 'margin-right': '.3em'});
+				$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text(connectionStatus).prepend(icon));
+			}
+		}
+	});
+
 
 	$(dialog).dialog({
 		autoOpen: true,
@@ -34,56 +94,7 @@ $(function()
 		buttons: {
 			"Connect": function()
 			{
-				var server = $.trim($(dialog).find('input[name="server"]').val());
-				var email = $.trim($(dialog).find('input[name="email"]').val());
-				var password = $.trim($(dialog).find('input[name="password"]').val());
-
-				var ok = true;
-
-				if(server == '')
-				{
-					ok = false;
-					$(dialog).find('input[name="server"]').addClass('ui-state-error');
-				}
-				else
-				{
-					$(dialog).find('input[name="server"]').removeClass('ui-state-error')
-				}
-
-				if(email == '')
-				{
-					ok = false;
-					$(dialog).find('input[name="email"]').addClass('ui-state-error');
-				}
-				else
-				{
-					$(dialog).find('input[name="email"]').removeClass('ui-state-error')
-				}
-
-				if(password == '')
-				{
-					ok = false;
-					$(dialog).find('input[name="password"]').addClass('ui-state-error');
-				}
-				else
-				{
-					$(dialog).find('input[name="password"]').removeClass('ui-state-error')
-				}
-
-				if(ok)
-				{
-					var connectionStatus = connect(server, email, password);
-					if( connectionStatus == 'success' )
-					{
-						$(dialog).dialog('close');
-						connected();
-					}
-					else
-					{
-						var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-alert').css({'float': 'left', 'margin-right': '.3em'});
-						$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text(connectionStatus).prepend(icon));
-					}
-				}
+				$(form).submit();
 			}
 		},
 		close: function() { $(dialog).remove(); }
@@ -101,10 +112,6 @@ $(function()
 		var progressBar = new BIM.Control.ProgressBar('progress_bar');
 		BIMSurfer.addControl(progressBar);
 		progressBar.activate();
-
-		var panOrbit = new BIM.Control.PanOrbit();
-		BIMSurfer.addControl(panOrbit);
-		panOrbit.activate();
 
 		for(var i = 0; i < BIMSurfer.server.projects.length; i++)
 		{
@@ -185,8 +192,16 @@ $(function()
 					});
 					$(dialog).dialog('close');
 
-					BIMSurfer.loadScene(scene);
-				   	BIMSurfer.loadGeometry(project, typesToLoad);
+					if(BIMSurfer.loadScene(scene) != null)
+					{
+						var panOrbit = new BIM.Control.PanOrbit();
+						BIMSurfer.addControl(panOrbit);
+						panOrbit.activate();
+					   //	var sunLight = new BIM.Light.Sun();
+					   //	BIMSurfer.addLight(sunLight);
+				   		BIMSurfer.loadGeometry(project, typesToLoad);
+					}
+
 				}
 			}
 		});
