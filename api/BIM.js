@@ -58,6 +58,8 @@ BIM.Class = function(baseClass, subClass)
 		'BIM/Control/PanOrbit.js',
 	 	'BIM/Events.js',
 	 	'BIM/Project.js',
+	 	'BIM/stringview.js',
+	 	'BIM/DataInputStream.js',
 	  	'BIM/Server.js',
 		'BIM/Surfer.js',
 	  	'BIM/Util.js'

@@ -306,7 +306,7 @@ BIM.Surfer = BIM.Class(
 			{
 				roids : [ roid ],
 				classNames : [ typesToLoad[0] ],
-				serializerOid : this.server.getSerializer('org.bimserver.geometry.json.JsonGeometrySerializerPlugin').oid,
+				serializerOid : this.server.getSerializer('org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin').oid,
 				includeAllSubtypes : false,
 				useObjectIDM : false,
 				sync : false,
@@ -328,12 +328,11 @@ BIM.Surfer = BIM.Class(
 						laid : params.laid
 					});
 
-					$.getJSON(url, function(data)
-					{
-				   		_this.setProgress(100);
+					var onSuccess = function(data) {
+						_this.setProgress(100);
 						_this.loadedTypes.push(params.downloadQueue[0]);
-
 					  	_this.loadGeometry(params.project, params.downloadQueue.slice(1));
+
 						var typeNode =
 						{
 							type: 'tag',
@@ -341,84 +340,92 @@ BIM.Surfer = BIM.Class(
 							id: params.downloadQueue[0].toLowerCase(),
 							nodes: []
 						};
-
+					  	
+						var dataInputStream = new DataInputStream(data);
+						var start = dataInputStream.readUTF8();
 						var library = _this.scene.findNode("library");
 						var bounds = _this.scene.data.bounds2;
-
-						data.geometry.forEach(function(geometry)
-						{
-							var material =
-							{
-								type : "material",
-								coreId : geometry.material + "Material",
-								nodes : [
-								{
-									id : geometry.coreId,
-									type : "name",
-									nodes : new Array()
-								}]
-							};
-
-							if (geometry.nodes != null)
-							{
-								geometry.nodes.forEach(function(node)
-								{
-									if (node.positions != null)
-									{
-										for (var i = 0; i < node.positions.length; i += 3)
-										{
-											node.positions[i] = node.positions[i] - bounds[0];
-											node.positions[i + 1] = node.positions[i + 1] - bounds[1];
-											node.positions[i + 2] = node.positions[i + 2] - bounds[2];
-										}
-										node.indices = new Array();
-										for (var i = 0; i < node.nrindices; i++)
-										{
-											node.indices.push(i);
-										}
-										library.add("node", node);
-										material.nodes[0].nodes.push(
-										{
-											type: "geometry",
-											coreId: node.coreId
-										});
-									}
-								});
-							}
-							else
-							{
-								if (geometry.positions != null)
-								{
-									for (var i = 0; i < geometry.positions.length; i += 3)
-									{
+						
+						if (start == "BGS") {
+							var version = dataInputStream.readByte();
+							if (version == 2) {
+								dataInputStream.align4();
+								var boundsX = {
+									min: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()},
+									max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
+								};
+								var nrObjects = dataInputStream.readInt();
+								for (var o=0; o<nrObjects; o++) {
+									var geometry = {
+										type: "geometry",
+										primitive: "triangles"
+									};
+									
+									var materialName = dataInputStream.readUTF8();
+									var type = dataInputStream.readUTF8();
+									dataInputStream.align4();
+									geometry.coreId = dataInputStream.readLong() + Math.floor(Math.random() * 1000000);
+									var objectBounds = {
+										min: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()},
+										max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
+									};
+									geometry.nrindices = dataInputStream.readInt();
+									var nrVertices = dataInputStream.readInt();
+									geometry.positions = dataInputStream.readFloatArray(nrVertices);
+									var nrNormals = dataInputStream.readInt();
+									geometry.normals = dataInputStream.readFloatArray(nrNormals);
+									
+									var material = {
+										type : "material",
+										coreId : materialName + "Material",
+										nodes : [ {
+											id : geometry.coreId,
+											type : "name",
+											nodes : [  ]
+										} ]
+									};
+									
+									for (var i = 0; i < geometry.positions.length; i += 3) {
 										geometry.positions[i] = geometry.positions[i] - bounds[0];
 										geometry.positions[i + 1] = geometry.positions[i + 1] - bounds[1];
 										geometry.positions[i + 2] = geometry.positions[i + 2] - bounds[2];
 									}
 									geometry.indices = [];
-									for (var i = 0; i < geometry.nrindices; i++)
-									{
+									for (var i = 0; i < geometry.nrindices; i++) {
 										geometry.indices.push(i);
 									}
 									library.add("node", geometry);
-									material.nodes[0].nodes.push(
-									{
+									material.nodes[0].nodes.push({
 										type: "geometry",
 										coreId: geometry.coreId
 									});
+									
+									var flags = {
+										type : "flags",
+										flags : {
+											transparent : true
+										},
+										nodes : [ material ]
+									};
+									typeNode.nodes.push(flags);
 								}
 							}
-							var flags =
-							{
-								type : "flags",
-								flags : { transparent : true },
-								nodes : [ material ]
-							};
-
-							typeNode.nodes.push(flags);
-						});
+						}
 						_this.scene.findNode("my-lights").add("node", typeNode);
-					});
+					}
+					
+					var oReq = new XMLHttpRequest();
+					oReq.open("GET", url, true);
+					oReq.responseType = "arraybuffer";
+
+					oReq.onload = function (oEvent) {
+					  var arrayBuffer = oReq.response;
+					  if (arrayBuffer) {
+						  onSuccess(arrayBuffer);
+					  }
+					};
+
+					oReq.send(null);
 				}
 				_this.mode = 'loading';
 				var progressLoader = new BIM.ProgressLoader(_this.server.server, laid, step, done, params, false);
