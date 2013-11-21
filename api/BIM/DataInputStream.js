@@ -16,9 +16,11 @@
 		othis.align4 = function() {
 			// Skips to the next alignment of 4 (source should have done the same!)
 			var skip = 4 - (othis.pos % 4);
-			othis.pos += skip;
+			if(skip > 0 && skip != 4) {
+				othis.pos += skip;
+			}
 		}
-		
+
 		othis.readFloat = function() {
 			var value = dataView.getFloat32(othis.pos);
 			othis.pos += 4;

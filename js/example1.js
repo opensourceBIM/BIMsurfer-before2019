@@ -194,16 +194,27 @@ $(function()
 
 					if(BIMSurfer.loadScene(scene) != null)
 					{
-						var panOrbit = new BIM.Control.PanOrbit();
+						var clickSelect = new BIM.Control.ClickSelect();
+						clickSelect.events.register('select', nodeSelected);
+						BIMSurfer.addControl(clickSelect);
+						clickSelect.activate();
+						var panOrbit = new BIM.Control.PickFlyOrbit();
 						BIMSurfer.addControl(panOrbit);
 						panOrbit.activate();
-					   //	var sunLight = new BIM.Light.Sun();
-					   //	BIMSurfer.addLight(sunLight);
+						var ambientLight = new BIM.Light.Ambient();
+					   	BIMSurfer.addLight(ambientLight);
+						var sunLight = new BIM.Light.Sun();
+					   	//BIMSurfer.addLight(sunLight);
 				   		BIMSurfer.loadGeometry(project, typesToLoad);
 					}
 
 				}
 			}
 		});
+	}
+
+	function nodeSelected(node)
+	{
+		console.debug(node);
 	}
 });

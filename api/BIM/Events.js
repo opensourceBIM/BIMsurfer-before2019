@@ -50,7 +50,7 @@ BIM.Events = BIM.Class(
 
 		for(var i = 0; i < this.listeners[event].length; i++)
 		{
-			var continueEvent
+			var continueEvent = null;
 			if(typeof object != 'undefined')
 				continueEvent = this.listeners[event][i].callback.apply(object, eventArguments);
 			else

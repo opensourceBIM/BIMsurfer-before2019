@@ -8,16 +8,9 @@ BIM.Surfer = BIM.Class(
 	server: null,
 	events: null,
 	controls: null,
-	lights: null,
 	scene: null,
 	sceneLoaded: false,
-	camera: null,
-	lookAt: null,
 	loadedTypes: null,
-	//propertyValues
-	scalefactor: 0,
-	viewfactor: 0,
-	boundfactor: 0,
 //	selectedObj: 'emtpy Selection',
 //	mouseRotate: 0,
 //	oldZoom: 15,
@@ -45,67 +38,7 @@ BIM.Surfer = BIM.Class(
 		this.server = server;
 		this.events = new BIM.Events(this);
 		this.controls = new Array();
-		this.lights =
-		{
-			type: 'lights',
-			id: 'myLights',
-			lights: new Array()
-		};
 		this.loadedTypes = new Array();
-
-		this.camera = 	{ distanceLimits : new Array(0.0, 0.0) };
-		this.lookAt = 	{
-					   		defaultParameters :
-					 		{
-					 			look :
-					 			{
-									x : 0.0,
-									y : 0.0,
-									z : 0.0
-								},
-								eye :
-								{
-									x : 10.0,
-									y : 10.0,
-									z : 10.0
-								},
-								up :
-								{
-									x : 0.0,
-									y : 0.0,
-									z : 1.0
-								}
-					   		},
-							currentParameters:
-							{
-					 			look :
-					 			{
-									x : 0.0,
-									y : 0.0,
-									z : 0.0
-								},
-								eye :
-								{
-									x : 10.0,
-									y : 10.0,
-									z : 10.0
-								},
-								up :
-								{
-									x : 0.0,
-									y : 0.0,
-									z : 1.0
-								}
-							}
-						};
-	// Variables for BPI.MOST Features (TU Vienna)
-	this.scalefactor = 0;
-	this.viewfactor = 0;
-	this.boundfactor = 0;
-//	this.selectedObj = 'emtpy Selection';
-//	this.mouseRotate = 0;
-//	this.oldZoom = 15;
-//	this.autoLoadPath = "";
 	},
 
 	setProgress: function(perc)
@@ -152,22 +85,29 @@ BIM.Surfer = BIM.Class(
 	},
 	addLight: function(light)
 	{
-	   /*	if(light.CLASS.substr(0, 10) != 'BIM.Light.') return;
+	   	if(light.CLASS.substr(0, 10) != 'BIM.Light.') return;
 
-		if(typeof this.lights._engine == 'undefined')
+		var lights = this.scene.findNode('my-lights');
+
+		if(Object.prototype.toString.call(light.lightObject) == '[object Array]')
 		{
-			this.scene.findNode('main-renderer').addNode(this.lights);
-			this.lights = this.scene.findNode('myLights');
+			for(var i = 0; i < light.lightObject.length; i++)
+			{
+				if(lights._core.lights.indexOf(light.lightObject[i]) == -1)
+					lights._core.lights.push(light.lightObject[i]);
+			}
+			lights.setLights(lights._core.lights);
 		}
-
-		if(this.lights._core.lights.indexOf(light) == -1)
+		else
 		{
-			this.lights._core.lights.push(light);
-			this.lights.setLights(this.lights._core.lights);
+			if(lights._core.lights.indexOf(light.lightObject) == -1)
+			{
+				lights._core.lights.push(light.lightObject);
+				lights.setLights(lights._core.lights);
+			}
 		}
 
 		light.setSurfer(this);
-		light.activate(); */
 	},
 	drawCanvas: function()
 	{
@@ -184,24 +124,36 @@ BIM.Surfer = BIM.Class(
 							.html('<p>This application requires a browser that supports the <a href="http://www.w3.org/html/wg/html5/">HTML5</a> &lt;canvas&gt; feature.</p>')
 							.addClass(this.CLASS.replace(/\./g,"-"))
 							.appendTo(this.div);
-		this.initEvents();
 		return this.canvas;
 	},
 
 	initEvents: function()
 	{
 		var _this = this;
-		$(this.canvas)
-			.on('mousedown', function(e)
-			{
-				_this.events.trigger('mouseDown', [e]);
-				})
-			.on('mouseup', function(e){ _this.events.trigger('mouseUp', [e]); })
-			.on('mousemove', function(e){ _this.events.trigger('mouseMove', [e]); })
-			.on('scroll', function(e){ _this.events.trigger('mouseWheel', [e]); })
-			.on('touchstart', function(e){ _this.events.trigger('touchStart', [e]); })
-			.on('touchmove', function(e){ _this.events.trigger('touchMove', [e]); })
-			.on('touchend', function(e){ _this.events.trigger('touchEnd', [e]); });
+		var canvas = this.scene.getCanvas();
+		canvas.addEventListener('mousedown', function(e) { _this.events.trigger('mouseDown', [e]); }, true);
+		canvas.addEventListener('mousemove', function(e) { _this.events.trigger('mouseMove', [e]); }, true);
+		canvas.addEventListener('mouseup', function(e) { _this.events.trigger('mouseUp', [e]); }, true);
+		canvas.addEventListener('touchstart', function(e) { _this.events.trigger('touchStart', [e]); }, true);
+		canvas.addEventListener('touchmove', function(e) { _this.events.trigger('touchMove', [e]); }, true);
+		canvas.addEventListener('touchend', function(e) { _this.events.trigger('touchEnd', [e]); }, true);
+		canvas.addEventListener('mousewheel', function(e) { _this.events.trigger('mouseWheel', [e]); }, true);
+		canvas.addEventListener('DOMMouseScroll', function(e) { _this.events.trigger('mouseWheel', [e]); }, true);
+		this.scene.on('pick', function(hit) { _this.events.trigger('pick', [hit]); });
+		this.scene.on('tick', function() { _this.events.trigger('tick', []); });
+
+		var lastDown = { x: null, y: null, scene: this.scene };
+		this.events.register('mouseDown', function(e)
+		{
+			this.x = e.offsetX;
+			this.y = e.offsetY;
+		}, lastDown);
+		this.events.register('mouseUp', function(e)
+		{
+			if(((e.offsetX > this.x) ? (e.offsetX - this.x < 5) : (this.x - e.offsetX < 5)) &&	((e.offsetY > this.y) ? (e.offsetY - this.y < 5) : (this.y - e.offsetY < 5)))
+				this.scene.pick(this.x, this.y, {rayPick: true});
+		}, lastDown);
+
 	},
 
 	loadScene: function(scene)
@@ -222,22 +174,6 @@ BIM.Surfer = BIM.Class(
 			if(this.scene != null)
 			{
 				this.sceneInit();
-				this.scene.start({idleFunc: SceneJS.FX.idle});
-
-
-				// Calculate Scalefactor
-				var unit = this.scene.data.unit;
-				var bounds = this.scene.data.bounds;
-
-				// to decide which side is used to set view in setViewToObject
-				if(bounds[0] > bounds[1])
-					this.boundfactor = 1; // for setView to decide the main viewside
-
-				this.scalefactor = parseFloat(unit);
-
-				// setting viewfactor for different views
-				this.viewfactor = SceneJS_math_lenVec3(bounds);
-
 				this.events.trigger('sceneLoaded', [this.scene]);
 				this.sceneLoaded = true;
 				return this.scene;
@@ -258,7 +194,6 @@ BIM.Surfer = BIM.Class(
 		this.scene.findNode('main-camera').set('optics', optics);
 
 		var sceneDiameter = SceneJS_math_lenVec3(this.scene.data.bounds);
-		this.camera.distanceLimits = new Array(sceneDiameter * 0.1, sceneDiameter * 2.0);
 
 		var tags = new Array();
 		var ifcTypes = this.scene.data.ifcTypes
@@ -268,9 +203,8 @@ BIM.Surfer = BIM.Class(
 		}
 
 		this.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
-		this.lookAt.defaultParameters.eye = this.scene.findNode('main-lookAt').get('eye');
-		this.lookAt.defaultParameters.look = this.scene.findNode('main-lookAt').get('look');
-		this.lookAt.defaultParameters.up = this.scene.findNode('main-lookAt').get('up');
+
+		this.initEvents();
 	},
 
 	loadGeometry: function(project, typesToLoad)
@@ -340,7 +274,7 @@ BIM.Surfer = BIM.Class(
 							id: params.downloadQueue[0].toLowerCase(),
 							nodes: []
 						};
-					  	
+
 						var dataInputStream = new DataInputStream(data);
 						var start = dataInputStream.readUTF8();
 						var library = _this.scene.findNode("library");
@@ -348,8 +282,7 @@ BIM.Surfer = BIM.Class(
 						
 						if (start == "BGS") {
 							var version = dataInputStream.readByte();
-							if (version == 2) {
-								dataInputStream.align4();
+							if (version == 3) {
 								var boundsX = {
 									min: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()},
 									max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
@@ -363,8 +296,11 @@ BIM.Surfer = BIM.Class(
 									
 									var materialName = dataInputStream.readUTF8();
 									var type = dataInputStream.readUTF8();
+
+									geometry.coreId = dataInputStream.readLong();
+
 									dataInputStream.align4();
-									geometry.coreId = dataInputStream.readLong() + Math.floor(Math.random() * 1000000);
+
 									var objectBounds = {
 										min: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()},
 										max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
@@ -413,7 +349,7 @@ BIM.Surfer = BIM.Class(
 						}
 						_this.scene.findNode("my-lights").add("node", typeNode);
 					}
-					
+
 					var oReq = new XMLHttpRequest();
 					oReq.open("GET", url, true);
 					oReq.responseType = "arraybuffer";

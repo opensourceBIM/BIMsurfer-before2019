@@ -34,8 +34,8 @@ BIM.Class = function(baseClass, subClass)
 	}
 	else
 	{
-		var newClass = function() {};
-		newClass.prototype = baseClass.prototype;
+		var newClass = function() {}; 		
+		newClass.prototype = $.extend({}, baseClass.prototype);
 		$.extend(newClass.prototype, subClass);
 		Class.prototype = new newClass;
 	}
@@ -52,10 +52,12 @@ BIM.Class = function(baseClass, subClass)
 	  	'BIM/Constants.js',
 		'BIM/ProgressLoader.js',
 		'BIM/Types/Light.js',
+		'BIM/Types/Light/Ambient.js',
 		'BIM/Types/Light/Sun.js',
 		'BIM/Control.js',
+		'BIM/Control/ClickSelect.js',
 		'BIM/Control/ProgressBar.js',
-		'BIM/Control/PanOrbit.js',
+		'BIM/Control/PickFlyOrbit.js',
 	 	'BIM/Events.js',
 	 	'BIM/Project.js',
 	 	'BIM/stringview.js',
