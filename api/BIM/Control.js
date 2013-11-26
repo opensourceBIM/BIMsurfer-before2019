@@ -1,6 +1,5 @@
 "use strict"
-BIM.Control = BIM.Class(
-{
+BIM.Control = BIM.Class({
 	CLASS: 'BIM.Control',
 	div: null,
 	DOMelement: null,
@@ -8,82 +7,79 @@ BIM.Control = BIM.Class(
 	active: false,
 	events: null,
 
-	__construct: function(div)
-	{
-		if(typeof div == 'string')
+	__construct: function(div) {
+		if(typeof div == 'string') {
 			this.div = $(document).find('div#' + div)[0] || null;
-		else if($(div).is('div'))
+		} else if($(div).is('div')) {
 			this.div = div;
+		}
 
 		this.events = new BIM.Events(this);
 	},
 
-	redraw: function()
-	{
+	redraw: function() {
 		$(this.div).empty();
 		$(this.DOMelement).remove();
 		this.DOMelement = $('<div />').addClass(this.CLASS.replace(/\./g,"-"));
-		if(this.active)
+		if(this.active) {
 			$(this.div).append(this.DOMelement);
+		}
 		return this;
 	},
 
-	setSurfer: function(surfer)
-	{
+	setSurfer: function(surfer) {
 		this.surfer = surfer;
 		return this;
 	},
 
-	removeFromSurfer: function()
-	{
+	removeFromSurfer: function() {
 		this.surfer = null;
 		return this;
 	},
 
-	activate: function()
-	{
-		if(this.div)
-		{
+	initEvents: function() {
+
+	},
+
+	activate: function() {
+		if(this.div) {
 			this.active = true;
 			this.redraw();
+			this.initEvents();
 			this.show();
 		}
 		return this;
 	},
 
-	deactivate: function()
-	{
+	deactivate: function() {
 		this.active = false;
+		this.initEvents();
 		$(this.DOMelement).remove();
 		this.DOMelement = null;
 		return this;
 	},
 
-	show: function(speed)
-	{
-		switch(speed)
-		{
+	show: function(speed) {
+		switch(speed) {
 			case 'fast':
 			case 'normal':
 			case 'slow':
-				$(this.DOMelement).fadeIn(speed);
+				$(this.DOMelement).stop().fadeIn(speed);
 				break;
 			default:
-				$(this.DOMelement).show();
+				$(this.DOMelement).stop().show();
 		}
 		return this;
 	},
-	hide: function(speed)
-	{
-		switch(speed)
-		{
+	hide: function(speed) {
+		switch(speed) {
 			case 'fast':
 			case 'normal':
 			case 'slow':
-				$(this.DOMelement).fadeOut(speed);
+				$(this.DOMelement).stop().fadeOut(speed);
 				break;
 			default:
-				$(this.DOMelement).hide();
+				$(this.DOMelement).stop().hide();
 		}
 		return this;
 	}

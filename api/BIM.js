@@ -1,5 +1,4 @@
-BIM =
-{
+BIM = {
 	CLASS: "BIM",
 	VERSION_NUMBER: "2.0 Dev"
 };
@@ -9,32 +8,26 @@ BIM =
  * Constructor: BIM.Class
  * Base class used to construct all other classes. Includes support for multiple inheritance.
  */
-BIM.Class = function(baseClass, subClass)
-{
+BIM.Class = function(baseClass, subClass){
 	var constructor = null;
 	var classObject = subClass || baseClass;
 
-	if(typeof classObject.__construct == 'function')
+	if(typeof classObject.__construct == 'function') {
 		constructor = classObject.__construct;
-	else if(typeof baseClass.prototype.__construct == 'function')
-	{
-		constructor = function()
-		{
+	} else if(typeof baseClass.prototype.__construct == 'function') {
+		constructor = function() {
 			baseClass.prototype.__construct.apply(this, arguments);
 		}
-	}
-	else
+	} else {
 		constructor = function() { };
+	}
 
 	var Class = constructor;
 
-	if(typeof subClass == 'undefined')
-	{
+	if(typeof subClass == 'undefined') {
 		Class.prototype = classObject
-	}
-	else
-	{
-		var newClass = function() {}; 		
+	} else {
+		var newClass = function() {};
 		newClass.prototype = $.extend({}, baseClass.prototype);
 		$.extend(newClass.prototype, subClass);
 		Class.prototype = new newClass;
@@ -44,10 +37,8 @@ BIM.Class = function(baseClass, subClass)
 };
 
 
-(function()
-{
-	var js_files =
-	[
+(function() {
+	var js_files = [
 		'SceneJS.js',
 	  	'BIM/Constants.js',
 		'BIM/ProgressLoader.js',
@@ -75,10 +66,7 @@ BIM.Class = function(baseClass, subClass)
 
 	var scripts = prefix + js_files.join(suffix + prefix) + suffix;
 
-	var css_files =
-	[
-		'BIM/Control/ProgressBar.css'
-	];
+	var css_files = ['BIM/Control/ProgressBar.css'];
 
 	prefix = '<link rel="stylesheet" href="' + scriptFolder;
 	suffix = '" type="text/css" />' + "\r\n";

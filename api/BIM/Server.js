@@ -1,5 +1,4 @@
-BIM.Server = BIM.Class(
-{
+BIM.Server = BIM.Class({
 	CLASS: 'BIM.Server',
 	url: null,
 	username: null,
@@ -11,31 +10,33 @@ BIM.Server = BIM.Class(
 	projects: null,
 	serializers: new Array(),
 
-
-	__construct: function(url, username, password, rememberMe, autoConnect, autoLogin)
-	{
+	__construct: function(url, username, password, rememberMe, autoConnect, autoLogin) {
 		this.url = (url.substr(-1) == '/' ? url.substr(0, url.length - 1) : url);
 		this.username = username;
 		this.password = password;
 
-		if(typeof rememberMe != 'boolean') rememberMe = false;
-		if(typeof autoConnect != 'boolean') autoConnect = true;
-		if(typeof autoLogin != 'boolean') autoLogin = true;
+		if(typeof rememberMe != 'boolean') {
+			rememberMe = false;
+		}
+		if(typeof autoConnect != 'boolean') {
+			autoConnect = true;
+		}
+		if(typeof autoLogin != 'boolean') {
+			autoLogin = true;
+		}
 
 		this.rememberMe = rememberMe;
 
-
-		if(autoConnect)
-		{
+		if(autoConnect) {
 			this.connect();
-			if(this.connectionStatus == 'connected' && autoLogin)
+			if(this.connectionStatus == 'connected' && autoLogin) {
 				this.login();
+			}
 		}
 	},
 
-	connect: function()
-	{
-		var result = {success: true, error: null};
+	connect: function()	{
+		var result = {success: false, error: 'No response'};
 
 		var _this = this;
 
@@ -45,44 +46,26 @@ BIM.Server = BIM.Class(
 			dataType: 'text',
 			cache: false,
 			async: false,
-			success: function(script)
-			{
-				try
-				{
+			success: function(script) {
+				try {
 					jQuery.globalEval(script);
-					if(typeof BimServerApi == 'object' || typeof BimServerApi == 'function')
-					{
+
+					if(typeof BimServerApi == 'object' || typeof BimServerApi == 'function') {
 						_this.server = new BimServerApi(_this.url);
 						_this.connectionStatus = 'connected';
-
-						if(typeof _this.server.AJAXaSync == 'undefined')
-						{
-							result.success = false;
-							result.error = 'The connected BimServerApi does not support synchronous AJAX calls.';
-							_this.server = null;
-							_this.connectionStatus = 'error: ' + result.error;
-						}
-						else
-						{
-							_this.server.AJAXaSync = false;
-						}
-					}
-					else
-					{
+						result.success = true;
+					} else {
 						result.success = false;
 						result.error = 'BimServerApi not found.';
 						_this.connectionStatus = 'error: ' + result.error;
 					}
-				}
-				catch(e)
-				{
+				} catch(e) {
 					result.success = false;
 					result.error = 'Syntax error in BimServerApi script.';
 					_this.connectionStatus = 'error: ' + result.error;
 				}
 			},
-			error: function(a,b,c,d,e)
-			{
+			error: function(a,b,c,d,e) {
 				result.success = false;
 				result.error = 'Could not load the BimServerApi.';
 				_this.connectionStatus = 'error: ' + result.error;
@@ -91,33 +74,26 @@ BIM.Server = BIM.Class(
 		return result;
 	},
 
-	login: function(successCallback, errorCallback)
-	{
+	login: function(successCallback, errorCallback) {
 		if(typeof successCallback != 'function') successCallback = function(){};
 		if(typeof errorCallback != 'function') errorCallback = function(error){};
 
-		var result = {success: true, error: null};
+		var result = {success: true, error: 'No response'};
 
 		var _this = this;
 
-		if(!this.server)
-		{
+		if(!this.server) {
 			result.success = false;
 			result.error = 'The BimServerApi is not loaded';
 			_this.loginStatus = 'error: ' + result.error;
 			return result;
 		}
 
-
-
-		this.server.login(this.username, this.password, this.rememberMe, function()
-		{
-			_this.server.call("Bimsie1ServiceInterface", "getAllProjects", { onlyTopLevel : true, onlyActive: true }, function(projects)
-			{
+		this.server.login(this.username, this.password, this.rememberMe, function() {
+			_this.server.call("Bimsie1ServiceInterface", "getAllProjects", { onlyTopLevel : true, onlyActive: true, async: false }, function(projects) {
 				_this.projects = new Array();
 
-				for(var i = 0; i < projects.length; i++)
-				{
+				for(var i = 0; i < projects.length; i++) {
 					_this.projects.push(new BIM.Project(projects[i], _this));
 				}
 
@@ -130,24 +106,19 @@ BIM.Server = BIM.Class(
 		   		_this.loginStatus = 'error: ' + result.error;
 			});
 		},
-		function()
-		{
+		function() {
 			result.success = false;
 			result.error = 'Login request failed';
 			_this.loginStatus = 'error: ' + result.error;
-		});
+		}, { async: false });
 
 		return result;
 	},
 
-	getSerializer: function(name)
-	{
-		if(!BIM.Util.isset(this.serializers[name]))
-		{
-			var data = {pluginClassName : name};
+	getSerializer: function(name) {
+		if(!BIM.Util.isset(this.serializers[name])) {
 			var _this = this;
-			this.server.call("PluginInterface", "getSerializerByPluginClassName", data, function(serializer)
-			{
+			this.server.call("PluginInterface", "getSerializerByPluginClassName", {pluginClassName : name, async: false}, function(serializer) {
 				if(!BIM.Util.isset(serializer.oid)) return null;
 					_this.serializers[name] = serializer;
 			});

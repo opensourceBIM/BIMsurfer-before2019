@@ -46,11 +46,21 @@ div#full_screen
 div#leftbar
 {
 	position: absolute;
-	width: 250px;
+	width: 230px;
 	top: 0px;
 	bottom: 0px;
 	border-right: 1px solid #AAA;
+	padding: 10px;
 
+}
+div#leftbar div#object_info label
+{
+	font-weight: bold;
+}
+
+div#leftbar div#layerlist ul
+{
+	padding: 0;
 }
 
 div#viewport

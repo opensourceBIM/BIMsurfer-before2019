@@ -6,6 +6,9 @@ BIM.Util.isset = function(variable)
 {
 	return !(typeof variable == 'undefined' || variable == null);
 }
+BIM.Util.isArray = function(variable) {
+	return Object.prototype.toString.call(variable) === '[object Array]'
+}
 
 
 

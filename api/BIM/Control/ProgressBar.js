@@ -7,8 +7,20 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control,
 	animationSpeed: 200,
 	animationTimer: null,
 
-	events: null,
-
+	initEvents: function()
+	{
+		if(this.active) {
+			BIM.events.register('progressStarted', this.start, this); // Register on global events
+			BIM.events.register('progressDone', this.stop, this); // Register on global events
+			BIM.events.register('progressBarStyleChanged', this.changeType, this); // Register on global events
+			BIM.events.register('progressChanged', this.animateProgress, this); // Register on global events
+			BIM.events.register('progressMessageChanged', this.changeMessage, this); // Register on global events
+		} else {
+			BIM.events.register('progressLoadingTypeChanged', this.animateProgress, this); // Register on global events
+			BIM.events.unregister('progressChanged', this.animateProgress, this);
+			BIM.events.unregister('progressMessageChanged', this.changeMessage, this);
+		}
+	},
 	redraw: function()
 	{
 		$(this.div).empty();
@@ -20,6 +32,23 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control,
 		$('<div />').addClass(this.CLASS.replace(/\./g,"-") + '-progress').appendTo(this.DOMelement);
 		$('<div />').addClass(this.CLASS.replace(/\./g,"-") + '-text').appendTo(this.DOMelement).text('0%');
 		return this;
+	},
+
+	start: function(message)
+	{
+		if(this.active) {
+			this.changeMessage(message);
+			this.show();
+		}
+	},
+	stop: function()
+	{
+		this.hide('slow');
+	},
+
+	changeType: function(loadingType)
+	{
+		console.debug('CHANGED LOADINGTYPE', loadingType);
 	},
 
 	setAnimationSpeed: function(speed)

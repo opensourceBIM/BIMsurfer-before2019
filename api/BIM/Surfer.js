@@ -10,7 +10,9 @@ BIM.Surfer = BIM.Class(
 	controls: null,
 	scene: null,
 	sceneLoaded: false,
-	loadedTypes: null,
+	loadQueue: null,
+	visibleTypes: null,
+	loadedProjects: null,
 //	selectedObj: 'emtpy Selection',
 //	mouseRotate: 0,
 //	oldZoom: 15,
@@ -38,42 +40,10 @@ BIM.Surfer = BIM.Class(
 		this.server = server;
 		this.events = new BIM.Events(this);
 		this.controls = new Array();
-		this.loadedTypes = new Array();
+		this.loadQueue = new Array();
+		this.visibleTypes = new Array();
+		this.loadedProjects = new Array();
 	},
-
-	setProgress: function(perc)
-	{
-		if(typeof this.controls['BIM.Control.ProgressBar'] == 'undefined') return;
-		for(var i = 0; i < this.controls['BIM.Control.ProgressBar'].length; i++)
-		{
-			this.controls['BIM.Control.ProgressBar'][i].animateProgress(perc);
-		}
-	},
-	setProgressMessage: function(message)
-	{
-		if(typeof this.controls['BIM.Control.ProgressBar'] == 'undefined') return;
-		for(var i = 0; i < this.controls['BIM.Control.ProgressBar'].length; i++)
-		{
-			this.controls['BIM.Control.ProgressBar'][i].changeMessage(message);
-		}
-	},
-	hideProgress: function()
-	{
-		if(typeof this.controls['BIM.Control.ProgressBar'] == 'undefined') return;
-		for(var i = 0; i < this.controls['BIM.Control.ProgressBar'].length; i++)
-		{
-			this.controls['BIM.Control.ProgressBar'][i].hide('fast');
-		}
-	},
-	showProgress: function()
-	{
-		if(typeof this.controls['BIM.Control.ProgressBar'] == 'undefined') return;
-		for(var i = 0; i < this.controls['BIM.Control.ProgressBar'].length; i++)
-		{
-			this.controls['BIM.Control.ProgressBar'][i].show('fast');
-		}
-	},
-
 	addControl: function(control)
 	{
 		if(typeof this.controls[control.CLASS] == 'undefined') this.controls[control.CLASS] = new Array();
@@ -173,7 +143,13 @@ BIM.Surfer = BIM.Class(
 			this.scene = SceneJS.createScene(scene);
 			if(this.scene != null)
 			{
-				this.sceneInit();
+				var optics = this.scene.findNode('main-camera').get('optics');
+				optics['aspect'] = $(this.canvas).width() / $(this.canvas).height();
+				this.scene.findNode('main-camera').set('optics', optics);
+
+				this.scene.set('tagMask', '^()$');
+
+				this.initEvents();
 				this.events.trigger('sceneLoaded', [this.scene]);
 				this.sceneLoaded = true;
 				return this.scene;
@@ -187,59 +163,43 @@ BIM.Surfer = BIM.Class(
 		return null;
 	},
 
-	sceneInit: function()
+	loadGeometry: function()
 	{
-		var optics = this.scene.findNode('main-camera').get('optics');
-		optics['aspect'] = $(this.canvas).width() / $(this.canvas).height();
-		this.scene.findNode('main-camera').set('optics', optics);
-
-		var sceneDiameter = SceneJS_math_lenVec3(this.scene.data.bounds);
-
-		var tags = new Array();
-		var ifcTypes = this.scene.data.ifcTypes
-		for(var i = 0; i < ifcTypes.length; i++)
-		{
-			tags.push(ifcTypes[i].toLowerCase());
-		}
-
-		this.scene.set('tagMask', '^(' + (tags.join('|')) + ')$');
-
-		this.initEvents();
-	},
-
-	loadGeometry: function(project, typesToLoad)
-	{
-		this.showProgress();
-		var roid = project.lastRevisionId
-		var _this = this;
-		if(typeof typesToLoad == 'undefined')
-			typesToLoad = BIM.Constants.defaultTypes;
-
-   		if (typesToLoad.length == 0)
+   		if (this.loadQueue.length == 0)
 		{
 			this.mode = "done";
-		   	this.setProgress(100);
-			this.setProgressMessage('Downloading complete');
-			this.hideProgress();
+			BIM.events.trigger('progressChanged', [100]);
+			BIM.events.trigger('progressMessageChanged', ['Downloading complete']);
+			BIM.events.trigger('progressDone');
 		  	return;
 		}
 
-	  	_this.setProgress(0);
-		_this.setProgressMessage("Loading " + typesToLoad[0]);
+		var load = this.loadQueue[0];
+
+		if(this.loadedProjects.indexOf(load.project) == -1) {
+			this.loadedProjects.push(load.project);
+		}
+
+		BIM.events.trigger('progressStarted', ['Loading Geometry']);
+		var roid = load.project.lastRevisionId;
+		var _this = this;
+
+		BIM.events.trigger('progressChanged', [0]);
+		BIM.events.trigger('progressMessageChanged', "Loading " + load.type);
 
 		var params =
 		{
 				roid: roid,
 				serializerOid: this.server.getSerializer('org.bimserver.geometry.json.JsonGeometrySerializerPlugin').oid,
-				downloadQueue: typesToLoad,
-				project: project
+				downloadQueue: this.loadQueue,
+				load: load,
+				project: load.project
 		}
-
 
 		this.server.server.call("Bimsie1ServiceInterface", "downloadByTypes",
 			{
 				roids : [ roid ],
-				classNames : [ typesToLoad[0] ],
+				classNames : [ load.type ],
 				serializerOid : this.server.getSerializer('org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin').oid,
 				includeAllSubtypes : false,
 				useObjectIDM : false,
@@ -249,12 +209,12 @@ BIM.Surfer = BIM.Class(
 	   		function(laid)
 			{
 				params.laid = laid;
-				var step = function(params, state, progressLoader) { _this.setProgress(state.progress); }
+				var step = function(params, state, progressLoader) { BIM.events.trigger('progressChanged', [state.progress]); }
 				var done = function(params, state, progressLoader)
 				{
 				 	if(_this.mode != 'loading') return;
 					_this.mode = "processing";
-					_this.setProgress(90);
+					BIM.events.trigger('progressChanged', [100]);
 					progressLoader.unregister();
 
 					var url = _this.server.server.generateRevisionDownloadUrl({
@@ -263,17 +223,35 @@ BIM.Surfer = BIM.Class(
 					});
 
 					var onSuccess = function(data) {
-						_this.setProgress(100);
-						_this.loadedTypes.push(params.downloadQueue[0]);
-					  	_this.loadGeometry(params.project, params.downloadQueue.slice(1));
+						BIM.events.trigger('progressDone');
+
+						if(_this.scene.data.ifcTypes.indexOf(params.project.oid + '-' + load.type.toLowerCase()) == -1) {
+							_this.scene.data.ifcTypes.push(params.project.oid + '-' + load.type.toLowerCase());
+						}
+						if(_this.visibleTypes.indexOf(params.project.oid + '-' + load.type.toLowerCase()) == -1) {
+							_this.visibleTypes.push(params.project.oid + '-' + load.type.toLowerCase());
+						}
+
+						_this.refreshMask();
 
 						var typeNode =
 						{
 							type: 'tag',
-							tag: params.downloadQueue[0].toLowerCase(),
-							id: params.downloadQueue[0].toLowerCase(),
+							tag: params.project.oid + '-' + load.type.toLowerCase(),
+							id: params.project.oid + '-' + load.type.toLowerCase(),
 							nodes: []
 						};
+
+						params.project.loadedTypes.push(load.type);
+						for(var i = 0; i < _this.loadQueue.length; i++){
+							if(load === _this.loadQueue[i]) {
+								_this.loadQueue.splice(i, 1);
+								break;
+							}
+						}
+
+						params.downloadQueue = params.downloadQueue.slice(1)
+					  	_this.loadGeometry();
 
 						var dataInputStream = new DataInputStream(data);
 						var start = dataInputStream.readUTF8();
@@ -366,6 +344,39 @@ BIM.Surfer = BIM.Class(
 				_this.mode = 'loading';
 				var progressLoader = new BIM.ProgressLoader(_this.server.server, laid, step, done, params, false);
 			});
+	},
+
+	showLayer: function(layerName, project) {
+
+		if(project.ifcTypes.indexOf(layerName) == -1) {
+			console.error('Layer does not exist in loaded model(s): ', layerName);
+			return;
+		}
+
+		if(project.loadedTypes.indexOf(layerName) == -1) {
+			this.loadQueue.push({project: project, type: layerName});
+			if(this.mode != 'loading' && this.mode != 'processing') {
+				this.loadGeometry();
+			}
+		} else if(this.visibleTypes.indexOf(project.oid + '-' + layerName.toLowerCase()) == -1) {
+			this.visibleTypes.push(project.oid + '-' + layerName.toLowerCase());
+			this.refreshMask();
+		}
+	},
+
+	hideLayer: function(layerName, project) {
+		var i = this.visibleTypes.indexOf(project.oid + '-' + layerName.toLowerCase());
+		if(i == -1) {
+			return;
+		}
+
+		this.visibleTypes.splice(i, 1);
+		this.refreshMask();
+	},
+
+	refreshMask: function() {
+		var tagMask = '^(' + this.visibleTypes.join('|') + ')$';
+		this.scene.set('tagMask', tagMask);
 	}
 
 });

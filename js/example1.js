@@ -151,70 +151,135 @@ $(function()
 
 	function loadProject(project)
 	{
-		var scene = project.getScene();
-
-		if(scene == null)
+		project.events.register('projectLoaded', function()
 		{
-			console.error('Could not load project scene: ', project);
-			return;
-		};
-		var dialog = $('<div />').attr('title', 'What types do you want to load?');
-		var typesList = $('<ul />').attr('id', 'types').appendTo(dialog);
-
-		for(var i = 0; i < scene.data.ifcTypes.length; i++)
-		{
-			var checkbox = $('<input />').attr('type', 'checkbox').attr('name', 'types').val(scene.data.ifcTypes[i]);
-
-			if(BIM.Constants.defaultTypes.indexOf(scene.data.ifcTypes[i]) != -1)
+			var scene = this.scene;
+			var _this = this;
+			if(scene == null)
 			{
-				$(checkbox).attr('checked', 'checked');
-			}
+				console.error('Could not load project scene: ', project);
+				return;
+			};
+			var dialog = $('<div />').attr('title', 'What types do you want to load?');
+			var typesList = $('<ul />').attr('id', 'types').appendTo(dialog);
 
-			$('<div />').append($('<label />').text(scene.data.ifcTypes[i]).prepend(checkbox)).appendTo(typesList);
-		}
+			for(var i = 0; i < this.ifcTypes.length; i++)
+			{
+				var checkbox = $('<input />').attr('type', 'checkbox').attr('name', 'types').val(this.ifcTypes[i]);
 
-		$(dialog).dialog({
-			autoOpen: true,
-			width: 450,
-			modal: true,
-			closeOnEscape: false,
-			open: function(event, ui) { $(".ui-dialog .ui-dialog-titlebar-close").hide(); },
-			close: function() { $(dialog).remove(); },
-			buttons: {
-				'Load': function()
+				if(BIM.Constants.defaultTypes.indexOf(this.ifcTypes[i]) != -1)
 				{
-					var checkedTypes = $(dialog).find('input:checkbox:checked');
-					var typesToLoad = new Array();
-
-					$(checkedTypes).each(function()
-					{
-						typesToLoad.push($(this).val());
-					});
-					$(dialog).dialog('close');
-
-					if(BIMSurfer.loadScene(scene) != null)
-					{
-						var clickSelect = new BIM.Control.ClickSelect();
-						clickSelect.events.register('select', nodeSelected);
-						BIMSurfer.addControl(clickSelect);
-						clickSelect.activate();
-						var panOrbit = new BIM.Control.PickFlyOrbit();
-						BIMSurfer.addControl(panOrbit);
-						panOrbit.activate();
-						var ambientLight = new BIM.Light.Ambient();
-					   	BIMSurfer.addLight(ambientLight);
-						var sunLight = new BIM.Light.Sun();
-					   	//BIMSurfer.addLight(sunLight);
-				   		BIMSurfer.loadGeometry(project, typesToLoad);
-					}
-
+					$(checkbox).attr('checked', 'checked');
 				}
+
+				$('<div />').append($('<label />').text(this.ifcTypes[i]).prepend(checkbox)).appendTo(typesList);
 			}
+
+			$(dialog).dialog({
+				autoOpen: true,
+				width: 450,
+				modal: true,
+				closeOnEscape: false,
+				open: function(event, ui) { $(".ui-dialog .ui-dialog-titlebar-close").hide(); },
+				close: function() { $(dialog).remove(); },
+				buttons: {
+					'Load': function()
+					{
+						var checkedTypes = $(dialog).find('input:checkbox:checked');
+
+						$(checkedTypes).each(function()
+						{
+							BIMSurfer.loadQueue.push({project: project, type: $(this).val()});
+						});
+
+
+						$(dialog).dialog('close');
+
+						var layerLists = $('div#leftbar').find('div#layerlist').find('.data');
+						if($(layerLists).is('.empty')) {
+							$(layerLists).empty();
+						}
+
+						var container = $('<div />').attr('id', 'layerlist-' + project.oid).data('project', project).appendTo(layerLists);
+						$('<h3 />').text(project.name).appendTo(container);
+						var typesList = $('<ul />').appendTo(container);
+
+						var loadQueueTypes = new Array();
+						for(var i = 0; i < BIMSurfer.loadQueue.length; i++) {
+							loadQueueTypes.push(BIMSurfer.loadQueue[i].type);
+						}
+
+						for(var i = 0; i < _this.ifcTypes.length; i++)
+						{
+							var checkbox = $('<input />').attr('type', 'checkbox').attr('name', 'types').val(_this.ifcTypes[i]);
+							if(loadQueueTypes.indexOf(_this.ifcTypes[i]) != -1) {
+								$(checkbox).attr('checked', 'checked');
+							}
+
+							$(checkbox).change(function(e) {
+
+								var project = $(this).closest('ul').closest('div').data('project');
+
+								if($(this).is(':checked')) {
+									BIMSurfer.showLayer($(this).val(), project);
+								} else {
+									BIMSurfer.hideLayer($(this).val(), project);
+								}
+
+
+							});
+							$('<div />').append($('<label />').text(_this.ifcTypes[i]).prepend(checkbox)).appendTo(typesList);
+						}
+
+
+						if(BIMSurfer.loadScene(project.scene) != null)
+						{
+							var clickSelect = new BIM.Control.ClickSelect();
+							clickSelect.events.register('select', nodeSelected);
+							clickSelect.events.register('unselect', nodeUnselected);
+							BIMSurfer.addControl(clickSelect);
+							clickSelect.activate();
+
+							var panOrbit = new BIM.Control.PickFlyOrbit();
+							BIMSurfer.addControl(panOrbit);
+							panOrbit.activate();
+
+							var ambientLight = new BIM.Light.Ambient();
+						   	BIMSurfer.addLight(ambientLight);
+
+
+					   		BIMSurfer.loadGeometry();
+						}
+
+					}
+				}
+			});
 		});
+		var scene = project.load();
 	}
 
 	function nodeSelected(node)
 	{
-		console.debug(node);
+		if(typeof this.surfer.scene.data.properties[node.getId()] == 'undefined') {
+			return;
+		}
+		var infoContainer = $('#object_info').find('.data');
+		$(infoContainer).empty();
+
+		var properties = this.surfer.scene.data.properties[node.getId()];
+
+		for(var i in properties) {
+			if(typeof properties[i] == 'string') {
+				$('<div />').append($('<label />').text(i)).appendTo(infoContainer);
+				$('<div />').text(properties[i]).appendTo(infoContainer);
+			}
+		}
+	}
+
+	function nodeUnselected(node)
+	{
+		var infoContainer = $('#object_info').find('.data');
+		$(infoContainer).empty();
+		$('<p>').text('No object selected.').appendTo(infoContainer);
 	}
 });
