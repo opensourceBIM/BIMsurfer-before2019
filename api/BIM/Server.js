@@ -5,6 +5,7 @@ BIM.Server = BIM.Class({
 	password: null,
 	rememberMe: null,
 	server: null,
+	events:null,
 	connectionStatus: null,
 	loginStatus: null,
 	projects: null,
@@ -12,6 +13,7 @@ BIM.Server = BIM.Class({
 
 	__construct: function(url, username, password, rememberMe, autoConnect, autoLogin) {
 		this.url = (url.substr(-1) == '/' ? url.substr(0, url.length - 1) : url);
+		this.events = new BIM.Events(this);
 		this.username = username;
 		this.password = password;
 
@@ -90,26 +92,35 @@ BIM.Server = BIM.Class({
 		}
 
 		this.server.login(this.username, this.password, this.rememberMe, function() {
-			_this.server.call("Bimsie1ServiceInterface", "getAllProjects", { onlyTopLevel : true, onlyActive: true, async: false }, function(projects) {
-				_this.projects = new Array();
-
-				for(var i = 0; i < projects.length; i++) {
-					_this.projects.push(new BIM.Project(projects[i], _this));
+			_this.server.call(
+				"Bimsie1ServiceInterface", 
+				"getAllProjects", 
+				{ onlyTopLevel : true, onlyActive: true, async: false }, 
+				function(projects) {
+					_this.projects = new Array();
+	
+					for(var i = 0; i < projects.length; i++) {
+						_this.projects.push(new BIM.Project(projects[i], _this));
+					}
+	
+					result.success = true;
+					_this.loginStatus = 'loggedin';
+					_this.events.trigger('serverLogin', _this.loginStatus);
+				}, 
+				function() {
+					_this.project = null;
+					result.success = false;
+					result.error = 'Could not resolve projects';
+			   		_this.loginStatus = 'error: ' + result.error;
+			   		_this.events.trigger('serverLogin', _this.loginStatus);
 				}
-
-				result.success = true;
-				_this.loginStatus = 'loggedin';
-			}, function() {
-				_this.project = null;
-				result.success = false;
-				result.error = 'Could not resolve projects';
-		   		_this.loginStatus = 'error: ' + result.error;
-			});
+			);
 		},
 		function() {
 			result.success = false;
 			result.error = 'Login request failed';
 			_this.loginStatus = 'error: ' + result.error;
+			_this.events.trigger('serverLogin', _this.loginStatus);
 		}, { async: false });
 
 		return result;
