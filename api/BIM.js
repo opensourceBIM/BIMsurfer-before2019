@@ -1,4 +1,4 @@
-BIM = {
+var BIM = {
 	CLASS: "BIM",
 	VERSION_NUMBER: "2.0 Dev"
 };
@@ -49,6 +49,7 @@ BIM.Class = function(baseClass, subClass){
 		'BIM/Control/ClickSelect.js',
 		'BIM/Control/ProgressBar.js',
 		'BIM/Control/PickFlyOrbit.js',
+		'BIM/Control/ObjectTreeView.js',
 	 	'BIM/Events.js',
 	 	'BIM/Project.js',
 	 	'BIM/stringview.js',
@@ -66,7 +67,10 @@ BIM.Class = function(baseClass, subClass){
 
 	var scripts = prefix + js_files.join(suffix + prefix) + suffix;
 
-	var css_files = ['BIM/Control/ProgressBar.css'];
+	var css_files = [
+		'BIM/Control/ProgressBar.css',
+		'BIM/Control/ObjectTreeView.css'
+	];
 
 	prefix = '<link rel="stylesheet" href="' + scriptFolder;
 	suffix = '" type="text/css" />' + "\r\n";

@@ -1,5 +1,4 @@
-BIM.Control.ProgressBar = BIM.Class(BIM.Control,
-{
+BIM.Control.ProgressBar = BIM.Class(BIM.Control, {
 	CLASS: "BIM.Control.ProgressBar",
 	percentage: 0,
 	shownPercentage: 0,
@@ -7,8 +6,7 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control,
 	animationSpeed: 200,
 	animationTimer: null,
 
-	initEvents: function()
-	{
+	initEvents: function() {
 		if(this.active) {
 			BIM.events.register('progressStarted', this.start, this); // Register on global events
 			BIM.events.register('progressDone', this.stop, this); // Register on global events
@@ -21,69 +19,58 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control,
 			BIM.events.unregister('progressMessageChanged', this.changeMessage, this);
 		}
 	},
-	redraw: function()
-	{
+	redraw: function() {
 		$(this.div).empty();
 		$(this.DOMelement).remove();
 		this.DOMelement = $('<div />').addClass(this.CLASS.replace(/\./g,"-"));
-		if(this.active)
+		if(this.active) {
 			$(this.div).append(this.DOMelement);
+		}
 
 		$('<div />').addClass(this.CLASS.replace(/\./g,"-") + '-progress').appendTo(this.DOMelement);
 		$('<div />').addClass(this.CLASS.replace(/\./g,"-") + '-text').appendTo(this.DOMelement).text('0%');
 		return this;
 	},
 
-	start: function(message)
-	{
+	start: function(message) {
 		if(this.active) {
 			this.changeMessage(message);
 			this.show();
 		}
 	},
-	stop: function()
-	{
+	stop: function() {
 		this.hide('slow');
 	},
 
-	changeType: function(loadingType)
-	{
+	changeType: function(loadingType) {
 		console.debug('CHANGED LOADINGTYPE', loadingType);
 	},
 
-	setAnimationSpeed: function(speed)
-	{
+	setAnimationSpeed: function(speed) {
 		this.animationSpeed = speed;
 		return this;
 	},
 
-	changeShownProgress: function(percentage)
-	{
+	changeShownProgress: function(percentage) {
 		this.shownPercentage = percentage;
 		$(this.DOMelement).find('.BIM-Control-ProgressBar-text').text(this.shownPercentage + '%' + (this.message.length > 0 ? ' (' + this.message + ')': ''));
 		return this;
 	},
 
-	animateProgress: function(percentage)
-	{
+	animateProgress: function(percentage) {
 
-		if(this.animationTimer != null)
-		{
+		if(this.animationTimer != null) {
 			clearInterval(this.animationTimer);
 			this.animationTimer = null;
-
 		}
 
-		if(this.percentage < percentage)
-		{
+		if(this.percentage < percentage) {
 			$(this.DOMelement).find('.BIM-Control-ProgressBar-progress').stop(true, false).animate({'width': percentage + '%'}, {duration: this.animationSpeed, queue: false});
 
 			var _this = this;
-			this.animationTimer = setInterval((function()
-			{
+			this.animationTimer = setInterval((function() {
 
-				if(_this.shownPercentage == _this.percentage)
-				{
+				if(_this.shownPercentage == _this.percentage) {
 					clearInterval(_this.animationTimer);
 					_this.animationTimer = null;
 					return;
@@ -92,9 +79,7 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control,
 				_this.changeShownProgress(_this.shownPercentage + 1);
 
 			}), Math.floor(this.animationSpeed / (percentage - this.shownPercentage)));
-		}
-		else
-		{
+		} else {
 			$(this.DOMelement).find('.BIM-Control-ProgressBar-progress').stop().css('width', percentage + '%');
 			this.changeShownProgress(percentage);
 		}
@@ -103,8 +88,7 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control,
 		return this;
 	},
 
-	changeMessage: function(message)
-	{
+	changeMessage: function(message) {
 		$(this.DOMelement).find('.BIM-Control-ProgressBar-text').text(this.percentage + '%' + (message.length > 0 ? ' (' + message + ')': ''));
 		this.message = message;
 		return this;

@@ -12,6 +12,7 @@ BIM.Server = BIM.Class({
 	serializers: new Array(),
 
 	__construct: function(url, username, password, rememberMe, autoConnect, autoLogin) {
+
 		this.url = (url.substr(-1) == '/' ? url.substr(0, url.length - 1) : url);
 		this.events = new BIM.Events(this);
 		this.username = username;
@@ -30,100 +31,109 @@ BIM.Server = BIM.Class({
 		this.rememberMe = rememberMe;
 
 		if(autoConnect) {
+			this.events.register('connected', function()
+			{
+				if(this.connectionStatus == 'connected' && autoLogin) {
+					this.login();
+				}
+			});
 			this.connect();
-			if(this.connectionStatus == 'connected' && autoLogin) {
-				this.login();
-			}
 		}
 	},
 
 	connect: function()	{
-		var result = {success: false, error: 'No response'};
 
 		var _this = this;
+
+		var timeoutTimer = setTimeout((function() {
+			var error = 'Timed out';
+			_this.connectionStatus = 'error: ' + error;
+			_this.events.trigger('connectionError', error);
+		}), BIM.Constants.timeoutTime);
 
 		jQuery.ajax({
 			url: this.url + '/js/bimserverapi.js',
 			type: "GET",
 			dataType: 'text',
 			cache: false,
-			async: false,
 			success: function(script) {
+				clearTimeout(timeoutTimer);
 				try {
 					jQuery.globalEval(script);
 
 					if(typeof BimServerApi == 'object' || typeof BimServerApi == 'function') {
 						_this.server = new BimServerApi(_this.url);
 						_this.connectionStatus = 'connected';
-						result.success = true;
+						_this.events.trigger('connected');
 					} else {
-						result.success = false;
-						result.error = 'BimServerApi not found.';
-						_this.connectionStatus = 'error: ' + result.error;
+						var error = 'BimServerApi not found.';
+						_this.connectionStatus = 'error: ' + error;
+						_this.events.trigger('connectionError', error);
 					}
 				} catch(e) {
-					result.success = false;
-					result.error = 'Syntax error in BimServerApi script.';
-					_this.connectionStatus = 'error: ' + result.error;
+					var error = 'Syntax error in BimServerApi script.';
+					_this.connectionStatus = 'error: ' + error;
+					_this.events.trigger('connectionError', error);
 				}
 			},
-			error: function(a,b,c,d,e) {
-				result.success = false;
-				result.error = 'Could not load the BimServerApi.';
-				_this.connectionStatus = 'error: ' + result.error;
+			error: function(error) {
+				clearTimeout(timeoutTimer);
+				var error = 'Could not load the BimServerApi.';
+				_this.connectionStatus = 'error: ' + error;
+				_this.events.trigger('connectionError', error);
 			}
 		});
-		return result;
 	},
 
 	login: function(successCallback, errorCallback) {
-		if(typeof successCallback != 'function') successCallback = function(){};
-		if(typeof errorCallback != 'function') errorCallback = function(error){};
-
-		var result = {success: true, error: 'No response'};
+		if(typeof successCallback != 'function') successCallback = function() {};
+		if(typeof errorCallback != 'function') errorCallback = function(error) {};
 
 		var _this = this;
 
 		if(!this.server) {
-			result.success = false;
-			result.error = 'The BimServerApi is not loaded';
-			_this.loginStatus = 'error: ' + result.error;
-			return result;
+			var error = 'The BimServerApi is not loaded';
+			_this.loginStatus = 'error: ' + error;
+			_this.events.trigger('loginError', error);
 		}
+
+		var timeoutTimer = setTimeout((function() {
+			var error = 'Timed out';
+			_this.connectionStatus = 'error: ' + error;
+			_this.events.trigger('loginError', error);
+		}), BIM.Constants.timeoutTime);
 
 		this.server.login(this.username, this.password, this.rememberMe, function() {
 			_this.server.call(
 				"Bimsie1ServiceInterface", 
-				"getAllProjects", 
-				{ onlyTopLevel : true, onlyActive: true, async: false }, 
+				"getAllProjects",
+				{ onlyTopLevel : true, onlyActive: true },
 				function(projects) {
+					clearTimeout(timeoutTimer);
 					_this.projects = new Array();
 	
 					for(var i = 0; i < projects.length; i++) {
 						_this.projects.push(new BIM.Project(projects[i], _this));
 					}
-	
-					result.success = true;
+
 					_this.loginStatus = 'loggedin';
-					_this.events.trigger('serverLogin', _this.loginStatus);
+					_this.events.trigger('loggedin');
 				}, 
 				function() {
+			 		clearTimeout(timeoutTimer);
 					_this.project = null;
-					result.success = false;
-					result.error = 'Could not resolve projects';
-			   		_this.loginStatus = 'error: ' + result.error;
-			   		_this.events.trigger('serverLogin', _this.loginStatus);
+					var error = 'Could not resolve projects';
+			   		_this.loginStatus = 'error: ' + error;
+			   		_this.events.trigger('loginError', error);
 				}
 			);
 		},
-		function() {
-			result.success = false;
-			result.error = 'Login request failed';
-			_this.loginStatus = 'error: ' + result.error;
-			_this.events.trigger('serverLogin', _this.loginStatus);
-		}, { async: false });
-
-		return result;
+		function(exception) {
+			clearTimeout(timeoutTimer);
+			var error = 'Login request failed' + (typeof exception.message == 'string' ? ': ' + exception.message : '');
+			_this.loginStatus = 'error: ' + error;
+			_this.events.trigger('loginError', error);
+		}, { });
 	},
 
 	getSerializer: function(name) {

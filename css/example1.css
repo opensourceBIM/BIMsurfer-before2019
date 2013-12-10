@@ -29,7 +29,9 @@ div#header h1
 	padding: 10px;
 	line-height: 30px;
 	font-weight: normal;
-
+	display: inline-block;
+	background: url(../images/logo-wave.png) no-repeat right;
+	padding-right: 100px;
 }
 div#header h1 span { font-weight: bold; }
 
@@ -46,11 +48,12 @@ div#full_screen
 div#leftbar
 {
 	position: absolute;
-	width: 230px;
+	width: 330px;
 	top: 0px;
 	bottom: 0px;
 	border-right: 1px solid #AAA;
 	padding: 10px;
+	overflow: auto;
 
 }
 div#leftbar div#object_info label
@@ -66,7 +69,7 @@ div#leftbar div#layerlist ul
 div#viewport
 {
 	position: absolute;
-	left: 256px;
+	left: 356px;
 	top: 0px;
 	right: 0px;
 	bottom: 0px;
@@ -90,6 +93,12 @@ div#viewport
 {
 	padding: 10px;
 	margin: 10px 0;
+}
+
+div.ui-dialog div.ui-dialog-buttonpane button.disabled span.ui-button-text
+{
+	color: #CCC;
+	cursor: progress;
 }
 
 div#progress_bar

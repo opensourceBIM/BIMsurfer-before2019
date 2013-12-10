@@ -79,6 +79,13 @@ BIM.Surfer = BIM.Class(
 
 		light.setSurfer(this);
 	},
+	resize: function(width, height) {
+		$(this.canvas).width(width).height(height);
+
+		var optics = this.scene.findNode('main-camera').get('optics');
+		optics['aspect'] = $(this.canvas).width() / $(this.canvas).height();
+		this.scene.findNode('main-camera').set('optics', optics);
+	},
 	drawCanvas: function()
 	{
 		var width = $(this.div).width();

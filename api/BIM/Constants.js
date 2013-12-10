@@ -2,6 +2,8 @@ if(typeof BIM.Constants != 'object') {
 	BIM.Constants = {};
 }
 
+BIM.Constants.timeoutTime = 10000; // ms
+
 BIM.Constants.defaultTypes = [
 	"IfcColumn",
 	"IfcStair",
