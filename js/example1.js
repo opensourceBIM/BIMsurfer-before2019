@@ -6,13 +6,28 @@ $(function()
 	function connect(server, email, password)
 	{
 		BIMServer = new BIM.Server(server, email, password, false, true);
-		if(BIMServer.connectionStatus != 'connected')
-			return BIMServer.connectionStatus;
-		if(BIMServer.loginStatus != 'loggedin')
-			return BIMServer.loginStatus;
-		return 'success';
+		console.log(BIMServer.loginStatus);
+		BIMServer.events.register("serverLogin", connectCallback);
+		
+		return "working";
 	}
 
+	function connectCallback(e){
+		BIMServer.events.unregister("serverLogin", connectCallback);
+		
+		if(BIMServer.connectionStatus == 'connected' && BIMServer.loginStatus == 'loggedin')
+		{
+				$(dialog).dialog('close');
+				connected();
+		}
+		else
+		{
+			var connectionStatus =  BIMServer.connectionStatus +" & " + BIMServer.loginStatus ;
+			var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-alert').css({'float': 'left', 'margin-right': '.3em'});
+			$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text(connectionStatus).prepend(icon));
+		}
+	}
+	
 	var dialog = $('<div />').attr('class', 'form').attr('title', 'Conntect to a server');
 
 	var form = $('<form />').attr('action', './').attr('method', 'post').appendTo(dialog);
@@ -71,16 +86,6 @@ $(function()
 		if(ok)
 		{
 			var connectionStatus = connect(server, email, password);
-			if( connectionStatus == 'success' )
-			{
-				$(dialog).dialog('close');
-				connected();
-			}
-			else
-			{
-				var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-alert').css({'float': 'left', 'margin-right': '.3em'});
-				$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text(connectionStatus).prepend(icon));
-			}
 		}
 	});
 
