@@ -1,5 +1,5 @@
-BIM.Control.ProgressBar = BIM.Class(BIM.Control, {
-	CLASS: "BIM.Control.ProgressBar",
+BIMSURFER.Control.ProgressBar = BIMSURFER.Class(BIMSURFER.Control, {
+	CLASS: "BIMSURFER.Control.ProgressBar",
 	percentage: 0,
 	shownPercentage: 0,
 	message: '',
@@ -8,15 +8,15 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control, {
 
 	initEvents: function() {
 		if(this.active) {
-			BIM.events.register('progressStarted', this.start, this); // Register on global events
-			BIM.events.register('progressDone', this.stop, this); // Register on global events
-			BIM.events.register('progressBarStyleChanged', this.changeType, this); // Register on global events
-			BIM.events.register('progressChanged', this.animateProgress, this); // Register on global events
-			BIM.events.register('progressMessageChanged', this.changeMessage, this); // Register on global events
+			this.SYSTEM.events.register('progressStarted', this.start, this); // Register on global events
+			this.SYSTEM.events.register('progressDone', this.stop, this); // Register on global events
+			this.SYSTEM.events.register('progressBarStyleChanged', this.changeType, this); // Register on global events
+			this.SYSTEM.events.register('progressChanged', this.animateProgress, this); // Register on global events
+			this.SYSTEM.events.register('progressMessageChanged', this.changeMessage, this); // Register on global events
 		} else {
-			BIM.events.register('progressLoadingTypeChanged', this.animateProgress, this); // Register on global events
-			BIM.events.unregister('progressChanged', this.animateProgress, this);
-			BIM.events.unregister('progressMessageChanged', this.changeMessage, this);
+			this.SYSTEM.events.register('progressLoadingTypeChanged', this.animateProgress, this); // Register on global events
+			this.SYSTEM.events.unregister('progressChanged', this.animateProgress, this);
+			this.SYSTEM.events.unregister('progressMessageChanged', this.changeMessage, this);
 		}
 	},
 	redraw: function() {
@@ -52,20 +52,30 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control, {
 	},
 
 	changeShownProgress: function(percentage) {
+		if(percentage > 100) {
+			percentage = 100;
+		} else if(percentage < 0) {
+			percentage = 0;
+		}
 		this.shownPercentage = percentage;
-		$(this.DOMelement).find('.BIM-Control-ProgressBar-text').text(this.shownPercentage + '%' + (this.message.length > 0 ? ' (' + this.message + ')': ''));
+		$(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-text').text(this.shownPercentage + '%' + (this.message.length > 0 ? ' (' + this.message + ')': ''));
 		return this;
 	},
 
 	animateProgress: function(percentage) {
 
+		if(percentage > 100) {
+			percentage = 100;
+		} else if(percentage < 0) {
+			percentage = 0;
+		}
 		if(this.animationTimer != null) {
 			clearInterval(this.animationTimer);
 			this.animationTimer = null;
 		}
 
 		if(this.percentage < percentage) {
-			$(this.DOMelement).find('.BIM-Control-ProgressBar-progress').stop(true, false).animate({'width': percentage + '%'}, {duration: this.animationSpeed, queue: false});
+			$(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress').stop(true, false).animate({'width': percentage + '%'}, {duration: this.animationSpeed, queue: false});
 
 			var _this = this;
 			this.animationTimer = setInterval((function() {
@@ -80,7 +90,7 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control, {
 
 			}), Math.floor(this.animationSpeed / (percentage - this.shownPercentage)));
 		} else {
-			$(this.DOMelement).find('.BIM-Control-ProgressBar-progress').stop().css('width', percentage + '%');
+			$(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress').stop().css('width', percentage + '%');
 			this.changeShownProgress(percentage);
 		}
 
@@ -89,7 +99,7 @@ BIM.Control.ProgressBar = BIM.Class(BIM.Control, {
 	},
 
 	changeMessage: function(message) {
-		$(this.DOMelement).find('.BIM-Control-ProgressBar-text').text(this.percentage + '%' + (message.length > 0 ? ' (' + message + ')': ''));
+		$(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-text').text(this.percentage + '%' + (message.length > 0 ? ' (' + message + ')': ''));
 		this.message = message;
 		return this;
 	}

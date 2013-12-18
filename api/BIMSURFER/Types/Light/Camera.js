@@ -1,8 +1,9 @@
-BIM.Light.Camera = BIM.Class(
+BIMSURFER.Light.Camera = BIMSURFER.Class(
 {
-	CLASS: 'BIM.Light.Camera',
-	__construct: function()
+	CLASS: 'BIMSURFER.Light.Camera',
+	__construct: function(system)
 	{
+		this.SYSTEM = system;
 		this.lightObject =
 		{
 			type:		'light',

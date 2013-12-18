@@ -1,7 +1,8 @@
 "use strict"
-BIM.Surfer = BIM.Class(
-{
-	CLASS: 'Bim.Surfer',
+BIMSURFER.Viewer = BIMSURFER.Class({
+	CLASS: 'BIMSURFER.Viewer',
+	SYSTEM: null,
+
 	div: null,
 	mode: null,
 	canvas: null,
@@ -19,7 +20,7 @@ BIM.Surfer = BIM.Class(
 //	autoLoadPath: "",
 
 
-	__construct: function(div, server)
+	__construct: function(div)
 	{
 		if(typeof div == 'string')
 			div = jQuery('div#' + div)[0];
@@ -30,19 +31,23 @@ BIM.Surfer = BIM.Class(
 			console.error('BIMSURFER: Can not find div element');
 			return;
 		}
-		if(server.CLASS != 'BIM.Server')
-		{
-			console.error('BIMSURFER: No server given');
-			return;
-		}
 
+
+		this.SYSTEM = this;
 		this.div = div;
-		this.server = server;
-		this.events = new BIM.Events(this);
+		this.events = new BIMSURFER.Events(this.SYSTEM, this);
 		this.controls = new Array();
 		this.loadQueue = new Array();
 		this.visibleTypes = new Array();
 		this.loadedProjects = new Array();
+	},
+	setServer: function(server) {
+		if(server.CLASS != 'BIMSURFER.Server') {
+			console.error('BIMSURFER: No server given');
+			return;
+		}
+
+		this.server = server;
 	},
 	addControl: function(control)
 	{
@@ -55,7 +60,7 @@ BIM.Surfer = BIM.Class(
 	},
 	addLight: function(light)
 	{
-	   	if(light.CLASS.substr(0, 10) != 'BIM.Light.') return;
+	   	if(light.CLASS.substr(0, 10) != 'BIMSURFER.Light.') return;
 
 		var lights = this.scene.findNode('my-lights');
 
@@ -175,9 +180,9 @@ BIM.Surfer = BIM.Class(
    		if (this.loadQueue.length == 0)
 		{
 			this.mode = "done";
-			BIM.events.trigger('progressChanged', [100]);
-			BIM.events.trigger('progressMessageChanged', ['Downloading complete']);
-			BIM.events.trigger('progressDone');
+			this.SYSTEM.events.trigger('progressChanged', [100]);
+			this.SYSTEM.events.trigger('progressMessageChanged', ['Downloading complete']);
+			this.SYSTEM.events.trigger('progressDone');
 		  	return;
 		}
 
@@ -187,12 +192,12 @@ BIM.Surfer = BIM.Class(
 			this.loadedProjects.push(load.project);
 		}
 
-		BIM.events.trigger('progressStarted', ['Loading Geometry']);
+		this.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
 		var roid = load.project.lastRevisionId;
 		var _this = this;
 
-		BIM.events.trigger('progressChanged', [0]);
-		BIM.events.trigger('progressMessageChanged', "Loading " + load.type);
+		this.SYSTEM.events.trigger('progressChanged', [0]);
+		this.SYSTEM.events.trigger('progressMessageChanged', "Loading " + load.type);
 
 		var params =
 		{
@@ -216,12 +221,12 @@ BIM.Surfer = BIM.Class(
 	   		function(laid)
 			{
 				params.laid = laid;
-				var step = function(params, state, progressLoader) { BIM.events.trigger('progressChanged', [state.progress]); }
+				var step = function(params, state, progressLoader) { this.SYSTEM.events.trigger('progressChanged', [state.progress]); }
 				var done = function(params, state, progressLoader)
 				{
 				 	if(_this.mode != 'loading') return;
 					_this.mode = "processing";
-					BIM.events.trigger('progressChanged', [100]);
+					_this.SYSTEM.events.trigger('progressChanged', [100]);
 					progressLoader.unregister();
 
 					var url = _this.server.server.generateRevisionDownloadUrl({
@@ -230,7 +235,7 @@ BIM.Surfer = BIM.Class(
 					});
 
 					var onSuccess = function(data) {
-						BIM.events.trigger('progressDone');
+						_this.SYSTEM.events.trigger('progressDone');
 
 						if(_this.scene.data.ifcTypes.indexOf(params.project.oid + '-' + load.type.toLowerCase()) == -1) {
 							_this.scene.data.ifcTypes.push(params.project.oid + '-' + load.type.toLowerCase());
@@ -349,7 +354,7 @@ BIM.Surfer = BIM.Class(
 					oReq.send(null);
 				}
 				_this.mode = 'loading';
-				var progressLoader = new BIM.ProgressLoader(_this.server.server, laid, step, done, params, false);
+				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, _this.server.server, laid, step, done, params, false);
 			});
 	},
 

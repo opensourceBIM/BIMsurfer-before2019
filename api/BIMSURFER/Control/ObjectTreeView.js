@@ -1,18 +1,20 @@
-BIM.Control.ObjectTreeView = BIM.Class(BIM.Control,
+BIMSURFER.Control.ObjectTreeView = BIMSURFER.Class(BIMSURFER.Control,
 {
-	CLASS: "BIM.Control.ObjectTreeView",
+	CLASS: "BIMSURFER.Control.ObjectTreeView",
 	showCheckboxes: true,
 
 	projectHtml: null,
 
-	__construct: function(div) {
+	__construct: function(system, div) {
+		this.SYSTEM = system;
+
 		if(typeof div == 'string') {
 			this.div = $(document).find('div#' + div)[0] || null;
 		} else if($(div).is('div')) {
 			this.div = div;
 		}
 
-		this.events = new BIM.Events(this);
+		this.events = new BIMSURFER.Events(this.SYSTEM, this);
 
 		//this.projectHtml = '<li id="{ID}"
 	},

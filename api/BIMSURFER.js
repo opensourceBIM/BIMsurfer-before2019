@@ -1,14 +1,14 @@
-var BIM = {
-	CLASS: "BIM",
+var BIMSURFER = {
+	CLASS: "BIMSURFER",
 	VERSION_NUMBER: "2.0 Dev"
 };
 
 
 /**
- * Constructor: BIM.Class
+ * Constructor: BIMSURFER.Class
  * Base class used to construct all other classes. Includes support for multiple inheritance.
  */
-BIM.Class = function(baseClass, subClass){
+BIMSURFER.Class = function(baseClass, subClass){
 	var constructor = null;
 	var classObject = subClass || baseClass;
 
@@ -40,23 +40,23 @@ BIM.Class = function(baseClass, subClass){
 (function() {
 	var js_files = [
 		'SceneJS.js',
-	  	'BIM/Constants.js',
-		'BIM/ProgressLoader.js',
-		'BIM/Types/Light.js',
-		'BIM/Types/Light/Ambient.js',
-		'BIM/Types/Light/Sun.js',
-		'BIM/Control.js',
-		'BIM/Control/ClickSelect.js',
-		'BIM/Control/ProgressBar.js',
-		'BIM/Control/PickFlyOrbit.js',
-		'BIM/Control/ObjectTreeView.js',
-	 	'BIM/Events.js',
-	 	'BIM/Project.js',
-	 	'BIM/stringview.js',
-	 	'BIM/DataInputStream.js',
-	  	'BIM/Server.js',
-		'BIM/Surfer.js',
-	  	'BIM/Util.js'
+	  	'BIMSURFER/Constants.js',
+		'BIMSURFER/ProgressLoader.js',
+		'BIMSURFER/Types/Light.js',
+		'BIMSURFER/Types/Light/Ambient.js',
+		'BIMSURFER/Types/Light/Sun.js',
+		'BIMSURFER/Control.js',
+		'BIMSURFER/Control/ClickSelect.js',
+		'BIMSURFER/Control/ProgressBar.js',
+		'BIMSURFER/Control/PickFlyOrbit.js',
+		'BIMSURFER/Control/ObjectTreeView.js',
+	 	'BIMSURFER/Events.js',
+	 	'BIMSURFER/Project.js',
+	 	'BIMSURFER/stringview.js',
+	 	'BIMSURFER/DataInputStream.js',
+	  	'BIMSURFER/Server.js',
+		'BIMSURFER/Viewer.js',
+	  	'BIMSURFER/Util.js'
 	];
 
 	var scriptPath = $('script').last()[0].src;
@@ -68,8 +68,8 @@ BIM.Class = function(baseClass, subClass){
 	var scripts = prefix + js_files.join(suffix + prefix) + suffix;
 
 	var css_files = [
-		'BIM/Control/ProgressBar.css',
-		'BIM/Control/ObjectTreeView.css'
+		'BIMSURFER/Control/ProgressBar.css',
+		'BIMSURFER/Control/ObjectTreeView.css'
 	];
 
 	prefix = '<link rel="stylesheet" href="' + scriptFolder;

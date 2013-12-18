@@ -1,8 +1,9 @@
-BIM.Light.Ambient = BIM.Class(
+BIMSURFER.Light.Ambient = BIMSURFER.Class(
 {
-	CLASS: 'BIM.Light.Ambient',
-	__construct: function()
+	CLASS: 'BIMSURFER.Light.Ambient',
+	__construct: function(system)
 	{
+		this.SYSTEM = system;
 		this.lightObject = new Array(
 			{
 				mode:"ambient",

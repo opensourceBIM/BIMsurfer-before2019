@@ -1,4 +1,4 @@
-div.BIM-Control-ProgressBar
+div.BIMSURFER-Control-ProgressBar
 {
 	height: 25px;
 	outline: 1px blue solid;
@@ -7,7 +7,7 @@ div.BIM-Control-ProgressBar
 	display: none;
 }
 
-div.BIM-Control-ProgressBar-progress
+div.BIMSURFER-Control-ProgressBar-progress
 {
 	position: absolute;
 	left: 0px;
@@ -17,7 +17,7 @@ div.BIM-Control-ProgressBar-progress
 	width: 0%;
 }
 
-div.BIM-Control-ProgressBar-text
+div.BIMSURFER-Control-ProgressBar-text
 {
 	position: absolute;
 	vertical-align: bottom;

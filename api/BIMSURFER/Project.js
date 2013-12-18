@@ -1,21 +1,24 @@
 "use strict"
-BIM.Project = BIM.Class({
-	CLASS: 'Bim.Project',
+BIMSURFER.Project = BIMSURFER.Class({
+	CLASS: 'BIMSURFER.Project',
+	SYSTEM: null,
+
 	events: null,
 	server: null,
 	scene: null,
 	ifcTypes: null,
 	loadedTypes: null,
 
-	__construct: function(serverProject, server) {
+	__construct: function(system, serverProject, server) {
+		this.SYSTEM = system;
 
-		if(typeof server.CLASS == 'undefined' || server.CLASS !== 'BIM.Server') {
-			console.error('BIM.Project: No server given');
+		if(typeof server.CLASS == 'undefined' || server.CLASS !== 'BIMSURFER.Server') {
+			console.error('BIMSURFER.Project: No server given');
 			return
 		}
 
 		if(typeof serverProject.lastRevisionId == 'undefined') {
-			console.error('BIM.Project: No project lastRevisionId given');
+			console.error('BIMSURFER.Project: No project lastRevisionId given');
 			return;
 		}
 		this.server = server;
@@ -24,7 +27,7 @@ BIM.Project = BIM.Class({
 
 		jQuery.extend(this, serverProject);
 
-		this.events = new BIM.Events(this);
+		this.events = new BIMSURFER.Events(this.SYSTEM, this);
 	},
 
 	load: function() {
@@ -35,12 +38,12 @@ BIM.Project = BIM.Class({
 		var _this = this;
 
 		var step = function(params, state, progressLoader) {
-			BIM.events.trigger('progressChanged', state.progress);
+			_this.SYSTEM.events.trigger('progressChanged', state.progress);
 		};
 		var done = function(params, state, progressLoader) {
 			progressLoader.unregister();
 
-			BIM.events.trigger('progressBarStyleChanged', BIM.Constants.ProgressBarStyle.Marquee);
+			_this.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Marquee);
 
 			var url = _this.server.server.generateRevisionDownloadUrl({
 				serializerOid : _this.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJs3ShellSerializerPlugin').oid,
@@ -56,7 +59,7 @@ BIM.Project = BIM.Class({
 					_this.ifcTypes.sort();
 					_this.scene.data.ifcTypes = new Array();
 					_this.events.trigger('projectLoaded');
-					BIM.events.trigger('progressDone');
+					_this.SYSTEM.events.trigger('progressDone');
 				},
 				error: function(a,b,c,d,e) {
 					console.debug('Todo: Error');
@@ -75,12 +78,12 @@ BIM.Project = BIM.Class({
 			showOwn : true,
 			sync: false
 		}, function(laid) {
-			if(!BIM.Util.isset(laid)) {
+			if(!BIMSURFER.Util.isset(laid)) {
 				console.error('Error loading project:', _this.lastRevisionId);
 				return;
 			}
-			BIM.events.trigger('progressStarted', 'Preparing project');
-			new BIM.ProgressLoader(_this.server.server, laid, step, done, {laid: laid}, false);
+			_this.SYSTEM.events.trigger('progressStarted', 'Preparing project');
+			new BIMSURFER.ProgressLoader(_this.SYSTEM, _this.server.server, laid, step, done, {laid: laid}, false);
 		});
 	}
 });

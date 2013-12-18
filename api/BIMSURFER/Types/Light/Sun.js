@@ -1,8 +1,9 @@
-BIM.Light.Sun = BIM.Class(
+BIMSURFER.Light.Sun = BIMSURFER.Class(
 {
-	CLASS: 'BIM.Light.Sun',
-	__construct: function()
+	CLASS: 'BIMSURFER.Light.Sun',
+	__construct: function(system)
 	{
+		this.SYSTEM = system;
 		this.lightObject =
 		{
 			type:		'light',

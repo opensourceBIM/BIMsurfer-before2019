@@ -1,11 +1,14 @@
-BIM.Events = BIM.Class({
-	CLASS: 'BIM.Events',
+BIMSURFER.Events = BIMSURFER.Class({
+	CLASS: 'BIMSURFER.Events',
+	SYSTEM: null,
 
 	listeners: {},
 	object: null,
 
-	__construct: function(object) {
+	__construct: function(system, object) {
+		this.SYSTEM = system;
 		this.object = object;
+		this.listeners = {};
 	},
 
 	register: function(event, callback, object) {
@@ -43,7 +46,7 @@ BIM.Events = BIM.Class({
 		eventArguments = eventArguments || new Array();
 		if(typeof eventArguments == 'undefined') {
 			eventArguments = new Array();
-		} else if(!BIM.Util.isArray(eventArguments)) {
+		} else if(!BIMSURFER.Util.isArray(eventArguments)) {
 			eventArguments = [eventArguments];
 		}
 
@@ -78,5 +81,3 @@ BIM.Events = BIM.Class({
 		return event;
 	}
 });
-
-BIM.events = new BIM.Events(null); // Global Events

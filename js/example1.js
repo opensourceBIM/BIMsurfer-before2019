@@ -3,8 +3,10 @@ var BIMSurfer = null;
 
 $(function()
 {
+	BIMSurfer = new BIMSURFER.Viewer('viewport');
+
 	function connect(server, email, password) {
-		BIMServer = new BIM.Server(server, email, password);
+		BIMServer = new BIMSURFER.Server(BIMSurfer, server, email, password);
 		BIMServer.events.register("loggedin", connectCallback);
 		BIMServer.events.register("loginError", connectCallback);
 		BIMServer.events.register("connectionError", connectCallback);
@@ -112,8 +114,7 @@ $(function()
 
 	function connected()
 	{
-
-		BIMSurfer = new BIM.Surfer('viewport', BIMServer);
+		BIMSurfer.setServer(BIMServer);
 
 		$(this.window).resize(function(e) {
 			BIMSurfer.resize($('div#viewport').width(), $('div#viewport').height());
@@ -122,7 +123,7 @@ $(function()
 		var dialog = $('<div />').attr('title', 'Open a project');
 		var projectList = $('<ul />').attr('id', 'projects').appendTo(dialog);
 
-		var progressBar = new BIM.Control.ProgressBar('progress_bar');
+		var progressBar = new BIMSURFER.Control.ProgressBar(BIMSurfer, 'progress_bar');
 		BIMSurfer.addControl(progressBar);
 		progressBar.activate();
 
@@ -180,7 +181,7 @@ $(function()
 			{
 				var checkbox = $('<input />').attr('type', 'checkbox').attr('name', 'types').val(this.ifcTypes[i]);
 
-				if(BIM.Constants.defaultTypes.indexOf(this.ifcTypes[i]) != -1)
+				if(BIMSURFER.Constants.defaultTypes.indexOf(this.ifcTypes[i]) != -1)
 				{
 					$(checkbox).attr('checked', 'checked');
 				}
@@ -247,22 +248,22 @@ $(function()
 
 						if(BIMSurfer.loadScene(project.scene) != null)
 						{
-							var clickSelect = new BIM.Control.ClickSelect();
+							var clickSelect = new BIMSURFER.Control.ClickSelect(BIMSurfer);
 							clickSelect.events.register('select', nodeSelected);
 							clickSelect.events.register('unselect', nodeUnselected);
 							BIMSurfer.addControl(clickSelect);
 							clickSelect.activate();
 
-							var panOrbit = new BIM.Control.PickFlyOrbit();
+							var panOrbit = new BIMSURFER.Control.PickFlyOrbit(BIMSurfer);
 							BIMSurfer.addControl(panOrbit);
 							panOrbit.activate();
 
-							var ambientLight = new BIM.Light.Ambient();
+							var ambientLight = new BIMSURFER.Light.Ambient(BIMSurfer);
 						   	BIMSurfer.addLight(ambientLight);
 
 					   		BIMSurfer.loadGeometry();
 
-							var objectTreeView = new BIM.Control.ObjectTreeView('object_tree_view');
+							var objectTreeView = new BIMSURFER.Control.ObjectTreeView(BIMSurfer, 'object_tree_view');
 							BIMSurfer.addControl(objectTreeView);
 							objectTreeView.activate();
 						}

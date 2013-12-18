@@ -1,5 +1,5 @@
-BIM.Control.PickFlyOrbit = BIM.Class({
-	CLASS: "BIM.Control.PickFlyOrbit",
+BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
+	CLASS: "BIMSURFER.Control.PickFlyOrbit",
 	surfer: null,
 	active: false,
 	events: null,
@@ -33,8 +33,10 @@ BIM.Control.PickFlyOrbit = BIM.Class({
 	flightStartTime: null,
 	flightDuration: null,
 
-	__construct: function(params)	{
-		this.events = new BIM.Events(this);
+	__construct: function(system, params)	{
+		this.SYSTEM = system;
+
+		this.events = new BIMSURFER.Events(this.SYSTEM, this);
 		if(typeof params != 'undefined') {
 			this.eye = params.eye || this.eye;
 			this.look = params.look || this.look;
@@ -134,7 +136,7 @@ BIM.Control.PickFlyOrbit = BIM.Class({
 			var startPhi = Math.acos(this.startEye.z/radius);
 			var startTheta = Math.asin(this.startEye.y/(radius*Math.sin(startPhi))) + Math.PI;
 
-			var phi = 2*Math.PI - this.pitch * BIM.Constants.camera.orbitSpeedFactor - startPhi;
+			var phi = 2*Math.PI - this.pitch * BIMSURFER.Constants.camera.orbitSpeedFactor - startPhi;
 			while(phi > 2*Math.PI) phi -= 2 * Math.PI;
 			while(phi < 0) phi += 2*Math.PI;
 			if(phi < Math.PI && this.direction != -1) {
@@ -146,20 +148,20 @@ BIM.Control.PickFlyOrbit = BIM.Class({
 			}
 
 
-			var theta = 2 * Math.PI - this.yaw * BIM.Constants.camera.orbitSpeedFactor + startTheta;
+			var theta = 2 * Math.PI - this.yaw * BIMSURFER.Constants.camera.orbitSpeedFactor + startTheta;
 			var x = radius * Math.sin(phi) * Math.cos(theta);
 			var y = radius * Math.sin(phi) * Math.sin(theta);
 			var z = radius * Math.cos(phi);
 
-			var zoomX = x * this.zoom*BIM.Constants.camera.zoomSpeedFactor;
-			var zoomY = y * this.zoom*BIM.Constants.camera.zoomSpeedFactor;
-			var zoomZ = z * this.zoom*BIM.Constants.camera.zoomSpeedFactor;
+			var zoomX = x * this.zoom*BIMSURFER.Constants.camera.zoomSpeedFactor;
+			var zoomY = y * this.zoom*BIMSURFER.Constants.camera.zoomSpeedFactor;
+			var zoomZ = z * this.zoom*BIMSURFER.Constants.camera.zoomSpeedFactor;
 
 	   		if((x >= 0 && zoomX > x) || (x < 0 && zoomX < x) || (y >= 0 && zoomY > y) || (y < 0 && zoomY < y) || (z >= 0 && zoomZ > z) || (z < 0 && zoomZ < z)) {
 	  			this.zoom = this.prevZoom;
-				zoomX = x * this.zoom*BIM.Constants.camera.zoomSpeedFactor;
-				zoomY = y * this.zoom*BIM.Constants.camera.zoomSpeedFactor;
-				zoomZ = z * this.zoom*BIM.Constants.camera.zoomSpeedFactor;
+				zoomX = x * this.zoom*BIMSURFER.Constants.camera.zoomSpeedFactor;
+				zoomY = y * this.zoom*BIMSURFER.Constants.camera.zoomSpeedFactor;
+				zoomZ = z * this.zoom*BIMSURFER.Constants.camera.zoomSpeedFactor;
 	  		}
 
 			x -= zoomX;

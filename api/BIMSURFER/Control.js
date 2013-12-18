@@ -1,20 +1,22 @@
 "use strict"
-BIM.Control = BIM.Class({
-	CLASS: 'BIM.Control',
+BIMSURFER.Control = BIMSURFER.Class({
+	CLASS: 'BIMSURFER.Control',
+	SYSTEM: null,
 	div: null,
 	DOMelement: null,
 	surfer: null,
 	active: false,
 	events: null,
 
-	__construct: function(div) {
+	__construct: function(system, div) {
+		this.SYSTEM = system;
 		if(typeof div == 'string') {
 			this.div = $(document).find('div#' + div)[0] || null;
 		} else if($(div).is('div')) {
 			this.div = div;
 		}
 
-		this.events = new BIM.Events(this);
+		this.events = new BIMSURFER.Events(this.SYSTEM, this);
 	},
 
 	redraw: function() {

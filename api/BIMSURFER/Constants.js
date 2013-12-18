@@ -1,10 +1,10 @@
-if(typeof BIM.Constants != 'object') {
-	BIM.Constants = {};
+if(typeof BIMSURFER.Constants != 'object') {
+	BIMSURFER.Constants = {};
 }
 
-BIM.Constants.timeoutTime = 10000; // ms
+BIMSURFER.Constants.timeoutTime = 10000; // ms
 
-BIM.Constants.defaultTypes = [
+BIMSURFER.Constants.defaultTypes = [
 	"IfcColumn",
 	"IfcStair",
 	"IfcSlab",
@@ -19,25 +19,25 @@ BIM.Constants.defaultTypes = [
 	"IfcRoof"
 ];
 
-BIM.Constants.camera = {
+BIMSURFER.Constants.camera = {
 	maxOrbitSpeed : Math.PI * 0.1,
 	orbitSpeedFactor : 0.05,
 	zoomSpeedFactor : 0.1,
 	panSpeedFactor : 0.6
 };
 
-BIM.Constants.clamp = function(s, min, max) {
+BIMSURFER.Constants.clamp = function(s, min, max) {
 	return Math.min(Math.max(s, min), max);
 };
 
-BIM.Constants.highlightSelectedObject = {
+BIMSURFER.Constants.highlightSelectedObject = {
 	type : 'material',
 	id : 'highlight',
 	emit : 0.0,
 	baseColor : {r: 0.0, g: 0.5, b: 0.5}
 }
 
-BIM.Constants.highlightSelectedSpecialObject = {
+BIMSURFER.Constants.highlightSelectedSpecialObject = {
 	type : 'material',
 	id : 'specialselectedhighlight',
 	emit : 1,
@@ -45,7 +45,7 @@ BIM.Constants.highlightSelectedSpecialObject = {
 	shine : 10.0
 };
 
-BIM.Constants.ProgressBarStyle = {
+BIMSURFER.Constants.ProgressBarStyle = {
 	Continuous: 1,
 	Marquee: 2
 }

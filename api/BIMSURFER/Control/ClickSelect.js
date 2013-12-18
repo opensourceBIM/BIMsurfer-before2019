@@ -1,9 +1,6 @@
 "use strict"
-BIM.Control.ClickSelect = BIM.Class(BIM.Control, {
-	CLASS: "BIM.Control.CLickSelect",
-	surfer: null,
-	active: false,
-	events: null,
+BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
+	CLASS: "BIMSURFER.Control.CLickSelect",
 
 	downX: null,
 	downY: null,
@@ -11,8 +8,10 @@ BIM.Control.ClickSelect = BIM.Class(BIM.Control, {
 	highlighted: null,
 	lastSelected: 0,
 
-	__construct: function(params) {
-		this.events = new BIM.Events(this);
+	__construct: function(system) {
+		this.SYSTEM = system;
+
+		this.events = new BIMSURFER.Events(this.SYSTEM, this);
 	},
 
 	activate: function() {
@@ -44,14 +43,14 @@ BIM.Control.ClickSelect = BIM.Class(BIM.Control, {
 	pick: function(hit) {
 		this.unselect();
 		this.highlighted = this.surfer.scene.findNode(hit.nodeId);
-		this.highlighted.insert('node', BIM.Constants.highlightSelectedObject);
+		this.highlighted.insert('node', BIMSURFER.Constants.highlightSelectedObject);
 		this.lastSelected = Date.now();
 		this.events.trigger('select', [this.highlighted]);
 	},
 
 	unselect: function() {
 		if(this.highlighted) {
-			var node = this.surfer.scene.findNode(BIM.Constants.highlightSelectedObject.id);
+			var node = this.surfer.scene.findNode(BIMSURFER.Constants.highlightSelectedObject.id);
 			node.splice();
 			this.events.trigger('unselect', [this.highlighted]);
 			this.highlighted = null;

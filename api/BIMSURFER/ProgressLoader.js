@@ -1,5 +1,6 @@
-BIM.ProgressLoader = BIM.Class({
-	CLASS: 'BIM.Class',
+BIMSURFER.ProgressLoader = BIMSURFER.Class({
+	CLASS: 'BIMSURFER.Class',
+	SYSTEM: null,
 
 	server: null,
 	downloadID: null,
@@ -9,7 +10,8 @@ BIM.ProgressLoader = BIM.Class({
 	autoUnregister: null,
 	registered: null,
 
-	__construct: function(server, downloadID, step, done, params, autoUnregister) {
+	__construct: function(system, server, downloadID, step, done, params, autoUnregister) {
+		this.SYSTEM = system;
 		this.server = server;
 		this.downloadID = downloadID;
 		this.step = step;

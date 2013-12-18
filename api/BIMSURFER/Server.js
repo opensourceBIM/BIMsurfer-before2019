@@ -1,5 +1,8 @@
-BIM.Server = BIM.Class({
-	CLASS: 'BIM.Server',
+"use strict"
+BIMSURFER.Server = BIMSURFER.Class({
+	CLASS: 'BIMSURFER.Server',
+	SYSTEM: null,
+
 	url: null,
 	username: null,
 	password: null,
@@ -11,10 +14,11 @@ BIM.Server = BIM.Class({
 	projects: null,
 	serializers: new Array(),
 
-	__construct: function(url, username, password, rememberMe, autoConnect, autoLogin) {
+	__construct: function(system, url, username, password, rememberMe, autoConnect, autoLogin) {
+		this.SYSTEM = system;
 
 		this.url = (url.substr(-1) == '/' ? url.substr(0, url.length - 1) : url);
-		this.events = new BIM.Events(this);
+		this.events = new BIMSURFER.Events(this.SYSTEM, this);
 		this.username = username;
 		this.password = password;
 
@@ -49,7 +53,7 @@ BIM.Server = BIM.Class({
 			var error = 'Timed out';
 			_this.connectionStatus = 'error: ' + error;
 			_this.events.trigger('connectionError', error);
-		}), BIM.Constants.timeoutTime);
+		}), BIMSURFER.Constants.timeoutTime);
 
 		jQuery.ajax({
 			url: this.url + '/js/bimserverapi.js',
@@ -101,7 +105,7 @@ BIM.Server = BIM.Class({
 			var error = 'Timed out';
 			_this.connectionStatus = 'error: ' + error;
 			_this.events.trigger('loginError', error);
-		}), BIM.Constants.timeoutTime);
+		}), BIMSURFER.Constants.timeoutTime);
 
 		this.server.login(this.username, this.password, this.rememberMe, function() {
 			_this.server.call(
@@ -111,9 +115,9 @@ BIM.Server = BIM.Class({
 				function(projects) {
 					clearTimeout(timeoutTimer);
 					_this.projects = new Array();
-	
+
 					for(var i = 0; i < projects.length; i++) {
-						_this.projects.push(new BIM.Project(projects[i], _this));
+						_this.projects.push(new BIMSURFER.Project(_this.SYSTEM, projects[i], _this));
 					}
 
 					_this.loginStatus = 'loggedin';
@@ -137,10 +141,10 @@ BIM.Server = BIM.Class({
 	},
 
 	getSerializer: function(name) {
-		if(!BIM.Util.isset(this.serializers[name])) {
+		if(!BIMSURFER.Util.isset(this.serializers[name])) {
 			var _this = this;
 			this.server.call("PluginInterface", "getSerializerByPluginClassName", {pluginClassName : name, async: false}, function(serializer) {
-				if(!BIM.Util.isset(serializer.oid)) return null;
+				if(!BIMSURFER.Util.isset(serializer.oid)) return null;
 					_this.serializers[name] = serializer;
 			});
 		}

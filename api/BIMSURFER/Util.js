@@ -1,12 +1,12 @@
-if(typeof BIM.Util != 'object')
-	BIM.Util = {};
+if(typeof BIMSURFER.Util != 'object')
+	BIMSURFER.Util = {};
 
 
-BIM.Util.isset = function(variable)
+BIMSURFER.Util.isset = function(variable)
 {
 	return !(typeof variable == 'undefined' || variable == null);
 }
-BIM.Util.isArray = function(variable) {
+BIMSURFER.Util.isArray = function(variable) {
 	return Object.prototype.toString.call(variable) === '[object Array]'
 }
 
@@ -53,14 +53,14 @@ if(!GLMAT_RANDOM) {
  * @class Common utilities
  * @name glMatrix
  */
-BIM.Util.glMatrix = {};
+BIMSURFER.Util.glMatrix = {};
 
 /**
  * Sets the type of array used when creating new vectors and matricies
  *
  * @param {Type} type Array type, such as Float32Array or Array
  */
-BIM.Util.glMatrix.setMatrixArrayType = function(type) {
+BIMSURFER.Util.glMatrix.setMatrixArrayType = function(type) {
     GLMAT_ARRAY_TYPE = type;
 }
 
@@ -69,7 +69,7 @@ BIM.Util.glMatrix.setMatrixArrayType = function(type) {
 *
 * @param {Number} Angle in Degrees
 */
-BIM.Util.glMatrix.toRadian = function(a){
+BIMSURFER.Util.glMatrix.toRadian = function(a){
      return a * (Math.PI / 180);
 }
 
@@ -78,14 +78,14 @@ BIM.Util.glMatrix.toRadian = function(a){
  * @class 4 Dimensional Vector
  * @name vec4
  */
-BIM.Util.glMatrix.vec4 = {};
+BIMSURFER.Util.glMatrix.vec4 = {};
 
 /**
  * Creates a new, empty vec4
  *
  * @returns {vec4} a new 4D vector
  */
-BIM.Util.glMatrix.vec4.create = function() {
+BIMSURFER.Util.glMatrix.vec4.create = function() {
     var out = new GLMAT_ARRAY_TYPE(4);
     out[0] = 0;
     out[1] = 0;
@@ -100,7 +100,7 @@ BIM.Util.glMatrix.vec4.create = function() {
  * @param {vec4} a vector to clone
  * @returns {vec4} a new 4D vector
  */
-BIM.Util.glMatrix.vec4.clone = function(a) {
+BIMSURFER.Util.glMatrix.vec4.clone = function(a) {
     var out = new GLMAT_ARRAY_TYPE(4);
     out[0] = a[0];
     out[1] = a[1];
@@ -118,7 +118,7 @@ BIM.Util.glMatrix.vec4.clone = function(a) {
  * @param {Number} w W component
  * @returns {vec4} a new 4D vector
  */
-BIM.Util.glMatrix.vec4.fromValues = function(x, y, z, w) {
+BIMSURFER.Util.glMatrix.vec4.fromValues = function(x, y, z, w) {
     var out = new GLMAT_ARRAY_TYPE(4);
     out[0] = x;
     out[1] = y;
@@ -134,7 +134,7 @@ BIM.Util.glMatrix.vec4.fromValues = function(x, y, z, w) {
  * @param {vec4} a the source vector
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.copy = function(out, a) {
+BIMSURFER.Util.glMatrix.vec4.copy = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -152,7 +152,7 @@ BIM.Util.glMatrix.vec4.copy = function(out, a) {
  * @param {Number} w W component
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.set = function(out, x, y, z, w) {
+BIMSURFER.Util.glMatrix.vec4.set = function(out, x, y, z, w) {
     out[0] = x;
     out[1] = y;
     out[2] = z;
@@ -168,7 +168,7 @@ BIM.Util.glMatrix.vec4.set = function(out, x, y, z, w) {
  * @param {vec4} b the second operand
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.add = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec4.add = function(out, a, b) {
     out[0] = a[0] + b[0];
     out[1] = a[1] + b[1];
     out[2] = a[2] + b[2];
@@ -184,7 +184,7 @@ BIM.Util.glMatrix.vec4.add = function(out, a, b) {
  * @param {vec4} b the second operand
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.subtract = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec4.subtract = function(out, a, b) {
     out[0] = a[0] - b[0];
     out[1] = a[1] - b[1];
     out[2] = a[2] - b[2];
@@ -193,10 +193,10 @@ BIM.Util.glMatrix.vec4.subtract = function(out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec4.subtract}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec4.subtract}
  * @function
  */
-BIM.Util.glMatrix.vec4.sub = BIM.Util.glMatrix.vec4.subtract;
+BIMSURFER.Util.glMatrix.vec4.sub = BIMSURFER.Util.glMatrix.vec4.subtract;
 
 /**
  * Multiplies two vec4's
@@ -206,7 +206,7 @@ BIM.Util.glMatrix.vec4.sub = BIM.Util.glMatrix.vec4.subtract;
  * @param {vec4} b the second operand
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.multiply = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec4.multiply = function(out, a, b) {
     out[0] = a[0] * b[0];
     out[1] = a[1] * b[1];
     out[2] = a[2] * b[2];
@@ -215,10 +215,10 @@ BIM.Util.glMatrix.vec4.multiply = function(out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec4.multiply}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec4.multiply}
  * @function
  */
-BIM.Util.glMatrix.vec4.mul = BIM.Util.glMatrix.vec4.multiply;
+BIMSURFER.Util.glMatrix.vec4.mul = BIMSURFER.Util.glMatrix.vec4.multiply;
 
 /**
  * Divides two vec4's
@@ -228,7 +228,7 @@ BIM.Util.glMatrix.vec4.mul = BIM.Util.glMatrix.vec4.multiply;
  * @param {vec4} b the second operand
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.divide = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec4.divide = function(out, a, b) {
     out[0] = a[0] / b[0];
     out[1] = a[1] / b[1];
     out[2] = a[2] / b[2];
@@ -237,10 +237,10 @@ BIM.Util.glMatrix.vec4.divide = function(out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec4.divide}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec4.divide}
  * @function
  */
-BIM.Util.glMatrix.vec4.div = BIM.Util.glMatrix.vec4.divide;
+BIMSURFER.Util.glMatrix.vec4.div = BIMSURFER.Util.glMatrix.vec4.divide;
 
 /**
  * Returns the minimum of two vec4's
@@ -250,7 +250,7 @@ BIM.Util.glMatrix.vec4.div = BIM.Util.glMatrix.vec4.divide;
  * @param {vec4} b the second operand
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.min = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec4.min = function(out, a, b) {
     out[0] = Math.min(a[0], b[0]);
     out[1] = Math.min(a[1], b[1]);
     out[2] = Math.min(a[2], b[2]);
@@ -266,7 +266,7 @@ BIM.Util.glMatrix.vec4.min = function(out, a, b) {
  * @param {vec4} b the second operand
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.max = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec4.max = function(out, a, b) {
     out[0] = Math.max(a[0], b[0]);
     out[1] = Math.max(a[1], b[1]);
     out[2] = Math.max(a[2], b[2]);
@@ -282,7 +282,7 @@ BIM.Util.glMatrix.vec4.max = function(out, a, b) {
  * @param {Number} b amount to scale the vector by
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.scale = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec4.scale = function(out, a, b) {
     out[0] = a[0] * b;
     out[1] = a[1] * b;
     out[2] = a[2] * b;
@@ -299,7 +299,7 @@ BIM.Util.glMatrix.vec4.scale = function(out, a, b) {
  * @param {Number} scale the amount to scale b by before adding
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.scaleAndAdd = function(out, a, b, scale) {
+BIMSURFER.Util.glMatrix.vec4.scaleAndAdd = function(out, a, b, scale) {
     out[0] = a[0] + (b[0] * scale);
     out[1] = a[1] + (b[1] * scale);
     out[2] = a[2] + (b[2] * scale);
@@ -314,7 +314,7 @@ BIM.Util.glMatrix.vec4.scaleAndAdd = function(out, a, b, scale) {
  * @param {vec4} b the second operand
  * @returns {Number} distance between a and b
  */
-BIM.Util.glMatrix.vec4.distance = function(a, b) {
+BIMSURFER.Util.glMatrix.vec4.distance = function(a, b) {
     var x = b[0] - a[0],
         y = b[1] - a[1],
         z = b[2] - a[2],
@@ -323,10 +323,10 @@ BIM.Util.glMatrix.vec4.distance = function(a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec4.distance}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec4.distance}
  * @function
  */
-BIM.Util.glMatrix.vec4.dist = BIM.Util.glMatrix.vec4.distance;
+BIMSURFER.Util.glMatrix.vec4.dist = BIMSURFER.Util.glMatrix.vec4.distance;
 
 /**
  * Calculates the squared euclidian distance between two vec4's
@@ -335,7 +335,7 @@ BIM.Util.glMatrix.vec4.dist = BIM.Util.glMatrix.vec4.distance;
  * @param {vec4} b the second operand
  * @returns {Number} squared distance between a and b
  */
-BIM.Util.glMatrix.vec4.squaredDistance = function(a, b) {
+BIMSURFER.Util.glMatrix.vec4.squaredDistance = function(a, b) {
     var x = b[0] - a[0],
         y = b[1] - a[1],
         z = b[2] - a[2],
@@ -344,10 +344,10 @@ BIM.Util.glMatrix.vec4.squaredDistance = function(a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec4.squaredDistance}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec4.squaredDistance}
  * @function
  */
-BIM.Util.glMatrix.vec4.sqrDist = BIM.Util.glMatrix.vec4.squaredDistance;
+BIMSURFER.Util.glMatrix.vec4.sqrDist = BIMSURFER.Util.glMatrix.vec4.squaredDistance;
 
 /**
  * Calculates the length of a vec4
@@ -355,7 +355,7 @@ BIM.Util.glMatrix.vec4.sqrDist = BIM.Util.glMatrix.vec4.squaredDistance;
  * @param {vec4} a vector to calculate length of
  * @returns {Number} length of a
  */
-BIM.Util.glMatrix.vec4.length = function (a) {
+BIMSURFER.Util.glMatrix.vec4.length = function (a) {
     var x = a[0],
         y = a[1],
         z = a[2],
@@ -364,10 +364,10 @@ BIM.Util.glMatrix.vec4.length = function (a) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec4.length}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec4.length}
  * @function
  */
-BIM.Util.glMatrix.vec4.len = BIM.Util.glMatrix.vec4.length;
+BIMSURFER.Util.glMatrix.vec4.len = BIMSURFER.Util.glMatrix.vec4.length;
 
 /**
  * Calculates the squared length of a vec4
@@ -375,7 +375,7 @@ BIM.Util.glMatrix.vec4.len = BIM.Util.glMatrix.vec4.length;
  * @param {vec4} a vector to calculate squared length of
  * @returns {Number} squared length of a
  */
-BIM.Util.glMatrix.vec4.squaredLength = function (a) {
+BIMSURFER.Util.glMatrix.vec4.squaredLength = function (a) {
     var x = a[0],
         y = a[1],
         z = a[2],
@@ -384,10 +384,10 @@ BIM.Util.glMatrix.vec4.squaredLength = function (a) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec4.squaredLength}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec4.squaredLength}
  * @function
  */
-BIM.Util.glMatrix.vec4.sqrLen = BIM.Util.glMatrix.vec4.squaredLength;
+BIMSURFER.Util.glMatrix.vec4.sqrLen = BIMSURFER.Util.glMatrix.vec4.squaredLength;
 
 /**
  * Negates the components of a vec4
@@ -396,7 +396,7 @@ BIM.Util.glMatrix.vec4.sqrLen = BIM.Util.glMatrix.vec4.squaredLength;
  * @param {vec4} a vector to negate
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.negate = function(out, a) {
+BIMSURFER.Util.glMatrix.vec4.negate = function(out, a) {
     out[0] = -a[0];
     out[1] = -a[1];
     out[2] = -a[2];
@@ -411,7 +411,7 @@ BIM.Util.glMatrix.vec4.negate = function(out, a) {
  * @param {vec4} a vector to normalize
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.normalize = function(out, a) {
+BIMSURFER.Util.glMatrix.vec4.normalize = function(out, a) {
     var x = a[0],
         y = a[1],
         z = a[2],
@@ -434,7 +434,7 @@ BIM.Util.glMatrix.vec4.normalize = function(out, a) {
  * @param {vec4} b the second operand
  * @returns {Number} dot product of a and b
  */
-BIM.Util.glMatrix.vec4.dot = function (a, b) {
+BIMSURFER.Util.glMatrix.vec4.dot = function (a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
 };
 
@@ -447,7 +447,7 @@ BIM.Util.glMatrix.vec4.dot = function (a, b) {
  * @param {Number} t interpolation amount between the two inputs
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.lerp = function (out, a, b, t) {
+BIMSURFER.Util.glMatrix.vec4.lerp = function (out, a, b, t) {
     var ax = a[0],
         ay = a[1],
         az = a[2],
@@ -466,7 +466,7 @@ BIM.Util.glMatrix.vec4.lerp = function (out, a, b, t) {
  * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.random = function (out, scale) {
+BIMSURFER.Util.glMatrix.vec4.random = function (out, scale) {
     scale = scale || 1.0;
 
     //TODO: This is a pretty awful way of doing this. Find something better.
@@ -474,20 +474,20 @@ BIM.Util.glMatrix.vec4.random = function (out, scale) {
     out[1] = GLMAT_RANDOM();
     out[2] = GLMAT_RANDOM();
     out[3] = GLMAT_RANDOM();
-    BIM.Util.glMatrix.vec4.normalize(out, out);
-    BIM.Util.glMatrix.vec4.scale(out, out, scale);
+    BIMSURFER.Util.glMatrix.vec4.normalize(out, out);
+    BIMSURFER.Util.glMatrix.vec4.scale(out, out, scale);
     return out;
 };
 
 /**
- * Transforms the vec4 with a BIM.Util.glMatrix.mat4.
+ * Transforms the vec4 with a BIMSURFER.Util.glMatrix.mat4.
  *
  * @param {vec4} out the receiving vector
  * @param {vec4} a the vector to transform
  * @param {mat4} m matrix to transform with
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.transformMat4 = function(out, a, m) {
+BIMSURFER.Util.glMatrix.vec4.transformMat4 = function(out, a, m) {
     var x = a[0], y = a[1], z = a[2], w = a[3];
     out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
     out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
@@ -504,7 +504,7 @@ BIM.Util.glMatrix.vec4.transformMat4 = function(out, a, m) {
  * @param {quat} q quaternion to transform with
  * @returns {vec4} out
  */
-BIM.Util.glMatrix.vec4.transformQuat = function(out, a, q) {
+BIMSURFER.Util.glMatrix.vec4.transformQuat = function(out, a, q) {
     var x = a[0], y = a[1], z = a[2],
         qx = q[0], qy = q[1], qz = q[2], qw = q[3],
 
@@ -525,7 +525,7 @@ BIM.Util.glMatrix.vec4.transformQuat = function(out, a, q) {
  * Perform some operation over an array of vec4s.
  *
  * @param {Array} a the array of vectors to iterate over
- * @param {Number} stride Number of elements between the start of each BIM.Util.glMatrix.vec4. If 0 assumes tightly packed
+ * @param {Number} stride Number of elements between the start of each BIMSURFER.Util.glMatrix.vec4. If 0 assumes tightly packed
  * @param {Number} offset Number of elements to skip at the beginning of the array
  * @param {Number} count Number of vec2s to iterate over. If 0 iterates over entire array
  * @param {Function} fn Function to call for each vector in the array
@@ -533,8 +533,8 @@ BIM.Util.glMatrix.vec4.transformQuat = function(out, a, q) {
  * @returns {Array} a
  * @function
  */
-BIM.Util.glMatrix.vec4.forEach = (function() {
-    var vec = BIM.Util.glMatrix.vec4.create();
+BIMSURFER.Util.glMatrix.vec4.forEach = (function() {
+    var vec = BIMSURFER.Util.glMatrix.vec4.create();
 
     return function(a, stride, offset, count, fn, arg) {
         var i, l;
@@ -568,7 +568,7 @@ BIM.Util.glMatrix.vec4.forEach = (function() {
  * @param {vec4} vec vector to represent as a string
  * @returns {String} string representation of the vector
  */
-BIM.Util.glMatrix.vec4.str = function (a) {
+BIMSURFER.Util.glMatrix.vec4.str = function (a) {
     return 'vec4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ')';
 };
 
@@ -578,14 +578,14 @@ BIM.Util.glMatrix.vec4.str = function (a) {
  * @class 3 Dimensional Vector
  * @name vec3
  */
-BIM.Util.glMatrix.vec3 = {};
+BIMSURFER.Util.glMatrix.vec3 = {};
 
 /**
  * Creates a new, empty vec3
  *
  * @returns {vec3} a new 3D vector
  */
-BIM.Util.glMatrix.vec3.create = function() {
+BIMSURFER.Util.glMatrix.vec3.create = function() {
     var out = new GLMAT_ARRAY_TYPE(3);
     out[0] = 0;
     out[1] = 0;
@@ -599,7 +599,7 @@ BIM.Util.glMatrix.vec3.create = function() {
  * @param {vec3} a vector to clone
  * @returns {vec3} a new 3D vector
  */
-BIM.Util.glMatrix.vec3.clone = function(a) {
+BIMSURFER.Util.glMatrix.vec3.clone = function(a) {
     var out = new GLMAT_ARRAY_TYPE(3);
     out[0] = a[0];
     out[1] = a[1];
@@ -615,7 +615,7 @@ BIM.Util.glMatrix.vec3.clone = function(a) {
  * @param {Number} z Z component
  * @returns {vec3} a new 3D vector
  */
-BIM.Util.glMatrix.vec3.fromValues = function(x, y, z) {
+BIMSURFER.Util.glMatrix.vec3.fromValues = function(x, y, z) {
     var out = new GLMAT_ARRAY_TYPE(3);
     out[0] = x;
     out[1] = y;
@@ -630,7 +630,7 @@ BIM.Util.glMatrix.vec3.fromValues = function(x, y, z) {
  * @param {vec3} a the source vector
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.copy = function(out, a) {
+BIMSURFER.Util.glMatrix.vec3.copy = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -646,7 +646,7 @@ BIM.Util.glMatrix.vec3.copy = function(out, a) {
  * @param {Number} z Z component
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.set = function(out, x, y, z) {
+BIMSURFER.Util.glMatrix.vec3.set = function(out, x, y, z) {
     out[0] = x;
     out[1] = y;
     out[2] = z;
@@ -661,7 +661,7 @@ BIM.Util.glMatrix.vec3.set = function(out, x, y, z) {
  * @param {vec3} b the second operand
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.add = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec3.add = function(out, a, b) {
     out[0] = a[0] + b[0];
     out[1] = a[1] + b[1];
     out[2] = a[2] + b[2];
@@ -676,7 +676,7 @@ BIM.Util.glMatrix.vec3.add = function(out, a, b) {
  * @param {vec3} b the second operand
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.subtract = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec3.subtract = function(out, a, b) {
     out[0] = a[0] - b[0];
     out[1] = a[1] - b[1];
     out[2] = a[2] - b[2];
@@ -684,10 +684,10 @@ BIM.Util.glMatrix.vec3.subtract = function(out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec3.subtract}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec3.subtract}
  * @function
  */
-BIM.Util.glMatrix.vec3.sub = BIM.Util.glMatrix.vec3.subtract;
+BIMSURFER.Util.glMatrix.vec3.sub = BIMSURFER.Util.glMatrix.vec3.subtract;
 
 /**
  * Multiplies two vec3's
@@ -697,7 +697,7 @@ BIM.Util.glMatrix.vec3.sub = BIM.Util.glMatrix.vec3.subtract;
  * @param {vec3} b the second operand
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.multiply = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec3.multiply = function(out, a, b) {
     out[0] = a[0] * b[0];
     out[1] = a[1] * b[1];
     out[2] = a[2] * b[2];
@@ -705,10 +705,10 @@ BIM.Util.glMatrix.vec3.multiply = function(out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec3.multiply}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec3.multiply}
  * @function
  */
-BIM.Util.glMatrix.vec3.mul = BIM.Util.glMatrix.vec3.multiply;
+BIMSURFER.Util.glMatrix.vec3.mul = BIMSURFER.Util.glMatrix.vec3.multiply;
 
 /**
  * Divides two vec3's
@@ -718,7 +718,7 @@ BIM.Util.glMatrix.vec3.mul = BIM.Util.glMatrix.vec3.multiply;
  * @param {vec3} b the second operand
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.divide = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec3.divide = function(out, a, b) {
     out[0] = a[0] / b[0];
     out[1] = a[1] / b[1];
     out[2] = a[2] / b[2];
@@ -726,10 +726,10 @@ BIM.Util.glMatrix.vec3.divide = function(out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec3.divide}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec3.divide}
  * @function
  */
-BIM.Util.glMatrix.vec3.div = BIM.Util.glMatrix.vec3.divide;
+BIMSURFER.Util.glMatrix.vec3.div = BIMSURFER.Util.glMatrix.vec3.divide;
 
 /**
  * Returns the minimum of two vec3's
@@ -739,7 +739,7 @@ BIM.Util.glMatrix.vec3.div = BIM.Util.glMatrix.vec3.divide;
  * @param {vec3} b the second operand
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.min = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec3.min = function(out, a, b) {
     out[0] = Math.min(a[0], b[0]);
     out[1] = Math.min(a[1], b[1]);
     out[2] = Math.min(a[2], b[2]);
@@ -754,7 +754,7 @@ BIM.Util.glMatrix.vec3.min = function(out, a, b) {
  * @param {vec3} b the second operand
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.max = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec3.max = function(out, a, b) {
     out[0] = Math.max(a[0], b[0]);
     out[1] = Math.max(a[1], b[1]);
     out[2] = Math.max(a[2], b[2]);
@@ -769,7 +769,7 @@ BIM.Util.glMatrix.vec3.max = function(out, a, b) {
  * @param {Number} b amount to scale the vector by
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.scale = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec3.scale = function(out, a, b) {
     out[0] = a[0] * b;
     out[1] = a[1] * b;
     out[2] = a[2] * b;
@@ -785,7 +785,7 @@ BIM.Util.glMatrix.vec3.scale = function(out, a, b) {
  * @param {Number} scale the amount to scale b by before adding
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.scaleAndAdd = function(out, a, b, scale) {
+BIMSURFER.Util.glMatrix.vec3.scaleAndAdd = function(out, a, b, scale) {
     out[0] = a[0] + (b[0] * scale);
     out[1] = a[1] + (b[1] * scale);
     out[2] = a[2] + (b[2] * scale);
@@ -799,7 +799,7 @@ BIM.Util.glMatrix.vec3.scaleAndAdd = function(out, a, b, scale) {
  * @param {vec3} b the second operand
  * @returns {Number} distance between a and b
  */
-BIM.Util.glMatrix.vec3.distance = function(a, b) {
+BIMSURFER.Util.glMatrix.vec3.distance = function(a, b) {
     var x = b[0] - a[0],
         y = b[1] - a[1],
         z = b[2] - a[2];
@@ -807,10 +807,10 @@ BIM.Util.glMatrix.vec3.distance = function(a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec3.distance}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec3.distance}
  * @function
  */
-BIM.Util.glMatrix.vec3.dist = BIM.Util.glMatrix.vec3.distance;
+BIMSURFER.Util.glMatrix.vec3.dist = BIMSURFER.Util.glMatrix.vec3.distance;
 
 /**
  * Calculates the squared euclidian distance between two vec3's
@@ -819,7 +819,7 @@ BIM.Util.glMatrix.vec3.dist = BIM.Util.glMatrix.vec3.distance;
  * @param {vec3} b the second operand
  * @returns {Number} squared distance between a and b
  */
-BIM.Util.glMatrix.vec3.squaredDistance = function(a, b) {
+BIMSURFER.Util.glMatrix.vec3.squaredDistance = function(a, b) {
     var x = b[0] - a[0],
         y = b[1] - a[1],
         z = b[2] - a[2];
@@ -827,10 +827,10 @@ BIM.Util.glMatrix.vec3.squaredDistance = function(a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec3.squaredDistance}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec3.squaredDistance}
  * @function
  */
-BIM.Util.glMatrix.vec3.sqrDist = BIM.Util.glMatrix.vec3.squaredDistance;
+BIMSURFER.Util.glMatrix.vec3.sqrDist = BIMSURFER.Util.glMatrix.vec3.squaredDistance;
 
 /**
  * Calculates the length of a vec3
@@ -838,7 +838,7 @@ BIM.Util.glMatrix.vec3.sqrDist = BIM.Util.glMatrix.vec3.squaredDistance;
  * @param {vec3} a vector to calculate length of
  * @returns {Number} length of a
  */
-BIM.Util.glMatrix.vec3.length = function (a) {
+BIMSURFER.Util.glMatrix.vec3.length = function (a) {
     var x = a[0],
         y = a[1],
         z = a[2];
@@ -846,10 +846,10 @@ BIM.Util.glMatrix.vec3.length = function (a) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec3.length}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec3.length}
  * @function
  */
-BIM.Util.glMatrix.vec3.len = BIM.Util.glMatrix.vec3.length;
+BIMSURFER.Util.glMatrix.vec3.len = BIMSURFER.Util.glMatrix.vec3.length;
 
 /**
  * Calculates the squared length of a vec3
@@ -857,7 +857,7 @@ BIM.Util.glMatrix.vec3.len = BIM.Util.glMatrix.vec3.length;
  * @param {vec3} a vector to calculate squared length of
  * @returns {Number} squared length of a
  */
-BIM.Util.glMatrix.vec3.squaredLength = function (a) {
+BIMSURFER.Util.glMatrix.vec3.squaredLength = function (a) {
     var x = a[0],
         y = a[1],
         z = a[2];
@@ -865,10 +865,10 @@ BIM.Util.glMatrix.vec3.squaredLength = function (a) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec3.squaredLength}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec3.squaredLength}
  * @function
  */
-BIM.Util.glMatrix.vec3.sqrLen = BIM.Util.glMatrix.vec3.squaredLength;
+BIMSURFER.Util.glMatrix.vec3.sqrLen = BIMSURFER.Util.glMatrix.vec3.squaredLength;
 
 /**
  * Negates the components of a vec3
@@ -877,7 +877,7 @@ BIM.Util.glMatrix.vec3.sqrLen = BIM.Util.glMatrix.vec3.squaredLength;
  * @param {vec3} a vector to negate
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.negate = function(out, a) {
+BIMSURFER.Util.glMatrix.vec3.negate = function(out, a) {
     out[0] = -a[0];
     out[1] = -a[1];
     out[2] = -a[2];
@@ -891,7 +891,7 @@ BIM.Util.glMatrix.vec3.negate = function(out, a) {
  * @param {vec3} a vector to normalize
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.normalize = function(out, a) {
+BIMSURFER.Util.glMatrix.vec3.normalize = function(out, a) {
     var x = a[0],
         y = a[1],
         z = a[2];
@@ -913,7 +913,7 @@ BIM.Util.glMatrix.vec3.normalize = function(out, a) {
  * @param {vec3} b the second operand
  * @returns {Number} dot product of a and b
  */
-BIM.Util.glMatrix.vec3.dot = function (a, b) {
+BIMSURFER.Util.glMatrix.vec3.dot = function (a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 };
 
@@ -925,7 +925,7 @@ BIM.Util.glMatrix.vec3.dot = function (a, b) {
  * @param {vec3} b the second operand
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.cross = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec3.cross = function(out, a, b) {
     var ax = a[0], ay = a[1], az = a[2],
         bx = b[0], by = b[1], bz = b[2];
 
@@ -944,7 +944,7 @@ BIM.Util.glMatrix.vec3.cross = function(out, a, b) {
  * @param {Number} t interpolation amount between the two inputs
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.lerp = function (out, a, b, t) {
+BIMSURFER.Util.glMatrix.vec3.lerp = function (out, a, b, t) {
     var ax = a[0],
         ay = a[1],
         az = a[2];
@@ -961,7 +961,7 @@ BIM.Util.glMatrix.vec3.lerp = function (out, a, b, t) {
  * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.random = function (out, scale) {
+BIMSURFER.Util.glMatrix.vec3.random = function (out, scale) {
     scale = scale || 1.0;
 
     var r = GLMAT_RANDOM() * 2.0 * Math.PI;
@@ -975,7 +975,7 @@ BIM.Util.glMatrix.vec3.random = function (out, scale) {
 };
 
 /**
- * Transforms the vec3 with a BIM.Util.glMatrix.mat4.
+ * Transforms the vec3 with a BIMSURFER.Util.glMatrix.mat4.
  * 4th vector component is implicitly '1'
  *
  * @param {vec3} out the receiving vector
@@ -983,7 +983,7 @@ BIM.Util.glMatrix.vec3.random = function (out, scale) {
  * @param {mat4} m matrix to transform with
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.transformMat4 = function(out, a, m) {
+BIMSURFER.Util.glMatrix.vec3.transformMat4 = function(out, a, m) {
     var x = a[0], y = a[1], z = a[2];
     out[0] = m[0] * x + m[4] * y + m[8] * z + m[12];
     out[1] = m[1] * x + m[5] * y + m[9] * z + m[13];
@@ -992,14 +992,14 @@ BIM.Util.glMatrix.vec3.transformMat4 = function(out, a, m) {
 };
 
 /**
- * Transforms the vec3 with a BIM.Util.glMatrix.mat3.
+ * Transforms the vec3 with a BIMSURFER.Util.glMatrix.mat3.
  *
  * @param {vec3} out the receiving vector
  * @param {vec3} a the vector to transform
  * @param {mat4} m the 3x3 matrix to transform with
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.transformMat3 = function(out, a, m) {
+BIMSURFER.Util.glMatrix.vec3.transformMat3 = function(out, a, m) {
     var x = a[0], y = a[1], z = a[2];
     out[0] = x * m[0] + y * m[3] + z * m[6];
     out[1] = x * m[1] + y * m[4] + z * m[7];
@@ -1015,7 +1015,7 @@ BIM.Util.glMatrix.vec3.transformMat3 = function(out, a, m) {
  * @param {quat} q quaternion to transform with
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec3.transformQuat = function(out, a, q) {
+BIMSURFER.Util.glMatrix.vec3.transformQuat = function(out, a, q) {
     // benchmarks: http://jsperf.com/quaternion-transform-vec3-implementations
 
     var x = a[0], y = a[1], z = a[2],
@@ -1038,7 +1038,7 @@ BIM.Util.glMatrix.vec3.transformQuat = function(out, a, q) {
  * Perform some operation over an array of vec3s.
  *
  * @param {Array} a the array of vectors to iterate over
- * @param {Number} stride Number of elements between the start of each BIM.Util.glMatrix.vec3. If 0 assumes tightly packed
+ * @param {Number} stride Number of elements between the start of each BIMSURFER.Util.glMatrix.vec3. If 0 assumes tightly packed
  * @param {Number} offset Number of elements to skip at the beginning of the array
  * @param {Number} count Number of vec3s to iterate over. If 0 iterates over entire array
  * @param {Function} fn Function to call for each vector in the array
@@ -1046,8 +1046,8 @@ BIM.Util.glMatrix.vec3.transformQuat = function(out, a, q) {
  * @returns {Array} a
  * @function
  */
-BIM.Util.glMatrix.vec3.forEach = (function() {
-    var vec = BIM.Util.glMatrix.vec3.create();
+BIMSURFER.Util.glMatrix.vec3.forEach = (function() {
+    var vec = BIMSURFER.Util.glMatrix.vec3.create();
 
     return function(a, stride, offset, count, fn, arg) {
         var i, l;
@@ -1081,7 +1081,7 @@ BIM.Util.glMatrix.vec3.forEach = (function() {
  * @param {vec3} vec vector to represent as a string
  * @returns {String} string representation of the vector
  */
-BIM.Util.glMatrix.vec3.str = function (a) {
+BIMSURFER.Util.glMatrix.vec3.str = function (a) {
     return 'vec3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ')';
 };
 
@@ -1091,14 +1091,14 @@ BIM.Util.glMatrix.vec3.str = function (a) {
  * @class 2 Dimensional Vector
  * @name vec2
  */
-BIM.Util.glMatrix.vec2 = {};
+BIMSURFER.Util.glMatrix.vec2 = {};
 
 /**
  * Creates a new, empty vec2
  *
  * @returns {vec2} a new 2D vector
  */
-BIM.Util.glMatrix.vec2.create = function() {
+BIMSURFER.Util.glMatrix.vec2.create = function() {
     var out = new GLMAT_ARRAY_TYPE(2);
     out[0] = 0;
     out[1] = 0;
@@ -1111,7 +1111,7 @@ BIM.Util.glMatrix.vec2.create = function() {
  * @param {vec2} a vector to clone
  * @returns {vec2} a new 2D vector
  */
-BIM.Util.glMatrix.vec2.clone = function(a) {
+BIMSURFER.Util.glMatrix.vec2.clone = function(a) {
     var out = new GLMAT_ARRAY_TYPE(2);
     out[0] = a[0];
     out[1] = a[1];
@@ -1125,7 +1125,7 @@ BIM.Util.glMatrix.vec2.clone = function(a) {
  * @param {Number} y Y component
  * @returns {vec2} a new 2D vector
  */
-BIM.Util.glMatrix.vec2.fromValues = function(x, y) {
+BIMSURFER.Util.glMatrix.vec2.fromValues = function(x, y) {
     var out = new GLMAT_ARRAY_TYPE(2);
     out[0] = x;
     out[1] = y;
@@ -1139,7 +1139,7 @@ BIM.Util.glMatrix.vec2.fromValues = function(x, y) {
  * @param {vec2} a the source vector
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.copy = function(out, a) {
+BIMSURFER.Util.glMatrix.vec2.copy = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     return out;
@@ -1153,7 +1153,7 @@ BIM.Util.glMatrix.vec2.copy = function(out, a) {
  * @param {Number} y Y component
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.set = function(out, x, y) {
+BIMSURFER.Util.glMatrix.vec2.set = function(out, x, y) {
     out[0] = x;
     out[1] = y;
     return out;
@@ -1167,7 +1167,7 @@ BIM.Util.glMatrix.vec2.set = function(out, x, y) {
  * @param {vec2} b the second operand
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.add = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec2.add = function(out, a, b) {
     out[0] = a[0] + b[0];
     out[1] = a[1] + b[1];
     return out;
@@ -1181,17 +1181,17 @@ BIM.Util.glMatrix.vec2.add = function(out, a, b) {
  * @param {vec2} b the second operand
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.subtract = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec2.subtract = function(out, a, b) {
     out[0] = a[0] - b[0];
     out[1] = a[1] - b[1];
     return out;
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec2.subtract}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec2.subtract}
  * @function
  */
-BIM.Util.glMatrix.vec2.sub = BIM.Util.glMatrix.vec2.subtract;
+BIMSURFER.Util.glMatrix.vec2.sub = BIMSURFER.Util.glMatrix.vec2.subtract;
 
 /**
  * Multiplies two vec2's
@@ -1201,17 +1201,17 @@ BIM.Util.glMatrix.vec2.sub = BIM.Util.glMatrix.vec2.subtract;
  * @param {vec2} b the second operand
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.multiply = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec2.multiply = function(out, a, b) {
     out[0] = a[0] * b[0];
     out[1] = a[1] * b[1];
     return out;
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec2.multiply}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec2.multiply}
  * @function
  */
-BIM.Util.glMatrix.vec2.mul = BIM.Util.glMatrix.vec2.multiply;
+BIMSURFER.Util.glMatrix.vec2.mul = BIMSURFER.Util.glMatrix.vec2.multiply;
 
 /**
  * Divides two vec2's
@@ -1221,17 +1221,17 @@ BIM.Util.glMatrix.vec2.mul = BIM.Util.glMatrix.vec2.multiply;
  * @param {vec2} b the second operand
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.divide = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec2.divide = function(out, a, b) {
     out[0] = a[0] / b[0];
     out[1] = a[1] / b[1];
     return out;
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec2.divide}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec2.divide}
  * @function
  */
-BIM.Util.glMatrix.vec2.div = BIM.Util.glMatrix.vec2.divide;
+BIMSURFER.Util.glMatrix.vec2.div = BIMSURFER.Util.glMatrix.vec2.divide;
 
 /**
  * Returns the minimum of two vec2's
@@ -1241,7 +1241,7 @@ BIM.Util.glMatrix.vec2.div = BIM.Util.glMatrix.vec2.divide;
  * @param {vec2} b the second operand
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.min = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec2.min = function(out, a, b) {
     out[0] = Math.min(a[0], b[0]);
     out[1] = Math.min(a[1], b[1]);
     return out;
@@ -1255,7 +1255,7 @@ BIM.Util.glMatrix.vec2.min = function(out, a, b) {
  * @param {vec2} b the second operand
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.max = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec2.max = function(out, a, b) {
     out[0] = Math.max(a[0], b[0]);
     out[1] = Math.max(a[1], b[1]);
     return out;
@@ -1269,7 +1269,7 @@ BIM.Util.glMatrix.vec2.max = function(out, a, b) {
  * @param {Number} b amount to scale the vector by
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.scale = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec2.scale = function(out, a, b) {
     out[0] = a[0] * b;
     out[1] = a[1] * b;
     return out;
@@ -1284,7 +1284,7 @@ BIM.Util.glMatrix.vec2.scale = function(out, a, b) {
  * @param {Number} scale the amount to scale b by before adding
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.scaleAndAdd = function(out, a, b, scale) {
+BIMSURFER.Util.glMatrix.vec2.scaleAndAdd = function(out, a, b, scale) {
     out[0] = a[0] + (b[0] * scale);
     out[1] = a[1] + (b[1] * scale);
     return out;
@@ -1297,17 +1297,17 @@ BIM.Util.glMatrix.vec2.scaleAndAdd = function(out, a, b, scale) {
  * @param {vec2} b the second operand
  * @returns {Number} distance between a and b
  */
-BIM.Util.glMatrix.vec2.distance = function(a, b) {
+BIMSURFER.Util.glMatrix.vec2.distance = function(a, b) {
     var x = b[0] - a[0],
         y = b[1] - a[1];
     return Math.sqrt(x*x + y*y);
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec2.distance}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec2.distance}
  * @function
  */
-BIM.Util.glMatrix.vec2.dist = BIM.Util.glMatrix.vec2.distance;
+BIMSURFER.Util.glMatrix.vec2.dist = BIMSURFER.Util.glMatrix.vec2.distance;
 
 /**
  * Calculates the squared euclidian distance between two vec2's
@@ -1316,17 +1316,17 @@ BIM.Util.glMatrix.vec2.dist = BIM.Util.glMatrix.vec2.distance;
  * @param {vec2} b the second operand
  * @returns {Number} squared distance between a and b
  */
-BIM.Util.glMatrix.vec2.squaredDistance = function(a, b) {
+BIMSURFER.Util.glMatrix.vec2.squaredDistance = function(a, b) {
     var x = b[0] - a[0],
         y = b[1] - a[1];
     return x*x + y*y;
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec2.squaredDistance}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec2.squaredDistance}
  * @function
  */
-BIM.Util.glMatrix.vec2.sqrDist = BIM.Util.glMatrix.vec2.squaredDistance;
+BIMSURFER.Util.glMatrix.vec2.sqrDist = BIMSURFER.Util.glMatrix.vec2.squaredDistance;
 
 /**
  * Calculates the length of a vec2
@@ -1334,17 +1334,17 @@ BIM.Util.glMatrix.vec2.sqrDist = BIM.Util.glMatrix.vec2.squaredDistance;
  * @param {vec2} a vector to calculate length of
  * @returns {Number} length of a
  */
-BIM.Util.glMatrix.vec2.length = function (a) {
+BIMSURFER.Util.glMatrix.vec2.length = function (a) {
     var x = a[0],
         y = a[1];
     return Math.sqrt(x*x + y*y);
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec2.length}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec2.length}
  * @function
  */
-BIM.Util.glMatrix.vec2.len = BIM.Util.glMatrix.vec2.length;
+BIMSURFER.Util.glMatrix.vec2.len = BIMSURFER.Util.glMatrix.vec2.length;
 
 /**
  * Calculates the squared length of a vec2
@@ -1352,17 +1352,17 @@ BIM.Util.glMatrix.vec2.len = BIM.Util.glMatrix.vec2.length;
  * @param {vec2} a vector to calculate squared length of
  * @returns {Number} squared length of a
  */
-BIM.Util.glMatrix.vec2.squaredLength = function (a) {
+BIMSURFER.Util.glMatrix.vec2.squaredLength = function (a) {
     var x = a[0],
         y = a[1];
     return x*x + y*y;
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.vec2.squaredLength}
+ * Alias for {@link BIMSURFER.Util.glMatrix.vec2.squaredLength}
  * @function
  */
-BIM.Util.glMatrix.vec2.sqrLen = BIM.Util.glMatrix.vec2.squaredLength;
+BIMSURFER.Util.glMatrix.vec2.sqrLen = BIMSURFER.Util.glMatrix.vec2.squaredLength;
 
 /**
  * Negates the components of a vec2
@@ -1371,7 +1371,7 @@ BIM.Util.glMatrix.vec2.sqrLen = BIM.Util.glMatrix.vec2.squaredLength;
  * @param {vec2} a vector to negate
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.negate = function(out, a) {
+BIMSURFER.Util.glMatrix.vec2.negate = function(out, a) {
     out[0] = -a[0];
     out[1] = -a[1];
     return out;
@@ -1384,7 +1384,7 @@ BIM.Util.glMatrix.vec2.negate = function(out, a) {
  * @param {vec2} a vector to normalize
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.normalize = function(out, a) {
+BIMSURFER.Util.glMatrix.vec2.normalize = function(out, a) {
     var x = a[0],
         y = a[1];
     var len = x*x + y*y;
@@ -1404,7 +1404,7 @@ BIM.Util.glMatrix.vec2.normalize = function(out, a) {
  * @param {vec2} b the second operand
  * @returns {Number} dot product of a and b
  */
-BIM.Util.glMatrix.vec2.dot = function (a, b) {
+BIMSURFER.Util.glMatrix.vec2.dot = function (a, b) {
     return a[0] * b[0] + a[1] * b[1];
 };
 
@@ -1417,7 +1417,7 @@ BIM.Util.glMatrix.vec2.dot = function (a, b) {
  * @param {vec2} b the second operand
  * @returns {vec3} out
  */
-BIM.Util.glMatrix.vec2.cross = function(out, a, b) {
+BIMSURFER.Util.glMatrix.vec2.cross = function(out, a, b) {
     var z = a[0] * b[1] - a[1] * b[0];
     out[0] = out[1] = 0;
     out[2] = z;
@@ -1433,7 +1433,7 @@ BIM.Util.glMatrix.vec2.cross = function(out, a, b) {
  * @param {Number} t interpolation amount between the two inputs
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.lerp = function (out, a, b, t) {
+BIMSURFER.Util.glMatrix.vec2.lerp = function (out, a, b, t) {
     var ax = a[0],
         ay = a[1];
     out[0] = ax + t * (b[0] - ax);
@@ -1448,7 +1448,7 @@ BIM.Util.glMatrix.vec2.lerp = function (out, a, b, t) {
  * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.random = function (out, scale) {
+BIMSURFER.Util.glMatrix.vec2.random = function (out, scale) {
     scale = scale || 1.0;
     var r = GLMAT_RANDOM() * 2.0 * Math.PI;
     out[0] = Math.cos(r) * scale;
@@ -1464,7 +1464,7 @@ BIM.Util.glMatrix.vec2.random = function (out, scale) {
  * @param {mat2} m matrix to transform with
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.transformMat2 = function(out, a, m) {
+BIMSURFER.Util.glMatrix.vec2.transformMat2 = function(out, a, m) {
     var x = a[0],
         y = a[1];
     out[0] = m[0] * x + m[2] * y;
@@ -1480,7 +1480,7 @@ BIM.Util.glMatrix.vec2.transformMat2 = function(out, a, m) {
  * @param {mat2d} m matrix to transform with
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.transformMat2d = function(out, a, m) {
+BIMSURFER.Util.glMatrix.vec2.transformMat2d = function(out, a, m) {
     var x = a[0],
         y = a[1];
     out[0] = m[0] * x + m[2] * y + m[4];
@@ -1497,7 +1497,7 @@ BIM.Util.glMatrix.vec2.transformMat2d = function(out, a, m) {
  * @param {mat3} m matrix to transform with
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.transformMat3 = function(out, a, m) {
+BIMSURFER.Util.glMatrix.vec2.transformMat3 = function(out, a, m) {
     var x = a[0],
         y = a[1];
     out[0] = m[0] * x + m[3] * y + m[6];
@@ -1515,7 +1515,7 @@ BIM.Util.glMatrix.vec2.transformMat3 = function(out, a, m) {
  * @param {mat4} m matrix to transform with
  * @returns {vec2} out
  */
-BIM.Util.glMatrix.vec2.transformMat4 = function(out, a, m) {
+BIMSURFER.Util.glMatrix.vec2.transformMat4 = function(out, a, m) {
     var x = a[0],
         y = a[1];
     out[0] = m[0] * x + m[4] * y + m[12];
@@ -1527,7 +1527,7 @@ BIM.Util.glMatrix.vec2.transformMat4 = function(out, a, m) {
  * Perform some operation over an array of vec2s.
  *
  * @param {Array} a the array of vectors to iterate over
- * @param {Number} stride Number of elements between the start of each BIM.Util.glMatrix.vec2. If 0 assumes tightly packed
+ * @param {Number} stride Number of elements between the start of each BIMSURFER.Util.glMatrix.vec2. If 0 assumes tightly packed
  * @param {Number} offset Number of elements to skip at the beginning of the array
  * @param {Number} count Number of vec2s to iterate over. If 0 iterates over entire array
  * @param {Function} fn Function to call for each vector in the array
@@ -1535,8 +1535,8 @@ BIM.Util.glMatrix.vec2.transformMat4 = function(out, a, m) {
  * @returns {Array} a
  * @function
  */
-BIM.Util.glMatrix.vec2.forEach = (function() {
-    var vec = BIM.Util.glMatrix.vec2.create();
+BIMSURFER.Util.glMatrix.vec2.forEach = (function() {
+    var vec = BIMSURFER.Util.glMatrix.vec2.create();
 
     return function(a, stride, offset, count, fn, arg) {
         var i, l;
@@ -1570,7 +1570,7 @@ BIM.Util.glMatrix.vec2.forEach = (function() {
  * @param {vec2} vec vector to represent as a string
  * @returns {String} string representation of the vector
  */
-BIM.Util.glMatrix.vec2.str = function (a) {
+BIMSURFER.Util.glMatrix.vec2.str = function (a) {
     return 'vec2(' + a[0] + ', ' + a[1] + ')';
 };
 
@@ -1580,14 +1580,14 @@ BIM.Util.glMatrix.vec2.str = function (a) {
  * @class 4x4 Matrix
  * @name mat4
  */
-BIM.Util.glMatrix.mat4 = {};
+BIMSURFER.Util.glMatrix.mat4 = {};
 
 /**
  * Creates a new identity mat4
  *
  * @returns {mat4} a new 4x4 matrix
  */
-BIM.Util.glMatrix.mat4.create = function() {
+BIMSURFER.Util.glMatrix.mat4.create = function() {
     var out = new GLMAT_ARRAY_TYPE(16);
     out[0] = 1;
     out[1] = 0;
@@ -1614,7 +1614,7 @@ BIM.Util.glMatrix.mat4.create = function() {
  * @param {mat4} a matrix to clone
  * @returns {mat4} a new 4x4 matrix
  */
-BIM.Util.glMatrix.mat4.clone = function(a) {
+BIMSURFER.Util.glMatrix.mat4.clone = function(a) {
     var out = new GLMAT_ARRAY_TYPE(16);
     out[0] = a[0];
     out[1] = a[1];
@@ -1642,7 +1642,7 @@ BIM.Util.glMatrix.mat4.clone = function(a) {
  * @param {mat4} a the source matrix
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.copy = function(out, a) {
+BIMSURFER.Util.glMatrix.mat4.copy = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -1668,7 +1668,7 @@ BIM.Util.glMatrix.mat4.copy = function(out, a) {
  * @param {mat4} out the receiving matrix
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.identity = function(out) {
+BIMSURFER.Util.glMatrix.mat4.identity = function(out) {
     out[0] = 1;
     out[1] = 0;
     out[2] = 0;
@@ -1695,7 +1695,7 @@ BIM.Util.glMatrix.mat4.identity = function(out) {
  * @param {mat4} a the source matrix
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.transpose = function(out, a) {
+BIMSURFER.Util.glMatrix.mat4.transpose = function(out, a) {
     // If we are transposing ourselves we can skip a few steps but have to cache some values
     if (out === a) {
         var a01 = a[1], a02 = a[2], a03 = a[3],
@@ -1743,7 +1743,7 @@ BIM.Util.glMatrix.mat4.transpose = function(out, a) {
  * @param {mat4} a the source matrix
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.invert = function(out, a) {
+BIMSURFER.Util.glMatrix.mat4.invert = function(out, a) {
     var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
         a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
         a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -1797,7 +1797,7 @@ BIM.Util.glMatrix.mat4.invert = function(out, a) {
  * @param {mat4} a the source matrix
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.adjoint = function(out, a) {
+BIMSURFER.Util.glMatrix.mat4.adjoint = function(out, a) {
     var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
         a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
         a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -1828,7 +1828,7 @@ BIM.Util.glMatrix.mat4.adjoint = function(out, a) {
  * @param {mat4} a the source matrix
  * @returns {Number} determinant of a
  */
-BIM.Util.glMatrix.mat4.determinant = function (a) {
+BIMSURFER.Util.glMatrix.mat4.determinant = function (a) {
     var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
         a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
         a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -1859,7 +1859,7 @@ BIM.Util.glMatrix.mat4.determinant = function (a) {
  * @param {mat4} b the second operand
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.multiply = function (out, a, b) {
+BIMSURFER.Util.glMatrix.mat4.multiply = function (out, a, b) {
     var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
         a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
         a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -1893,10 +1893,10 @@ BIM.Util.glMatrix.mat4.multiply = function (out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.mat4.multiply}
+ * Alias for {@link BIMSURFER.Util.glMatrix.mat4.multiply}
  * @function
  */
-BIM.Util.glMatrix.mat4.mul = BIM.Util.glMatrix.mat4.multiply;
+BIMSURFER.Util.glMatrix.mat4.mul = BIMSURFER.Util.glMatrix.mat4.multiply;
 
 /**
  * Translate a mat4 by the given vector
@@ -1906,7 +1906,7 @@ BIM.Util.glMatrix.mat4.mul = BIM.Util.glMatrix.mat4.multiply;
  * @param {vec3} v vector to translate by
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.translate = function (out, a, v) {
+BIMSURFER.Util.glMatrix.mat4.translate = function (out, a, v) {
     var x = v[0], y = v[1], z = v[2],
         a00, a01, a02, a03,
         a10, a11, a12, a13,
@@ -1943,7 +1943,7 @@ BIM.Util.glMatrix.mat4.translate = function (out, a, v) {
  * @param {vec3} v the vec3 to scale the matrix by
  * @returns {mat4} out
  **/
-BIM.Util.glMatrix.mat4.scale = function(out, a, v) {
+BIMSURFER.Util.glMatrix.mat4.scale = function(out, a, v) {
     var x = v[0], y = v[1], z = v[2];
 
     out[0] = a[0] * x;
@@ -1974,7 +1974,7 @@ BIM.Util.glMatrix.mat4.scale = function(out, a, v) {
  * @param {vec3} axis the axis to rotate around
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.rotate = function (out, a, rad, axis) {
+BIMSURFER.Util.glMatrix.mat4.rotate = function (out, a, rad, axis) {
     var x = axis[0], y = axis[1], z = axis[2],
         len = Math.sqrt(x * x + y * y + z * z),
         s, c, t,
@@ -2036,7 +2036,7 @@ BIM.Util.glMatrix.mat4.rotate = function (out, a, rad, axis) {
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.rotateX = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.mat4.rotateX = function (out, a, rad) {
     var s = Math.sin(rad),
         c = Math.cos(rad),
         a10 = a[4],
@@ -2079,7 +2079,7 @@ BIM.Util.glMatrix.mat4.rotateX = function (out, a, rad) {
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.rotateY = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.mat4.rotateY = function (out, a, rad) {
     var s = Math.sin(rad),
         c = Math.cos(rad),
         a00 = a[0],
@@ -2122,7 +2122,7 @@ BIM.Util.glMatrix.mat4.rotateY = function (out, a, rad) {
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.rotateZ = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.mat4.rotateZ = function (out, a, rad) {
     var s = Math.sin(rad),
         c = Math.cos(rad),
         a00 = a[0],
@@ -2161,18 +2161,18 @@ BIM.Util.glMatrix.mat4.rotateZ = function (out, a, rad) {
  * Creates a matrix from a quaternion rotation and vector translation
  * This is equivalent to (but much faster than):
  *
- *     BIM.Util.glMatrix.mat4.identity(dest);
- *     BIM.Util.glMatrix.mat4.translate(dest, vec);
- *     var quatMat = BIM.Util.glMatrix.mat4.create();
+ *     BIMSURFER.Util.glMatrix.mat4.identity(dest);
+ *     BIMSURFER.Util.glMatrix.mat4.translate(dest, vec);
+ *     var quatMat = BIMSURFER.Util.glMatrix.mat4.create();
  *     quat4.toMat4(quat, quatMat);
- *     BIM.Util.glMatrix.mat4.multiply(dest, quatMat);
+ *     BIMSURFER.Util.glMatrix.mat4.multiply(dest, quatMat);
  *
  * @param {mat4} out mat4 receiving operation result
  * @param {quat4} q Rotation quaternion
  * @param {vec3} v Translation vector
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.fromRotationTranslation = function (out, q, v) {
+BIMSURFER.Util.glMatrix.mat4.fromRotationTranslation = function (out, q, v) {
     // Quaternion math
     var x = q[0], y = q[1], z = q[2], w = q[3],
         x2 = x + x,
@@ -2217,7 +2217,7 @@ BIM.Util.glMatrix.mat4.fromRotationTranslation = function (out, q, v) {
 *
 * @returns {mat4} out
 */
-BIM.Util.glMatrix.mat4.fromQuat = function (out, q) {
+BIMSURFER.Util.glMatrix.mat4.fromQuat = function (out, q) {
     var x = q[0], y = q[1], z = q[2], w = q[3],
         x2 = x + x,
         y2 = y + y,
@@ -2268,7 +2268,7 @@ BIM.Util.glMatrix.mat4.fromQuat = function (out, q) {
  * @param {Number} far Far bound of the frustum
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.frustum = function (out, left, right, bottom, top, near, far) {
+BIMSURFER.Util.glMatrix.mat4.frustum = function (out, left, right, bottom, top, near, far) {
     var rl = 1 / (right - left),
         tb = 1 / (top - bottom),
         nf = 1 / (near - far);
@@ -2301,7 +2301,7 @@ BIM.Util.glMatrix.mat4.frustum = function (out, left, right, bottom, top, near, 
  * @param {number} far Far bound of the frustum
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.perspective = function (out, fovy, aspect, near, far) {
+BIMSURFER.Util.glMatrix.mat4.perspective = function (out, fovy, aspect, near, far) {
     var f = 1.0 / Math.tan(fovy / 2),
         nf = 1 / (near - far);
     out[0] = f / aspect;
@@ -2335,7 +2335,7 @@ BIM.Util.glMatrix.mat4.perspective = function (out, fovy, aspect, near, far) {
  * @param {number} far Far bound of the frustum
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.ortho = function (out, left, right, bottom, top, near, far) {
+BIMSURFER.Util.glMatrix.mat4.ortho = function (out, left, right, bottom, top, near, far) {
     var lr = 1 / (left - right),
         bt = 1 / (bottom - top),
         nf = 1 / (near - far);
@@ -2367,7 +2367,7 @@ BIM.Util.glMatrix.mat4.ortho = function (out, left, right, bottom, top, near, fa
  * @param {vec3} up vec3 pointing up
  * @returns {mat4} out
  */
-BIM.Util.glMatrix.mat4.lookAt = function (out, eye, center, up) {
+BIMSURFER.Util.glMatrix.mat4.lookAt = function (out, eye, center, up) {
     var x0, x1, x2, y0, y1, y2, z0, z1, z2, len,
         eyex = eye[0],
         eyey = eye[1],
@@ -2382,7 +2382,7 @@ BIM.Util.glMatrix.mat4.lookAt = function (out, eye, center, up) {
     if (Math.abs(eyex - centerx) < GLMAT_EPSILON &&
         Math.abs(eyey - centery) < GLMAT_EPSILON &&
         Math.abs(eyez - centerz) < GLMAT_EPSILON) {
-        return BIM.Util.glMatrix.mat4.identity(out);
+        return BIMSURFER.Util.glMatrix.mat4.identity(out);
     }
 
     z0 = eyex - centerx;
@@ -2451,7 +2451,7 @@ BIM.Util.glMatrix.mat4.lookAt = function (out, eye, center, up) {
  * @param {mat4} mat matrix to represent as a string
  * @returns {String} string representation of the matrix
  */
-BIM.Util.glMatrix.mat4.str = function (a) {
+BIMSURFER.Util.glMatrix.mat4.str = function (a) {
     return 'mat4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' +
                     a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' +
                     a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' +
@@ -2465,14 +2465,14 @@ BIM.Util.glMatrix.mat4.str = function (a) {
  * @class 3x3 Matrix
  * @name mat3
  */
-BIM.Util.glMatrix.mat3 = {};
+BIMSURFER.Util.glMatrix.mat3 = {};
 
 /**
  * Creates a new identity mat3
  *
  * @returns {mat3} a new 3x3 matrix
  */
-BIM.Util.glMatrix.mat3.create = function() {
+BIMSURFER.Util.glMatrix.mat3.create = function() {
     var out = new GLMAT_ARRAY_TYPE(9);
     out[0] = 1;
     out[1] = 0;
@@ -2487,13 +2487,13 @@ BIM.Util.glMatrix.mat3.create = function() {
 };
 
 /**
- * Copies the upper-left 3x3 values into the given BIM.Util.glMatrix.mat3.
+ * Copies the upper-left 3x3 values into the given BIMSURFER.Util.glMatrix.mat3.
  *
  * @param {mat3} out the receiving 3x3 matrix
  * @param {mat4} a   the source 4x4 matrix
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.fromMat4 = function(out, a) {
+BIMSURFER.Util.glMatrix.mat3.fromMat4 = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -2512,7 +2512,7 @@ BIM.Util.glMatrix.mat3.fromMat4 = function(out, a) {
  * @param {mat3} a matrix to clone
  * @returns {mat3} a new 3x3 matrix
  */
-BIM.Util.glMatrix.mat3.clone = function(a) {
+BIMSURFER.Util.glMatrix.mat3.clone = function(a) {
     var out = new GLMAT_ARRAY_TYPE(9);
     out[0] = a[0];
     out[1] = a[1];
@@ -2533,7 +2533,7 @@ BIM.Util.glMatrix.mat3.clone = function(a) {
  * @param {mat3} a the source matrix
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.copy = function(out, a) {
+BIMSURFER.Util.glMatrix.mat3.copy = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -2552,7 +2552,7 @@ BIM.Util.glMatrix.mat3.copy = function(out, a) {
  * @param {mat3} out the receiving matrix
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.identity = function(out) {
+BIMSURFER.Util.glMatrix.mat3.identity = function(out) {
     out[0] = 1;
     out[1] = 0;
     out[2] = 0;
@@ -2572,7 +2572,7 @@ BIM.Util.glMatrix.mat3.identity = function(out) {
  * @param {mat3} a the source matrix
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.transpose = function(out, a) {
+BIMSURFER.Util.glMatrix.mat3.transpose = function(out, a) {
     // If we are transposing ourselves we can skip a few steps but have to cache some values
     if (out === a) {
         var a01 = a[1], a02 = a[2], a12 = a[5];
@@ -2604,7 +2604,7 @@ BIM.Util.glMatrix.mat3.transpose = function(out, a) {
  * @param {mat3} a the source matrix
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.invert = function(out, a) {
+BIMSURFER.Util.glMatrix.mat3.invert = function(out, a) {
     var a00 = a[0], a01 = a[1], a02 = a[2],
         a10 = a[3], a11 = a[4], a12 = a[5],
         a20 = a[6], a21 = a[7], a22 = a[8],
@@ -2640,7 +2640,7 @@ BIM.Util.glMatrix.mat3.invert = function(out, a) {
  * @param {mat3} a the source matrix
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.adjoint = function(out, a) {
+BIMSURFER.Util.glMatrix.mat3.adjoint = function(out, a) {
     var a00 = a[0], a01 = a[1], a02 = a[2],
         a10 = a[3], a11 = a[4], a12 = a[5],
         a20 = a[6], a21 = a[7], a22 = a[8];
@@ -2663,7 +2663,7 @@ BIM.Util.glMatrix.mat3.adjoint = function(out, a) {
  * @param {mat3} a the source matrix
  * @returns {Number} determinant of a
  */
-BIM.Util.glMatrix.mat3.determinant = function (a) {
+BIMSURFER.Util.glMatrix.mat3.determinant = function (a) {
     var a00 = a[0], a01 = a[1], a02 = a[2],
         a10 = a[3], a11 = a[4], a12 = a[5],
         a20 = a[6], a21 = a[7], a22 = a[8];
@@ -2679,7 +2679,7 @@ BIM.Util.glMatrix.mat3.determinant = function (a) {
  * @param {mat3} b the second operand
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.multiply = function (out, a, b) {
+BIMSURFER.Util.glMatrix.mat3.multiply = function (out, a, b) {
     var a00 = a[0], a01 = a[1], a02 = a[2],
         a10 = a[3], a11 = a[4], a12 = a[5],
         a20 = a[6], a21 = a[7], a22 = a[8],
@@ -2703,10 +2703,10 @@ BIM.Util.glMatrix.mat3.multiply = function (out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.mat3.multiply}
+ * Alias for {@link BIMSURFER.Util.glMatrix.mat3.multiply}
  * @function
  */
-BIM.Util.glMatrix.mat3.mul = BIM.Util.glMatrix.mat3.multiply;
+BIMSURFER.Util.glMatrix.mat3.mul = BIMSURFER.Util.glMatrix.mat3.multiply;
 
 /**
  * Translate a mat3 by the given vector
@@ -2716,7 +2716,7 @@ BIM.Util.glMatrix.mat3.mul = BIM.Util.glMatrix.mat3.multiply;
  * @param {vec2} v vector to translate by
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.translate = function(out, a, v) {
+BIMSURFER.Util.glMatrix.mat3.translate = function(out, a, v) {
     var a00 = a[0], a01 = a[1], a02 = a[2],
         a10 = a[3], a11 = a[4], a12 = a[5],
         a20 = a[6], a21 = a[7], a22 = a[8],
@@ -2744,7 +2744,7 @@ BIM.Util.glMatrix.mat3.translate = function(out, a, v) {
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat3} out
  */
-BIM.Util.glMatrix.mat3.rotate = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.mat3.rotate = function (out, a, rad) {
     var a00 = a[0], a01 = a[1], a02 = a[2],
         a10 = a[3], a11 = a[4], a12 = a[5],
         a20 = a[6], a21 = a[7], a22 = a[8],
@@ -2774,7 +2774,7 @@ BIM.Util.glMatrix.mat3.rotate = function (out, a, rad) {
  * @param {vec2} v the vec2 to scale the matrix by
  * @returns {mat3} out
  **/
-BIM.Util.glMatrix.mat3.scale = function(out, a, v) {
+BIMSURFER.Util.glMatrix.mat3.scale = function(out, a, v) {
     var x = v[0], y = v[1];
 
     out[0] = x * a[0];
@@ -2798,7 +2798,7 @@ BIM.Util.glMatrix.mat3.scale = function(out, a, v) {
  * @param {mat2d} a the matrix to copy
  * @returns {mat3} out
  **/
-BIM.Util.glMatrix.mat3.fromMat2d = function(out, a) {
+BIMSURFER.Util.glMatrix.mat3.fromMat2d = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = 0;
@@ -2821,7 +2821,7 @@ BIM.Util.glMatrix.mat3.fromMat2d = function(out, a) {
 *
 * @returns {mat3} out
 */
-BIM.Util.glMatrix.mat3.fromQuat = function (out, q) {
+BIMSURFER.Util.glMatrix.mat3.fromQuat = function (out, q) {
     var x = q[0], y = q[1], z = q[2], w = q[3],
         x2 = x + x,
         y2 = y + y,
@@ -2860,7 +2860,7 @@ BIM.Util.glMatrix.mat3.fromQuat = function (out, q) {
 *
 * @returns {mat3} out
 */
-BIM.Util.glMatrix.mat3.normalFromMat4 = function (out, a) {
+BIMSURFER.Util.glMatrix.mat3.normalFromMat4 = function (out, a) {
     var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
         a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
         a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -2908,7 +2908,7 @@ BIM.Util.glMatrix.mat3.normalFromMat4 = function (out, a) {
  * @param {mat3} mat matrix to represent as a string
  * @returns {String} string representation of the matrix
  */
-BIM.Util.glMatrix.mat3.str = function (a) {
+BIMSURFER.Util.glMatrix.mat3.str = function (a) {
     return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' +
                     a[3] + ', ' + a[4] + ', ' + a[5] + ', ' +
                     a[6] + ', ' + a[7] + ', ' + a[8] + ')';
@@ -2937,14 +2937,14 @@ BIM.Util.glMatrix.mat3.str = function (a) {
  * </pre>
  * The last column is ignored so the array is shorter and operations are faster.
  */
-BIM.Util.glMatrix.mat2d = {};
+BIMSURFER.Util.glMatrix.mat2d = {};
 
 /**
  * Creates a new identity mat2d
  *
  * @returns {mat2d} a new 2x3 matrix
  */
-BIM.Util.glMatrix.mat2d.create = function() {
+BIMSURFER.Util.glMatrix.mat2d.create = function() {
     var out = new GLMAT_ARRAY_TYPE(6);
     out[0] = 1;
     out[1] = 0;
@@ -2961,7 +2961,7 @@ BIM.Util.glMatrix.mat2d.create = function() {
  * @param {mat2d} a matrix to clone
  * @returns {mat2d} a new 2x3 matrix
  */
-BIM.Util.glMatrix.mat2d.clone = function(a) {
+BIMSURFER.Util.glMatrix.mat2d.clone = function(a) {
     var out = new GLMAT_ARRAY_TYPE(6);
     out[0] = a[0];
     out[1] = a[1];
@@ -2979,7 +2979,7 @@ BIM.Util.glMatrix.mat2d.clone = function(a) {
  * @param {mat2d} a the source matrix
  * @returns {mat2d} out
  */
-BIM.Util.glMatrix.mat2d.copy = function(out, a) {
+BIMSURFER.Util.glMatrix.mat2d.copy = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -2995,7 +2995,7 @@ BIM.Util.glMatrix.mat2d.copy = function(out, a) {
  * @param {mat2d} out the receiving matrix
  * @returns {mat2d} out
  */
-BIM.Util.glMatrix.mat2d.identity = function(out) {
+BIMSURFER.Util.glMatrix.mat2d.identity = function(out) {
     out[0] = 1;
     out[1] = 0;
     out[2] = 0;
@@ -3012,7 +3012,7 @@ BIM.Util.glMatrix.mat2d.identity = function(out) {
  * @param {mat2d} a the source matrix
  * @returns {mat2d} out
  */
-BIM.Util.glMatrix.mat2d.invert = function(out, a) {
+BIMSURFER.Util.glMatrix.mat2d.invert = function(out, a) {
     var aa = a[0], ab = a[1], ac = a[2], ad = a[3],
         atx = a[4], aty = a[5];
 
@@ -3037,7 +3037,7 @@ BIM.Util.glMatrix.mat2d.invert = function(out, a) {
  * @param {mat2d} a the source matrix
  * @returns {Number} determinant of a
  */
-BIM.Util.glMatrix.mat2d.determinant = function (a) {
+BIMSURFER.Util.glMatrix.mat2d.determinant = function (a) {
     return a[0] * a[3] - a[1] * a[2];
 };
 
@@ -3049,7 +3049,7 @@ BIM.Util.glMatrix.mat2d.determinant = function (a) {
  * @param {mat2d} b the second operand
  * @returns {mat2d} out
  */
-BIM.Util.glMatrix.mat2d.multiply = function (out, a, b) {
+BIMSURFER.Util.glMatrix.mat2d.multiply = function (out, a, b) {
     var aa = a[0], ab = a[1], ac = a[2], ad = a[3],
         atx = a[4], aty = a[5],
         ba = b[0], bb = b[1], bc = b[2], bd = b[3],
@@ -3065,10 +3065,10 @@ BIM.Util.glMatrix.mat2d.multiply = function (out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.mat2d.multiply}
+ * Alias for {@link BIMSURFER.Util.glMatrix.mat2d.multiply}
  * @function
  */
-BIM.Util.glMatrix.mat2d.mul = BIM.Util.glMatrix.mat2d.multiply;
+BIMSURFER.Util.glMatrix.mat2d.mul = BIMSURFER.Util.glMatrix.mat2d.multiply;
 
 
 /**
@@ -3079,7 +3079,7 @@ BIM.Util.glMatrix.mat2d.mul = BIM.Util.glMatrix.mat2d.multiply;
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat2d} out
  */
-BIM.Util.glMatrix.mat2d.rotate = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.mat2d.rotate = function (out, a, rad) {
     var aa = a[0],
         ab = a[1],
         ac = a[2],
@@ -3106,7 +3106,7 @@ BIM.Util.glMatrix.mat2d.rotate = function (out, a, rad) {
  * @param {vec2} v the vec2 to scale the matrix by
  * @returns {mat2d} out
  **/
-BIM.Util.glMatrix.mat2d.scale = function(out, a, v) {
+BIMSURFER.Util.glMatrix.mat2d.scale = function(out, a, v) {
     var vx = v[0], vy = v[1];
     out[0] = a[0] * vx;
     out[1] = a[1] * vy;
@@ -3125,7 +3125,7 @@ BIM.Util.glMatrix.mat2d.scale = function(out, a, v) {
  * @param {vec2} v the vec2 to translate the matrix by
  * @returns {mat2d} out
  **/
-BIM.Util.glMatrix.mat2d.translate = function(out, a, v) {
+BIMSURFER.Util.glMatrix.mat2d.translate = function(out, a, v) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -3141,7 +3141,7 @@ BIM.Util.glMatrix.mat2d.translate = function(out, a, v) {
  * @param {mat2d} a matrix to represent as a string
  * @returns {String} string representation of the matrix
  */
-BIM.Util.glMatrix.mat2d.str = function (a) {
+BIMSURFER.Util.glMatrix.mat2d.str = function (a) {
     return 'mat2d(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' +
                     a[3] + ', ' + a[4] + ', ' + a[5] + ')';
 };
@@ -3154,14 +3154,14 @@ BIM.Util.glMatrix.mat2d.str = function (a) {
  * @class 2x2 Matrix
  * @name mat2
  */
-BIM.Util.glMatrix.mat2 = {};
+BIMSURFER.Util.glMatrix.mat2 = {};
 
 /**
  * Creates a new identity mat2
  *
  * @returns {mat2} a new 2x2 matrix
  */
-BIM.Util.glMatrix.mat2.create = function() {
+BIMSURFER.Util.glMatrix.mat2.create = function() {
     var out = new GLMAT_ARRAY_TYPE(4);
     out[0] = 1;
     out[1] = 0;
@@ -3176,7 +3176,7 @@ BIM.Util.glMatrix.mat2.create = function() {
  * @param {mat2} a matrix to clone
  * @returns {mat2} a new 2x2 matrix
  */
-BIM.Util.glMatrix.mat2.clone = function(a) {
+BIMSURFER.Util.glMatrix.mat2.clone = function(a) {
     var out = new GLMAT_ARRAY_TYPE(4);
     out[0] = a[0];
     out[1] = a[1];
@@ -3192,7 +3192,7 @@ BIM.Util.glMatrix.mat2.clone = function(a) {
  * @param {mat2} a the source matrix
  * @returns {mat2} out
  */
-BIM.Util.glMatrix.mat2.copy = function(out, a) {
+BIMSURFER.Util.glMatrix.mat2.copy = function(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -3206,7 +3206,7 @@ BIM.Util.glMatrix.mat2.copy = function(out, a) {
  * @param {mat2} out the receiving matrix
  * @returns {mat2} out
  */
-BIM.Util.glMatrix.mat2.identity = function(out) {
+BIMSURFER.Util.glMatrix.mat2.identity = function(out) {
     out[0] = 1;
     out[1] = 0;
     out[2] = 0;
@@ -3221,7 +3221,7 @@ BIM.Util.glMatrix.mat2.identity = function(out) {
  * @param {mat2} a the source matrix
  * @returns {mat2} out
  */
-BIM.Util.glMatrix.mat2.transpose = function(out, a) {
+BIMSURFER.Util.glMatrix.mat2.transpose = function(out, a) {
     // If we are transposing ourselves we can skip a few steps but have to cache some values
     if (out === a) {
         var a1 = a[1];
@@ -3244,7 +3244,7 @@ BIM.Util.glMatrix.mat2.transpose = function(out, a) {
  * @param {mat2} a the source matrix
  * @returns {mat2} out
  */
-BIM.Util.glMatrix.mat2.invert = function(out, a) {
+BIMSURFER.Util.glMatrix.mat2.invert = function(out, a) {
     var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
 
         // Calculate the determinant
@@ -3270,7 +3270,7 @@ BIM.Util.glMatrix.mat2.invert = function(out, a) {
  * @param {mat2} a the source matrix
  * @returns {mat2} out
  */
-BIM.Util.glMatrix.mat2.adjoint = function(out, a) {
+BIMSURFER.Util.glMatrix.mat2.adjoint = function(out, a) {
     // Caching this value is nessecary if out == a
     var a0 = a[0];
     out[0] =  a[3];
@@ -3287,7 +3287,7 @@ BIM.Util.glMatrix.mat2.adjoint = function(out, a) {
  * @param {mat2} a the source matrix
  * @returns {Number} determinant of a
  */
-BIM.Util.glMatrix.mat2.determinant = function (a) {
+BIMSURFER.Util.glMatrix.mat2.determinant = function (a) {
     return a[0] * a[3] - a[2] * a[1];
 };
 
@@ -3299,7 +3299,7 @@ BIM.Util.glMatrix.mat2.determinant = function (a) {
  * @param {mat2} b the second operand
  * @returns {mat2} out
  */
-BIM.Util.glMatrix.mat2.multiply = function (out, a, b) {
+BIMSURFER.Util.glMatrix.mat2.multiply = function (out, a, b) {
     var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3];
     var b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
     out[0] = a0 * b0 + a1 * b2;
@@ -3310,10 +3310,10 @@ BIM.Util.glMatrix.mat2.multiply = function (out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.mat2.multiply}
+ * Alias for {@link BIMSURFER.Util.glMatrix.mat2.multiply}
  * @function
  */
-BIM.Util.glMatrix.mat2.mul = BIM.Util.glMatrix.mat2.multiply;
+BIMSURFER.Util.glMatrix.mat2.mul = BIMSURFER.Util.glMatrix.mat2.multiply;
 
 /**
  * Rotates a mat2 by the given angle
@@ -3323,7 +3323,7 @@ BIM.Util.glMatrix.mat2.mul = BIM.Util.glMatrix.mat2.multiply;
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat2} out
  */
-BIM.Util.glMatrix.mat2.rotate = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.mat2.rotate = function (out, a, rad) {
     var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
         s = Math.sin(rad),
         c = Math.cos(rad);
@@ -3342,7 +3342,7 @@ BIM.Util.glMatrix.mat2.rotate = function (out, a, rad) {
  * @param {vec2} v the vec2 to scale the matrix by
  * @returns {mat2} out
  **/
-BIM.Util.glMatrix.mat2.scale = function(out, a, v) {
+BIMSURFER.Util.glMatrix.mat2.scale = function(out, a, v) {
     var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
         v0 = v[0], v1 = v[1];
     out[0] = a0 * v0;
@@ -3358,7 +3358,7 @@ BIM.Util.glMatrix.mat2.scale = function(out, a, v) {
  * @param {mat2} mat matrix to represent as a string
  * @returns {String} string representation of the matrix
  */
-BIM.Util.glMatrix.mat2.str = function (a) {
+BIMSURFER.Util.glMatrix.mat2.str = function (a) {
     return 'mat2(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ')';
 };
 
@@ -3370,14 +3370,14 @@ BIM.Util.glMatrix.mat2.str = function (a) {
  * @class Quaternion
  * @name quat
  */
-BIM.Util.glMatrix.quat = {};
+BIMSURFER.Util.glMatrix.quat = {};
 
 /**
  * Creates a new identity quat
  *
  * @returns {quat} a new quaternion
  */
-BIM.Util.glMatrix.quat.create = function() {
+BIMSURFER.Util.glMatrix.quat.create = function() {
     var out = new GLMAT_ARRAY_TYPE(4);
     out[0] = 0;
     out[1] = 0;
@@ -3397,19 +3397,19 @@ BIM.Util.glMatrix.quat.create = function() {
  * @param {vec3} b the destination vector
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.rotationTo = (function() {
-    var tmpvec3 = BIM.Util.glMatrix.vec3.create();
-    var xUnitVec3 = BIM.Util.glMatrix.vec3.fromValues(1,0,0);
-    var yUnitVec3 = BIM.Util.glMatrix.vec3.fromValues(0,1,0);
+BIMSURFER.Util.glMatrix.quat.rotationTo = (function() {
+    var tmpvec3 = BIMSURFER.Util.glMatrix.vec3.create();
+    var xUnitVec3 = BIMSURFER.Util.glMatrix.vec3.fromValues(1,0,0);
+    var yUnitVec3 = BIMSURFER.Util.glMatrix.vec3.fromValues(0,1,0);
 
     return function(out, a, b) {
-        var dot = BIM.Util.glMatrix.vec3.dot(a, b);
+        var dot = BIMSURFER.Util.glMatrix.vec3.dot(a, b);
         if (dot < -0.999999) {
-            BIM.Util.glMatrix.vec3.cross(tmpvec3, xUnitVec3, a);
-            if (BIM.Util.glMatrix.vec3.length(tmpvec3) < 0.000001)
-                BIM.Util.glMatrix.vec3.cross(tmpvec3, yUnitVec3, a);
-            BIM.Util.glMatrix.vec3.normalize(tmpvec3, tmpvec3);
-            BIM.Util.glMatrix.quat.setAxisAngle(out, tmpvec3, Math.PI);
+            BIMSURFER.Util.glMatrix.vec3.cross(tmpvec3, xUnitVec3, a);
+            if (BIMSURFER.Util.glMatrix.vec3.length(tmpvec3) < 0.000001)
+                BIMSURFER.Util.glMatrix.vec3.cross(tmpvec3, yUnitVec3, a);
+            BIMSURFER.Util.glMatrix.vec3.normalize(tmpvec3, tmpvec3);
+            BIMSURFER.Util.glMatrix.quat.setAxisAngle(out, tmpvec3, Math.PI);
             return out;
         } else if (dot > 0.999999) {
             out[0] = 0;
@@ -3418,12 +3418,12 @@ BIM.Util.glMatrix.quat.rotationTo = (function() {
             out[3] = 1;
             return out;
         } else {
-            BIM.Util.glMatrix.vec3.cross(tmpvec3, a, b);
+            BIMSURFER.Util.glMatrix.vec3.cross(tmpvec3, a, b);
             out[0] = tmpvec3[0];
             out[1] = tmpvec3[1];
             out[2] = tmpvec3[2];
             out[3] = 1 + dot;
-            return BIM.Util.glMatrix.quat.normalize(out, out);
+            return BIMSURFER.Util.glMatrix.quat.normalize(out, out);
         }
     };
 })();
@@ -3438,8 +3438,8 @@ BIM.Util.glMatrix.quat.rotationTo = (function() {
  * @param {vec3} up    the vector representing the local "up" direction
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.setAxes = (function() {
-    var matr = BIM.Util.glMatrix.mat3.create();
+BIMSURFER.Util.glMatrix.quat.setAxes = (function() {
+    var matr = BIMSURFER.Util.glMatrix.mat3.create();
 
     return function(out, view, right, up) {
         matr[0] = right[0];
@@ -3454,7 +3454,7 @@ BIM.Util.glMatrix.quat.setAxes = (function() {
         matr[5] = view[1];
         matr[8] = view[2];
 
-        return BIM.Util.glMatrix.quat.normalize(out, BIM.Util.glMatrix.quat.fromMat3(out, matr));
+        return BIMSURFER.Util.glMatrix.quat.normalize(out, BIMSURFER.Util.glMatrix.quat.fromMat3(out, matr));
     };
 })();
 
@@ -3465,7 +3465,7 @@ BIM.Util.glMatrix.quat.setAxes = (function() {
  * @returns {quat} a new quaternion
  * @function
  */
-BIM.Util.glMatrix.quat.clone = BIM.Util.glMatrix.vec4.clone;
+BIMSURFER.Util.glMatrix.quat.clone = BIMSURFER.Util.glMatrix.vec4.clone;
 
 /**
  * Creates a new quat initialized with the given values
@@ -3477,7 +3477,7 @@ BIM.Util.glMatrix.quat.clone = BIM.Util.glMatrix.vec4.clone;
  * @returns {quat} a new quaternion
  * @function
  */
-BIM.Util.glMatrix.quat.fromValues = BIM.Util.glMatrix.vec4.fromValues;
+BIMSURFER.Util.glMatrix.quat.fromValues = BIMSURFER.Util.glMatrix.vec4.fromValues;
 
 /**
  * Copy the values from one quat to another
@@ -3487,7 +3487,7 @@ BIM.Util.glMatrix.quat.fromValues = BIM.Util.glMatrix.vec4.fromValues;
  * @returns {quat} out
  * @function
  */
-BIM.Util.glMatrix.quat.copy = BIM.Util.glMatrix.vec4.copy;
+BIMSURFER.Util.glMatrix.quat.copy = BIMSURFER.Util.glMatrix.vec4.copy;
 
 /**
  * Set the components of a quat to the given values
@@ -3500,7 +3500,7 @@ BIM.Util.glMatrix.quat.copy = BIM.Util.glMatrix.vec4.copy;
  * @returns {quat} out
  * @function
  */
-BIM.Util.glMatrix.quat.set = BIM.Util.glMatrix.vec4.set;
+BIMSURFER.Util.glMatrix.quat.set = BIMSURFER.Util.glMatrix.vec4.set;
 
 /**
  * Set a quat to the identity quaternion
@@ -3508,7 +3508,7 @@ BIM.Util.glMatrix.quat.set = BIM.Util.glMatrix.vec4.set;
  * @param {quat} out the receiving quaternion
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.identity = function(out) {
+BIMSURFER.Util.glMatrix.quat.identity = function(out) {
     out[0] = 0;
     out[1] = 0;
     out[2] = 0;
@@ -3525,7 +3525,7 @@ BIM.Util.glMatrix.quat.identity = function(out) {
  * @param {Number} rad the angle in radians
  * @returns {quat} out
  **/
-BIM.Util.glMatrix.quat.setAxisAngle = function(out, axis, rad) {
+BIMSURFER.Util.glMatrix.quat.setAxisAngle = function(out, axis, rad) {
     rad = rad * 0.5;
     var s = Math.sin(rad);
     out[0] = s * axis[0];
@@ -3544,7 +3544,7 @@ BIM.Util.glMatrix.quat.setAxisAngle = function(out, axis, rad) {
  * @returns {quat} out
  * @function
  */
-BIM.Util.glMatrix.quat.add = BIM.Util.glMatrix.vec4.add;
+BIMSURFER.Util.glMatrix.quat.add = BIMSURFER.Util.glMatrix.vec4.add;
 
 /**
  * Multiplies two quat's
@@ -3554,7 +3554,7 @@ BIM.Util.glMatrix.quat.add = BIM.Util.glMatrix.vec4.add;
  * @param {quat} b the second operand
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.multiply = function(out, a, b) {
+BIMSURFER.Util.glMatrix.quat.multiply = function(out, a, b) {
     var ax = a[0], ay = a[1], az = a[2], aw = a[3],
         bx = b[0], by = b[1], bz = b[2], bw = b[3];
 
@@ -3566,10 +3566,10 @@ BIM.Util.glMatrix.quat.multiply = function(out, a, b) {
 };
 
 /**
- * Alias for {@link BIM.Util.glMatrix.quat.multiply}
+ * Alias for {@link BIMSURFER.Util.glMatrix.quat.multiply}
  * @function
  */
-BIM.Util.glMatrix.quat.mul = BIM.Util.glMatrix.quat.multiply;
+BIMSURFER.Util.glMatrix.quat.mul = BIMSURFER.Util.glMatrix.quat.multiply;
 
 /**
  * Scales a quat by a scalar number
@@ -3580,7 +3580,7 @@ BIM.Util.glMatrix.quat.mul = BIM.Util.glMatrix.quat.multiply;
  * @returns {quat} out
  * @function
  */
-BIM.Util.glMatrix.quat.scale = BIM.Util.glMatrix.vec4.scale;
+BIMSURFER.Util.glMatrix.quat.scale = BIMSURFER.Util.glMatrix.vec4.scale;
 
 /**
  * Rotates a quaternion by the given angle about the X axis
@@ -3590,7 +3590,7 @@ BIM.Util.glMatrix.quat.scale = BIM.Util.glMatrix.vec4.scale;
  * @param {number} rad angle (in radians) to rotate
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.rotateX = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.quat.rotateX = function (out, a, rad) {
     rad *= 0.5;
 
     var ax = a[0], ay = a[1], az = a[2], aw = a[3],
@@ -3611,7 +3611,7 @@ BIM.Util.glMatrix.quat.rotateX = function (out, a, rad) {
  * @param {number} rad angle (in radians) to rotate
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.rotateY = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.quat.rotateY = function (out, a, rad) {
     rad *= 0.5;
 
     var ax = a[0], ay = a[1], az = a[2], aw = a[3],
@@ -3632,7 +3632,7 @@ BIM.Util.glMatrix.quat.rotateY = function (out, a, rad) {
  * @param {number} rad angle (in radians) to rotate
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.rotateZ = function (out, a, rad) {
+BIMSURFER.Util.glMatrix.quat.rotateZ = function (out, a, rad) {
     rad *= 0.5;
 
     var ax = a[0], ay = a[1], az = a[2], aw = a[3],
@@ -3654,7 +3654,7 @@ BIM.Util.glMatrix.quat.rotateZ = function (out, a, rad) {
  * @param {quat} a quat to calculate W component of
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.calculateW = function (out, a) {
+BIMSURFER.Util.glMatrix.quat.calculateW = function (out, a) {
     var x = a[0], y = a[1], z = a[2];
 
     out[0] = x;
@@ -3672,7 +3672,7 @@ BIM.Util.glMatrix.quat.calculateW = function (out, a) {
  * @returns {Number} dot product of a and b
  * @function
  */
-BIM.Util.glMatrix.quat.dot = BIM.Util.glMatrix.vec4.dot;
+BIMSURFER.Util.glMatrix.quat.dot = BIMSURFER.Util.glMatrix.vec4.dot;
 
 /**
  * Performs a linear interpolation between two quat's
@@ -3684,7 +3684,7 @@ BIM.Util.glMatrix.quat.dot = BIM.Util.glMatrix.vec4.dot;
  * @returns {quat} out
  * @function
  */
-BIM.Util.glMatrix.quat.lerp = BIM.Util.glMatrix.vec4.lerp;
+BIMSURFER.Util.glMatrix.quat.lerp = BIMSURFER.Util.glMatrix.vec4.lerp;
 
 /**
  * Performs a spherical linear interpolation between two quat
@@ -3695,7 +3695,7 @@ BIM.Util.glMatrix.quat.lerp = BIM.Util.glMatrix.vec4.lerp;
  * @param {Number} t interpolation amount between the two inputs
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.slerp = function (out, a, b, t) {
+BIMSURFER.Util.glMatrix.quat.slerp = function (out, a, b, t) {
     // benchmarks:
     //    http://jsperf.com/quaternion-slerp-implementations
 
@@ -3743,7 +3743,7 @@ BIM.Util.glMatrix.quat.slerp = function (out, a, b, t) {
  * @param {quat} a quat to calculate inverse of
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.invert = function(out, a) {
+BIMSURFER.Util.glMatrix.quat.invert = function(out, a) {
     var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
         dot = a0*a0 + a1*a1 + a2*a2 + a3*a3,
         invDot = dot ? 1.0/dot : 0;
@@ -3759,13 +3759,13 @@ BIM.Util.glMatrix.quat.invert = function(out, a) {
 
 /**
  * Calculates the conjugate of a quat
- * If the quaternion is normalized, this function is faster than BIM.Util.glMatrix.quat.inverse and produces the same result.
+ * If the quaternion is normalized, this function is faster than BIMSURFER.Util.glMatrix.quat.inverse and produces the same result.
  *
  * @param {quat} out the receiving quaternion
  * @param {quat} a quat to calculate conjugate of
  * @returns {quat} out
  */
-BIM.Util.glMatrix.quat.conjugate = function (out, a) {
+BIMSURFER.Util.glMatrix.quat.conjugate = function (out, a) {
     out[0] = -a[0];
     out[1] = -a[1];
     out[2] = -a[2];
@@ -3780,13 +3780,13 @@ BIM.Util.glMatrix.quat.conjugate = function (out, a) {
  * @returns {Number} length of a
  * @function
  */
-BIM.Util.glMatrix.quat.length = BIM.Util.glMatrix.vec4.length;
+BIMSURFER.Util.glMatrix.quat.length = BIMSURFER.Util.glMatrix.vec4.length;
 
 /**
- * Alias for {@link BIM.Util.glMatrix.quat.length}
+ * Alias for {@link BIMSURFER.Util.glMatrix.quat.length}
  * @function
  */
-BIM.Util.glMatrix.quat.len = BIM.Util.glMatrix.quat.length;
+BIMSURFER.Util.glMatrix.quat.len = BIMSURFER.Util.glMatrix.quat.length;
 
 /**
  * Calculates the squared length of a quat
@@ -3795,13 +3795,13 @@ BIM.Util.glMatrix.quat.len = BIM.Util.glMatrix.quat.length;
  * @returns {Number} squared length of a
  * @function
  */
-BIM.Util.glMatrix.quat.squaredLength = BIM.Util.glMatrix.vec4.squaredLength;
+BIMSURFER.Util.glMatrix.quat.squaredLength = BIMSURFER.Util.glMatrix.vec4.squaredLength;
 
 /**
- * Alias for {@link BIM.Util.glMatrix.quat.squaredLength}
+ * Alias for {@link BIMSURFER.Util.glMatrix.quat.squaredLength}
  * @function
  */
-BIM.Util.glMatrix.quat.sqrLen = BIM.Util.glMatrix.quat.squaredLength;
+BIMSURFER.Util.glMatrix.quat.sqrLen = BIMSURFER.Util.glMatrix.quat.squaredLength;
 
 /**
  * Normalize a quat
@@ -3811,7 +3811,7 @@ BIM.Util.glMatrix.quat.sqrLen = BIM.Util.glMatrix.quat.squaredLength;
  * @returns {quat} out
  * @function
  */
-BIM.Util.glMatrix.quat.normalize = BIM.Util.glMatrix.vec4.normalize;
+BIMSURFER.Util.glMatrix.quat.normalize = BIMSURFER.Util.glMatrix.vec4.normalize;
 
 /**
  * Creates a quaternion from the given 3x3 rotation matrix.
@@ -3824,7 +3824,7 @@ BIM.Util.glMatrix.quat.normalize = BIM.Util.glMatrix.vec4.normalize;
  * @returns {quat} out
  * @function
  */
-BIM.Util.glMatrix.quat.fromMat3 = function(out, m) {
+BIMSURFER.Util.glMatrix.quat.fromMat3 = function(out, m) {
     // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
     // article "Quaternion Calculus and Fast Animation".
     var fTrace = m[0] + m[4] + m[8];
@@ -3865,6 +3865,6 @@ BIM.Util.glMatrix.quat.fromMat3 = function(out, m) {
  * @param {quat} vec vector to represent as a string
  * @returns {String} string representation of the vector
  */
-BIM.Util.glMatrix.quat.str = function (a) {
+BIMSURFER.Util.glMatrix.quat.str = function (a) {
     return 'quat(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ')';
 };
