@@ -1,0 +1,61 @@
+div#full_screen div.container {
+	float: left;
+	outline: 1px solid #CCC;
+	width: 45%;
+	height: 80%;
+	min-width: 500px;
+	min-height: 400px;
+	margin: 10px;
+	position: relative;
+}
+div#full_screen div.container div.viewer {
+	position: absolute;
+	width: 100%;
+	height:100%;
+	background: #FFF;
+}
+
+div#full_screen div.viewer a.load_button {
+	display: block;
+	border: none;
+	text-align: center;
+	text-decoration: underline;
+	margin-top: 20%;
+}
+
+.form label span
+{
+	display: inline-block;
+	width: 150px;
+}
+.form label input[type="text"], .form label input[type="password"]
+{
+	width: 250px;
+	border: 1px solid #AAA;
+	padding: 2px;
+	font-size: 12px;
+}
+.form div.state
+{
+	padding: 10px;
+	margin: 10px 0;
+}
+
+div.ui-dialog div.ui-dialog-buttonpane button.disabled span.ui-button-text
+{
+	color: #CCC;
+	cursor: progress;
+}
+
+div.container div.BIMSURFER-Control-ProgressBar
+{
+	width: 100%;
+	min-width: 500px;
+	position: absolute;
+	bottom:0px;
+	outline: 0px;
+}
+div.container div.BIMSURFER-Control-ProgressBar-progress
+{
+	background: #666;
+}

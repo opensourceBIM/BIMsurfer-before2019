@@ -7,68 +7,33 @@
 
 <title>BIMsurfer</title>
 
-<script type="text/javascript">
-
-var debug = {};
-
-</script>
-
 <script type="text/javascript" src="./lib/jquery-1.10.2/jquery-1.10.2.min.js"></script>
 <script type="text/javascript" src="./lib/jquery-1.10.2/jquery.cookie.js"></script>
-<script type="text/javascript" src="./lib/scenejs-3.1/scenejs.js"></script>
-<!--
-<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.math.js"></script>
-<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.math.extra.js"></script>
-<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.js"></script>
--->
-<script type="text/javascript" src="./api/BIMSURFER.js"></script>
 
-<link rel="stylesheet" href="./css/example1.css" type="text/css" />
+<link rel="stylesheet" href="./css/basic.css" type="text/css" />
+<link rel="stylesheet" href="./css/index.css" type="text/css" />
 <link rel="stylesheet" href="./lib/jquery-ui-1.10.3.custom/css/custom-theme/jquery-ui-1.10.3.custom.css">
 
 <script type="text/javascript" src="./lib/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js"></script>
 
-<script type="text/javascript" src="./js/example1.js"></script>
-<!-- <script type="text/javascript" src="./lib/cssrefresh.js"></script> -->
+<script type="text/javascript" src="./lib/cssrefresh.js"></script>
 
 </head>
 
 <body>
 
 <div id="header" class="ui-widget-header">
-<h1><span>BIM</span>Surfer</h1>
+<h1 id="logo"><span>BIM</span>Surfer</h1>
 </div>
+
 <div id="full_screen">
+<h2>Examples</h2>
 
-
-<div id="leftbar">
-	<div id="object_info">
-		<h2>Object Info</h2>
-		<div class="data">
-			<p>No object selected.</p>
-		</div>
-	</div>
-	<div id="layer_list">
-		<h2>Layers</h2>
-		<div class="data empty">
-			<p>Load a project</p>
-		</div>
-	</div>
-	<div id="object_tree_view">
-		<h2>Layers</h2>
-		<div class="data empty">
-			<p>Load a project</p>
-		</div>
-	</div>
-</div>
-
-<div id="viewport">
+<ol id="example_list">
+	<li><a href="./example1.html">Basic viewer</a></li>
+	<li><a href="./example2.html">Multiple viewers</a></li>
+</ol>
 
 </div>
-
-<div id="progress_bar"></div>
-
-</div>
-
 </body>
 </html>

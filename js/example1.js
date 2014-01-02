@@ -258,6 +258,9 @@ $(function()
 							BIMSurfer.addControl(panOrbit);
 							panOrbit.activate();
 
+							var sunLight = new BIMSURFER.Light.Sun(BIMSurfer);
+						   	BIMSurfer.addLight(sunLight);
+
 							var ambientLight = new BIMSURFER.Light.Ambient(BIMSurfer);
 						   	BIMSurfer.addLight(ambientLight);
 

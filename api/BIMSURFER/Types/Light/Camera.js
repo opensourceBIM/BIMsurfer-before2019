@@ -1,11 +1,8 @@
-BIMSURFER.Light.Camera = BIMSURFER.Class(
-{
+BIMSURFER.Light.Camera = BIMSURFER.Class(BIMSURFER.Light, {
 	CLASS: 'BIMSURFER.Light.Camera',
-	__construct: function(system)
-	{
+	__construct: function(system)`{
 		this.SYSTEM = system;
-		this.lightObject =
-		{
+		this.lightObject = {
 			type:		'light',
 			id:			'sun-light',
 			mode:		'dir',
@@ -15,19 +12,5 @@ BIMSURFER.Light.Camera = BIMSURFER.Class(
 			diffuse:	true,
 			specular:	true
 		};
-	},
-
-	activate: function()
-	{
-		var lights = this.surfer.scene.findNode('my-lights')._data.lights;
-		console.debug(lights);
-
-		//	var mainRenderer = this.surfer.scene.findNode('main-renderer');
-		//	mainRenderer.addNode(this.lightObject);
-	},
-
-	setSurfer: function(surfer)
-	{
-		this.surfer = surfer;
 	}
 });

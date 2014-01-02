@@ -1,11 +1,8 @@
-BIMSURFER.Light.Ambient = BIMSURFER.Class(
-{
+BIMSURFER.Light.Ambient = BIMSURFER.Class(BIMSURFER.Light, {
 	CLASS: 'BIMSURFER.Light.Ambient',
-	__construct: function(system)
-	{
+	__construct: function(system) {
 		this.SYSTEM = system;
-		this.lightObject = new Array(
-			{
+		this.lightObject = new Array({
 				mode:"ambient",
 				color:{ r:0.3, g:0.3, b:0.3 },
 				diffuse:false,
@@ -20,14 +17,5 @@ BIMSURFER.Light.Ambient = BIMSURFER.Class(
 				space:"view"
 			}
 		);
-	},
-
-	activate: function()
-	{
-	},
-
-	setSurfer: function(surfer)
-	{
-		this.surfer = surfer;
 	}
 });

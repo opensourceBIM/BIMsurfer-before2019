@@ -144,9 +144,17 @@ BIMSURFER.Server = BIMSURFER.Class({
 		if(!BIMSURFER.Util.isset(this.serializers[name])) {
 			var _this = this;
 			this.server.call("PluginInterface", "getSerializerByPluginClassName", {pluginClassName : name, async: false}, function(serializer) {
-				if(!BIMSURFER.Util.isset(serializer.oid)) return null;
-					_this.serializers[name] = serializer;
+				if(!BIMSURFER.Util.isset(serializer.oid)) {
+					console.error('Serializer not found on server: ', name);
+					return null;
+				}
+				_this.serializers[name] = serializer;
 			});
+		}
+
+		if(!this.serializers[name]) {
+			console.error('Serializer not found on server: ', name);
+			return null;
 		}
 		return this.serializers[name];
 	}
