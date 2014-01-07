@@ -248,9 +248,9 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
 		}
 
 		if (delta) {
-			if (delta < 0  && this.zoom >= -25) {
+			if (delta < 0  && this.zoom > -25) {
 				this.zoom -= 1;
-			} else {
+			} else if(delta > 0) {
 				this.zoom += 1;
 			}
 		}

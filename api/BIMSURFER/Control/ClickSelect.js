@@ -49,8 +49,9 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 	},
 
 	unselect: function() {
-		if(this.highlighted) {
-			var node = this.surfer.scene.findNode(BIMSURFER.Constants.highlightSelectedObject.id);
+		var node = this.surfer.scene.findNode(BIMSURFER.Constants.highlightSelectedObject.id);
+		if(node != null)
+		{
 			node.splice();
 			this.events.trigger('unselect', [this.highlighted]);
 			this.highlighted = null;

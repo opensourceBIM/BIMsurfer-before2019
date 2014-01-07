@@ -135,35 +135,108 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}, lastDown);
 	},
 
-	loadScene: function(scene) {
-		if(this.scene != null) {
-			this.scene.destroy();
-			this.events.trigger('sceneUnloaded', [this.scene]);
-			this.sceneLoaded = false;
-			this.scene = null;
+	loadScene: function(project, options) {
+
+		if(typeof options != 'object') {
+			options = {};
 		}
+		if(typeof project.scene != 'object') {
+			console.error('No scene in project');
+			return;
+		}
+		var scene = project.scene;
 
-		try {
-			this.drawCanvas();
-			scene.canvasId = $(this.canvas).attr('id');
-			scene.id = scene.canvasId;
-			this.scene = SceneJS.createScene(scene);
-			if(this.scene != null) {
-				var optics = this.scene.findNode('main-camera').get('optics');
-				optics['aspect'] = $(this.canvas).width() / $(this.canvas).height();
-				this.scene.findNode('main-camera').set('optics', optics);
+		if(this.scene == null) {
+			try {
+				this.drawCanvas();
+				scene.canvasId = $(this.canvas).attr('id');
+				scene.id = scene.canvasId;
 
-				this.scene.set('tagMask', '^()$');
+				if(!BIMSURFER.Util.isArray(scene.nodes)) {
+					console.error('No nodes array in scene');
+					return;
+				}
 
-				this.initEvents();
-				this.events.trigger('sceneLoaded', [this.scene]);
-				this.sceneLoaded = true;
-				return this.scene;
+				for(var i = 0; i < scene.nodes.length; i++) {
+					if(scene.nodes[i].type == 'library') {
+						scene.nodes[i].id += '-' + project.oid;
+						break;
+					}
+				}
+
+				scene.nodes.push({
+					type: 'lookAt',
+					id: 'main-lookAt',
+					eye: (typeof options.eye == 'object' ? options.eye : { x: scene.data.bounds[0] * 1.5, y: scene.data.bounds[1] * 1.5, z: scene.data.bounds[2] * 1.5 }),
+					look: (typeof options.look == 'object' ? options.look : { x: 0.0, y: 0.0, z: 0.0 }),
+					up: (typeof options.up == 'object' ? options.up : { x: 0.0, y: 0.0, z: 1.0 }),
+					nodes: [{
+							type: 'camera',
+							id: 'main-camera',
+							optics: {
+								type: 'perspective',
+								far: (typeof options.far == 'number' ? options.far : Math.sqrt(scene.data.bounds[0] * scene.data.bounds[0] + scene.data.bounds[1] * scene.data.bounds[1] + scene.data.bounds[2] * scene.data.bounds[2]) * 6),
+								near: (typeof options.near == 'number' ? options.near : Math.sqrt(scene.data.bounds[0] * scene.data.bounds[0] + scene.data.bounds[1] * scene.data.bounds[1] + scene.data.bounds[2] * scene.data.bounds[2]) * 0.001),
+								aspect: (typeof options.aspect ==  'number' ? options.aspect : $(this.canvas).width() / $(this.canvas).height()),
+								fovy: (typeof options.fovy ==  'number' ? options.fovy : 37.8493)
+							},
+							nodes: [{
+									type: 'renderer',
+									id: 'main-renderer',
+									clear: {
+										color: (typeof options.clearColor ==  'boolean' ? options.clearColor : true),
+										depth: (typeof options.clearColor ==  'boolean' ? options.clearDepth : true),
+										stencil: (typeof options.clearColor ==  'boolean' ? options.clearStencil : true)
+									},
+									nodes: [{
+										type: 'lights',
+										id: 'my-lights',
+										lights: []
+									}]
+							}]
+					}]
+				});
+
+				this.scene = SceneJS.createScene(scene);
+				if(this.scene != null) {
+					this.scene.set('tagMask', '^()$');
+
+					this.initEvents();
+					this.sceneLoaded = true;
+					this.events.trigger('sceneLoaded', [this.scene]);
+					return this.scene;
+				}
+			}
+			catch (error) {
+				console.error('loadScene: ', error, error.stack, this, arguments);
+				console.debug('loadScene ERROR', error, error.stack, this, arguments);
 			}
 		}
-		catch (error) {
-			console.error('loadScene: ', error, error.stack, this, arguments);
-			console.debug('loadScene ERROR', error, error.stack, this, arguments);
+		else
+		{
+			$.extend(this.scene.data.properties, scene.data.properties);
+
+			for(var i = 0; i < scene.nodes.length; i++) {
+				if(scene.nodes[i].type == 'library') {
+					scene.nodes[i].id += '-' + project.oid;
+					this.scene.addNode(scene.nodes[i]);
+					break;
+				}
+			}
+
+			var camera = this.scene.findNode('main-camera');
+			var optics = camera.getOptics();
+			var far = (typeof options.far == 'number' ? options.far : Math.sqrt(scene.data.bounds[0] * scene.data.bounds[0] + scene.data.bounds[1] * scene.data.bounds[1] + scene.data.bounds[2] * scene.data.bounds[2]) * 6);
+			var near = (typeof options.near == 'number' ? options.near : Math.sqrt(scene.data.bounds[0] * scene.data.bounds[0] + scene.data.bounds[1] * scene.data.bounds[1] + scene.data.bounds[2] * scene.data.bounds[2]) * 0.001);
+
+			if(far != optics.far || near != optics.near)
+			{
+				optics.far = far;
+				optics.near = near;
+			  	camera.setOptics(optics);
+			}
+			this.events.trigger('sceneReloaded', [this.scene]);
+			return this.scene;
 		}
 		return null;
 	},
@@ -257,7 +330,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 						var dataInputStream = new DataInputStream(data);
 						var start = dataInputStream.readUTF8();
-						var library = _this.scene.findNode("library");
+						var library = _this.scene.findNode("library-" + params.project.oid);
 						var bounds = _this.scene.data.bounds2;
 
 						if (start == "BGS") {

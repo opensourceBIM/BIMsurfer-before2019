@@ -5,6 +5,30 @@ BIMSURFER.Control.ProgressBar = BIMSURFER.Class(BIMSURFER.Control, {
 	message: '',
 	animationSpeed: 200,
 	animationTimer: null,
+	currentType: BIMSURFER.Constants.ProgressBarStyle.Continuous,
+	marqueeImageSrc: './images/loader.png',
+	marqueeImage: null,
+	marqueeSpeed: 20,
+
+	activate: function() {
+		if(this.div) {
+			this.active = true;
+			this.marqueeImage = new Image();
+			this.marqueeImage.src = this.marqueeImageSrc;
+			this.redraw();
+			this.initEvents();
+		}
+		return this;
+	},
+
+	deactivate: function() {
+		this.active = false;
+		this.marqueeImage = null;
+		this.initEvents();
+		$(this.DOMelement).remove();
+		this.DOMelement = null;
+		return this;
+	},
 
 	initEvents: function() {
 		if(this.active) {
@@ -43,7 +67,47 @@ BIMSURFER.Control.ProgressBar = BIMSURFER.Class(BIMSURFER.Control, {
 	},
 
 	changeType: function(loadingType) {
-		console.debug('CHANGED LOADINGTYPE', loadingType);
+		var bar = $(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress');
+		var text = $(this.DOMelement).find('.' + this.CLASS.replace(/\./g, "-") + '-text');
+		switch(loadingType) {
+			case BIMSURFER.Constants.ProgressBarStyle.Continuous:
+				if(this.animationTimer != null) {
+					clearInterval(this.animationTimer);
+					this.animationTimer = null;
+				}
+				$(bar).removeAttr('style');
+				$(text).show();
+				this.currentType = BIMSURFER.Constants.ProgressBarStyle.Continuous;
+				break;
+
+			case BIMSURFER.Constants.ProgressBarStyle.Marquee:
+				$(text).hide();
+				var width = Math.round($(this.DOMelement).height() / this.marqueeImage.height * this.marqueeImage.width);
+
+				$(bar).css({
+					'width': '100%',
+					'background-image': 'url(' + this.marqueeImageSrc + ')',
+					'background-position': '0px 0px',
+					'background-size': width + 'px ' + $(this.DOMelement).height() + 'px'
+				});
+				if(this.animationTimer != null) {
+					clearInterval(this.animationTimer);
+					this.animationTimer = null;
+				}
+				var _this = this;
+				this.animationTimer = setInterval((function() {
+					var position = $(bar).css('background-position').split('px');
+					position = position[0];
+					if(position >= width) {
+						position = 0;
+					}
+
+				   	$(bar).css('background-position', position/1+1 + 'px 0px');
+
+				}), this.marqueeSpeed);
+				this.currentType = BIMSURFER.Constants.ProgressBarStyle.Marquee;
+				break;
+		}
 	},
 
 	setAnimationSpeed: function(speed) {
@@ -52,6 +116,9 @@ BIMSURFER.Control.ProgressBar = BIMSURFER.Class(BIMSURFER.Control, {
 	},
 
 	changeShownProgress: function(percentage) {
+		if(this.currentType != BIMSURFER.Constants.ProgressBarStyle.Continuous) {
+			this.changeType(BIMSURFER.Constants.ProgressBarStyle.Continuous);
+		}
 		if(percentage > 100) {
 			percentage = 100;
 		} else if(percentage < 0) {

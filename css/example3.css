@@ -9,6 +9,10 @@ div#leftbar
 	overflow: auto;
 
 }
+div#leftbar input[type="button"]
+{
+	width: 100%;
+}
 div#leftbar div#object_info label
 {
 	font-weight: bold;
@@ -42,7 +46,11 @@ div#viewport
 	padding: 2px;
 	font-size: 12px;
 }
-
+.form div.state
+{
+	padding: 10px;
+	margin: 10px 0;
+}
 
 div.ui-dialog div.ui-dialog-buttonpane button.disabled span.ui-button-text
 {
