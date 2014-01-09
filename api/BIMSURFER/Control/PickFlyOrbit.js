@@ -236,7 +236,7 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
 	},
 	mouseWheel: function(e) {
 		var delta = 0;
-		if (!event) event = window.event;
+		event = e;
 		if (event.wheelDelta) {
 			delta = event.wheelDelta / 120;
 			if (window.opera) {
