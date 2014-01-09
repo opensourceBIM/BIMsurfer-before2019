@@ -144,17 +144,61 @@ $(function()
 										{
 											e.preventDefault();
 											var project = $(this).parent().data('project');
-											for(var x = 0; x < BIMSurfer.loadedProjects.length; x++) {
-												if(project.oid == BIMSurfer.loadedProjects[x].oid) {
-													var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-circle-close').css({'float': 'left', 'margin-right': '.3em'});
-													$(dialog).find('.state').remove();
-													$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text("This project is allready loaded").prepend(icon));
-													return;
+											if(project.revisions.length == 1) {
+												for(var x = 0; x < BIMSurfer.loadedProjects.length; x++) {
+													if(project.oid == BIMSurfer.loadedProjects[x].oid) {
+														var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-circle-close').css({'float': 'left', 'margin-right': '.3em'});
+														$(dialog).find('.state').remove();
+														$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text("This project is allready loaded").prepend(icon));
+														return;
+													}
 												}
 											}
 											if(project == null) return;
-										   	loadProject(project);
+
 											$(dialog).dialog('close');
+											dialog = null;
+											if(project.revisions.length == 1) {
+										   		loadProject(project);
+											}
+											else
+											{
+												dialog = $('<div />').attr('title', 'Choose a project revision');
+												var revisionList = $('<ul />').attr('id', 'revisions').appendTo(dialog);
+												for(var x = 0; x < project.revisions.length; x++) {
+													var date = new Date(project.revisions[x].date);
+													var link = $('<a />')
+																	.attr('href', '#')
+																	.attr('title', 'Laad revisie ' + project.revisions[x].id)
+																	.click(function(ev)
+																			{
+																				ev.preventDefault();
+																				var revision = $(this).parent().data('revision');
+																				for(var x = 0; x < BIMSurfer.loadedProjects.length; x++) {
+																					if(project.oid == BIMSurfer.loadedProjects[x].oid && BIMSurfer.loadedProjects[x].loadedRevisionId == revision.oid) {
+																						var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-circle-close').css({'float': 'left', 'margin-right': '.3em'});
+																						$(dialog).find('.state').remove();
+																						$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text("This revision is allready loaded").prepend(icon));
+																						return;
+																					}
+																				}
+
+																				loadProject(project, revision.oid);
+																				$(dialog).dialog('close');
+																			})
+																	.text(project.revisions[x].id + ' - ' + project.revisions[x].comment + ' (' + date.getFullYear() + '-' + (date.getMonth()/1+1) + '-' + date.getDate() + ')');
+													$(revisionList).append($('<li />').data('revision', project.revisions[x]).append(link));
+												}
+
+												$(revisionList).menu();
+
+												$(dialog).dialog({
+													autoOpen: true,
+													width: 450,
+													modal: true,
+													close: function() { $(dialog).remove(); }
+												});
+											}
 										})
 								.text(project.name)
 				$(projectList).append($('<li />').data('project', project).append(link));
@@ -175,8 +219,12 @@ $(function()
 	}
 
 
-	function loadProject(project)
+	function loadProject(project, revisionId)
 	{
+		if(typeof revisionId == 'undefined')
+		{
+			revisionId = project.lastRevisionId;
+		}
 		project.events.register('projectLoaded', function()
 		{
 			var scene = this.scene;
@@ -265,7 +313,7 @@ $(function()
 				}
 			});
 		});
-		var scene = project.load();
+		var scene = project.load(revisionId);
 	}
 
 	function sceneLoaded() {

@@ -159,7 +159,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 				for(var i = 0; i < scene.nodes.length; i++) {
 					if(scene.nodes[i].type == 'library') {
-						scene.nodes[i].id += '-' + project.oid;
+						scene.nodes[i].id += '-' + project.oid + '-' + project.loadedRevisionId;
 						break;
 					}
 				}
@@ -218,7 +218,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 			for(var i = 0; i < scene.nodes.length; i++) {
 				if(scene.nodes[i].type == 'library') {
-					scene.nodes[i].id += '-' + project.oid;
+					scene.nodes[i].id += '-' + project.oid + '-' + project.loadedRevisionId;
 					this.scene.addNode(scene.nodes[i]);
 					break;
 				}
@@ -257,7 +257,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}
 
 		this.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
-		var roid = load.project.lastRevisionId;
+		var roid = load.project.loadedRevisionId;
 		var _this = this;
 
 		this.SYSTEM.events.trigger('progressChanged', [0]);
@@ -330,7 +330,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 						var dataInputStream = new DataInputStream(data);
 						var start = dataInputStream.readUTF8();
-						var library = _this.scene.findNode("library-" + params.project.oid);
+						var library = _this.scene.findNode("library-" + params.project.oid + '-' + params.project.loadedRevisionId);
 						var bounds = _this.scene.data.bounds2;
 
 						if (start == "BGS") {
