@@ -8,6 +8,7 @@ BIMSURFER.Project = BIMSURFER.Class({
 	scene: null,
 	ifcTypes: null,
 	loadedTypes: null,
+	loadedRevisionId: null,
 
 	__construct: function(system, serverProject, server) {
 		this.SYSTEM = system;
@@ -22,17 +23,42 @@ BIMSURFER.Project = BIMSURFER.Class({
 			return;
 		}
 		this.server = server;
+		var _this = this;
+		this.server.server.call("Bimsie1ServiceInterface", "getAllRevisionsOfProject", {
+			poid : serverProject.oid,
+			async: false
+		}, function(revisions) {
+			_this.revisions = revisions;
+		});
 
 		this.loadedTypes = new Array();
 
+		delete serverProject.revisions;
 		jQuery.extend(this, serverProject);
 
 		this.events = new BIMSURFER.Events(this.SYSTEM, this);
 	},
 
-	load: function() {
+	load: function(revisionId) {
 		if(this.scene != null) {
 			return this.types;
+		}
+		if(typeof revisionId == 'undefined') {
+			revisionId = this.lastRevisionId;
+		}
+		else
+		{
+			var revisionFound = false;
+			for(var i = 0; i < this.revisions.length; i++) {
+				if(this.revisions[i].oid == revisionId) {
+					revisionFound = true;
+					break;
+				}
+			}
+			if(!revisionFound) {
+				console.error('BIMSURFER.Project.looad: This revision ID does not exist in this project');
+				return;
+			}
 		}
 
 		var _this = this;
@@ -59,6 +85,7 @@ BIMSURFER.Project = BIMSURFER.Class({
 					_this.ifcTypes.sort();
 					_this.scene.data.ifcTypes = new Array();
 					_this.events.trigger('projectLoaded');
+					_this.loadedRevisionId = revisionId;
 					_this.SYSTEM.events.trigger('progressDone');
 				},
 				error: function(a,b,c,d,e) {
@@ -73,13 +100,13 @@ BIMSURFER.Project = BIMSURFER.Class({
 		}
 
 		this.server.server.call("Bimsie1ServiceInterface", "download", {
-			roid : this.lastRevisionId,
+			roid : revisionId,
 			serializerOid : this.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJs3ShellSerializerPlugin').oid,
 			showOwn : true,
 			sync: false
 		}, function(laid) {
 			if(!BIMSURFER.Util.isset(laid)) {
-				console.error('Error loading project:', _this.lastRevisionId);
+				console.error('Error loading project:', _this.oid, revisionId);
 				return;
 			}
 			_this.SYSTEM.events.trigger('progressStarted', 'Preparing project');
