@@ -166,7 +166,7 @@ $(function()
 									}
 
 
-									if(surfer.loadScene(project.scene) != null)
+									if(surfer.loadScene(project) != null)
 									{
 										var clickSelect = new BIMSURFER.Control.ClickSelect(surfer);
 										//clickSelect.events.register('select', nodeSelected);
@@ -200,8 +200,6 @@ $(function()
 
 				function connected()
 				{
-					surfer.setServer(server);
-
 					$(this.window).resize(function(e) {
 						surfer.resize($(surfer.div).width(), $(surfer.div).height());
 					});
@@ -216,9 +214,9 @@ $(function()
 					surfer.addControl(progressBar);
 					progressBar.activate();
 
-					for(var i = 0; i < surfer.server.projects.length; i++)
+					for(var i = 0; i < server.projects.length; i++)
 					{
-						var project = surfer.server.projects[i];
+						var project = server.projects[i];
 
 						if(project.lastRevisionId != -1)
 						{

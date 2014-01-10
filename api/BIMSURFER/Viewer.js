@@ -6,7 +6,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	div: null,
 	mode: null,
 	canvas: null,
-	server: null,
 	events: null,
 	controls: null,
 	lights: null,
@@ -39,14 +38,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		this.loadQueue = new Array();
 		this.visibleTypes = new Array();
 		this.loadedProjects = new Array();
-	},
-	setServer: function(server) {
-		if(server.CLASS != 'BIMSURFER.Server') {
-			console.error('BIMSURFER: No server given');
-			return;
-		}
-
-		this.server = server;
 	},
 	addControl: function(control) {
 		if(typeof this.controls[control.CLASS] == 'undefined') {
@@ -265,16 +256,16 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 		var params = {
 				roid: roid,
-				serializerOid: this.server.getSerializer('org.bimserver.geometry.json.JsonGeometrySerializerPlugin').oid,
+				serializerOid: load.project.server.getSerializer('org.bimserver.geometry.json.JsonGeometrySerializerPlugin').oid,
 				downloadQueue: this.loadQueue,
 				load: load,
 				project: load.project
 		}
 
-		this.server.server.call("Bimsie1ServiceInterface", "downloadByTypes", {
+		load.project.server.server.call("Bimsie1ServiceInterface", "downloadByTypes", {
 				roids : [ roid ],
 				classNames : [ load.type ],
-				serializerOid : this.server.getSerializer('org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin').oid,
+				serializerOid : load.project.server.getSerializer('org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin').oid,
 				includeAllSubtypes : false,
 				useObjectIDM : false,
 				sync : false,
@@ -293,7 +284,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					_this.SYSTEM.events.trigger('progressChanged', [100]);
 					progressLoader.unregister();
 
-					var url = _this.server.server.generateRevisionDownloadUrl({
+					var url = load.project.server.server.generateRevisionDownloadUrl({
 						serializerOid : params.serializerOid,
 						laid : params.laid
 					});
@@ -328,7 +319,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 						params.downloadQueue = params.downloadQueue.slice(1)
 					  	_this.loadGeometry();
 
-						var dataInputStream = new DataInputStream(data);
+						var dataInputStream = new BIMSURFER.DataInputStreamReader(this, data);
 						var start = dataInputStream.readUTF8();
 						var library = _this.scene.findNode("library-" + params.project.oid + '-' + params.project.loadedRevisionId);
 						var bounds = _this.scene.data.bounds2;
@@ -417,7 +408,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					oReq.send(null);
 				}
 				_this.mode = 'loading';
-				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, _this.server.server, laid, step, done, params, false);
+				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, load.project.server.server, laid, step, done, params, false);
 			});
 	},
 

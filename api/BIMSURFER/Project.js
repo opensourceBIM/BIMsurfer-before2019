@@ -43,22 +43,22 @@ BIMSURFER.Project = BIMSURFER.Class({
 		if(this.scene != null) {
 			return this.types;
 		}
+		//revisionId = (typeof revisionId == 'undefined' ? this.lastRevisionId : revisionId);
+
 		if(typeof revisionId == 'undefined') {
 			revisionId = this.lastRevisionId;
 		}
-		else
-		{
-			var revisionFound = false;
-			for(var i = 0; i < this.revisions.length; i++) {
-				if(this.revisions[i].oid == revisionId) {
-					revisionFound = true;
-					break;
-				}
+
+		var revisionFound = false;
+		for(var i = 0; i < this.revisions.length; i++) {
+			if(this.revisions[i].oid == revisionId) {
+				revisionFound = true;
+				break;
 			}
-			if(!revisionFound) {
-				console.error('BIMSURFER.Project.looad: This revision ID does not exist in this project');
-				return;
-			}
+		}
+		if(!revisionFound) {
+			console.error('BIMSURFER.Project.looad: This revision ID does not exist in this project');
+			return;
 		}
 
 		var _this = this;
@@ -84,9 +84,9 @@ BIMSURFER.Project = BIMSURFER.Class({
 					_this.ifcTypes = _this.scene.data.ifcTypes;
 					_this.ifcTypes.sort();
 					_this.scene.data.ifcTypes = new Array();
-					_this.events.trigger('projectLoaded');
 					_this.loadedRevisionId = revisionId;
 					_this.SYSTEM.events.trigger('progressDone');
+					_this.events.trigger('projectLoaded');
 				},
 				error: function(a,b,c,d,e) {
 					console.debug('Todo: Error');

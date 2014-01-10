@@ -114,8 +114,6 @@ $(function()
 
 	function connected()
 	{
-		BIMSurfer.setServer(BIMServer);
-
 		$(this.window).resize(function(e) {
 			BIMSurfer.resize($('div#viewport').width(), $('div#viewport').height());
 		});
@@ -127,9 +125,9 @@ $(function()
 		BIMSurfer.addControl(progressBar);
 		progressBar.activate();
 
-		for(var i = 0; i < BIMSurfer.server.projects.length; i++)
+		for(var i = 0; i < BIMServer.projects.length; i++)
 		{
-			var project = BIMSurfer.server.projects[i];
+			var project = BIMServer.projects[i];
 
 			if(project.lastRevisionId != -1)
 			{
@@ -246,7 +244,7 @@ $(function()
 						}
 
 
-						if(BIMSurfer.loadScene(project.scene) != null)
+						if(BIMSurfer.loadScene(project) != null)
 						{
 							var clickSelect = new BIMSURFER.Control.ClickSelect(BIMSurfer);
 							clickSelect.events.register('select', nodeSelected);

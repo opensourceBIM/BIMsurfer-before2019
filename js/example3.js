@@ -103,8 +103,6 @@ $(function()
 			autoOpen: true,
 			width: 450,
 			modal: true,
-			closeOnEscape: false,
-			open: function(event, ui) { $(".ui-dialog .ui-dialog-titlebar-close").hide(); },
 			buttons: {
 				"Connect": function() {
 					$(form).submit();
@@ -118,7 +116,6 @@ $(function()
 
 	function connected()
 	{
-		BIMSurfer.setServer(BIMServer);
 
 		$(this.window).resize(function(e) {
 			BIMSurfer.resize($('div#viewport').width(), $('div#viewport').height());
@@ -131,9 +128,9 @@ $(function()
 		BIMSurfer.addControl(progressBar);
 		progressBar.activate();
 
-		for(var i = 0; i < BIMSurfer.server.projects.length; i++)
+		for(var i = 0; i < BIMServer.projects.length; i++)
 		{
-			var project = BIMSurfer.server.projects[i];
+			var project = BIMServer.projects[i];
 
 			if(project.lastRevisionId != -1)
 			{
@@ -212,8 +209,6 @@ $(function()
 			autoOpen: true,
 			width: 450,
 			modal: true,
-			closeOnEscape: false,
-			open: function(event, ui) { $(".ui-dialog .ui-dialog-titlebar-close").hide(); },
 			close: function() { $(dialog).remove(); }
 		});
 	}
@@ -253,8 +248,6 @@ $(function()
 				autoOpen: true,
 				width: 450,
 				modal: true,
-				closeOnEscape: false,
-				open: function(event, ui) { $(".ui-dialog .ui-dialog-titlebar-close").hide(); },
 				close: function() { $(dialog).remove(); },
 				buttons: {
 					'Load': function()
@@ -351,6 +344,24 @@ $(function()
 		}
 		var infoContainer = $('#object_info').find('.data');
 		$(infoContainer).empty();
+
+
+		$('<div />').append($('<label />').text('ID')).appendTo(infoContainer);
+		$('<div />').text(node.getId()).appendTo(infoContainer);
+
+		var materialNode = node;
+		while(materialNode.type != 'material') {
+			if(!node.parent) {
+				materialNode = null;
+				break;
+			}
+			materialNode = materialNode.parent;
+		}
+
+		if(materialNode != null) {
+			$('<div />').append($('<label />').text('Material')).appendTo(infoContainer);
+			$('<div />').text(materialNode.getCoreId()).appendTo(infoContainer);
+		}
 
 		var properties = this.surfer.scene.data.properties[node.getId()];
 
