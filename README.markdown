@@ -1,4 +1,4 @@
-<img src="http://bimsurfer.org/files/2011/11/bimsurfer-logo-245x85.png" alt="BIMsurfer">
+<img src="https://raw2.github.com/opensourceBIM/BIMsurfer/master/static/images/main-menu-logo.png" alt="BIMsurfer">
 
     Copyright 2012, Bimsurfer.org
     Bimsurfer is licensed under the GNU Affero General Public License, version 3.0. 
