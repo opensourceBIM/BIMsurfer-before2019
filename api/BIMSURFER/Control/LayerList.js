@@ -16,11 +16,11 @@ BIM.Control.LayerList = BIM.Class(BIM.Control,
 		}
 		return this;
 	},
-	setSurfer: function(surfer)
+	setViewer: function(viewer)
 	{
-		this.surfer = surfer;
+		this.SYSTEM = viewer;
 
-		this.surfer.register('loggedin', this.redraw);
+		this.SYSTEM.register('loggedin', this.redraw);
 		return this;
 	}
 });

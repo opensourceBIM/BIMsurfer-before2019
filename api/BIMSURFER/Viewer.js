@@ -1,4 +1,9 @@
 "use strict"
+
+/**
+ * Class: BIMSURFER.Viewer
+ * The viewer can load and show the BIM Models.
+ */
 BIMSURFER.Viewer = BIMSURFER.Class({
 	CLASS: 'BIMSURFER.Viewer',
 	SYSTEM: null,
@@ -32,7 +37,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 		this.SYSTEM = this;
 		this.div = div;
-		this.events = new BIMSURFER.Events(this.SYSTEM, this);
+		this.events = new BIMSURFER.Events(this);
 		this.controls = new Array();
 		this.lights = new Array();
 		this.loadQueue = new Array();
@@ -48,7 +53,17 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			this.controls[control.CLASS].push(control);
 		}
 
-		control.setSurfer(this);
+		control.setViewer(this);
+	},
+	removeControl: function(control) {
+		if(BIMSURFER.Util.isArray(this.controls[control.CLASS])) {
+			var i = this.controls[control.CLASS].indexOf(control);
+			if(i != -1) {
+				this.controls[control.CLASS].splice(i, 1);
+				control.deactivate();
+				control.removeFromViewer();
+			}
+		}
 	},
 	addLight: function(light) {
 	   	if(light.CLASS.substr(0, 16) != 'BIMSURFER.Light.') {
@@ -59,7 +74,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			this.lights.push(light);
 		}
 
-		light.setSurfer(this);
+		light.setViewer(this);
 		light.activate();
 	},
 	resize: function(width, height) {
@@ -176,8 +191,8 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 									id: 'main-renderer',
 									clear: {
 										color: (typeof options.clearColor ==  'boolean' ? options.clearColor : true),
-										depth: (typeof options.clearColor ==  'boolean' ? options.clearDepth : true),
-										stencil: (typeof options.clearColor ==  'boolean' ? options.clearStencil : true)
+										depth: (typeof options.clearDepth ==  'boolean' ? options.clearDepth : true),
+										stencil: (typeof options.clearStencil ==  'boolean' ? options.clearStencil : true)
 									},
 									nodes: [{
 										type: 'lights',

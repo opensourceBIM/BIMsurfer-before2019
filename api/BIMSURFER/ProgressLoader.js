@@ -1,3 +1,10 @@
+"use strict"
+
+/**
+ * Class: BIMSURFER.ProgressLoader
+ * A class to manage the BIMServer progress.
+ * Can register progress listeners on the server for long running actions
+ */
 BIMSURFER.ProgressLoader = BIMSURFER.Class({
 	CLASS: 'BIMSURFER.Class',
 	SYSTEM: null,
@@ -27,7 +34,7 @@ BIMSURFER.ProgressLoader = BIMSURFER.Class({
 			if(!_this.registered && !registering) {
 				return;
 			}
-			this.registered = true;
+			_this.registered = true;
 			_this.progressHandler.apply(_this, [topicId, state]);
 		};
 

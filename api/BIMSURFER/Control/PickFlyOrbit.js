@@ -1,9 +1,12 @@
-BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
+"use strict"
+
+/**
+ * Class: BIMSURFER.Control.PickFlyOrbit
+ * Control to control the main camera of the scene.
+ * Allows the user to pan, orbit and zoom-in.
+ */
+BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	CLASS: "BIMSURFER.Control.PickFlyOrbit",
-	surfer: null,
-	active: false,
-	events: null,
-	sceneLoaded: false,
 
 	touching: false,
 	orbitDragging: false,
@@ -33,71 +36,90 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
 	flightStartTime: null,
 	flightDuration: null,
 
-	__construct: function(system, params)	{
-		this.SYSTEM = system;
-
-		this.events = new BIMSURFER.Events(this.SYSTEM, this);
+	/**
+	 * Consturctor
+	 *
+	 * @constructor
+	 * @param {object} params Options
+	 */
+	__construct: function(params)	{
+		this.events = new BIMSURFER.Events(this);
 		if(typeof params != 'undefined') {
 			this.eye = params.eye || this.eye;
 			this.look = params.look || this.look;
 			this.zoom = params.zoom || this.zoom;
 		}
 	},
-	setSurfer: function(surfer)
-	{
-		this.surfer = surfer;
-		return this;
-	},
-	removeFromSurfer: function()
-	{
-		this.surfer = null;
-		return this;
-	},
 
+	/**
+	 * Activates the control
+	 *
+	 * @return this
+	 */
 	activate: function()
 	{
-		if(this.surfer == null || !this.surfer.sceneLoaded) {
+		if(this.SYSTEM == null || !this.SYSTEM.sceneLoaded) {
 			console.error('Cannot activate ' + this.CLASS + ': Surfer or scene not ready');
 			return null;
 		}
 
-		this.lookAt = this.surfer.scene.findNode('main-lookAt');
+		this.lookAt = this.SYSTEM.scene.findNode('main-lookAt');
 		this.eye = this.lookAt.getEye();
 		this.startEye = this.lookAt.getEye();
 
 		this.look = this.lookAt.getLook();
-
 		this.currentPivot = this.look;
-
-	  	this.surfer.events.register('mouseDown', this.mouseDown, this);
-		this.surfer.events.register('mouseUp', this.mouseUp, this);
-		this.surfer.events.register('mouseMove', this.mouseMove, this);
-		this.surfer.events.register('mouseWheel', this.mouseWheel, this);
-		this.surfer.events.register('DOMMouseScroll', this.mouseWheel, this);
-		this.surfer.events.register('touchStart', this.touchStart, this);
-		this.surfer.events.register('touchMove', this.touchMove, this);
-		this.surfer.events.register('touchEnd', this.touchEnd, this);
-		this.surfer.events.register('pick', this.pick, this);
-		this.surfer.events.register('tick', this.tick, this);
-
 		this.active = true;
-
+		this.initEvents();
 		return this;
 	},
 
+	/**
+	 * Deactivates the control
+	 *
+	 * @return this
+	 */
 	deactivate: function()
 	{
 		this.active = false;
-		this.surfer.events.unregister('mouseDown', this.mouseDown, this);
-		this.surfer.events.unregister('mouseUp', this.mouseUp, this);
-		this.surfer.events.unregister('mouseMove', this.mouseMove, this);
-		this.surfer.events.unregister('mouseWheel', this.mouseWheel, this);
-		this.surfer.events.unregister('touchStart', this.touchStart, this);
-		this.surfer.events.unregister('touchMove', this.touchMove, this);
-		this.surfer.events.unregister('touchEnd', this.touchEnd, this);
+		this.initEvents();
 		return this;
 	},
 
+	/**
+	 * Initializes the events necessary for the operation of this control
+	 *
+	 * @return this
+	 */
+	initEvents: function() {
+		if(this.active) {
+		  	this.SYSTEM.events.register('mouseDown', this.mouseDown, this);
+			this.SYSTEM.events.register('mouseUp', this.mouseUp, this);
+			this.SYSTEM.events.register('mouseMove', this.mouseMove, this);
+			this.SYSTEM.events.register('mouseWheel', this.mouseWheel, this);
+			this.SYSTEM.events.register('DOMMouseScroll', this.mouseWheel, this);
+			this.SYSTEM.events.register('touchStart', this.touchStart, this);
+			this.SYSTEM.events.register('touchMove', this.touchMove, this);
+			this.SYSTEM.events.register('touchEnd', this.touchEnd, this);
+			this.SYSTEM.events.register('pick', this.pick, this);
+			this.SYSTEM.events.register('tick', this.tick, this);
+		} else {
+			this.SYSTEM.events.unregister('mouseDown', this.mouseDown, this);
+			this.SYSTEM.events.unregister('mouseUp', this.mouseUp, this);
+			this.SYSTEM.events.unregister('mouseMove', this.mouseMove, this);
+			this.SYSTEM.events.unregister('mouseWheel', this.mouseWheel, this);
+			this.SYSTEM.events.unregister('touchStart', this.touchStart, this);
+			this.SYSTEM.events.unregister('touchMove', this.touchMove, this);
+			this.SYSTEM.events.unregister('touchEnd', this.touchEnd, this);
+			this.SYSTEM.events.unregister('pick', this.pick, this);
+			this.SYSTEM.events.unregister('tick', this.tick, this);
+		}
+		return this;
+	},
+
+	/**
+	 * Event listener for every SceneJS tick
+	 */
 	tick: function()
 	{
 		if(this.flying) {
@@ -184,6 +206,11 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
 		}
 	},
 
+	/**
+	 * Event listener
+	 *
+	 * @param {SceneJS.node} hit Selected SceneJS node
+	 */
 	pick: function(hit) {
 		// Some plugins wrap things in this name to
 		// avoid them being picked, such as skyboxes
@@ -203,6 +230,12 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
 		this.flying = true;
 	},
 
+	/**
+	 * Handler for mouse and touch drag events
+	 *
+	 * @param {Number} x X coordinate
+	 * @param {Number} y Y coordinate
+	 */
 	actionMove: function(x, y) {
 		if(this.orbitDragging) {
 			this.yaw += (x - this.lastX) * this.direction * 0.1;
@@ -215,6 +248,12 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
 		this.lastX = x;
 		this.lastY = y;
 	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {mouseEvent} e Mouse event
+	 */
 	mouseDown: function(e) {
 		this.lastX = this.downX = e.offsetX;
 		this.lastY = this.downY = e.offsetY;
@@ -225,15 +264,33 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
 			this.panDragging = true;
 		}
 	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {mouseEvent} e Mouse event
+	 */
 	mouseUp: function(e) {
 		this.orbitDragging = false;
 		this.panDragging = false;
 	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {mouseEvent} e Mouse event
+	 */
 	mouseMove: function(e) {
 		if(!this.touching) {
 			this.actionMove(e.offsetX, e.offsetY);
 		}
 	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {mouseEvent} e Mouse event
+	 */
 	mouseWheel: function(e) {
 		var delta = 0;
 		event = e;
@@ -262,16 +319,34 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class({
 		event.returnValue = false;
 		this.orbiting = true;
 	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {touchEvent} e Touch event
+	 */
 	touchStart: function(e) {
 		this.lastX = this.downX = e.targetTouches[0].clientX;
 		this.lastY = this.downY = e.targetTouches[0].clientY;
 		this.orbitDragging = true;
 		this.touching = true;
 	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {touchEvent} e Touch event
+	 */
 	touchMove: function(e) {
 		this.actionMove(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
 
 	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {touchEvent} e Touch event
+	 */
 	touchEnd: function(e) {
 		this.orbitDragging = false;
 		this.panDragging = false;

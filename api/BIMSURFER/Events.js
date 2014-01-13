@@ -1,3 +1,10 @@
+"use strict"
+
+/**
+ * Class: BIMSURFER.Events
+ * Event system that can be used by all BIMSURFER classes.
+ * Enables the user to register, unregister and trigger events, based on object instances
+ */
 BIMSURFER.Events = BIMSURFER.Class({
 	CLASS: 'BIMSURFER.Events',
 	SYSTEM: null,
@@ -5,8 +12,7 @@ BIMSURFER.Events = BIMSURFER.Class({
 	listeners: {},
 	object: null,
 
-	__construct: function(system, object) {
-		this.SYSTEM = system;
+	__construct: function(object) {
 		this.object = object;
 		this.listeners = {};
 	},

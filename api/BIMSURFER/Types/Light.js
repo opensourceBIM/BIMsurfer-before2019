@@ -1,13 +1,18 @@
+"use strict"
+
+/**
+ * Class: BIMSURFER.Light
+ * This is the base class for Light objects.
+ * Lights can be used to modify the lighting in the viewer
+ */
 BIMSURFER.Light = BIMSURFER.Class({
 	CLASS: 'BIMSURFER.Light',
 	SYSTEM: null,
-	surfer: null,
 	lightObject: null,
-	__construct: function(system) {
-		this.SYSTEM = system;
+	__construct: function() {
 	},
 	activate: function() {
-		var myLights = this.surfer.scene.findNode('my-lights');
+		var myLights = this.SYSTEM.scene.findNode('my-lights');
 		var lights = myLights._core.lights;
 
 		if(BIMSURFER.Util.isArray(this.lightObject)) {
@@ -22,7 +27,7 @@ BIMSURFER.Light = BIMSURFER.Class({
 		myLights.setLights(lights);
 	},
 	deactivate: function() {
-		var myLight = this.surfer.scene.findNode('my-lights');
+		var myLight = this.SYSTEM.scene.findNode('my-lights');
 		var lights = myLights._core.lights;
 
 		var i = -1;
@@ -39,7 +44,7 @@ BIMSURFER.Light = BIMSURFER.Class({
 		myLights.setLights(lights);
 	},
 
-	setSurfer: function(surfer) {
-		this.surfer = surfer;
+	setViewer: function(viewer) {
+		this.SYSTEM = viewer;
 	}
 });

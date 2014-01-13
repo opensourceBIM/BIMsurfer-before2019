@@ -1,3 +1,9 @@
+"use strict"
+
+/**
+ * Class: BIMSURFER.Light.Camera
+ * This light mimics the sunlight
+ */
 BIMSURFER.Light.Sun = BIMSURFER.Class(BIMSURFER.Light, {
 	CLASS: 'BIMSURFER.Light.Sun',
 	__construct: function(system) {

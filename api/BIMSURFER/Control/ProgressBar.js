@@ -1,4 +1,12 @@
-BIMSURFER.Control.ProgressBar = BIMSURFER.Class(BIMSURFER.Control, {
+"use strict"
+
+/**
+ * Class: BIMSURFER.Control.ProgressBar
+ * A progressbar can show the progress of some long running actions
+ * It will register and listen to some events on the Viewer instance.
+ * Other objects can trigger these events and the progressbar will show the progress.
+ */
+ BIMSURFER.Control.ProgressBar = BIMSURFER.Class(BIMSURFER.Control, {
 	CLASS: "BIMSURFER.Control.ProgressBar",
 	percentage: 0,
 	shownPercentage: 0,
@@ -11,7 +19,7 @@ BIMSURFER.Control.ProgressBar = BIMSURFER.Class(BIMSURFER.Control, {
 	marqueeSpeed: 20,
 
 	activate: function() {
-		if(this.div) {
+		if(this.div && this.SYSTEM) {
 			this.active = true;
 			this.marqueeImage = new Image();
 			this.marqueeImage.src = this.marqueeImageSrc;

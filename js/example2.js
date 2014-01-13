@@ -168,25 +168,25 @@ $(function()
 
 									if(surfer.loadScene(project) != null)
 									{
-										var clickSelect = new BIMSURFER.Control.ClickSelect(surfer);
+										var clickSelect = new BIMSURFER.Control.ClickSelect();
 										//clickSelect.events.register('select', nodeSelected);
 										//clickSelect.events.register('unselect', nodeUnselected);
 										surfer.addControl(clickSelect);
 										clickSelect.activate();
 
-										var panOrbit = new BIMSURFER.Control.PickFlyOrbit(surfer);
+										var panOrbit = new BIMSURFER.Control.PickFlyOrbit();
 										surfer.addControl(panOrbit);
 										panOrbit.activate();
 
-										var sunLight = new BIMSURFER.Light.Sun(surfer);
+										var sunLight = new BIMSURFER.Light.Sun();
 									   	surfer.addLight(sunLight);
 
-										var ambientLight = new BIMSURFER.Light.Ambient(surfer);
+										var ambientLight = new BIMSURFER.Light.Ambient();
 									   	surfer.addLight(ambientLight);
 
 								   		surfer.loadGeometry();
 
-										var objectTreeView = new BIMSURFER.Control.ObjectTreeView(surfer, 'object_tree_view');
+										var objectTreeView = new BIMSURFER.Control.ObjectTreeView('object_tree_view');
 										surfer.addControl(objectTreeView);
 										objectTreeView.activate();
 									}
@@ -210,7 +210,7 @@ $(function()
 					var progressBar = $('<div />').attr('id', 'progress_bar_' + $(surfer.div).attr('id'));
 					$(surfer.div).closest('.container').append(progressBar);
 
-					progressBar = new BIMSURFER.Control.ProgressBar(surfer, progressBar);
+					progressBar = new BIMSURFER.Control.ProgressBar(progressBar);
 					surfer.addControl(progressBar);
 					progressBar.activate();
 

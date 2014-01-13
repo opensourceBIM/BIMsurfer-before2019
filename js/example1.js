@@ -121,7 +121,7 @@ $(function()
 		var dialog = $('<div />').attr('title', 'Open a project');
 		var projectList = $('<ul />').attr('id', 'projects').appendTo(dialog);
 
-		var progressBar = new BIMSURFER.Control.ProgressBar(BIMSurfer, 'progress_bar');
+		var progressBar = new BIMSURFER.Control.ProgressBar('progress_bar');
 		BIMSurfer.addControl(progressBar);
 		progressBar.activate();
 
@@ -246,25 +246,25 @@ $(function()
 
 						if(BIMSurfer.loadScene(project) != null)
 						{
-							var clickSelect = new BIMSURFER.Control.ClickSelect(BIMSurfer);
+							var clickSelect = new BIMSURFER.Control.ClickSelect();
 							clickSelect.events.register('select', nodeSelected);
 							clickSelect.events.register('unselect', nodeUnselected);
 							BIMSurfer.addControl(clickSelect);
 							clickSelect.activate();
 
-							var panOrbit = new BIMSURFER.Control.PickFlyOrbit(BIMSurfer);
+							var panOrbit = new BIMSURFER.Control.PickFlyOrbit();
 							BIMSurfer.addControl(panOrbit);
 							panOrbit.activate();
 
-							var sunLight = new BIMSURFER.Light.Sun(BIMSurfer);
+							var sunLight = new BIMSURFER.Light.Sun();
 						   	BIMSurfer.addLight(sunLight);
 
-							var ambientLight = new BIMSURFER.Light.Ambient(BIMSurfer);
+							var ambientLight = new BIMSURFER.Light.Ambient();
 						   	BIMSurfer.addLight(ambientLight);
 
 					   		BIMSurfer.loadGeometry();
 
-							var objectTreeView = new BIMSURFER.Control.ObjectTreeView(BIMSurfer, 'object_tree_view');
+							var objectTreeView = new BIMSURFER.Control.ObjectTreeView('object_tree_view');
 							BIMSurfer.addControl(objectTreeView);
 							objectTreeView.activate();
 						}
@@ -278,13 +278,13 @@ $(function()
 
 	function nodeSelected(node)
 	{
-		if(typeof this.surfer.scene.data.properties[node.getId()] == 'undefined') {
+		if(typeof this.SYSTEM.scene.data.properties[node.getId()] == 'undefined') {
 			return;
 		}
 		var infoContainer = $('#object_info').find('.data');
 		$(infoContainer).empty();
 
-		var properties = this.surfer.scene.data.properties[node.getId()];
+		var properties = this.SYSTEM.scene.data.properties[node.getId()];
 
 		for(var i in properties) {
 			if(typeof properties[i] == 'string') {

@@ -1,4 +1,10 @@
-BIMSURFER.Light.Ambient = BIMSURFER.Class(BIMSURFER.Light, {
+"use strict"
+
+/**
+ * Class: BIMSURFER.Light.Ambient
+ * Default ambient light
+ */
+ BIMSURFER.Light.Ambient = BIMSURFER.Class(BIMSURFER.Light, {
 	CLASS: 'BIMSURFER.Light.Ambient',
 	__construct: function(system) {
 		this.SYSTEM = system;

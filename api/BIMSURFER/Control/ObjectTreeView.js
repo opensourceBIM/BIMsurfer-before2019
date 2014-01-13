@@ -5,16 +5,14 @@ BIMSURFER.Control.ObjectTreeView = BIMSURFER.Class(BIMSURFER.Control,
 
 	projectHtml: null,
 
-	__construct: function(system, div) {
-		this.SYSTEM = system;
-
+	__construct: function(div) {
 		if(typeof div == 'string') {
 			this.div = $(document).find('div#' + div)[0] || null;
 		} else if($(div).is('div')) {
 			this.div = div;
 		}
 
-		this.events = new BIMSURFER.Events(this.SYSTEM, this);
+		this.events = new BIMSURFER.Events(this);
 
 		//this.projectHtml = '<li id="{ID}"
 	},
@@ -29,7 +27,7 @@ BIMSURFER.Control.ObjectTreeView = BIMSURFER.Class(BIMSURFER.Control,
 		{
 			$(this.div).append(this.DOMelement);
 
-			var relationships = this.surfer.scene.data.relationships;
+			var relationships = this.SYSTEM.scene.data.relationships;
 			var showCheckboxes = this.showCheckboxes;
 
 			function drawRelationships(objects, relationship) {
@@ -75,8 +73,8 @@ BIMSURFER.Control.ObjectTreeView = BIMSURFER.Class(BIMSURFER.Control,
 				return projLi;
 			}
 
-			for(var i = 0; i < this.surfer.scene.data.relationships.length; i++) {
-				var project = this.surfer.scene.data.relationships[i];
+			for(var i = 0; i < this.SYSTEM.scene.data.relationships.length; i++) {
+				var project = this.SYSTEM.scene.data.relationships[i];
 
 				$(this.DOMelement).append(drawProject(project));
 
@@ -113,11 +111,6 @@ ifcObjectDescription = function(obj, indent) {
 
 			}
 		}
-		return this;
-	},
-	setSurfer: function(surfer)
-	{
-		this.surfer = surfer;
 		return this;
 	}
 });

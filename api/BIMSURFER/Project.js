@@ -1,4 +1,9 @@
 "use strict"
+
+/**
+ * Class: BIMSURFER.Project
+ * Projects loads all information about the BIMServer projects
+ */
 BIMSURFER.Project = BIMSURFER.Class({
 	CLASS: 'BIMSURFER.Project',
 	SYSTEM: null,
@@ -36,7 +41,7 @@ BIMSURFER.Project = BIMSURFER.Class({
 		delete serverProject.revisions;
 		jQuery.extend(this, serverProject);
 
-		this.events = new BIMSURFER.Events(this.SYSTEM, this);
+		this.events = new BIMSURFER.Events(this);
 	},
 
 	load: function(revisionId) {

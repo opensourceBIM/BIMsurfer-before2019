@@ -1,3 +1,9 @@
+"use strict"
+
+/**
+ * Class: BIMSURFER.DataInputStreamReader
+ * Class to read binary data from the BIMServer
+ */
 BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 	CLASS: 'BIMSurfer.DataInputStreamReader',
 	SYSTEM: null,

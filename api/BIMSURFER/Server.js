@@ -1,4 +1,9 @@
 "use strict"
+
+/**
+ * Class: BIMSURFER.Server
+ * Manages the connection to a BIMServer
+ */
 BIMSURFER.Server = BIMSURFER.Class({
 	CLASS: 'BIMSURFER.Server',
 	SYSTEM: null,
@@ -18,7 +23,7 @@ BIMSURFER.Server = BIMSURFER.Class({
 		this.SYSTEM = system;
 
 		this.url = (url.substr(-1) == '/' ? url.substr(0, url.length - 1) : url);
-		this.events = new BIMSURFER.Events(this.SYSTEM, this);
+		this.events = new BIMSURFER.Events(this);
 		this.username = username;
 		this.password = password;
 
