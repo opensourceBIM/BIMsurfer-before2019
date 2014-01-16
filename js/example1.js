@@ -163,13 +163,13 @@ $(function()
 
 	function loadProject(project)
 	{
-		project.events.register('projectLoaded', function()
-		{
+		var revisionSceneLoaded = function() {
+			project.events.unregister('revisionSceneLoaded', revisionSceneLoaded);
 			var scene = this.scene;
 			var _this = this;
 			if(scene == null)
 			{
-				console.error('Could not load project scene: ', project);
+				console.error('Could not load project revision scene');
 				return;
 			};
 			var dialog = $('<div />').attr('title', 'What types do you want to load?');
@@ -190,6 +190,7 @@ $(function()
 			$(dialog).dialog({
 				autoOpen: true,
 				width: 450,
+				maxHeight: $('div#full_screen').height() - 50,
 				modal: true,
 				closeOnEscape: false,
 				open: function(event, ui) { $(".ui-dialog .ui-dialog-titlebar-close").hide(); },
@@ -201,7 +202,7 @@ $(function()
 
 						$(checkedTypes).each(function()
 						{
-							BIMSurfer.loadQueue.push({project: project, type: $(this).val()});
+							BIMSurfer.loadQueue.push({revision: _this, type: $(this).val()});
 						});
 
 
@@ -212,8 +213,14 @@ $(function()
 							$(layerLists).empty();
 						}
 
-						var container = $('<div />').attr('id', 'layer_list-' + project.oid).data('project', project).appendTo(layerLists);
-						$('<h3 />').text(project.name).appendTo(container);
+						var layerList = new BIMSURFER.Control.LayerList(layerLists);
+						BIMSurfer.addControl(layerList);
+						layerList.activate();
+
+						/*
+
+						var container = $('<div />').attr('id', 'layer_list-' + _this.project.oid).data('project', _this.project).appendTo(layerLists);
+						$('<h3 />').text(_this.project.name).appendTo(container);
 						var typesList = $('<ul />').appendTo(container);
 
 						var loadQueueTypes = new Array();
@@ -233,18 +240,21 @@ $(function()
 								var project = $(this).closest('ul').closest('div').data('project');
 
 								if($(this).is(':checked')) {
-									BIMSurfer.showLayer($(this).val(), project);
+									BIMSurfer.showType($(this).val(), project);
 								} else {
-									BIMSurfer.hideLayer($(this).val(), project);
+									BIMSurfer.hideType($(this).val(), project);
 								}
 
 
 							});
 							$('<div />').append($('<label />').text(_this.ifcTypes[i]).prepend(checkbox)).appendTo(typesList);
 						}
+						*/
 
 
-						if(BIMSurfer.loadScene(project) != null)
+
+
+						if(BIMSurfer.loadScene(_this) != null)
 						{
 							var clickSelect = new BIMSURFER.Control.ClickSelect();
 							clickSelect.events.register('select', nodeSelected);
@@ -264,16 +274,17 @@ $(function()
 
 					   		BIMSurfer.loadGeometry();
 
-							var objectTreeView = new BIMSURFER.Control.ObjectTreeView('object_tree_view');
+							/*var objectTreeView = new BIMSURFER.Control.ObjectTreeView('object_tree_view');
 							BIMSurfer.addControl(objectTreeView);
-							objectTreeView.activate();
+							objectTreeView.activate();*/
 						}
 
 					}
 				}
 			});
-		});
-		var scene = project.load();
+		};
+		project.events.register('revisionSceneLoaded', revisionSceneLoaded);
+		var scene = project.loadScene();
 	}
 
 	function nodeSelected(node)

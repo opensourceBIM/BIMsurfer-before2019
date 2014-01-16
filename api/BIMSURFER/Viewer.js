@@ -8,6 +8,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	CLASS: 'BIMSURFER.Viewer',
 	SYSTEM: null,
 
+	connectedServers: null,
 	div: null,
 	mode: null,
 	canvas: null,
@@ -38,11 +39,17 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		this.SYSTEM = this;
 		this.div = div;
 		this.events = new BIMSURFER.Events(this);
+		this.connectedServers = new Array();
 		this.controls = new Array();
 		this.lights = new Array();
 		this.loadQueue = new Array();
 		this.visibleTypes = new Array();
 		this.loadedProjects = new Array();
+	},
+	addConnectedServer: function(server) {
+		if(this.connectedServers.indexOf(server) == -1) {
+			this.connectedServers.push(server);
+		}
 	},
 	addControl: function(control) {
 		if(typeof this.controls[control.CLASS] == 'undefined') {
@@ -141,16 +148,16 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}, lastDown);
 	},
 
-	loadScene: function(project, options) {
+	loadScene: function(revision, options) {
 
 		if(typeof options != 'object') {
 			options = {};
 		}
-		if(typeof project.scene != 'object') {
-			console.error('No scene in project');
+		if(typeof revision.scene != 'object') {
+			console.error('No scene in revision');
 			return;
 		}
-		var scene = project.scene;
+		var scene = revision.scene;
 
 		if(this.scene == null) {
 			try {
@@ -165,7 +172,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 				for(var i = 0; i < scene.nodes.length; i++) {
 					if(scene.nodes[i].type == 'library') {
-						scene.nodes[i].id += '-' + project.oid + '-' + project.loadedRevisionId;
+						scene.nodes[i].id += '-' + revision.project.oid + '-' + revision.oid;
 						break;
 					}
 				}
@@ -209,6 +216,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 					this.initEvents();
 					this.sceneLoaded = true;
+					if(this.loadedProjects.indexOf(revision.project) == -1) {
+						this.loadedProjects.push(revision.project);
+					}
+					if(revision.project.loadedRevisions.indexOf(revision) == -1) {
+						revision.project.loadedRevisions.push(revision);
+					}
 					this.events.trigger('sceneLoaded', [this.scene]);
 					return this.scene;
 				}
@@ -224,7 +237,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 			for(var i = 0; i < scene.nodes.length; i++) {
 				if(scene.nodes[i].type == 'library') {
-					scene.nodes[i].id += '-' + project.oid + '-' + project.loadedRevisionId;
+					scene.nodes[i].id += '-' + revision.project.oid + '-' + revision.oid;
 					this.scene.addNode(scene.nodes[i]);
 					break;
 				}
@@ -241,6 +254,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				optics.near = near;
 			  	camera.setOptics(optics);
 			}
+			if(this.loadedProjects.indexOf(revision.project) == -1) {
+				this.loadedProjects.push(revision.project);
+			}
+			if(revision.project.loadedRevisions.indexOf(revision) == -1) {
+				revision.project.loadedRevisions.push(revision);
+			}
 			this.events.trigger('sceneReloaded', [this.scene]);
 			return this.scene;
 		}
@@ -255,32 +274,33 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			this.SYSTEM.events.trigger('progressDone');
 		  	return;
 		}
+		this.mode = 'loading';
 
 		var load = this.loadQueue[0];
 
-		if(this.loadedProjects.indexOf(load.project) == -1) {
-			this.loadedProjects.push(load.project);
+		if(typeof load.revision != 'object') {
+			params.downloadQueue = params.downloadQueue.slice(1)
+			_this.loadGeometry();
+			return;
 		}
 
 		this.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
-		var roid = load.project.loadedRevisionId;
 		var _this = this;
 
 		this.SYSTEM.events.trigger('progressChanged', [0]);
 		this.SYSTEM.events.trigger('progressMessageChanged', "Loading " + load.type);
 
 		var params = {
-				roid: roid,
-				serializerOid: load.project.server.getSerializer('org.bimserver.geometry.json.JsonGeometrySerializerPlugin').oid,
+				roid: load.revision.oid,
+				serializerOid: load.revision.project.server.getSerializer('org.bimserver.geometry.json.JsonGeometrySerializerPlugin').oid,
 				downloadQueue: this.loadQueue,
 				load: load,
-				project: load.project
-		}
-
-		load.project.server.server.call("Bimsie1ServiceInterface", "downloadByTypes", {
-				roids : [ roid ],
+				revision: load.revision
+		};
+		load.revision.project.server.server.call("Bimsie1ServiceInterface", "downloadByTypes", {
+				roids : [ load.revision.oid ],
 				classNames : [ load.type ],
-				serializerOid : load.project.server.getSerializer('org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin').oid,
+				serializerOid : load.revision.project.server.getSerializer('org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin').oid,
 				includeAllSubtypes : false,
 				useObjectIDM : false,
 				sync : false,
@@ -289,7 +309,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	   		function(laid) {
 				params.laid = laid;
 				var step = function(params, state, progressLoader) {
-					this.SYSTEM.events.trigger('progressChanged', [state.progress]);
+					_this.SYSTEM.events.trigger('progressChanged', [state.progress]);
 				}
 				var done = function(params, state, progressLoader) {
 				 	if(_this.mode != 'loading') {
@@ -299,31 +319,32 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					_this.SYSTEM.events.trigger('progressChanged', [100]);
 					progressLoader.unregister();
 
-					var url = load.project.server.server.generateRevisionDownloadUrl({
+					var url = load.revision.project.server.server.generateRevisionDownloadUrl({
 						serializerOid : params.serializerOid,
 						laid : params.laid
 					});
 
 					var onSuccess = function(data) {
 						_this.SYSTEM.events.trigger('progressDone');
+						params.revision.loadedTypes.push(load.type);
 
-						if(_this.scene.data.ifcTypes.indexOf(params.project.oid + '-' + load.type.toLowerCase()) == -1) {
-							_this.scene.data.ifcTypes.push(params.project.oid + '-' + load.type.toLowerCase());
+						if(_this.scene.data.ifcTypes.indexOf(params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase()) == -1) {
+							_this.scene.data.ifcTypes.push(params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase());
 						}
-						if(_this.visibleTypes.indexOf(params.project.oid + '-' + load.type.toLowerCase()) == -1) {
-							_this.visibleTypes.push(params.project.oid + '-' + load.type.toLowerCase());
-						}
+					 /*	if(_this.visibleTypes.indexOf(params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase()) == -1) {
+							_this.visibleTypes.push(params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase());
+						} */
 
-						_this.refreshMask();
+						//_this.refreshMask();
+						_this.showType(load.type, params.revision);
 
 						var typeNode =  {
 							type: 'tag',
-							tag: params.project.oid + '-' + load.type.toLowerCase(),
-							id: params.project.oid + '-' + load.type.toLowerCase(),
+							tag: params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase(),
+							id: params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase(),
 							nodes: []
 						};
 
-						params.project.loadedTypes.push(load.type);
 						for(var i = 0; i < _this.loadQueue.length; i++){
 							if(load === _this.loadQueue[i]) {
 								_this.loadQueue.splice(i, 1);
@@ -331,12 +352,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 							}
 						}
 
-						params.downloadQueue = params.downloadQueue.slice(1)
+						params.downloadQueue = params.downloadQueue.slice(1);
 					  	_this.loadGeometry();
 
 						var dataInputStream = new BIMSURFER.DataInputStreamReader(this, data);
 						var start = dataInputStream.readUTF8();
-						var library = _this.scene.findNode("library-" + params.project.oid + '-' + params.project.loadedRevisionId);
+						var library = _this.scene.findNode("library-" + params.revision.project.oid + '-' + params.revision.oid);
 						var bounds = _this.scene.data.bounds2;
 
 						if (start == "BGS") {
@@ -423,41 +444,77 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					oReq.send(null);
 				}
 				_this.mode = 'loading';
-				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, load.project.server.server, laid, step, done, params, false);
+				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, load.revision.project.server.server, laid, step, done, params, false);
 			});
 	},
 
-	showLayer: function(layerName, project) {
-
-		if(project.ifcTypes.indexOf(layerName) == -1) {
-			console.error('Layer does not exist in loaded model(s): ', layerName);
+	showType: function(typeName, revision) {
+		var i = this.loadedProjects.indexOf(revision.project);
+		if(i == -1 || this.loadedProjects[i].loadedRevisions.indexOf(revision) == -1 || !revision.sceneLoaded) {
+			console.error('Revision Scene is not loaded yet.');
+			return;
+		}
+		if(revision.ifcTypes.indexOf(typeName) == -1) {
+			console.error('Type does not exist in loaded revision: ', typeName);
 			return;
 		}
 
-		if(project.loadedTypes.indexOf(layerName) == -1) {
-			this.loadQueue.push({project: project, type: layerName});
+		if(revision.loadedTypes.indexOf(typeName) == -1) {
+			this.loadQueue.push({revision: revision, type: typeName});
 			if(this.mode != 'loading' && this.mode != 'processing') {
 				this.loadGeometry();
 			}
-		} else if(this.visibleTypes.indexOf(project.oid + '-' + layerName.toLowerCase()) == -1) {
-			this.visibleTypes.push(project.oid + '-' + layerName.toLowerCase());
+		} else {
+			if(revision.visibleTypes.indexOf(typeName.toLowerCase()) > -1) {
+				return;
+			}
+			revision.visibleTypes.push(typeName.toLowerCase());
 			this.refreshMask();
 		}
 	},
 
-	hideLayer: function(layerName, project) {
-		var i = this.visibleTypes.indexOf(project.oid + '-' + layerName.toLowerCase());
+	hideType: function(typeName, revision) {
+		var i = revision.visibleTypes.indexOf(typeName.toLowerCase());
 		if(i == -1) {
 			return;
 		}
-
-		this.visibleTypes.splice(i, 1);
+		revision.visibleTypes.splice(i, 1);
 		this.refreshMask();
 	},
 
 	refreshMask: function() {
-		var tagMask = '^(' + this.visibleTypes.join('|') + ')$';
-		this.scene.set('tagMask', tagMask);
-	}
+		var mask = new Array();
+		for(var i = 0; i < this.loadedProjects.length; i++) {
+			for(var x = 0; x < this.loadedProjects[i].loadedRevisions.length; x++) {
+				for(var y = 0; y < this.loadedProjects[i].loadedRevisions[x].visibleTypes.length; y++) {
+					mask.push(this.loadedProjects[i].oid + '-' + this.loadedProjects[i].loadedRevisions[x].oid + '-' + this.loadedProjects[i].loadedRevisions[x].visibleTypes[y].toLowerCase());
+				}
+			}
+		}
 
+		var tagMask = '^(' + mask.join('|') + ')$';
+		this.scene.set('tagMask', tagMask);
+		this.events.trigger('tagMaskUpdated');
+	},
+
+	hideRevision: function(revision) {
+		var visibleTypes = revision.visibleTypes.slice(0);
+		for(var i = 0; i < visibleTypes.length; i++) {
+			this.hideType(visibleTypes[i], revision);
+		}
+	},
+	showRevision: function(revision, types) {
+		if(typeof types == 'undefined') {
+			types = new Array();
+			for(var i = 0; i < revision.ifcTypes.length; i++) {
+				if(BIMSURFER.Constants.defaultTypes.indexOf(revision.ifcTypes[i]) != -1) {
+					types.push(revision.ifcTypes[i]);
+				}
+			}
+		}
+
+		for(var i = 0; i < types.length; i++) {
+			this.showType(types[i], revision);
+		}
+	}
 });

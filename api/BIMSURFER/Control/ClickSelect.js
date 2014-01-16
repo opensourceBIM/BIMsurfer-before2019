@@ -46,6 +46,8 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 		}
 		this.active = true;
 		this.initEvents();
+		this.events.trigger('activated');
+		return this;
 	},
 
 	/**

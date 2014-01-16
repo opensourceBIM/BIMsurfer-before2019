@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta charset="utf-8" />
 
-<title>BIMsurfer - Example 1: Basic viewer</title>
+<title>BIMsurfer - Example 4: Revision Timeline</title>
 
 <script type="text/javascript">
 
@@ -16,21 +16,18 @@ var debug = {};
 <script type="text/javascript" src="./lib/jquery-1.10.2/jquery-1.10.2.min.js"></script>
 <script type="text/javascript" src="./lib/jquery-1.10.2/jquery.cookie.js"></script>
 <script type="text/javascript" src="./lib/scenejs-3.1/scenejs.js"></script>
-<!--
-<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.math.js"></script>
-<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.math.extra.js"></script>
-<script type="text/javascript" src="./lib/scenejs-2.0.0.0/scenejs-2.0.0.0.js"></script>
--->
+
 <script type="text/javascript" src="./api/BIMSURFER.js"></script>
 
 <link rel="stylesheet" href="./css/basic.css" type="text/css" />
-<link rel="stylesheet" href="./css/example1.css" type="text/css" />
+<link rel="stylesheet" href="./css/example4.css" type="text/css" />
 <link rel="stylesheet" href="./lib/jquery-ui-1.10.3.custom/css/custom-theme/jquery-ui-1.10.3.custom.css">
 
 <script type="text/javascript" src="./lib/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js"></script>
 
-<script type="text/javascript" src="./js/example1.js"></script>
+<script type="text/javascript" src="./js/example4.js"></script>
 <!-- <script type="text/javascript" src="./lib/cssrefresh.js"></script> -->
+
 
 </head>
 
@@ -38,31 +35,26 @@ var debug = {};
 
 <div id="header" class="ui-widget-header">
 <span id="logo"><span>BIM</span>Surfer</span>
-<h1>Example 1: Basic viewer</h1>
+<h1>Example 4: Revision Timeline</h1>
 </div>
 <div id="full_screen">
 
-
-<div id="leftbar">
-	<div id="object_info">
-		<h2>Object Info</h2>
-		<div class="data">
-			<p>No object selected.</p>
-		</div>
-	</div>
-	<div id="layer_list">
-		<h2>Loaded Projects</h2>
-		<div class="data empty">
-			<p>Load a project</p>
-		</div>
+<div id="viewer_container" class="container">
+	<div id="viewport" class="viewer">
+		<a href="#" title="Connect to a server and load a project" class="load_button">Connect to a server and load a project</a>
 	</div>
 </div>
+<div id="timeline">
+	<h2>Revision Timeline:</h2>
+	<ul>
 
-<div id="viewport">
-
+	</ul>
 </div>
-
-<div id="progress_bar"></div>
+<div id="layer_list">
+	<h2>Layers</h2>
+	<a href="#" class="openCloseButton">[\/]</a>
+	<div class="data"></div>
+</div>
 
 </div>
 

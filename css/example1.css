@@ -14,11 +14,6 @@ div#leftbar div#object_info label
 	font-weight: bold;
 }
 
-div#leftbar div#layerlist ul
-{
-	padding: 0;
-}
-
 div#viewport
 {
 	position: absolute;
@@ -58,3 +53,4 @@ div#progress_bar
 	left: 50%;
 	margin-left: -512px;
 }
+

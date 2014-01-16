@@ -47,11 +47,13 @@ BIMSURFER.Class = function(baseClass, subClass){
 		'BIMSURFER/Types/Light/Sun.js',
 		'BIMSURFER/Control.js',
 		'BIMSURFER/Control/ClickSelect.js',
+		'BIMSURFER/Control/LayerList.js',
 		'BIMSURFER/Control/ProgressBar.js',
 		'BIMSURFER/Control/PickFlyOrbit.js',
 		'BIMSURFER/Control/ObjectTreeView.js',
 	 	'BIMSURFER/Events.js',
 	 	'BIMSURFER/Project.js',
+	 	'BIMSURFER/ProjectRevision.js',
 	 	'BIMSURFER/stringview.js',
 	 	'BIMSURFER/DataInputStream.js',
 	  	'BIMSURFER/Server.js',
@@ -68,6 +70,7 @@ BIMSURFER.Class = function(baseClass, subClass){
 	var scripts = prefix + js_files.join(suffix + prefix) + suffix;
 
 	var css_files = [
+		'BIMSURFER/Control/LayerList.css',
 		'BIMSURFER/Control/ProgressBar.css',
 		'BIMSURFER/Control/ObjectTreeView.css'
 	];

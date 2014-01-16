@@ -26,6 +26,7 @@
 			this.redraw();
 			this.initEvents();
 		}
+		this.events.trigger('activated');
 		return this;
 	},
 
@@ -35,6 +36,7 @@
 		this.initEvents();
 		$(this.DOMelement).remove();
 		this.DOMelement = null;
+		this.events.trigger('deactivated');
 		return this;
 	},
 

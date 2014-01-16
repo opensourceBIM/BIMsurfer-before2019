@@ -71,6 +71,7 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 		this.currentPivot = this.look;
 		this.active = true;
 		this.initEvents();
+		this.events.trigger('activated');
 		return this;
 	},
 
@@ -83,6 +84,7 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	{
 		this.active = false;
 		this.initEvents();
+		this.events.trigger('deactivated');
 		return this;
 	},
 

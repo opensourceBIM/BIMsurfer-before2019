@@ -1,46 +1,72 @@
-var BIMServer = null;
-var BIMSurfer = null;
-
 $(function()
 {
 	BIMSurfer = new BIMSURFER.Viewer('viewport');
 
+	$(this.window).resize(function(e) {
+		BIMSurfer.resize($('div#viewport').width(), $('div#viewport').height());
+	});
+
+	var layerLists = $('div#leftbar').find('div#layer_list').find('.data');
+	if($(layerLists).is('.empty')) {
+		$(layerLists).empty();
+	}
+	$(layerLists).removeClass('empty');
+
+	var layerList = new BIMSURFER.Control.LayerList(layerLists);
+	BIMSurfer.addControl(layerList);
+	layerList.activate();
+
+	var progressBar = new BIMSURFER.Control.ProgressBar('progress_bar');
+	BIMSurfer.addControl(progressBar);
+	progressBar.activate();
 
 	var loadProjectButton = $('div#leftbar').find(':button[name="loadProject"]').button().click(function()
 	{
 		var dialog = $('<div />').attr('class', 'form').attr('title', 'Conntect to a server');
 
 		function connect(server, email, password) {
-			BIMServer = new BIMSURFER.Server(BIMSurfer, server, email, password);
-			BIMServer.events.register("loggedin", connectCallback);
-			BIMServer.events.register("loginError", connectCallback);
-			BIMServer.events.register("connectionError", connectCallback);
-			if(BIMServer.connectionStatus != null) {
-				if(BIMServer.connectionStatus == 'connected' ) {
-					BIMServer.events.trigger('connected');
-				} else {
-					BIMServer.events.trigger('connectionError');
-					return;
+			var BIMServer = null;
+			for(var i = 0; i < BIMSurfer.connectedServers.length; i ++) {
+				if(BIMSurfer.connectedServers[i].url == (server.substr(-1) == '/' ? server.substr(0, server.length - 1) : server) && BIMSurfer.connectedServers[i].username == email && BIMSurfer.connectedServers[i].password == password) {
+					BIMServer = BIMSurfer.connectedServers[i];
+					continue;
 				}
 			}
-			if(BIMServer.loginStatus != null) {
-				if(BIMServer.loginStatus == 'loggedin' ) {
-					BIMServer.events.trigger('loggedin');
-				} else {
-					BIMServer.events.trigger('loginError');
+			if(BIMServer == null) {
+				BIMServer = new BIMSURFER.Server(BIMSurfer, server, email, password);
+				BIMServer.events.register("loggedin", connectCallback);
+				BIMServer.events.register("loginError", connectCallback);
+				BIMServer.events.register("connectionError", connectCallback);
+				if(BIMServer.connectionStatus != null) {
+					if(BIMServer.connectionStatus == 'connected' ) {
+						BIMServer.events.trigger('connected');
+					} else {
+						BIMServer.events.trigger('connectionError');
+						return;
+					}
 				}
+				if(BIMServer.loginStatus != null) {
+					if(BIMServer.loginStatus == 'loggedin' ) {
+						BIMServer.events.trigger('loggedin');
+					} else {
+						BIMServer.events.trigger('loginError');
+					}
+				}
+			} else {
+				connectCallback.apply(BIMServer);
 			}
 		}
 
 
 		function connectCallback(e) {
-			BIMServer.events.unregister("serverLogin", connectCallback);
+			this.events.unregister("serverLogin", connectCallback);
 
-			if(BIMServer.connectionStatus == 'connected' && BIMServer.loginStatus == 'loggedin') {
+			if(this.connectionStatus == 'connected' && this.loginStatus == 'loggedin') {
 					$(dialog).dialog('close');
-					connected();
+					BIMSurfer.addConnectedServer(this);
+					connected(this);
 			} else {
-				var connectionStatus = (BIMServer.connectionStatus != 'connected' ? BIMServer.connectionStatus : BIMServer.loginStatus);
+				var connectionStatus = (this.connectionStatus != 'connected' ? this.connectionStatus : this.loginStatus);
 				var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-alert').css({'float': 'left', 'margin-right': '.3em'});
 				$(dialog).find('.state').remove();
 				$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text(connectionStatus).prepend(icon));
@@ -114,19 +140,10 @@ $(function()
 
 
 
-	function connected()
+	function connected(BIMServer)
 	{
-
-		$(this.window).resize(function(e) {
-			BIMSurfer.resize($('div#viewport').width(), $('div#viewport').height());
-		});
-
 		var dialog = $('<div />').attr('title', 'Open a project');
 		var projectList = $('<ul />').attr('id', 'projects').appendTo(dialog);
-
-		var progressBar = new BIMSURFER.Control.ProgressBar('progress_bar');
-		BIMSurfer.addControl(progressBar);
-		progressBar.activate();
 
 		for(var i = 0; i < BIMServer.projects.length; i++)
 		{
@@ -171,16 +188,13 @@ $(function()
 																			{
 																				ev.preventDefault();
 																				var revision = $(this).parent().data('revision');
-																				for(var x = 0; x < BIMSurfer.loadedProjects.length; x++) {
-																					if(project.oid == BIMSurfer.loadedProjects[x].oid && BIMSurfer.loadedProjects[x].loadedRevisionId == revision.oid) {
-																						var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-circle-close').css({'float': 'left', 'margin-right': '.3em'});
-																						$(dialog).find('.state').remove();
-																						$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text("This revision is allready loaded").prepend(icon));
-																						return;
-																					}
+																				if(revision.sceneLoaded) {
+																					var icon = $('<span />').addClass('ui-icon').addClass('ui-icon-circle-close').css({'float': 'left', 'margin-right': '.3em'});
+																					$(dialog).find('.state').remove();
+																					$(dialog).prepend($('<div />').addClass('state').addClass('ui-state-error').text("This revision is allready loaded").prepend(icon));
+																					return;
 																				}
-
-																				loadProject(project, revision.oid);
+																				loadProject(project, revision);
 																				$(dialog).dialog('close');
 																			})
 																	.text(project.revisions[x].id + ' - ' + project.revisions[x].comment + ' (' + date.getFullYear() + '-' + (date.getMonth()/1+1) + '-' + date.getDate() + ')');
@@ -214,19 +228,15 @@ $(function()
 	}
 
 
-	function loadProject(project, revisionId)
+	function loadProject(project, revision)
 	{
-		if(typeof revisionId == 'undefined')
-		{
-			revisionId = project.lastRevisionId;
-		}
-		project.events.register('projectLoaded', function()
-		{
+		var revisionSceneLoaded = function() {
+			project.events.unregister('revisionSceneLoaded', revisionSceneLoaded);
 			var scene = this.scene;
 			var _this = this;
 			if(scene == null)
 			{
-				console.error('Could not load project scene: ', project);
+				console.error('Could not load project revision scene.');
 				return;
 			};
 			var dialog = $('<div />').attr('title', 'What types do you want to load?');
@@ -256,57 +266,18 @@ $(function()
 
 						$(checkedTypes).each(function()
 						{
-							BIMSurfer.loadQueue.push({project: project, type: $(this).val()});
+							BIMSurfer.loadQueue.push({revision: _this, type: $(this).val()});
 						});
-
 
 						$(dialog).dialog('close');
 
-						var layerLists = $('div#leftbar').find('div#layer_list').find('.data');
-						if($(layerLists).is('.empty')) {
-							$(layerLists).empty();
-						}
-						$(layerLists).removeClass('empty');
-
-						var container = $('<div />').attr('id', 'layer_list-' + project.oid).data('project', project).appendTo(layerLists);
-						$('<h3 />').text(project.name).appendTo(container);
-						var typesList = $('<ul />').appendTo(container);
-
-						var loadQueueTypes = new Array();
-						for(var i = 0; i < BIMSurfer.loadQueue.length; i++) {
-							loadQueueTypes.push(BIMSurfer.loadQueue[i].type);
-						}
-
-						for(var i = 0; i < _this.ifcTypes.length; i++)
-						{
-							var checkbox = $('<input />').attr('type', 'checkbox').attr('name', 'types').val(_this.ifcTypes[i]);
-							if(loadQueueTypes.indexOf(_this.ifcTypes[i]) != -1) {
-								$(checkbox).attr('checked', 'checked');
-							}
-
-							$(checkbox).change(function(e) {
-
-								var project = $(this).closest('ul').closest('div').data('project');
-
-								if($(this).is(':checked')) {
-									BIMSurfer.showLayer($(this).val(), project);
-								} else {
-									BIMSurfer.hideLayer($(this).val(), project);
-								}
-
-
-							});
-							$('<div />').append($('<label />').text(_this.ifcTypes[i]).prepend(checkbox)).appendTo(typesList);
-						}
-
-
-						BIMSurfer.loadScene(project);
-
+						BIMSurfer.loadScene(_this);
 					}
 				}
 			});
-		});
-		var scene = project.load(revisionId);
+		};
+		project.events.register('revisionSceneLoaded', revisionSceneLoaded);
+		var scene = project.loadScene(revision);
 	}
 
 	function sceneLoaded() {

@@ -85,6 +85,9 @@ BIMSURFER.Control = BIMSURFER.Class({
 	 * @return this
 	 */
 	setViewer: function(viewer) {
+		if(this.active) {
+			this.deactivate();
+		}
 		this.SYSTEM = viewer;
 		return this;
 	},
@@ -122,6 +125,7 @@ BIMSURFER.Control = BIMSURFER.Class({
 			this.initEvents();
 			this.show();
 		}
+		this.events.trigger('activated');
 		return this;
 	},
 
@@ -135,6 +139,7 @@ BIMSURFER.Control = BIMSURFER.Class({
 		this.initEvents();
 		$(this.DOMelement).remove();
 		this.DOMelement = null;
+		this.events.trigger('deactivated');
 		return this;
 	},
 
