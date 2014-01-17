@@ -10,17 +10,28 @@ BIMSURFER.ProgressLoader = BIMSURFER.Class({
 	SYSTEM: null,
 
 	server: null,
-	downloadID: null,
+	laid: null,
 	step: null,
 	done: null,
 	params: null,
 	autoUnregister: null,
 	registered: null,
 
-	__construct: function(system, server, downloadID, step, done, params, autoUnregister) {
+	/**
+	 * @constructor
+	 * @param {BIMSURFER.Viewer instance} system The viewer instance
+	 * @param {BimServerAPI instance} server The API provided by a connected BIMServer
+	 * @param {Number} laid The Long-running Action ID, provided by the BIMServer
+	 * @param {Function} step The callback function for everey progress response by the server
+	 * @param {Function done The callback function that will be fired when the server gives a STATE == Finished
+	 * @param {Array} [params] An array with parameters that will be passed to the callback functions
+	 * @param {Boolean} [autoUnregister] Should it automatically unregister the progress listener on the server?
+	 */
+
+	__construct: function(system, server, laid, step, done, params, autoUnregister) {
 		this.SYSTEM = system;
 		this.server = server;
-		this.downloadID = downloadID;
+		this.laid = laid;
 		this.step = step;
 		this.done = done;
 		this.params = params;
@@ -38,14 +49,14 @@ BIMSURFER.ProgressLoader = BIMSURFER.Class({
 			_this.progressHandler.apply(_this, [topicId, state]);
 		};
 
-		this.server.registerProgressHandler(this.downloadID, this.responseHandler, function() {
+		this.server.registerProgressHandler(this.laid, this.responseHandler, function() {
 			_this.registered = true; registering = false;
 		});
 	},
 
 	unregister: function() {
 		var _this = this;
-		this.server.unregisterProgressHandler(this.downloadID, this.responseHandler);
+		this.server.unregisterProgressHandler(this.laid, this.responseHandler);
 		this.registered = false;
 	},
 

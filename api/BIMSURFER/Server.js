@@ -19,7 +19,19 @@ BIMSURFER.Server = BIMSURFER.Class({
 	projects: null,
 	serializers: new Array(),
 
-	__construct: function(system, url, username, password, rememberMe, autoConnect, autoLogin) {
+
+	/**
+	 * @constructor
+	 * @param {BIMSURFER.Viewer instance} system The viewer instance
+	 * @param {string} url The server URL
+	 * @param {string} username The server username
+	 * @param {String} password The server password
+	 * @param {Boolean} [rememberMe] Remember Default = false
+	 * @param {Boolean} [autoConnect] Automatically connect to the server? Default = true
+	 * @param {Boolean} [autoLogin] Automatically login to the server after auto connecting? Default = true
+	 * @param {Function} [autoLoginCallback] Callback function that will be called after auto login
+	 */
+	__construct: function(system, url, username, password, rememberMe, autoConnect, autoLogin, autoLoginCallback) {
 		this.SYSTEM = system;
 
 		this.url = (url.substr(-1) == '/' ? url.substr(0, url.length - 1) : url);
@@ -39,6 +51,18 @@ BIMSURFER.Server = BIMSURFER.Class({
 
 		this.rememberMe = rememberMe;
 
+		if(typeof autoLoginCallback == 'function') {
+			var autoLoginCallbackStarter = function() {
+				this.events.unregister('loggedin', autoLoginCallbackStarter);
+				this.events.unregister('loginError', autoLoginCallbackStarter);
+				this.events.unregister('connectionError', autoLoginCallbackStarter);
+				autoLoginCallback.apply(this);
+			}
+			this.events.register('loggedin', autoLoginCallbackStarter);
+			this.events.register('loginError', autoLoginCallbackStarter);
+			this.events.register('connectionError', autoLoginCallbackStarter);
+		}
+
 		if(autoConnect) {
 			this.events.register('connected', function()
 			{
@@ -50,6 +74,9 @@ BIMSURFER.Server = BIMSURFER.Class({
 		}
 	},
 
+	/**
+	 * Connects to the BIMServer and loads the BimServerApi.js file
+	 */
 	connect: function()	{
 
 		var _this = this;
@@ -94,6 +121,12 @@ BIMSURFER.Server = BIMSURFER.Class({
 		});
 	},
 
+	/**
+	 * Log in to the server and collect all projects
+	 *
+	 * @param {Function} [successCallback] Callback function when login is successful
+	 * @param {Function} [errorCallback] Callback function when login is unsuccessful
+	 */
 	login: function(successCallback, errorCallback) {
 		if(typeof successCallback != 'function') successCallback = function() {};
 		if(typeof errorCallback != 'function') errorCallback = function(error) {};
@@ -145,6 +178,12 @@ BIMSURFER.Server = BIMSURFER.Class({
 		}, { });
 	},
 
+	/**
+	 * Gets the ID of a serializer on the server
+	 *
+	 * @param {String} name Serializer name
+	 * @return {Number} the ID of the serializer
+	 */
 	getSerializer: function(name) {
 		if(!BIMSURFER.Util.isset(this.serializers[name])) {
 			var _this = this;
@@ -162,6 +201,21 @@ BIMSURFER.Server = BIMSURFER.Class({
 			return null;
 		}
 		return this.serializers[name];
-	}
+	},
+
+	/**
+	 * Gets project by OID
+	 *
+	 * @param {Number} oid The OID of the project
+	 * @return {BIMSURFER.Project instance} The Project object or null
+	 */
+	 getProjectByOid: function(oid) {
+		for(var i = 0; i < this.projects.length; i++) {
+			if(this.projects[i].oid == oid) {
+				return this.projects[i];
+			}
+		}
+		return null;
+	 }
 
 });

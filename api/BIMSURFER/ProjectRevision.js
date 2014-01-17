@@ -16,6 +16,12 @@ BIMSURFER.ProjectRevision = BIMSURFER.Class({
 
 	sceneLoaded: false,
 
+	/**
+	 * @contructor
+	 * @param {BIMSURFER.Viewer instance} system The viewer instance
+	 * @param {BIMSURFER.Project instance} project The project the revision is part of
+	 * @param {object} serverRevision An object with all the properties of the revision
+	 */
 	__construct: function(system, project, serverRevision) {
 		this.SYSTEM = system;
 		this.project = project;
@@ -32,6 +38,9 @@ BIMSURFER.ProjectRevision = BIMSURFER.Class({
 		jQuery.extend(this, serverRevision);
 	},
 
+	/**
+	 * Loads the scene of the revision from the server
+	 */
 	loadScene: function() {
 		var _this = this;
 
@@ -85,6 +94,9 @@ BIMSURFER.ProjectRevision = BIMSURFER.Class({
 		});
 	},
 
+	/**
+	 * Loads and shows the choosen ifcTypes
+	 */
 	show: function(types) {
 		if(this.sceneLoaded) {
 			this.SYSTEM.showRevision(this, types);
@@ -101,6 +113,9 @@ BIMSURFER.ProjectRevision = BIMSURFER.Class({
 		}
 	},
 
+	/**
+	 * Hides the revision
+	 */
 	hide: function() {
 		this.SYSTEM.hideRevision(this);
 	}

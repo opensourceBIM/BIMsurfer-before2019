@@ -4,7 +4,12 @@ if(typeof BIMSURFER.Util != 'object')
 
 BIMSURFER.Util.isset = function(variable)
 {
-	return !(typeof variable == 'undefined' || variable == null);
+	for(var i = 0; i < arguments.length; i++) {
+		if(typeof arguments[i] == 'undefined' || arguments[i] == null) {
+			return false;
+		}
+	}
+	return true;
 }
 BIMSURFER.Util.isArray = function(variable) {
 	return Object.prototype.toString.call(variable) === '[object Array]'

@@ -26,7 +26,13 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 //	autoLoadPath: "",
 
 
-	__construct: function(div, options) {
+	/**
+	 * @constructor
+	 * @param {String|div DOMelement} div The viewport div that will be used for the canvas
+	 * @param {Object} [options] An object with options for controls and/or lights
+	 * @param {Boolean} autoStart Full start automatically with the given options (default = false)
+	 */
+	__construct: function(div, options, autoStart) {
 		if(typeof div == 'string') {
 			div = jQuery('div#' + div)[0];
 		}
@@ -66,12 +72,42 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		this.loadQueue = new Array();
 		this.visibleTypes = new Array();
 		this.loadedProjects = new Array();
+
+		if(BIMSURFER.Util.isset(options, options.autoStart)) {
+			if(!BIMSURFER.Util.isset(options.autoStart.serverUrl, options.autoStart.serverUsername, options.autoStart.serverPassword, options.autoStart.projectOid)) {
+				console.error('Some autostart parameters are missing');
+				return;
+			}
+			var _this = this;
+			var BIMServer = new BIMSURFER.Server(this, options.autoStart.serverUrl, options.autoStart.serverUsername, options.autoStart.serverPassword, false, true, true, function() {
+				if(BIMServer.loginStatus != 'loggedin') {
+					_this.div.innerHTML = 'Something went wrong while connecting';
+					console.error('Something went wrong while connecting');
+					return;
+				}
+				var project = BIMServer.getProjectByOid(options.autoStart.projectOid);
+				project.loadScene((BIMSURFER.Util.isset(options.autoStart.revisionOid) ? options.autoStart.revisionOid : null), true);
+			});
+		}
 	},
+
+	/**
+	 * Stores a connection to a server for later use
+	 *
+	 * @param {BIMSURFER.Server instance} server The server connection to store
+	 */
 	addConnectedServer: function(server) {
 		if(this.connectedServers.indexOf(server) == -1) {
 			this.connectedServers.push(server);
 		}
 	},
+
+	/**
+	 * Adds a control to the viewer.
+	 *
+	 * @param {BIMSURFER.Control.* instance} control The control to add
+	 * @return The control object
+	 */
 	addControl: function(control) {
 		if(typeof this.controls[control.CLASS] == 'undefined') {
 			this.controls[control.CLASS] = new Array();
@@ -84,6 +120,13 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		control.setViewer(this);
 		return control;
 	},
+
+	/**
+	 * Removes a control from the viewer
+	 *
+	 * @param {BIMSURFER.Control.* instance} control The controle to remove
+	 * @return The control object
+	 */
 	removeControl: function(control) {
 		if(BIMSURFER.Util.isArray(this.controls[control.CLASS])) {
 			var i = this.controls[control.CLASS].indexOf(control);
@@ -95,6 +138,13 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}
 		return control;
 	},
+
+	/**
+	 * Adds a light to the viewer
+	 *
+	 * @param {BIMSURFER.Light.* instance} light The light to add
+	 * @return The light object
+	 */
 	addLight: function(light) {
 	   	if(light.CLASS.substr(0, 16) != 'BIMSURFER.Light.') {
 	   		return;
@@ -108,7 +158,15 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		if(this.scene) {
 			light.activate();
 		}
+		return light;
 	},
+
+	/**
+	 * Resizes the viewport and updates the aspect ratio
+	 *
+	 * @param {Number} width The new width in px
+	 * @param {Numver} height The new height in px
+	 */
 	resize: function(width, height) {
 		if(this.canvas) {
 			$(this.canvas).width(width).height(height);
@@ -124,6 +182,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			this.scene.findNode('main-camera').set('optics', optics);
 		}
 	},
+
+	/**
+	 * Draws the HTML5 canvas element
+	 *
+	 * @return The canvas element
+	 */
 	drawCanvas: function() {
 		var width = $(this.div).width();
 		var height = $(this.div).height();
@@ -147,6 +211,9 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		return this.canvas;
 	},
 
+	/**
+	 * Initializes the common events of the viewer
+	 */
 	initEvents: function() {
 		var _this = this;
 		var canvas = this.scene.getCanvas();
@@ -173,6 +240,13 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}, lastDown);
 	},
 
+	/**
+	 * Creates or updates the SceneJS Scene, based on a revision
+	 *
+	 * @param {BIMSURFER.ProjectRevision instance} revision The revision
+	 * @param {Object} [options] An object with options to overwrite the default values
+	 * @return The loaded scene
+	 */
 	loadScene: function(revision, options) {
 
 		if(typeof options != 'object') {
@@ -296,6 +370,9 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		return null;
 	},
 
+	/**
+	 * Loads and shows the geometry of the revisions that are in the load queue
+	 */
 	loadGeometry: function() {
    		if (this.loadQueue.length == 0) {
 			this.mode = "done";
@@ -478,6 +555,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			});
 	},
 
+	/**
+	 * Shows an ifcType of a revision
+	 *
+	 * @param {String} typeName The name of the type to show
+	 * @param {BIMSURFER.ProjectRevision instance} revision The revision
+	 */
 	showType: function(typeName, revision) {
 		var i = this.loadedProjects.indexOf(revision.project);
 		if(i == -1 || this.loadedProjects[i].loadedRevisions.indexOf(revision) == -1 || !revision.sceneLoaded) {
@@ -503,6 +586,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}
 	},
 
+	/**
+	 * Hides an ifcType of a revision.
+	 *
+	 * @param {String} typeName The name of the type to hide
+	 * @param {BIMSURFER.ProjectRevision instance} revision The revision
+	 */
 	hideType: function(typeName, revision) {
 		var i = revision.visibleTypes.indexOf(typeName.toLowerCase());
 		if(i == -1) {
@@ -512,6 +601,9 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		this.refreshMask();
 	},
 
+	/**
+	 * Updates the mask filter of the viewer (shows/hides the ifcTypes)
+	 */
 	refreshMask: function() {
 		var mask = new Array();
 		for(var i = 0; i < this.loadedProjects.length; i++) {
@@ -527,12 +619,24 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		this.events.trigger('tagMaskUpdated');
 	},
 
+	/**
+	 * Hides all the types of a revision
+	 *
+	 * @param {BIMSURFER.ProjectRevision} revision The revision to hide
+	 */
 	hideRevision: function(revision) {
 		var visibleTypes = revision.visibleTypes.slice(0);
 		for(var i = 0; i < visibleTypes.length; i++) {
 			this.hideType(visibleTypes[i], revision);
 		}
 	},
+
+	/**
+	 * Shows a revision
+	 *
+	 * @param {BIMSURFER.ProjectRevision} revision The revision to show
+	 * @param {Array} [types] The types to show (default = BIMSURFER.Constants.defaultTypes)
+	 */
 	showRevision: function(revision, types) {
 		if(typeof types == 'undefined') {
 			types = new Array();

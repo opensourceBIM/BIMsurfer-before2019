@@ -29,7 +29,7 @@ $(function()
 
 	var dialog = $('<div />').attr('class', 'form').attr('title', 'Conntect to a server');
 
-	function connectCallback(e) {
+	function connectCallback() {
 		BIMServer.events.unregister("serverLogin", connectCallback);
 
 		if(BIMServer.connectionStatus == 'connected' && BIMServer.loginStatus == 'loggedin') {

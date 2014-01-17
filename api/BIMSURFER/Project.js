@@ -11,6 +11,14 @@ BIMSURFER.Project = BIMSURFER.Class({
 	events: null,
 	server: null,
 
+	/**
+	 * This construct will load all the revision information of the server.
+	 *
+	 * @constructor
+	 * @param {BIMSURFER.Viewer instance} system The viewer instance
+	 * @param {Object} serverProject An object with all the project properties
+	 * @param {BIMSURFER.Server instance} server The server instance
+	 */
 	__construct: function(system, serverProject, server) {
 		this.SYSTEM = system;
 
@@ -46,27 +54,62 @@ BIMSURFER.Project = BIMSURFER.Class({
 		this.events = new BIMSURFER.Events(this);
 	},
 
-	loadScene: function(revision) {
+	/**
+	 * Loads the scene of a revision
+	 *
+	 * @param {BIMSURFER.ProjectRevision instance} [revision] The revision (Default = last revision)
+	 * @param {Boolean} [autoShow] Automatically load and show the geometries (Default = false)
+	 */
+	loadScene: function(revision, autoShow) {
 		if(this.scene != null) {
-			return this.types;
+			return;
 		}
 		//revisionId = (typeof revisionId == 'undefined' ? this.lastRevisionId : revisionId);
 
-		if(typeof revision == 'object') {
+
+
+		var _this = this;
+		var autoShowFunction = function(revision) {
+			if(!autoShow) {
+				return;
+			}
+			var revisionSceneLoaded = function() {
+				_this.events.unregister('revisionSceneLoaded', revisionSceneLoaded);
+				var scene = this.scene;
+				if(scene == null)
+				{
+					console.error('Could not load project revision scene');
+					return;
+				}
+				if(this.SYSTEM.loadScene(this)) {
+					for(var i = 0; i < this.ifcTypes.length; i++) {
+						if(BIMSURFER.Constants.defaultTypes.indexOf(this.ifcTypes[i]) != -1) {
+							this.SYSTEM.loadQueue.push({revision: this, type: this.ifcTypes[i]});
+						}
+					}
+					this.SYSTEM.loadGeometry();
+				}
+			}
+			_this.events.register('revisionSceneLoaded', revisionSceneLoaded);
+		}
+
+		if(typeof revision == 'object' && revision != null) {
 			if(this.revisions.indexOf(revision) > -1) {
+				autoShowFunction(revision);
 				revision.loadScene();
 			} else {
 				console.error('BIMSURFER.Project.looad: This revision ID does not exist in this project');
 				return;
 			}
 		} else {
-			if(typeof revision == 'undefined') {
+			if(typeof revision == 'undefined' || revision == null) {
 				revision = this.lastRevisionId;
 			}
 			var revisionFound = false;
 			for(var i = 0; i < this.revisions.length; i++) {
 				if(this.revisions[i].oid == revision) {
 					revisionFound = true;
+					autoShowFunction(this.revisions[i]);
 					this.revisions[i].loadScene();
 					break;
 				}
