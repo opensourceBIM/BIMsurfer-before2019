@@ -7,8 +7,8 @@ BIMSURFER.Control.ObjectTreeView = BIMSURFER.Class(BIMSURFER.Control,
 
 	__construct: function(div) {
 		if(typeof div == 'string') {
-			this.div = $(document).find('div#' + div)[0] || null;
-		} else if($(div).is('div')) {
+			this.div = jQuery(document).find('div#' + div)[0] || null;
+		} else if(jQuery(div).is('div')) {
 			this.div = div;
 		}
 
@@ -19,13 +19,13 @@ BIMSURFER.Control.ObjectTreeView = BIMSURFER.Class(BIMSURFER.Control,
 
 	redraw: function()
 	{
-		$(this.div).empty();
-		$(this.DOMelement).remove();
+		jQuery(this.div).empty();
+		jQuery(this.DOMelement).remove();
 		var classIdPrefix = this.CLASS.replace(/\./g,"-");
-		this.DOMelement = $('<ul />').addClass(classIdPrefix);
+		this.DOMelement = jQuery('<ul />').addClass(classIdPrefix);
 		if(this.active)
 		{
-			$(this.div).append(this.DOMelement);
+			jQuery(this.div).append(this.DOMelement);
 
 			var relationships = this.SYSTEM.scene.data.relationships;
 			var showCheckboxes = this.showCheckboxes;
@@ -35,40 +35,40 @@ BIMSURFER.Control.ObjectTreeView = BIMSURFER.Class(BIMSURFER.Control,
 					return null;
 				}
 
-				var div = $('<div />');
-				$('<span />').text(relationship).appendTo(div);
-				var list = $('<ul />').appendTo(div);
+				var div = jQuery('<div />');
+				jQuery('<span />').text(relationship).appendTo(div);
+				var list = jQuery('<ul />').appendTo(div);
 
 				for(var i = 0; i < objects.length; i++) {
-					$(list).append(drawObject(objects[i]));
+					jQuery(list).append(drawObject(objects[i]));
 				}
 				return div;
 			}
 
 			function drawObject(object) {
-				var li = $('<li />');
-				var div = $('<div />').appendTo(li);
+				var li = jQuery('<li />');
+				var div = jQuery('<div />').appendTo(li);
 				if(showCheckboxes) {
-					$('<span />').append($('<input />').attr('type', 'checkbox').attr('checked', 'checked')).appendTo(div);
+					jQuery('<span />').append(jQuery('<input />').attr('type', 'checkbox').attr('checked', 'checked')).appendTo(div);
 				}
-				$('<span />').text(object.name).appendTo(div);
-				$('<span />').text('(' + object.type + ')');
+				jQuery('<span />').text(object.name).appendTo(div);
+				jQuery('<span />').text('(' + object.type + ')');
 
-				$(li).append(drawRelationships(object.decomposedBy, 'Decomposed by'));
-				$(li).append(drawRelationships(object.definedBy, 'Defined by'));
-				$(li).append(drawRelationships(object.contains, 'Contains'));
+				jQuery(li).append(drawRelationships(object.decomposedBy, 'Decomposed by'));
+				jQuery(li).append(drawRelationships(object.definedBy, 'Defined by'));
+				jQuery(li).append(drawRelationships(object.contains, 'Contains'));
 				return li;
 			}
 
 			function drawProject(project) {
-				var projLi = $('<li />').attr('id', classIdPrefix + '-project-' + project.id).addClass( + '-project');
-				$('<div />').appendTo(projLi)
-					.append($('<span />').addClass(classIdPrefix + '-project-name').text(project.name))
-					.append($('<span />').addClass(classIdPrefix + '-project-type').text('(' + project.type + ')'));
+				var projLi = jQuery('<li />').attr('id', classIdPrefix + '-project-' + project.id).addClass( + '-project');
+				jQuery('<div />').appendTo(projLi)
+					.append(jQuery('<span />').addClass(classIdPrefix + '-project-name').text(project.name))
+					.append(jQuery('<span />').addClass(classIdPrefix + '-project-type').text('(' + project.type + ')'));
 
-				$(projLi).append(drawRelationships(project.decomposedBy, 'Decomposed by'));
-				$(projLi).append(drawRelationships(project.definedBy, 'Defined by'));
-				$(projLi).append(drawRelationships(project.contains, 'Contains'));
+				jQuery(projLi).append(drawRelationships(project.decomposedBy, 'Decomposed by'));
+				jQuery(projLi).append(drawRelationships(project.definedBy, 'Defined by'));
+				jQuery(projLi).append(drawRelationships(project.contains, 'Contains'));
 
 				return projLi;
 			}
@@ -76,7 +76,7 @@ BIMSURFER.Control.ObjectTreeView = BIMSURFER.Class(BIMSURFER.Control,
 			for(var i = 0; i < this.SYSTEM.scene.data.relationships.length; i++) {
 				var project = this.SYSTEM.scene.data.relationships[i];
 
-				$(this.DOMelement).append(drawProject(project));
+				jQuery(this.DOMelement).append(drawProject(project));
 
 /*
 

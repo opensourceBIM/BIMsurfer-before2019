@@ -22,7 +22,7 @@ BIMSURFER.Project = BIMSURFER.Class({
 	__construct: function(system, serverProject, server) {
 		this.SYSTEM = system;
 
-		if(typeof server.CLASS == 'undefined' || server.CLASS !== 'BIMSURFER.Server') {
+		if(!BIMSURFER.Util.isset(server.CLASS) || server.CLASS !== 'BIMSURFER.Server') {
 			console.error('BIMSURFER.Project: No server given');
 			return
 		}
@@ -41,7 +41,7 @@ BIMSURFER.Project = BIMSURFER.Class({
 			}
 		});
 
-		if(typeof serverProject.lastRevisionId == 'undefined' || _this.revisions.length == 0) {
+		if(!BIMSURFER.Util.isset(serverProject.lastRevisionId) || _this.revisions.length == 0) {
 			console.error('BIMSURFER.Project: Project has no revisions');
 			return;
 		}
@@ -64,9 +64,6 @@ BIMSURFER.Project = BIMSURFER.Class({
 		if(this.scene != null) {
 			return;
 		}
-		//revisionId = (typeof revisionId == 'undefined' ? this.lastRevisionId : revisionId);
-
-
 
 		var _this = this;
 		var autoShowFunction = function(revision) {
@@ -102,7 +99,7 @@ BIMSURFER.Project = BIMSURFER.Class({
 				return;
 			}
 		} else {
-			if(typeof revision == 'undefined' || revision == null) {
+			if(!BIMSURFER.Util.isset(revision)) {
 				revision = this.lastRevisionId;
 			}
 			var revisionFound = false;

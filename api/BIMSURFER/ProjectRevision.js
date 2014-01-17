@@ -57,7 +57,7 @@ BIMSURFER.ProjectRevision = BIMSURFER.Class({
 				laid : params.laid
 			});
 
-			$.ajax({
+			jQuery.ajax({
 				url: url,
 				dataType: 'json',
 				success: function(scene) {

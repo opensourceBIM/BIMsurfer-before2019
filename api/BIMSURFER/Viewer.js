@@ -41,7 +41,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			console.error('BIMSURFER: Can not find div element');
 			return;
 		}
-		if(typeof options == 'undefined') {
+		if(!BIMSURFER.Util.isset(options)) {
 			options = {};
 		}
 
@@ -50,7 +50,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		this.events = new BIMSURFER.Events(this);
 		this.connectedServers = new Array();
 		this.controls = new Array();
-		if(typeof options.controls == 'undefined') {
+		if(!BIMSURFER.Util.isset(options.controls)) {
 			this.addControl(new BIMSURFER.Control.PickFlyOrbit()).activateWhenReady();
 		} else if (BIMSURFER.Util.isArray(options.controls)) {
 			for(var i = 0; i < options.controls.length; i++) {
@@ -109,7 +109,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 * @return The control object
 	 */
 	addControl: function(control) {
-		if(typeof this.controls[control.CLASS] == 'undefined') {
+		if(!BIMSURFER.Util.isset(this.controls[control.CLASS])) {
 			this.controls[control.CLASS] = new Array();
 		}
 
@@ -165,12 +165,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 * Resizes the viewport and updates the aspect ratio
 	 *
 	 * @param {Number} width The new width in px
-	 * @param {Numver} height The new height in px
+	 * @param {Number} height The new height in px
 	 */
 	resize: function(width, height) {
 		if(this.canvas) {
-			$(this.canvas).width(width).height(height);
-			if(typeof this.canvas[0] != 'undefined') {
+			jQuery(this.canvas).width(width).height(height);
+			if(BIMSURFER.Util.isset(this.canvas[0])) {
 				this.canvas[0].width = width;
 				this.canvas[0].height = height;
 			}
@@ -178,7 +178,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 		if(this.scene !== null) {
 			var optics = this.scene.findNode('main-camera').get('optics');
-			optics['aspect'] = $(this.canvas).width() / $(this.canvas).height();
+			optics['aspect'] = jQuery(this.canvas).width() / jQuery(this.canvas).height();
 			this.scene.findNode('main-camera').set('optics', optics);
 		}
 	},
@@ -189,20 +189,20 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 * @return The canvas element
 	 */
 	drawCanvas: function() {
-		var width = $(this.div).width();
-		var height = $(this.div).height();
+		var width = jQuery(this.div).width();
+		var height = jQuery(this.div).height();
 		if(!(width > 0 && height > 0)) {
 			return;
 		}
 
-		if($(this.canvas).length == 1) {
-			$(this.canvas).remove();
+		if(jQuery(this.canvas).length == 1) {
+			jQuery(this.canvas).remove();
 		}
 
-		$(this.div).empty();
+		jQuery(this.div).empty();
 
-		this.canvas = $('<canvas />')
-							.attr('id', $(this.div).attr('id') + "-canvas")
+		this.canvas = jQuery('<canvas />')
+							.attr('id', jQuery(this.div).attr('id') + "-canvas")
 							.attr('width', width)
 							.attr('height', height)
 							.html('<p>This application requires a browser that supports the <a href="http://www.w3.org/html/wg/html5/">HTML5</a> &lt;canvas&gt; feature.</p>')
@@ -261,7 +261,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		if(this.scene == null) {
 			try {
 				this.drawCanvas();
-				scene.canvasId = $(this.canvas).attr('id');
+				scene.canvasId = jQuery(this.canvas).attr('id');
 				scene.id = scene.canvasId;
 
 				if(!BIMSURFER.Util.isArray(scene.nodes)) {
@@ -289,7 +289,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 								type: 'perspective',
 								far: (typeof options.far == 'number' ? options.far : Math.sqrt(scene.data.bounds[0] * scene.data.bounds[0] + scene.data.bounds[1] * scene.data.bounds[1] + scene.data.bounds[2] * scene.data.bounds[2]) * 6),
 								near: (typeof options.near == 'number' ? options.near : Math.sqrt(scene.data.bounds[0] * scene.data.bounds[0] + scene.data.bounds[1] * scene.data.bounds[1] + scene.data.bounds[2] * scene.data.bounds[2]) * 0.001),
-								aspect: (typeof options.aspect ==  'number' ? options.aspect : $(this.canvas).width() / $(this.canvas).height()),
+								aspect: (typeof options.aspect ==  'number' ? options.aspect : jQuery(this.canvas).width() / jQuery(this.canvas).height()),
 								fovy: (typeof options.fovy ==  'number' ? options.fovy : 37.8493)
 							},
 							nodes: [{
@@ -337,7 +337,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}
 		else
 		{
-			$.extend(this.scene.data.properties, scene.data.properties);
+			jQuery.extend(this.scene.data.properties, scene.data.properties);
 
 			for(var i = 0; i < scene.nodes.length; i++) {
 				if(scene.nodes[i].type == 'library') {
@@ -638,7 +638,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 * @param {Array} [types] The types to show (default = BIMSURFER.Constants.defaultTypes)
 	 */
 	showRevision: function(revision, types) {
-		if(typeof types == 'undefined') {
+		if(!BIMSURFER.Util.isset(types)) {
 			types = new Array();
 			for(var i = 0; i < revision.ifcTypes.length; i++) {
 				if(BIMSURFER.Constants.defaultTypes.indexOf(revision.ifcTypes[i]) != -1) {

@@ -34,7 +34,7 @@
 		this.active = false;
 		this.marqueeImage = null;
 		this.initEvents();
-		$(this.DOMelement).remove();
+		jQuery(this.DOMelement).remove();
 		this.DOMelement = null;
 		this.events.trigger('deactivated');
 		return this;
@@ -54,15 +54,15 @@
 		}
 	},
 	redraw: function() {
-		$(this.div).empty();
-		$(this.DOMelement).remove();
-		this.DOMelement = $('<div />').addClass(this.CLASS.replace(/\./g,"-"));
+		jQuery(this.div).empty();
+		jQuery(this.DOMelement).remove();
+		this.DOMelement = jQuery('<div />').addClass(this.CLASS.replace(/\./g,"-"));
 		if(this.active) {
-			$(this.div).append(this.DOMelement);
+			jQuery(this.div).append(this.DOMelement);
 		}
 
-		$('<div />').addClass(this.CLASS.replace(/\./g,"-") + '-progress').appendTo(this.DOMelement);
-		$('<div />').addClass(this.CLASS.replace(/\./g,"-") + '-text').appendTo(this.DOMelement).text('0%');
+		jQuery('<div />').addClass(this.CLASS.replace(/\./g,"-") + '-progress').appendTo(this.DOMelement);
+		jQuery('<div />').addClass(this.CLASS.replace(/\./g,"-") + '-text').appendTo(this.DOMelement).text('0%');
 		return this;
 	},
 
@@ -77,28 +77,28 @@
 	},
 
 	changeType: function(loadingType) {
-		var bar = $(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress');
-		var text = $(this.DOMelement).find('.' + this.CLASS.replace(/\./g, "-") + '-text');
+		var bar = jQuery(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress');
+		var text = jQuery(this.DOMelement).find('.' + this.CLASS.replace(/\./g, "-") + '-text');
 		switch(loadingType) {
 			case BIMSURFER.Constants.ProgressBarStyle.Continuous:
 				if(this.animationTimer != null) {
 					clearInterval(this.animationTimer);
 					this.animationTimer = null;
 				}
-				$(bar).removeAttr('style');
-				$(text).show();
+				jQuery(bar).removeAttr('style');
+				jQuery(text).show();
 				this.currentType = BIMSURFER.Constants.ProgressBarStyle.Continuous;
 				break;
 
 			case BIMSURFER.Constants.ProgressBarStyle.Marquee:
-				$(text).hide();
-				var width = Math.round($(this.DOMelement).height() / this.marqueeImage.height * this.marqueeImage.width);
+				jQuery(text).hide();
+				var width = Math.round(jQuery(this.DOMelement).height() / this.marqueeImage.height * this.marqueeImage.width);
 
-				$(bar).css({
+				jQuery(bar).css({
 					'width': '100%',
 					'background-image': 'url(' + this.marqueeImageSrc + ')',
 					'background-position': '0px 0px',
-					'background-size': width + 'px ' + $(this.DOMelement).height() + 'px'
+					'background-size': width + 'px ' + jQuery(this.DOMelement).height() + 'px'
 				});
 				if(this.animationTimer != null) {
 					clearInterval(this.animationTimer);
@@ -106,13 +106,13 @@
 				}
 				var _this = this;
 				this.animationTimer = setInterval((function() {
-					var position = $(bar).css('background-position').split('px');
+					var position = jQuery(bar).css('background-position').split('px');
 					position = position[0];
 					if(position >= width) {
 						position = 0;
 					}
 
-				   	$(bar).css('background-position', position/1+1 + 'px 0px');
+				   	jQuery(bar).css('background-position', position/1+1 + 'px 0px');
 
 				}), this.marqueeSpeed);
 				this.currentType = BIMSURFER.Constants.ProgressBarStyle.Marquee;
@@ -135,7 +135,7 @@
 			percentage = 0;
 		}
 		this.shownPercentage = percentage;
-		$(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-text').text(this.shownPercentage + '%' + (this.message.length > 0 ? ' (' + this.message + ')': ''));
+		jQuery(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-text').text(this.shownPercentage + '%' + (this.message.length > 0 ? ' (' + this.message + ')': ''));
 		return this;
 	},
 
@@ -152,7 +152,7 @@
 		}
 
 		if(this.percentage < percentage) {
-			$(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress').stop(true, false).animate({'width': percentage + '%'}, {duration: this.animationSpeed, queue: false});
+			jQuery(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress').stop(true, false).animate({'width': percentage + '%'}, {duration: this.animationSpeed, queue: false});
 
 			var _this = this;
 			this.animationTimer = setInterval((function() {
@@ -167,7 +167,7 @@
 
 			}), Math.floor(this.animationSpeed / (percentage - this.shownPercentage)));
 		} else {
-			$(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress').stop().css('width', percentage + '%');
+			jQuery(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-progress').stop().css('width', percentage + '%');
 			this.changeShownProgress(percentage);
 		}
 
@@ -176,7 +176,7 @@
 	},
 
 	changeMessage: function(message) {
-		$(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-text').text(this.percentage + '%' + (message.length > 0 ? ' (' + message + ')': ''));
+		jQuery(this.DOMelement).find('.' + this.CLASS.replace(/\./g,"-") + '-text').text(this.percentage + '%' + (message.length > 0 ? ' (' + message + ')': ''));
 		this.message = message;
 		return this;
 	}

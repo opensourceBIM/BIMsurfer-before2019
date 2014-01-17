@@ -28,8 +28,8 @@ BIMSURFER.Class = function(baseClass, subClass){
 		Class.prototype = classObject
 	} else {
 		var newClass = function() {};
-		newClass.prototype = $.extend({}, baseClass.prototype);
-		$.extend(newClass.prototype, subClass);
+		newClass.prototype = jQuery.extend({}, baseClass.prototype);
+		jQuery.extend(newClass.prototype, subClass);
 		Class.prototype = new newClass;
 	}
 
@@ -61,7 +61,7 @@ BIMSURFER.Class = function(baseClass, subClass){
 	  	'BIMSURFER/Util.js'
 	];
 
-	var scriptPath = $('script').last()[0].src;
+	var scriptPath = jQuery('script').last()[0].src;
 	scriptFolder = scriptPath.substr(0, scriptPath.lastIndexOf('/')+1)
 
 	var prefix = '<script type="text/javascript" src="' + scriptFolder;

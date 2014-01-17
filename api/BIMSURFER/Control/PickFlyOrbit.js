@@ -44,7 +44,7 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	 */
 	__construct: function(params)	{
 		this.events = new BIMSURFER.Events(this);
-		if(typeof params != 'undefined') {
+		if(BIMSURFER.Util.isset(params)) {
 			this.eye = params.eye || this.eye;
 			this.look = params.look || this.look;
 			this.zoom = params.zoom || this.zoom;

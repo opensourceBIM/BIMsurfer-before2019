@@ -56,8 +56,8 @@ BIMSURFER.Control = BIMSURFER.Class({
 	 */
 	__construct: function(div) {
 		if(typeof div == 'string') {
-			this.div = $(document).find('div#' + div)[0] || null;
-		} else if($(div).is('div')) {
+			this.div = jQuery(document).find('div#' + div)[0] || null;
+		} else if(jQuery(div).is('div')) {
 			this.div = div;
 		}
 
@@ -69,11 +69,11 @@ BIMSURFER.Control = BIMSURFER.Class({
 	 * @return this
 	 */
 	redraw: function() {
-		$(this.div).empty();
-		$(this.DOMelement).remove();
-		this.DOMelement = $('<div />').addClass(this.CLASS.replace(/\./g,"-"));
+		jQuery(this.div).empty();
+		jQuery(this.DOMelement).remove();
+		this.DOMelement = jQuery('<div />').addClass(this.CLASS.replace(/\./g,"-"));
 		if(this.active) {
-			$(this.div).append(this.DOMelement);
+			jQuery(this.div).append(this.DOMelement);
 		}
 		return this;
 	},
@@ -156,7 +156,7 @@ BIMSURFER.Control = BIMSURFER.Class({
 	deactivate: function() {
 		this.active = false;
 		this.initEvents();
-		$(this.DOMelement).remove();
+		jQuery(this.DOMelement).remove();
 		this.DOMelement = null;
 		this.events.trigger('deactivated');
 		return this;
@@ -173,10 +173,10 @@ BIMSURFER.Control = BIMSURFER.Class({
 			case 'fast':
 			case 'normal':
 			case 'slow':
-				$(this.DOMelement).stop().fadeIn(speed);
+				jQuery(this.DOMelement).stop().fadeIn(speed);
 				break;
 			default:
-				$(this.DOMelement).stop().show();
+				jQuery(this.DOMelement).stop().show();
 		}
 		return this;
 	},
@@ -192,10 +192,10 @@ BIMSURFER.Control = BIMSURFER.Class({
 			case 'fast':
 			case 'normal':
 			case 'slow':
-				$(this.DOMelement).stop().fadeOut(speed);
+				jQuery(this.DOMelement).stop().fadeOut(speed);
 				break;
 			default:
-				$(this.DOMelement).stop().hide();
+				jQuery(this.DOMelement).stop().hide();
 		}
 		return this;
 	}

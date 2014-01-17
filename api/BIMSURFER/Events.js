@@ -32,7 +32,7 @@ BIMSURFER.Events = BIMSURFER.Class({
 		if(!this.listeners[event]) {
 			this.listeners[event] = new Array();
 		}
-		this.listeners[event].push({object: (typeof object == 'undefined' || object == null ? this.object : object), callback: callback});
+		this.listeners[event].push({object: (!BIMSURFER.Util.isset(object) ? this.object : object), callback: callback});
 	},
 
 	/**
@@ -47,7 +47,7 @@ BIMSURFER.Events = BIMSURFER.Class({
 			return;
 		}
 
-		object = (typeof object == 'undefined' || object == null ? this.object : object);
+		object = (!BIMSURFER.Util.isset(object) ? this.object : object);
 
 		if(this.listeners[event]) {
 			for(var i = 0; i < this.listeners[event].length; i++) {
@@ -72,7 +72,7 @@ BIMSURFER.Events = BIMSURFER.Class({
 			return false;
 		}
 		eventArguments = eventArguments || new Array();
-		if(typeof eventArguments == 'undefined') {
+		if(!BIMSURFER.Util.isset(eventArguments)) {
 			eventArguments = new Array();
 		} else if(!BIMSURFER.Util.isArray(eventArguments)) {
 			eventArguments = [eventArguments];
@@ -90,7 +90,7 @@ BIMSURFER.Events = BIMSURFER.Class({
 
 		for(var i = 0; i < listeners.length; i++) {
 			var continueEvent = null;
-			if(typeof object != 'undefined') {
+			if(BIMSURFER.Util.isset(object)) {
 				continueEvent = listeners[i].callback.apply(object, eventArguments);
 			} else {
 				continueEvent = listeners[i].callback.apply(listeners[i].object, eventArguments);
@@ -111,8 +111,8 @@ BIMSURFER.Events = BIMSURFER.Class({
 	 */
 	normalizeEvent: function(event) {
 		if(!event.offsetX) {
-			event.offsetX = (event.pageX - $(event.target).offset().left);
-			event.offsetY = (event.pageY - $(event.target).offset().top);
+			event.offsetX = (event.pageX - jQuery(event.target).offset().left);
+			event.offsetY = (event.pageY - jQuery(event.target).offset().top);
 		}
 		return event;
 	}
