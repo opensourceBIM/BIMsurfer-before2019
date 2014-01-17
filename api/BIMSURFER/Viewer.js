@@ -26,7 +26,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 //	autoLoadPath: "",
 
 
-	__construct: function(div) {
+	__construct: function(div, options) {
 		if(typeof div == 'string') {
 			div = jQuery('div#' + div)[0];
 		}
@@ -35,13 +35,34 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			console.error('BIMSURFER: Can not find div element');
 			return;
 		}
+		if(typeof options == 'undefined') {
+			options = {};
+		}
 
 		this.SYSTEM = this;
 		this.div = div;
 		this.events = new BIMSURFER.Events(this);
 		this.connectedServers = new Array();
 		this.controls = new Array();
+		if(typeof options.controls == 'undefined') {
+			this.addControl(new BIMSURFER.Control.PickFlyOrbit()).activateWhenReady();
+		} else if (BIMSURFER.Util.isArray(options.controls)) {
+			for(var i = 0; i < options.controls.length; i++) {
+				this.addControl(options.controls[i]).activateWhenReady();
+			}
+		}
+
 		this.lights = new Array();
+		if(typeof options.lights == 'undefined') {
+			this.addLight(new BIMSURFER.Light.Sun());
+			this.addLight(new BIMSURFER.Light.Ambient());
+		} else if (BIMSURFER.Util.isArray(options.lights)) {
+			for(var i = 0; i < options.lights.length; i++) {
+				this.addLight(options.lights[i]);
+			}
+		}
+
+
 		this.loadQueue = new Array();
 		this.visibleTypes = new Array();
 		this.loadedProjects = new Array();
@@ -61,6 +82,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}
 
 		control.setViewer(this);
+		return control;
 	},
 	removeControl: function(control) {
 		if(BIMSURFER.Util.isArray(this.controls[control.CLASS])) {
@@ -71,6 +93,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				control.removeFromViewer();
 			}
 		}
+		return control;
 	},
 	addLight: function(light) {
 	   	if(light.CLASS.substr(0, 16) != 'BIMSURFER.Light.') {
@@ -80,9 +103,11 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		if(this.lights.indexOf(light) == -1) {
 			this.lights.push(light);
 		}
-
 		light.setViewer(this);
-		light.activate();
+
+		if(this.scene) {
+			light.activate();
+		}
 	},
 	resize: function(width, height) {
 		if(this.canvas) {
@@ -222,6 +247,11 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					if(revision.project.loadedRevisions.indexOf(revision) == -1) {
 						revision.project.loadedRevisions.push(revision);
 					}
+
+					for(var i = 0; i < this.lights.length; i++) {
+						this.lights[i].activate();
+					}
+
 					this.events.trigger('sceneLoaded', [this.scene]);
 					return this.scene;
 				}

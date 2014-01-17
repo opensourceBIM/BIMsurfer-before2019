@@ -130,6 +130,25 @@ BIMSURFER.Control = BIMSURFER.Class({
 	},
 
 	/**
+	 * Default function to activate the control when the scene is loaded
+	 *
+	 * @return this
+	 */
+	activateWhenReady: function() {
+		if(this.SYSTEM.sceneLoaded) {
+			this.activate();
+		} else {
+			var _this = this;
+			var sceneLoaded = function() {
+				_this.SYSTEM.events.unregister('sceneLoaded', sceneLoaded);
+				_this.activate();
+			}
+			this.SYSTEM.events.register('sceneLoaded', sceneLoaded);
+		}
+		return this;
+	},
+
+	/**
 	 * Default function to deactivate the control
 	 *
 	 * @return this

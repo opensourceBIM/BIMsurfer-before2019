@@ -2,7 +2,7 @@
 
 /**
  * Class: BIMSURFER.Events
- * Event system that can be used by all BIMSURFER classes.
+ * Event system that can be used for all BIMSURFER classes.
  * Enables the user to register, unregister and trigger events, based on object instances
  */
 BIMSURFER.Events = BIMSURFER.Class({
@@ -17,6 +17,13 @@ BIMSURFER.Events = BIMSURFER.Class({
 		this.listeners = {};
 	},
 
+	/**
+	 * Register an event.
+	 *
+	 * @param {String} event The event name
+	 * @param {Function} callback The callback function that will be fired when the event is triggered
+	 * @param {Object} [object] The object that will be used as "this" in the callback function. Defaut = this.object
+	 */
 	register: function(event, callback, object) {
 		if(typeof event != 'string' || typeof callback != 'function') {
 			return;
@@ -28,6 +35,13 @@ BIMSURFER.Events = BIMSURFER.Class({
 		this.listeners[event].push({object: (typeof object == 'undefined' || object == null ? this.object : object), callback: callback});
 	},
 
+	/**
+	 * Unregister a registered event
+	 *
+	 * @param {String} event The event name
+	 * @param {Function} callback The callback function that would be called when teh event was triggered
+	 * @param {Object} [object] The object that would be used as "this" in the callback function. Default = this.object
+	 */
 	unregister: function(event, callback, object) {
 		if(typeof event != 'string' || typeof callback != 'function') {
 			return;
@@ -45,6 +59,14 @@ BIMSURFER.Events = BIMSURFER.Class({
 		}
 	},
 
+	/**
+	 * Trigger an event
+	 *
+	 * @param {String} event The event name
+	 * @param {Array} [eventArguments] The parameters that will be passed to the registered callback function(s)
+	 * @param {Object} [object] The object that will be used as "this" in the callback function instead of the preset one.
+	 * @return success
+	 */
 	trigger: function(event, eventArguments, object) {
 		if(typeof event != 'string') {
 			return false;
@@ -64,12 +86,14 @@ BIMSURFER.Events = BIMSURFER.Class({
 			return true;
 		}
 
-		for(var i = 0; i < this.listeners[event].length; i++) {
+		var listeners = this.listeners[event].slice(0);
+
+		for(var i = 0; i < listeners.length; i++) {
 			var continueEvent = null;
 			if(typeof object != 'undefined') {
-				continueEvent = this.listeners[event][i].callback.apply(object, eventArguments);
+				continueEvent = listeners[i].callback.apply(object, eventArguments);
 			} else {
-				continueEvent = this.listeners[event][i].callback.apply(this.listeners[event][i].object, eventArguments);
+				continueEvent = listeners[i].callback.apply(listeners[i].object, eventArguments);
 			}
 
 			if(continueEvent === false) {
@@ -79,6 +103,12 @@ BIMSURFER.Events = BIMSURFER.Class({
 		return true;
 	},
 
+	/**
+	 * Normalize mouse/touch events for browser compability
+	 *
+	 * @param {Event} event The event to be normalized
+	 * @return event
+	 */
 	normalizeEvent: function(event) {
 		if(!event.offsetX) {
 			event.offsetX = (event.pageX - $(event.target).offset().left);

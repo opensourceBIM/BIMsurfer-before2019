@@ -137,16 +137,6 @@ $(function()
 										surfer.addControl(clickSelect);
 										clickSelect.activate();
 
-										var panOrbit = new BIMSURFER.Control.PickFlyOrbit();
-										surfer.addControl(panOrbit);
-										panOrbit.activate();
-
-										var sunLight = new BIMSURFER.Light.Sun();
-									   	surfer.addLight(sunLight);
-
-										var ambientLight = new BIMSURFER.Light.Ambient();
-									   	surfer.addLight(ambientLight);
-
 								   		surfer.loadGeometry();
 
 										var objectTreeView = new BIMSURFER.Control.ObjectTreeView('object_tree_view');
