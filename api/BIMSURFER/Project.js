@@ -79,10 +79,14 @@ BIMSURFER.Project = BIMSURFER.Class({
 					return;
 				}
 				if(this.SYSTEM.loadScene(this)) {
+					var toLoad = [];
 					for(var i = 0; i < this.ifcTypes.length; i++) {
 						if(BIMSURFER.Constants.defaultTypes.indexOf(this.ifcTypes[i]) != -1) {
-							this.SYSTEM.loadQueue.push({revision: this, type: this.ifcTypes[i]});
+							toLoad.push(this.ifcTypes[i]);
 						}
+					}
+					if (toLoad.length > 0) {
+						this.SYSTEM.loadQueue.push({revision: this, types: toLoad});
 					}
 					this.SYSTEM.loadGeometry();
 				}

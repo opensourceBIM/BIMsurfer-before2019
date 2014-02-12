@@ -395,7 +395,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		var _this = this;
 
 		this.SYSTEM.events.trigger('progressChanged', [0]);
-		this.SYSTEM.events.trigger('progressMessageChanged', "Loading " + load.type);
+		this.SYSTEM.events.trigger('progressMessageChanged', "Loading");
 
 		var params = {
 				roid: load.revision.oid,
@@ -406,7 +406,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		};
 		load.revision.project.server.server.call("Bimsie1ServiceInterface", "downloadByTypes", {
 				roids : [ load.revision.oid ],
-				classNames : [ load.type ],
+				classNames : load.types,
 				serializerOid : load.revision.project.server.getSerializer('org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin').oid,
 				includeAllSubtypes : false,
 				useObjectIDM : false,
@@ -433,24 +433,35 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 					var onSuccess = function(data) {
 						_this.SYSTEM.events.trigger('progressDone');
-						params.revision.loadedTypes.push(load.type);
 
-						if(_this.scene.data.ifcTypes.indexOf(params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase()) == -1) {
-							_this.scene.data.ifcTypes.push(params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase());
+						var boundsTranslate = _this.scene.findNode("bounds_translate");
+						if (boundsTranslate == null) {
+							var bounds = _this.scene.data.bounds;
+							boundsTranslate = {
+								id: "bounds_translate",
+								type: "translate",
+								x: -bounds[0],
+								y: -bounds[1],
+								z: -bounds[2],
+								nodes: []
+							}
+							boundsTranslate = _this.scene.findNode("my-lights").add("node", boundsTranslate);
 						}
+						
+						load.types.forEach(function(type){
+							params.revision.loadedTypes.push(type);
+							if(_this.scene.data.ifcTypes.indexOf(params.revision.project.oid + '-' + params.revision.oid + '-' + type.toLowerCase()) == -1) {
+								_this.scene.data.ifcTypes.push(params.revision.project.oid + '-' + params.revision.oid + '-' + type.toLowerCase());
+							}
+							_this.showType([type], params.revision);
+						});
+
 					 /*	if(_this.visibleTypes.indexOf(params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase()) == -1) {
 							_this.visibleTypes.push(params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase());
 						} */
 
 						//_this.refreshMask();
-						_this.showType(load.type, params.revision);
 
-						var typeNode =  {
-							type: 'tag',
-							tag: params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase(),
-							id: params.revision.project.oid + '-' + params.revision.oid + '-' + load.type.toLowerCase(),
-							nodes: []
-						};
 
 						for(var i = 0; i < _this.loadQueue.length; i++){
 							if(load === _this.loadQueue[i]) {
@@ -465,76 +476,98 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 						var dataInputStream = new BIMSURFER.DataInputStreamReader(this, data);
 						var start = dataInputStream.readUTF8();
 						var library = _this.scene.findNode("library-" + params.revision.project.oid + '-' + params.revision.oid);
-						var bounds = _this.scene.data.bounds2;
 
 						if (start == "BGS") {
 							var version = dataInputStream.readByte();
-							if (version == 3) {
+							if (version == 4) {
 								var boundsX = {
 									min: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()},
 									max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
 								};
 								var nrObjects = dataInputStream.readInt();
 								for (var o=0; o<nrObjects; o++) {
-									var geometry = {
-										type: "geometry",
-										primitive: "triangles"
-									};
-
 									var materialName = dataInputStream.readUTF8();
 									var type = dataInputStream.readUTF8();
 
-									geometry.coreId = dataInputStream.readLong();
-
-									dataInputStream.align4();
-
+									var objectId = dataInputStream.readLong();
+									
 									var objectBounds = {
 										min: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()},
 										max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
 									};
-									geometry.nrindices = dataInputStream.readInt();
-									var nrVertices = dataInputStream.readInt();
-									geometry.positions = dataInputStream.readFloatArray(nrVertices);
-									var nrNormals = dataInputStream.readInt();
-									geometry.normals = dataInputStream.readFloatArray(nrNormals);
-
-									var material = {
-										type : "material",
-										coreId : materialName + "Material",
-										nodes : [ {
-											id : geometry.coreId,
-											type : "name",
-											nodes : [  ]
-										} ]
-									};
-
-									for (var i = 0; i < geometry.positions.length; i += 3) {
-										geometry.positions[i] = geometry.positions[i] - bounds[0];
-										geometry.positions[i + 1] = geometry.positions[i + 1] - bounds[1];
-										geometry.positions[i + 2] = geometry.positions[i + 2] - bounds[2];
+									var nrIndices = dataInputStream.readInt();
+									
+									var geometryType = dataInputStream.readByte();
+									
+									dataInputStream.align4();
+									
+									var transformationMatrix = dataInputStream.readFloatArray(16);
+									
+									var GEOMETRY_TYPE_TRIANGLES = 0;
+									var GEOMETRY_TYPE_INSTANCE = 1;
+									
+									var coreId;
+									
+									if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
+										coreId = dataInputStream.readLong();
+										var geometry = {
+											type: "geometry",
+											primitive: "triangles"
+										};
+										
+										geometry.coreId = coreId;
+										geometry.nrindices = nrIndices;
+										
+										var nrVertices = dataInputStream.readInt();
+										geometry.positions = dataInputStream.readFloatArray(nrVertices);
+										var nrNormals = dataInputStream.readInt();
+										geometry.normals = dataInputStream.readFloatArray(nrNormals);
+										geometry.indices = [];
+										for (var i = 0; i < geometry.nrindices; i++) {
+											geometry.indices.push(i);
+										}
+										library.add("node", geometry);
+									} else if (geometryType == GEOMETRY_TYPE_INSTANCE) {
+										coreId = dataInputStream.readLong();
 									}
-									geometry.indices = [];
-									for (var i = 0; i < geometry.nrindices; i++) {
-										geometry.indices.push(i);
-									}
-									library.add("node", geometry);
-									material.nodes[0].nodes.push({
-										type: "geometry",
-										coreId: geometry.coreId
-									});
-
+									
 									var flags = {
 										type : "flags",
 										flags : {
 											transparent : true
 										},
-										nodes : [ material ]
+										nodes : [{
+											type : "material",
+											coreId : materialName + "Material",
+											nodes : [ {
+												id : objectId,
+												type : "name",
+												nodes : [{
+													type: "matrix",
+					                                elements: transformationMatrix,
+					                                nodes:[{
+														type: "geometry",
+														coreId: coreId
+													}]
+												}]
+											}]
+										}]
 									};
-									typeNode.nodes.push(flags);
+									var typeNode = _this.scene.findNode(params.revision.project.oid + '-' + params.revision.oid + '-' + type.toLowerCase());
+									if (typeNode == null) {
+										var typeNode =  {
+											type: 'tag',
+											tag: params.revision.project.oid + '-' + params.revision.oid + '-' + type.toLowerCase(),
+											id: params.revision.project.oid + '-' + params.revision.oid + '-' + type.toLowerCase(),
+											nodes: []
+										};
+										
+										typeNode = boundsTranslate.addNode(typeNode);
+									}
+									typeNode.addNode(flags);
 								}
 							}
 						}
-						_this.scene.findNode("my-lights").add("node", typeNode);
 					}
 
 					var oReq = new XMLHttpRequest();
@@ -561,28 +594,32 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 * @param {String} typeName The name of the type to show
 	 * @param {BIMSURFER.ProjectRevision instance} revision The revision
 	 */
-	showType: function(typeName, revision) {
+	showType: function(typeNames, revision) {
+		var _this = this;
 		var i = this.loadedProjects.indexOf(revision.project);
 		if(i == -1 || this.loadedProjects[i].loadedRevisions.indexOf(revision) == -1 || !revision.sceneLoaded) {
 			console.error('Revision Scene is not loaded yet.');
 			return;
 		}
-		if(revision.ifcTypes.indexOf(typeName) == -1) {
-			console.error('Type does not exist in loaded revision: ', typeName);
-			return;
-		}
-
-		if(revision.loadedTypes.indexOf(typeName) == -1) {
-			this.loadQueue.push({revision: revision, type: typeName});
+		var toLoad = [];
+		typeNames.forEach(function(typeName){
+			if(revision.ifcTypes.indexOf(typeName) == -1) {
+				console.error('Type does not exist in loaded revision: ', typeName);
+			} else if (revision.loadedTypes.indexOf(typeName) == -1) {
+				toLoad.push(typeName);
+			} else {
+				if(revision.visibleTypes.indexOf(typeName.toLowerCase()) > -1) {
+					return;
+				}
+				revision.visibleTypes.push(typeName.toLowerCase());
+				_this.refreshMask();
+			}
+		});
+		if (toLoad.length > 0) {
+			this.loadQueue.push({revision: revision, types: toLoad});
 			if(this.mode != 'loading' && this.mode != 'processing') {
 				this.loadGeometry();
 			}
-		} else {
-			if(revision.visibleTypes.indexOf(typeName.toLowerCase()) > -1) {
-				return;
-			}
-			revision.visibleTypes.push(typeName.toLowerCase());
-			this.refreshMask();
 		}
 	},
 
@@ -647,8 +684,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			}
 		}
 
-		for(var i = 0; i < types.length; i++) {
-			this.showType(types[i], revision);
-		}
+		this.showType(types, revision);
 	}
 });

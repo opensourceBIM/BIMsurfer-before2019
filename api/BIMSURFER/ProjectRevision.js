@@ -53,7 +53,7 @@ BIMSURFER.ProjectRevision = BIMSURFER.Class({
 			_this.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Marquee);
 
 			var url = _this.project.server.server.generateRevisionDownloadUrl({
-				serializerOid : _this.project.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJs3ShellSerializerPlugin').oid,
+				serializerOid : _this.project.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJs3MinimalShellSerializerPlugin').oid,
 				laid : params.laid
 			});
 
@@ -81,7 +81,7 @@ BIMSURFER.ProjectRevision = BIMSURFER.Class({
 
 		this.project.server.server.call("Bimsie1ServiceInterface", "download", {
 			roid : this.oid,
-			serializerOid : this.project.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJs3ShellSerializerPlugin').oid,
+			serializerOid : this.project.server.getSerializer('org.bimserver.geometry.jsonshell.SceneJs3MinimalShellSerializerPlugin').oid,
 			showOwn : true,
 			sync: false
 		}, function(laid) {

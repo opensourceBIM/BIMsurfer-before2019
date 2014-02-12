@@ -200,11 +200,14 @@ $(function()
 					{
 						var checkedTypes = $(dialog).find('input:checkbox:checked');
 
+						var toLoad = [];
 						$(checkedTypes).each(function()
 						{
-							BIMSurfer.loadQueue.push({revision: _this, type: $(this).val()});
+							toLoad.push($(this).val());
 						});
-
+						if (toLoad.length > 0) {
+							BIMSurfer.loadQueue.push({revision: _this, types: toLoad});
+						}
 
 						$(dialog).dialog('close');
 
