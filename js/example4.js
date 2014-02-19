@@ -33,7 +33,7 @@ $(function()
 	$('div.viewer').find('a.load_button').click(function(e) {
 		e.preventDefault();
 
-		var dialog = $('<div />').attr('class', 'form').attr('title', 'Conntect to a server');
+		var dialog = $('<div />').attr('class', 'form').attr('title', 'Connect to a server');
   		var form = $('<form />').attr('action', './').attr('method', 'post').appendTo(dialog);
 		$('<div />').append($('<label />').append($('<span />').text('BIMserver: ')).append($('<input />').attr('type', 'text').attr('name', 'server').val('http://127.0.0.1:8080/'))).appendTo(form);
 		$('<div />').append($('<label />').append($('<span />').text('Email: ')).append($('<input />').attr('type', 'text').attr('name', 'email').val('admin@bimserver.org'))).appendTo(form);

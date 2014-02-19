@@ -30,8 +30,7 @@ BIMSURFER.Project = BIMSURFER.Class({
 
 		var _this = this;
 		this.server.server.call("Bimsie1ServiceInterface", "getAllRevisionsOfProject", {
-			poid : serverProject.oid,
-			async: false
+			poid : serverProject.oid
 		}, function(revisions) {
 			_this.revisions = new Array();
 			for(var i = 0; i < revisions.length; i++) {
@@ -39,19 +38,17 @@ BIMSURFER.Project = BIMSURFER.Class({
 					_this.revisions.push(new BIMSURFER.ProjectRevision(_this.SYSTEM, _this, revisions[i]));
 				}
 			}
+			if(!BIMSURFER.Util.isset(serverProject.lastRevisionId) || _this.revisions.length == 0) {
+				console.error('BIMSURFER.Project: Project has no revisions');
+				return;
+			}
+			this.loadedRevisions = new Array();
+			
+			delete serverProject.revisions;
+			jQuery.extend(this, serverProject);
+			
+			this.events = new BIMSURFER.Events(this);
 		});
-
-		if(!BIMSURFER.Util.isset(serverProject.lastRevisionId) || _this.revisions.length == 0) {
-			console.error('BIMSURFER.Project: Project has no revisions');
-			return;
-		}
-
-		this.loadedRevisions = new Array();
-
-		delete serverProject.revisions;
-		jQuery.extend(this, serverProject);
-
-		this.events = new BIMSURFER.Events(this);
 	},
 
 	/**

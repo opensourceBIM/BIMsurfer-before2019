@@ -26,6 +26,56 @@ BIMSURFER.Constants.defaultTypes = [
 	"IfcRoof"
 ];
 
+//writeMaterial(jsonWriter, "IfcSpace", new double[] { 0.137255f, 0.403922f, 0.870588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcRoof", new double[] { 0.837255f, 0.203922f, 0.270588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcSlab", new double[] { 0.637255f, 0.603922f, 0.670588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcWall", new double[] { 0.537255f, 0.337255f, 0.237255f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcWallStandardCase", new double[] { 1.0f, 1.0f, 1.0f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcDoor", new double[] { 0.637255f, 0.603922f, 0.670588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcWindow", new double[] { 0.2f, 0.2f, 0.8f }, 0.2f);
+//writeMaterial(jsonWriter, "IfcRailing", new double[] { 0.137255f, 0.203922f, 0.270588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcColumn", new double[] { 0.437255f, 0.603922f, 0.370588f, }, 1.0f);
+//writeMaterial(jsonWriter, "IfcBeam", new double[] { 0.437255f, 0.603922f, 0.370588f, }, 1.0f);
+//writeMaterial(jsonWriter, "IfcFurnishingElement", new double[] { 0.437255f, 0.603922f, 0.370588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcCurtainWall", new double[] { 0.5f, 0.5f, 0.5f }, 0.5f);
+//writeMaterial(jsonWriter, "IfcStair", new double[] { 0.637255f, 0.603922f, 0.670588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcBuildingElementProxy", new double[] { 0.5f, 0.5f, 0.5f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcFlowSegment", new double[] { 0.8470588235f, 0.427450980392f, 0f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcFlowFitting", new double[] { 0.8470588235f, 0.427450980392f, 0f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcFlowTerminal", new double[] { 0.8470588235f, 0.427450980392f, 0f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcProxy", new double[] { 0.637255f, 0.603922f, 0.670588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcSite", new double[] { 0.637255f, 0.603922f, 0.670588f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcLightFixture", new double[] {0.8470588235f, 0.8470588235f, 0f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcDuctSegment", new double[] {0.8470588235f, 0.427450980392f, 0f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcDuctFitting", new double[] {0.8470588235f, 0.427450980392f, 0f }, 1.0f);
+//writeMaterial(jsonWriter, "IfcAirTerminal", new double[] {0.8470588235f, 0.427450980392f, 0f }, 1.0f);
+
+BIMSURFER.Constants.materials = {
+	IfcSpace: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcRoof: {r: 0.837255, g: 0.203922, b: 0.270588, a: 1.0},
+	IfcSlab: {r: 0.637255, g: 0.603922, b: 0.670588, a: 1.0},
+	IfcWall: {r: 0.537255, g: 0.337255, b: 0.237255, a: 1.0},
+	IfcWallStandardCase: {r: 0.937255, g: 0.937255, b: 0.937255, a: 1.0},
+	IfcDoor: {r: 0.637255, g: 0.603922, b: 0.670588, a: 1.0},
+	IfcWindow: {r: 0.137255, g: 0.403922, b: 0.870588, a: 0.5},
+	IfcRailing: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcColumn: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcBeam: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcFurnishingElement: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcCurtainWall: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcStair: {r: 0.637255, g: 0.603922, b: 0.670588, a: 1.0},
+	IfcBuildingElementProxy: {r: 0.5, g: 0.5, b: 0.5, a: 1.0},
+	IfcFlowSegment: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcFlowitting: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcFlowTerminal: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcProxy: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcSite: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcLightFixture: {r: 0.8470588235, g: 0.8470588235, b: 0.870588, a: 1.0},
+	IfcDuctSegment: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcDuctFitting: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcAirTerminal: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0}
+}
+
 /*
  * Default camera settings
  */

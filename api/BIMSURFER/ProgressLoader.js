@@ -13,7 +13,6 @@ BIMSURFER.ProgressLoader = BIMSURFER.Class({
 	laid: null,
 	step: null,
 	done: null,
-	params: null,
 	autoUnregister: null,
 	registered: null,
 
@@ -24,17 +23,15 @@ BIMSURFER.ProgressLoader = BIMSURFER.Class({
 	 * @param {Number} laid The Long-running Action ID, provided by the BIMServer
 	 * @param {Function} step The callback function for everey progress response by the server
 	 * @param {Function done The callback function that will be fired when the server gives a STATE == Finished
-	 * @param {Array} [params] An array with parameters that will be passed to the callback functions
 	 * @param {Boolean} [autoUnregister] Should it automatically unregister the progress listener on the server?
 	 */
 
-	__construct: function(system, server, laid, step, done, params, autoUnregister) {
+	__construct: function(system, server, laid, step, done, autoUnregister) {
 		this.SYSTEM = system;
 		this.server = server;
 		this.laid = laid;
 		this.step = step;
 		this.done = done;
-		this.params = params;
 		this.autoUnregister = autoUnregister;
 		this.registered = false;
 
@@ -67,9 +64,9 @@ BIMSURFER.ProgressLoader = BIMSURFER.Class({
 			if(this.autoUnregister && this.registered) {
 				this.unregister();
 			}
-			this.done(this.params, state, this);
+			this.done(state, this);
 		} else {
-			this.step(this.params, state, this);
+			this.step(state, this);
 		}
 	}
 });

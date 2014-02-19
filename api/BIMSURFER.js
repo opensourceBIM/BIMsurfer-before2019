@@ -54,7 +54,7 @@ BIMSURFER.Class = function(baseClass, subClass){
 	 	'BIMSURFER/Events.js',
 	 	'BIMSURFER/Project.js',
 	 	'BIMSURFER/ProjectRevision.js',
-	 	'BIMSURFER/stringview.js',
+	 	'BIMSURFER/StringView.js',
 	 	'BIMSURFER/DataInputStream.js',
 	  	'BIMSURFER/Server.js',
 		'BIMSURFER/Viewer.js',

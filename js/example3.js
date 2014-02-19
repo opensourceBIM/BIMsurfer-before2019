@@ -22,7 +22,7 @@ $(function()
 
 	var loadProjectButton = $('div#leftbar').find(':button[name="loadProject"]').button().click(function()
 	{
-		var dialog = $('<div />').attr('class', 'form').attr('title', 'Conntect to a server');
+		var dialog = $('<div />').attr('class', 'form').attr('title', 'Connect to a server');
 
 		function connect(server, email, password) {
 			var BIMServer = null;
