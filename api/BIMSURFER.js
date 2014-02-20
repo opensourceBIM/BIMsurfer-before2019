@@ -55,6 +55,7 @@ BIMSURFER.Class = function(baseClass, subClass){
 	 	'BIMSURFER/Project.js',
 	 	'BIMSURFER/ProjectRevision.js',
 	 	'BIMSURFER/StringView.js',
+	 	'BIMSURFER/AsyncStream.js',
 	 	'BIMSURFER/DataInputStream.js',
 	  	'BIMSURFER/Server.js',
 		'BIMSURFER/Viewer.js',

@@ -4,6 +4,10 @@
  * Class: BIMSURFER.Viewer
  * The viewer can load and show the BIM Models.
  */
+var GEOMETRY_TYPE_TRIANGLES = 0;
+var GEOMETRY_TYPE_INSTANCE = 1;
+
+
 BIMSURFER.Viewer = BIMSURFER.Class({
 	CLASS: 'BIMSURFER.Viewer',
 	SYSTEM: null,
@@ -312,11 +316,16 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					});
 				}
 				this.scene.nodes.push(defaultMaterialsLibrary);
-				
+
 				this.drawCanvas();
 				this.scene.canvasId = jQuery(this.canvas).attr('id');
 				this.scene.id = this.scene.canvasId;
 				this.scene = SceneJS.createScene(this.scene);
+				
+				for(var i = 0; i < this.lights.length; i++) {
+					this.lights[i].activate();
+				}
+				
 				if(this.scene != null) {
 					this.scene.set('tagMask', '^()$');
 
@@ -415,7 +424,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 						_this.refreshMask();
 
 						var dataInputStream = new BIMSURFER.DataInputStreamReader(this, data);
-						var start = dataInputStream.readUTF8();
 						var library = _this.scene.findNode("library-" + options.groupId);
 						if (library == null) {
 							library = _this.scene.addNode({
@@ -424,6 +432,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 							});
 						}
 
+						var start = dataInputStream.readUTF8();
 						if (start == "BGS") {
 							var version = dataInputStream.readByte();
 							if (version == 4) {
@@ -468,7 +477,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 								for (var o=0; o<nrObjects; o++) {
 									var materialName = dataInputStream.readUTF8();
 									var type = dataInputStream.readUTF8();
-
 									var objectId = dataInputStream.readLong();
 									
 									var objectBounds = {
@@ -476,15 +484,11 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 										max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
 									};
 									var nrIndices = dataInputStream.readInt();
-									
 									var geometryType = dataInputStream.readByte();
 									
 									dataInputStream.align4();
 									
 									var transformationMatrix = dataInputStream.readFloatArray(16);
-									
-									var GEOMETRY_TYPE_TRIANGLES = 0;
-									var GEOMETRY_TYPE_INSTANCE = 1;
 									
 									var coreId;
 									
@@ -556,28 +560,215 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 								}
 							}
 						}
-						
-						_this.resize($('div#viewport').width(), $('div#viewport').height());
-						
-						for(var i = 0; i < _this.lights.length; i++) {
-							_this.lights[i].activate();
+					}
+					
+					var boundsTranslate = null;
+					
+					var state = {
+						nrObjectsRead: 0,
+						nrObjects: 0
+					};
+					var asyncStream = new AsyncStream();
+
+					function processGeometry(geometryType, nrVertices, vertices, nrNormals, normals, state) {
+						if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
+							var geometry = {
+								type: "geometry",
+								primitive: "triangles"
+							};
+							
+							geometry.coreId = state.coreId;
+							geometry.nrindices = state.nrIndices;
+							geometry.positions = vertices;
+							geometry.normals = normals;
+							geometry.indices = [];
+							for (var i = 0; i < geometry.nrindices; i++) {
+								geometry.indices.push(i);
+							}
+							library.add("node", geometry);
 						}
 
-						_this.events.trigger('sceneLoaded', [_this.scene]);
+						var materialNode = _this.scene.findNode(state.materialName + "Material");
+						var hasTransparency = false;
+						if (materialNode != null) {
+							if (materialNode.alpha != 1) {
+								hasTransparency = true;
+							}
+						}
+
+						var flags = {
+							type : "flags",
+							flags : {
+								transparent : hasTransparency
+							},
+							nodes : [{
+								type : "material",
+								coreId : state.materialName + "Material",
+								nodes : [{
+									id : state.objectId,
+									type : "name",
+									nodes : [{
+										type: "matrix",
+		                                elements: state.transformationMatrix,
+		                                nodes:[{
+											type: "geometry",
+											coreId: state.coreId
+										}]
+									}]
+								}]
+							}]
+						};
+						var typeNode = _this.scene.findNode(options.groupId + '-' + state.type.toLowerCase());
+						if (typeNode == null) {
+							var typeNode =  {
+								type: 'tag',
+								tag: options.groupId + '-' + state.type.toLowerCase(),
+								id: options.groupId + '-' + state.type.toLowerCase(),
+								nodes: []
+							};
+							
+							typeNode = boundsTranslate.addNode(typeNode);
+						}
+						typeNode.addNode(flags);
 					}
+					
+					function addReadObject(asyncStream) {
+						asyncStream.addReadUTF8(function(materialName){
+							state.materialName = materialName;
+						});
+						asyncStream.addReadUTF8(function(type){
+							state.type = type;
+						});
+						asyncStream.addReadLong(function(objectId){
+							state.objectId = objectId;
+						});
+						asyncStream.addReadFloats(6, function(objectBounds){
+						});
+						asyncStream.addReadInt(function(nrIndices){
+							state.nrIndices = nrIndices;
+						});
+						asyncStream.addReadByte(function(geometryType){
+							if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
+								asyncStream.addReadLong(function(coreId){
+									state.coreId = coreId;
+								});
+								asyncStream.addReadInt(function(nrVertices){
+									asyncStream.addReadFloatArray(nrVertices, function(vertices){
+										asyncStream.addReadInt(function(nrNormals){
+											asyncStream.addReadFloatArray(nrNormals, function(normals){
+												state.nrObjectsRead++;
+												if (state.nrObjectsRead < state.nrObjects) {
+													processGeometry(geometryType, nrVertices, vertices, nrNormals, normals, state);
+													addReadObject(asyncStream);
+												} else {
+													_this.resize($('div#viewport').width(), $('div#viewport').height());
+													_this.events.trigger('sceneLoaded', [_this.scene]);
+												}
+											});
+										});
+									});
+								});
+							} else if (geometryType == GEOMETRY_TYPE_INSTANCE) {
+								asyncStream.addReadLong(function(coreId){});
+							}
+						});
+						asyncStream.addReadFloatArray(16, function(transformationMatrix){
+							state.transformationMatrix = transformationMatrix;
+						});
+					}
+					
+					asyncStream.addReadUTF8(function(start){
+						if (start != "BGS") {
+							return false;
+						}
+						asyncStream.addReadByte(function(version){
+							if (version != 4) {
+								return false;
+							}
+							asyncStream.addReadFloats(6, function(modelBounds){
+								var modelBounds = {
+									min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
+									max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
+								};
+								
+								var center = {
+									x: (modelBounds.max.x + modelBounds.min.x) / 2,
+									y: (modelBounds.max.y + modelBounds.min.y) / 2,
+									z: (modelBounds.max.z + modelBounds.min.z) / 2,
+								};
+								
+								boundsTranslate = _this.scene.findNode("bounds_translate_" + options.groupId);
+								if (boundsTranslate == null) {
+									boundsTranslate = {
+										id: "bounds_translate_" + options.groupId,
+										type: "translate",
+										x: -center.x,
+										y: -center.y,
+										z: -center.z,
+										nodes: []
+									}
+									boundsTranslate = _this.scene.findNode("my-lights").addNode(boundsTranslate);
+								}
+								
+								var lookat = _this.scene.findNode("main-lookAt");
+								lookat.set("eye", { x: center.x * 1.5, y: center.y * 1.5, z: center.z * 1.5 });
+								
+								var maincamera = _this.scene.findNode("main-camera");
+								
+								maincamera.setOptics({
+									type: 'perspective',
+									far: Math.sqrt(center.x * center.x + center.y * center.y + center.z * center.z) * 6,
+									near: Math.sqrt(center.x * center.x + center.y * center.y + center.z * center.z) * 0.001,
+									aspect: jQuery(_this.canvas).width() / jQuery(_this.canvas).height(),
+									fovy: 37.8493
+								});
+							}); // model bounds
+							asyncStream.addReadInt(function(nrObjects){
+								state.nrObjects = nrObjects;
+								addReadObject(asyncStream);
+							});
+						});
+					});
+					
+					_this.SYSTEM.events.trigger('progressDone');
 
-					var oReq = new XMLHttpRequest();
-					oReq.open("GET", url, true);
-					oReq.responseType = "arraybuffer";
+					options.types.forEach(function(type){
+						if(_this.visibleTypes.indexOf(options.groupId + '-' + type.toLowerCase()) == -1) {
+							_this.visibleTypes.push(options.groupId + '-' + type.toLowerCase());
+						}
+					});
 
-					oReq.onload = function (oEvent) {
-					  var arrayBuffer = oReq.response;
-					  if (arrayBuffer) {
-						  onSuccess(arrayBuffer);
-					  }
+					_this.refreshMask();
+
+					var library = _this.scene.findNode("library-" + options.groupId);
+					if (library == null) {
+						library = _this.scene.addNode({
+							id: "library-" + options.groupId,
+							type: "library"
+						});
+					}
+					
+					var msg = {
+						longActionId: laid
 					};
-
-					oReq.send(null);
+					
+					_this.bimServerApi.setBinaryDataListener(function(data){
+						asyncStream.newData(data);
+					});
+					_this.bimServerApi.downloadViaWebsocket(msg);
+					
+//					var oReq = new XMLHttpRequest();
+//					oReq.open("GET", url, true);
+//					oReq.responseType = "arraybuffer";
+//
+//					oReq.onload = function (oEvent) {
+//					  var arrayBuffer = oReq.response;
+//					  if (arrayBuffer) {
+//						  onSuccess(arrayBuffer);
+//					  }
+//					};
+//
+//					oReq.send(null);
 				}
 				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, _this.bimServerApi, laid, step, done, false);
 			});			

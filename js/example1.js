@@ -162,8 +162,26 @@ $(function()
 		close: function() { $(dialog).remove(); }
 	});
 
+	function buildDecomposedTree(object, tree, indent) {
+		var div = $("<div></div>");
+		for (var i=0; i<indent; i++) {
+			div.append("&nbsp;");
+		}
+		div.append(object.Name);
+		tree.append(div);
+		object.getIsDecomposedBy(function(isDecomposedBy){
+			isDecomposedBy.getRelatedObjects(function(relatedObject){
+				buildDecomposedTree(relatedObject, div, indent+1);
+			});
+		});
+	}
+	
 	function loadProject(project) {
-		o.model = o.bimServerApi.getModel(project.oid, project.lastRevisionId);
+		o.model = o.bimServerApi.getModel(project.oid, project.lastRevisionId, false, function(model){
+//			model.getAllOfType("IfcProject", true, function(project){
+//				buildDecomposedTree(project, $(".tree"), 0);
+//			});
+		});
 
 		o.bimServerApi.call("ServiceInterface", "getRevisionSummary", {roid: project.lastRevisionId}, function(summary){
 			summary.list.forEach(function(item){
