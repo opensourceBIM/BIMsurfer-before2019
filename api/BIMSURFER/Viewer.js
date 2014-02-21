@@ -669,7 +669,17 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 									});
 								});
 							} else if (geometryType == GEOMETRY_TYPE_INSTANCE) {
-								asyncStream.addReadLong(function(coreId){});
+								asyncStream.addReadLong(function(coreId){
+									state.coreId = coreId;
+									state.nrObjectsRead++;
+									if (state.nrObjectsRead < state.nrObjects) {
+										processGeometry(geometryType, -1, null, -1, null, state);
+										addReadObject(asyncStream);
+									} else {
+										_this.resize($('div#viewport').width(), $('div#viewport').height());
+										_this.events.trigger('sceneLoaded', [_this.scene]);
+									}
+								});
 							}
 						});
 						asyncStream.addReadFloatArray(16, function(transformationMatrix){

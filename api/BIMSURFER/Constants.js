@@ -73,6 +73,7 @@ BIMSURFER.Constants.materials = {
 	IfcLightFixture: {r: 0.8470588235, g: 0.8470588235, b: 0.870588, a: 1.0},
 	IfcDuctSegment: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcDuctFitting: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcPlate: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 0.5},
 	IfcAirTerminal: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0}
 }
 
