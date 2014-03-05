@@ -642,15 +642,15 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 						asyncStream.addReadLong(function(objectId){
 							state.objectId = objectId;
 						});
-						asyncStream.addReadFloats(6, function(objectBounds){
-						});
-						asyncStream.addReadInt(function(nrIndices){
-							state.nrIndices = nrIndices;
-						});
 						asyncStream.addReadByte(function(geometryType){
 							if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
 								asyncStream.addReadLong(function(coreId){
 									state.coreId = coreId;
+								});
+								asyncStream.addReadInt(function(nrIndices){
+									state.nrIndices = nrIndices;
+								});
+								asyncStream.addReadFloats(6, function(objectBounds){
 								});
 								asyncStream.addReadInt(function(nrVertices){
 									asyncStream.addReadFloatArray(nrVertices, function(vertices){
