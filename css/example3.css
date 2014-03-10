@@ -1,0 +1,68 @@
+div#leftbar
+{
+	position: absolute;
+	width: 330px;
+	top: 0px;
+	bottom: 0px;
+	border-right: 1px solid #AAA;
+	padding: 10px;
+	overflow: auto;
+
+}
+div#leftbar input[type="button"]
+{
+	width: 100%;
+}
+div#leftbar div#object_info label
+{
+	font-weight: bold;
+}
+
+div#leftbar div#layerlist ul
+{
+	padding: 0;
+}
+
+div#viewport
+{
+	position: absolute;
+	left: 356px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	border-left: 1px solid #AAA;
+	background: #DCDCDC;
+}
+
+.form label span
+{
+	display: inline-block;
+	width: 150px;
+}
+.form label input[type="text"], .form label input[type="password"]
+{
+	width: 250px;
+	border: 1px solid #AAA;
+	padding: 2px;
+	font-size: 12px;
+}
+.form div.state
+{
+	padding: 10px;
+	margin: 10px 0;
+}
+
+div.ui-dialog div.ui-dialog-buttonpane button.disabled span.ui-button-text
+{
+	color: #CCC;
+	cursor: progress;
+}
+
+div#progress_bar
+{
+	position: absolute;
+	width: 1024px;
+	bottom: 50px;
+	left: 50%;
+	margin-left: -512px;
+}

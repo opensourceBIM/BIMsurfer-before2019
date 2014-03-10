@@ -1,0 +1,63 @@
+html { margin: 0; padding: 0 }
+body
+{
+	padding: 0;
+	margin: 0;
+	background: #E7E7E7;
+	font-family: Verdana, Tahoma, Arial;
+	font-size: 12px;
+	overflow: hidden;
+	width:100%;
+	height:100%;
+}
+h1 { display: none; }
+a:link, a:visited, a:active {
+	color: #666;
+	text-decoration: none;
+	border-bottom: 1px solid #CCC;
+}
+a:hover {
+	color: #333;
+	border-bottom: 1px solid #999;
+}
+div#header
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	width: 100%;
+	height: 50px;
+	box-shadow: 0px 0px 3px #333;
+	z-index: 99999;
+	border: none;
+}
+div#header #logo
+{
+	font-size: 27px;
+	margin: 0;
+	padding: 10px;
+	line-height: 30px;
+	font-weight: normal;
+	display: inline-block;
+	background: url(../images/logo-wave.png) no-repeat right;
+	padding-right: 100px;
+}
+div#header #logo span { font-weight: bold; }
+
+
+div#full_screen
+{
+	width: 100%;
+	position:absolute;
+	top:50px;
+	bottom:0px;
+	left:0px;
+	right:0px;
+}
+
+div.state
+{
+	padding: 10px;
+	margin: 10px 0;
+}
