@@ -394,9 +394,8 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 */
 	loadGeometry: function(options) {
 		var _this = this;
-		_this.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
-		_this.SYSTEM.events.trigger('progressChanged', [0]);
-		_this.SYSTEM.events.trigger('progressMessageChanged', "Loading");
+		_this.SYSTEM.events.trigger('progressStarted', ['Loading Model']);
+		_this.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Marquee);
 
 		this.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin", function(serializer){
 			_this.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
@@ -547,6 +546,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					}
 					
 					_this.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
+					_this.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Continuous);
 					_this.SYSTEM.events.trigger('progressChanged', [0]);
 					_this.asyncStream.addReadUTF8(function(start){
 						if (start != "BGS") {
