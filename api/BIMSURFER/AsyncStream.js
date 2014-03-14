@@ -110,6 +110,9 @@ function AsyncStream() {
 	
 	othis.todolist = [];
 	othis.data = [];
+	othis.totalReceived = 0;
+	othis.lastTotalReceived = -1;
+	othis.stoppedOnMax = false;
 
 	othis.pop = function(){
 		othis.todolist.splice(0, 1);
@@ -151,8 +154,13 @@ function AsyncStream() {
 		}
 	};
 	
-	othis.newData = function(data) {
-		othis.data.push(data);
+	othis.process = function(max){
+		var c = 0;
+		if (othis.totalReceived == othis.lastTotalReceived && !othis.stoppedOnMax) {
+			return;
+		}
+		othis.lastTotalReceived = othis.totalReceived;
+		othis.stoppedOnMax = false;
 		while (othis.todolist.length > 0 && othis.data.length > 0) {
 			var todoitem = othis.todolist[0];
 			var data = othis.data[0];
@@ -166,10 +174,19 @@ function AsyncStream() {
 				othis.data.splice(0, 1);
 				othis.pos = 0;
 			}
-			
 			if (!processDone) {
 				break;
 			}
+			c++;
+			if (c > max) {
+				othis.stoppedOnMax = true;
+				break;
+			}
 		}
+	};
+	
+	othis.newData = function(data) {
+		othis.data.push(data);
+		othis.totalReceived += data.byteLength;
 	};
 }

@@ -26,6 +26,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	loadedProjects: null,
 	bimServerApi: null,
 	loadedGroups: [],
+	addToScene: [],
 //	selectedObj: 'emtpy Selection',
 //	mouseRotate: 0,
 //	oldZoom: 15,
@@ -322,6 +323,13 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				this.scene.id = this.scene.canvasId;
 				this.scene = SceneJS.createScene(this.scene);
 				
+				var _this = this;
+				this.scene.on("tick", function(){
+					if (_this.asyncStream != null) {
+						_this.asyncStream.process(Math.ceil(1 + _this.state.nrObjects / 10));
+					}
+				});
+				
 				for(var i = 0; i < this.lights.length; i++) {
 					this.lights[i].activate();
 				}
@@ -400,25 +408,16 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				sync : false,
 				deep: true
 			}, function(laid) {
-				var step = function(state, progressLoader) {
-					_this.SYSTEM.events.trigger('progressChanged', [state.progress]);
-				}
 				var done = function(state, progressLoader) {
-					_this.SYSTEM.events.trigger('progressChanged', [100]);
 					progressLoader.unregister();
-
-					var url = _this.bimServerApi.generateRevisionDownloadUrl({
-						serializerOid : serializer.oid,
-						laid : laid
-					});
-
+					
 					var boundsTranslate = null;
 					
-					var state = {
+					_this.state = {
 						nrObjectsRead: 0,
 						nrObjects: 0
 					};
-					var asyncStream = new AsyncStream();
+					_this.asyncStream = new AsyncStream();
 
 					function processGeometry(geometryType, nrVertices, vertices, nrNormals, normals, state) {
 						if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
@@ -427,8 +426,8 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 								primitive: "triangles"
 							};
 							
-							geometry.coreId = state.coreId;
-							geometry.nrindices = state.nrIndices;
+							geometry.coreId = _this.state.coreId;
+							geometry.nrindices = _this.state.nrIndices;
 							geometry.positions = vertices;
 							geometry.normals = normals;
 							geometry.indices = [];
@@ -438,7 +437,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 							library.add("node", geometry);
 						}
 
-						var materialNode = _this.scene.findNode(state.materialName + "Material");
+						var materialNode = _this.scene.findNode(_this.state.materialName + "Material");
 						var hasTransparency = false;
 						if (materialNode != null) {
 							if (materialNode.alpha != 1) {
@@ -453,30 +452,29 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 							},
 							nodes : [{
 								type : "material",
-								coreId : state.materialName + "Material",
+								coreId : _this.state.materialName + "Material",
 								nodes : [{
-									id : state.objectId,
+									id : _this.state.objectId,
 									type : "name",
 									nodes : [{
 										type: "matrix",
-		                                elements: state.transformationMatrix,
+		                                elements: _this.state.transformationMatrix,
 		                                nodes:[{
 											type: "geometry",
-											coreId: state.coreId
+											coreId: _this.state.coreId
 										}]
 									}]
 								}]
 							}]
 						};
-						var typeNode = _this.scene.findNode(options.groupId + '-' + state.type.toLowerCase());
+						var typeNode = _this.scene.findNode(options.groupId + '-' + _this.state.type.toLowerCase());
 						if (typeNode == null) {
 							var typeNode =  {
 								type: 'tag',
-								tag: options.groupId + '-' + state.type.toLowerCase(),
-								id: options.groupId + '-' + state.type.toLowerCase(),
+								tag: options.groupId + '-' + _this.state.type.toLowerCase(),
+								id: options.groupId + '-' + _this.state.type.toLowerCase(),
 								nodes: []
 							};
-							
 							typeNode = boundsTranslate.addNode(typeNode);
 						}
 						typeNode.addNode(flags);
@@ -484,21 +482,21 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					
 					function addReadObject(asyncStream) {
 						asyncStream.addReadUTF8(function(materialName){
-							state.materialName = materialName;
+							_this.state.materialName = materialName;
 						});
 						asyncStream.addReadUTF8(function(type){
-							state.type = type;
+							_this.state.type = type;
 						});
 						asyncStream.addReadLong(function(objectId){
-							state.objectId = objectId;
+							_this.state.objectId = objectId;
 						});
 						asyncStream.addReadByte(function(geometryType){
 							if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
 								asyncStream.addReadLong(function(coreId){
-									state.coreId = coreId;
+									_this.state.coreId = coreId;
 								});
 								asyncStream.addReadInt(function(nrIndices){
-									state.nrIndices = nrIndices;
+									_this.state.nrIndices = nrIndices;
 								});
 								asyncStream.addReadFloats(6, function(objectBounds){
 								});
@@ -506,12 +504,17 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 									asyncStream.addReadFloatArray(nrVertices, function(vertices){
 										asyncStream.addReadInt(function(nrNormals){
 											asyncStream.addReadFloatArray(nrNormals, function(normals){
-												state.nrObjectsRead++;
-												if (state.nrObjectsRead < state.nrObjects) {
-													processGeometry(geometryType, nrVertices, vertices, nrNormals, normals, state);
+												_this.state.nrObjectsRead++;
+												processGeometry(geometryType, nrVertices, vertices, nrNormals, normals, state);
+												if (_this.state.nrObjectsRead < _this.state.nrObjects) {
+													var progress = Math.ceil(100 * _this.state.nrObjectsRead / _this.state.nrObjects);
+													if (progress != _this.state.lastProgress) {
+														_this.SYSTEM.events.trigger('progressChanged', [progress]);
+														_this.state.lastProgress = progress;
+													}
 													addReadObject(asyncStream);
 												} else {
-													_this.resize($('div#viewport').width(), $('div#viewport').height());
+													_this.SYSTEM.events.trigger('progressDone');
 													_this.events.trigger('sceneLoaded', [_this.scene]);
 												}
 											});
@@ -520,32 +523,40 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 								});
 							} else if (geometryType == GEOMETRY_TYPE_INSTANCE) {
 								asyncStream.addReadLong(function(coreId){
-									state.coreId = coreId;
-									state.nrObjectsRead++;
-									if (state.nrObjectsRead < state.nrObjects) {
-										processGeometry(geometryType, -1, null, -1, null, state);
+									_this.state.coreId = coreId;
+									_this.state.nrObjectsRead++;
+									
+									processGeometry(geometryType, -1, null, -1, null, state);
+									if (_this.state.nrObjectsRead < _this.state.nrObjects) {
+										var progress = Math.ceil(100 * _this.state.nrObjectsRead / _this.state.nrObjects);
+										if (progress != _this.state.lastProgress) {
+											_this.SYSTEM.events.trigger('progressChanged', [progress]);
+											_this.state.lastProgress = progress;
+										}
 										addReadObject(asyncStream);
 									} else {
-										_this.resize($('div#viewport').width(), $('div#viewport').height());
+										_this.SYSTEM.events.trigger('progressDone');
 										_this.events.trigger('sceneLoaded', [_this.scene]);
 									}
 								});
 							}
 						});
 						asyncStream.addReadFloatArray(16, function(transformationMatrix){
-							state.transformationMatrix = transformationMatrix;
+							_this.state.transformationMatrix = transformationMatrix;
 						});
 					}
 					
-					asyncStream.addReadUTF8(function(start){
+					_this.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
+					_this.SYSTEM.events.trigger('progressChanged', [0]);
+					_this.asyncStream.addReadUTF8(function(start){
 						if (start != "BGS") {
 							return false;
 						}
-						asyncStream.addReadByte(function(version){
+						_this.asyncStream.addReadByte(function(version){
 							if (version != 4) {
 								return false;
 							}
-							asyncStream.addReadFloats(6, function(modelBounds){
+							_this.asyncStream.addReadFloats(6, function(modelBounds){
 								var modelBounds = {
 									min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
 									max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
@@ -556,7 +567,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 									y: (modelBounds.max.y + modelBounds.min.y) / 2,
 									z: (modelBounds.max.z + modelBounds.min.z) / 2,
 								};
-								
+
 								boundsTranslate = _this.scene.findNode("bounds_translate_" + options.groupId);
 								if (boundsTranslate == null) {
 									boundsTranslate = {
@@ -581,20 +592,18 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 								maincamera.setOptics({
 									type: 'perspective',
 									far: far,
-									near: 1,
+									near: far / 1000,
 									aspect: jQuery(_this.canvas).width() / jQuery(_this.canvas).height(),
 									fovy: 37.8493
 								});
 							}); // model bounds
-							asyncStream.addReadInt(function(nrObjects){
-								state.nrObjects = nrObjects;
-								addReadObject(asyncStream);
+							_this.asyncStream.addReadInt(function(nrObjects){
+								_this.state.nrObjects = nrObjects;
+								addReadObject(_this.asyncStream);
 							});
 						});
 					});
 					
-					_this.SYSTEM.events.trigger('progressDone');
-
 					options.types.forEach(function(type){
 						if(_this.visibleTypes.indexOf(options.groupId + '-' + type.toLowerCase()) == -1) {
 							_this.visibleTypes.push(options.groupId + '-' + type.toLowerCase());
@@ -616,12 +625,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					};
 					
 					_this.bimServerApi.setBinaryDataListener(function(data){
-						asyncStream.newData(data);
+						_this.asyncStream.newData(data);
 					});
 					_this.bimServerApi.downloadViaWebsocket(msg);
 					
 				}
-				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, _this.bimServerApi, laid, step, done, false);
+				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, _this.bimServerApi, laid, function(){}, done, false);
 			});			
 		});			
 	},
