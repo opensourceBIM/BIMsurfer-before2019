@@ -412,156 +412,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 						laid : laid
 					});
 
-					var onSuccess = function(data) {
-						_this.SYSTEM.events.trigger('progressDone');
-
-						options.types.forEach(function(type){
-							if(_this.visibleTypes.indexOf(options.groupId + '-' + type.toLowerCase()) == -1) {
-								_this.visibleTypes.push(options.groupId + '-' + type.toLowerCase());
-							}
-						});
-
-						_this.refreshMask();
-
-						var dataInputStream = new BIMSURFER.DataInputStreamReader(this, data);
-						var library = _this.scene.findNode("library-" + options.groupId);
-						if (library == null) {
-							library = _this.scene.addNode({
-								id: "library-" + options.groupId,
-								type: "library"
-							});
-						}
-
-						var start = dataInputStream.readUTF8();
-						if (start == "BGS") {
-							var version = dataInputStream.readByte();
-							if (version == 4) {
-								var modelBounds = {
-									min: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()},
-									max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
-								};
-								
-								var center = {
-									x: (modelBounds.max.x + modelBounds.min.x) / 2,
-									y: (modelBounds.max.y + modelBounds.min.y) / 2,
-									z: (modelBounds.max.z + modelBounds.min.z) / 2,
-								};
-								
-								var boundsTranslate = _this.scene.findNode("bounds_translate_" + options.groupId);
-								if (boundsTranslate == null) {
-									boundsTranslate = {
-										id: "bounds_translate_" + options.groupId,
-										type: "translate",
-										x: -center.x,
-										y: -center.y,
-										z: -center.z,
-										nodes: []
-									}
-									boundsTranslate = _this.scene.findNode("my-lights").addNode(boundsTranslate);
-								}
-								
-								var lookat = _this.scene.findNode("main-lookAt");
-								lookat.set("eye", { x: center.x * 1.5, y: center.y * 1.5, z: center.z * 1.5 });
-								
-								var maincamera = _this.scene.findNode("main-camera");
-								
-								maincamera.setOptics({
-									type: 'perspective',
-									far: Math.sqrt(center.x * center.x + center.y * center.y + center.z * center.z) * 6,
-									near: Math.sqrt(center.x * center.x + center.y * center.y + center.z * center.z) * 0.001,
-									aspect: jQuery(_this.canvas).width() / jQuery(_this.canvas).height(),
-									fovy: 37.8493
-								});
-								
-								var nrObjects = dataInputStream.readInt();
-								for (var o=0; o<nrObjects; o++) {
-									var materialName = dataInputStream.readUTF8();
-									var type = dataInputStream.readUTF8();
-									var objectId = dataInputStream.readLong();
-									
-									var objectBounds = {
-										min: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()},
-										max: {x: dataInputStream.readFloat(), y: dataInputStream.readFloat(), z: dataInputStream.readFloat()}
-									};
-									var nrIndices = dataInputStream.readInt();
-									var geometryType = dataInputStream.readByte();
-									
-									dataInputStream.align4();
-									
-									var transformationMatrix = dataInputStream.readFloatArray(16);
-									
-									var coreId;
-									
-									if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
-										coreId = dataInputStream.readLong();
-										var geometry = {
-											type: "geometry",
-											primitive: "triangles"
-										};
-										
-										geometry.coreId = coreId;
-										geometry.nrindices = nrIndices;
-										
-										var nrVertices = dataInputStream.readInt();
-										geometry.positions = dataInputStream.readFloatArray(nrVertices);
-										var nrNormals = dataInputStream.readInt();
-										geometry.normals = dataInputStream.readFloatArray(nrNormals);
-										geometry.indices = [];
-										for (var i = 0; i < geometry.nrindices; i++) {
-											geometry.indices.push(i);
-										}
-										library.add("node", geometry);
-									} else if (geometryType == GEOMETRY_TYPE_INSTANCE) {
-										coreId = dataInputStream.readLong();
-									}
-
-									var materialNode = _this.scene.findNode(materialName + "Material");
-									var hasTransparency = false;
-									if (materialNode != null) {
-										if (materialNode.alpha != 1) {
-											hasTransparency = true;
-										}
-									}
-
-									var flags = {
-										type : "flags",
-										flags : {
-											transparent : hasTransparency
-										},
-										nodes : [{
-											type : "material",
-											coreId : materialName + "Material",
-											nodes : [{
-												id : objectId,
-												type : "name",
-												nodes : [{
-													type: "matrix",
-					                                elements: transformationMatrix,
-					                                nodes:[{
-														type: "geometry",
-														coreId: coreId
-													}]
-												}]
-											}]
-										}]
-									};
-									var typeNode = _this.scene.findNode(options.groupId + '-' + type.toLowerCase());
-									if (typeNode == null) {
-										var typeNode =  {
-											type: 'tag',
-											tag: options.groupId + '-' + type.toLowerCase(),
-											id: options.groupId + '-' + type.toLowerCase(),
-											nodes: []
-										};
-										
-										typeNode = boundsTranslate.addNode(typeNode);
-									}
-									typeNode.addNode(flags);
-								}
-							}
-						}
-					}
-					
 					var boundsTranslate = null;
 					
 					var state = {
@@ -721,14 +571,17 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 								}
 								
 								var lookat = _this.scene.findNode("main-lookAt");
-								lookat.set("eye", { x: center.x * 1.5, y: center.y * 1.5, z: center.z * 1.5 });
+								var eye = { x: (modelBounds.max.x - modelBounds.min.x) * 1.5, y: 0, z: 0 };
+								lookat.set("eye", eye);
 								
 								var maincamera = _this.scene.findNode("main-camera");
 								
+								var far = Math.max(modelBounds.max.x - modelBounds.min.x, modelBounds.max.y - modelBounds.min.y, modelBounds.max.z - modelBounds.min.z) * 5;
+								
 								maincamera.setOptics({
 									type: 'perspective',
-									far: Math.sqrt(center.x * center.x + center.y * center.y + center.z * center.z) * 6,
-									near: Math.sqrt(center.x * center.x + center.y * center.y + center.z * center.z) * 0.001,
+									far: far,
+									near: 1,
 									aspect: jQuery(_this.canvas).width() / jQuery(_this.canvas).height(),
 									fovy: 37.8493
 								});
@@ -767,18 +620,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 					});
 					_this.bimServerApi.downloadViaWebsocket(msg);
 					
-//					var oReq = new XMLHttpRequest();
-//					oReq.open("GET", url, true);
-//					oReq.responseType = "arraybuffer";
-//
-//					oReq.onload = function (oEvent) {
-//					  var arrayBuffer = oReq.response;
-//					  if (arrayBuffer) {
-//						  onSuccess(arrayBuffer);
-//					  }
-//					};
-//
-//					oReq.send(null);
 				}
 				var progressLoader = new BIMSURFER.ProgressLoader(_this.SYSTEM, _this.bimServerApi, laid, step, done, false);
 			});			

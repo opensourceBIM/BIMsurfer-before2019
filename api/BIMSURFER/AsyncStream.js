@@ -152,7 +152,6 @@ function AsyncStream() {
 	};
 	
 	othis.newData = function(data) {
-		console.log("new data");
 		othis.data.push(data);
 		while (othis.todolist.length > 0 && othis.data.length > 0) {
 			var todoitem = othis.todolist[0];
