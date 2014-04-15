@@ -56,8 +56,8 @@ $(function()
 			o.bimServerApi.init(function(){
 				o.bimServerApi.login(email, password, false, function(){
 					$(dialog).dialog('close');
-					console.log(BIMSURFER.Viewer);
 					o.viewer = new BIMSURFER.Viewer(o.bimServerApi, 'viewport');
+					resize();
 					showSelectProject();
 				});
 			});
@@ -80,7 +80,6 @@ $(function()
 			$(dialog).closest('div.ui-dialog').find('.ui-dialog-buttonpane').find('button:contains("Connect")').removeAttr('disabled').removeClass('disabled');
 		}
 	}
-
 
 	var form = $('<form />').attr('action', './').attr('method', 'post').appendTo(dialog);
 	$('<div />').append($('<label />').append($('<span />').text('BIMserver: ')).append($('<input />').attr('type', 'text').attr('name', 'server').val('http://127.0.0.1:8080/'))).appendTo(form);
@@ -132,7 +131,6 @@ $(function()
 		}
 	});
 
-
 	$(dialog).dialog({
 		autoOpen: true,
 		width: 450,
@@ -160,6 +158,12 @@ $(function()
 			});
 		});
 	}
+	
+	function resize(){
+		$("#viewport").width($("panel-body").width() + "px");
+		$("#viewport").height(($(window).height() - $(".navbar").outerHeight() - $(".3dview .panel-heading").outerHeight() - 98) + "px");
+		o.viewer.resize($('div#viewport').width(), $('div#viewport').height());
+	};
 	
 	function loadProject(project) {
 		o.model = o.bimServerApi.getModel(project.oid, project.lastRevisionId, false, function(model){
@@ -211,23 +215,36 @@ $(function()
 									$(layerLists).empty();
 								}
 
-								var layerList = new BIMSURFER.Control.LayerList(layerLists);
-								o.viewer.addControl(layerList);
-								layerList.activate();
-
+								$(window).resize(resize);
+								
 								o.viewer.loadScene(function(){
-									var clickSelect = new BIMSURFER.Control.ClickSelect();
-									clickSelect.events.register('select', nodeSelected);
-									clickSelect.events.register('unselect', nodeUnselected);
-									o.viewer.addControl(clickSelect);
+									var clickSelect = o.viewer.getControl("BIMSURFER.Control.ClickSelect");
 									clickSelect.activate();
-									if (toLoad.length > 0) {
-										o.viewer.loadGeometry({
-											groupId: 1,
-											roids: [project.lastRevisionId], 
-											types: toLoad
-										});
-									}
+									clickSelect.events.register('select', o.nodeSelected);
+									clickSelect.events.register('unselect', o.nodeUnselected);
+									
+									var geometryLoader = new GeometryLoader(o.bimServerApi, o.viewer);
+
+									var progressdiv = $("<div class=\"progressdiv\">");
+									var text = $("<div class=\"text\">");
+									text.html(project.name);
+									var progress = $("<div class=\"progress progress-striped\">");
+									var progressbar = $("<div class=\"progress-bar\">");
+									progressdiv.append(text)
+									progressdiv.append(progress);
+									progress.append(progressbar);
+									
+									//containerDiv.find(".progressbars").append(progressdiv);
+
+									geometryLoader.addProgressListener(function(progress){
+										progressbar.css("width", progress + "%");
+										console.log(progress);
+										if (progress == 100) {
+											progressdiv.fadeOut(800);
+										}
+									});
+									geometryLoader.setLoadRevision(project.lastRevisionId, toLoad);
+									o.viewer.loadGeometry(geometryLoader);
 								});
 							}
 						}
