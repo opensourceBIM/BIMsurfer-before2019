@@ -7,22 +7,6 @@ $(function()
 	o.viewer = null;
 	o.bimServerApi = null;
 
-	function loadBimServerApiFromAddress(address, successFunction, errorFunction){
-		loadBimServerApi(address, null, function(bimServerApi, serverInfo){
-			o.bimServerApi = bimServerApi;
-			if (serverInfo.serverState == "NOT_SETUP") {
-			} else if (serverInfo.serverState == "UNDEFINED") {
-			} else if (serverInfo.serverState == "MIGRATION_REQUIRED") {
-			} else if (serverInfo.serverState == "MIGRATION_IMPOSSIBLE") {
-			} else if (serverInfo.serverState == "FATAL_ERROR") {
-			} else if (serverInfo.serverState == "RUNNING") {
-				successFunction();
-			}
-		}, function(){
-			errorFunction(address);
-		});
-	};
-	
 	function showSelectProject() {
 		$(this.window).resize(function(e) {
 			o.viewer.resize($('div#viewport').width(), $('div#viewport').height());
@@ -67,11 +51,12 @@ $(function()
 	}
 	
 	function connect(server, email, password) {
-		loadBimServerApiFromAddress(server, function(){
+		loadBimServerApi(server, null, function(bimServerApi){
+			o.bimServerApi = bimServerApi;
 			o.bimServerApi.init(function(){
 				o.bimServerApi.login(email, password, false, function(){
 					$(dialog).dialog('close');
-					o.server = new BIMSURFER.Server(o.bimServerApi);
+					console.log(BIMSURFER.Viewer);
 					o.viewer = new BIMSURFER.Viewer(o.bimServerApi, 'viewport');
 					showSelectProject();
 				});
