@@ -54,6 +54,21 @@ function ReadFloatArray(asyncStream, length, callback) {
 	};
 }
 
+function ReadIntArray(asyncStream, length, callback) {
+	this.process = function(){
+		asyncStream.align4();
+		if (asyncStream.available() >= 4 * length) {
+			var result = new Int32Array(asyncStream.arrayBuffer, asyncStream.pos, length);
+			asyncStream.pos += length * 4;
+			asyncStream.pop();
+			if (callback(result) == false) {
+				console.log("error");
+			}
+			return true;
+		}
+	};
+}
+
 function ReadInt(asyncStream, callback) {
 	this.process = function(){
 		if (asyncStream.available() >= 4) {
@@ -106,7 +121,7 @@ function AsyncStream() {
 	
 	othis.arrayBuffer = null;
 	othis.dataView = null;
-	othis.pos = 0;
+	othis.pos = 4;
 	
 	othis.todolist = [];
 	othis.data = [];
@@ -131,11 +146,27 @@ function AsyncStream() {
 	};
 	
 	othis.addReadFloatArray = function(length, callback){
-		othis.todolist.push(new ReadFloatArray(othis, length, callback));
+		if (length == 0) {
+			callback();
+		} else {
+			othis.todolist.push(new ReadFloatArray(othis, length, callback));
+		}
+	};
+
+	othis.addReadIntArray = function(length, callback){
+		if (length == 0) {
+			callback();
+		} else {
+			othis.todolist.push(new ReadIntArray(othis, length, callback));
+		}
 	};
 
 	othis.addReadFloats = function(length, callback){
-		othis.todolist.push(new ReadFloats(othis, length, callback));
+		if (length == 0) {
+			callback();
+		} else {
+			othis.todolist.push(new ReadFloats(othis, length, callback));
+		}
 	};
 	
 	othis.addReadInt = function(callback){
@@ -172,7 +203,7 @@ function AsyncStream() {
 			
 			if (data.byteLength == othis.pos) {
 				othis.data.splice(0, 1);
-				othis.pos = 0;
+				othis.pos = 4;
 			}
 			if (!processDone) {
 				break;
@@ -187,6 +218,6 @@ function AsyncStream() {
 	
 	othis.newData = function(data) {
 		othis.data.push(data);
-		othis.totalReceived += data.byteLength;
+		othis.totalReceived += (data.byteLength - 4);
 	};
 }

@@ -5,7 +5,7 @@
  * Control to select and hightlight a Scene JS by clicking on it.
  */
 BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
-	CLASS: "BIMSURFER.Control.CLickSelect",
+	CLASS: "BIMSURFER.Control.ClickSelect",
 
 	/**
 	 * X coordinate of the last mouse event
@@ -16,6 +16,8 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 	 * Y coordinate of the last mouse event
 	 */
 	downY: null,
+	
+	active: false,
 
 	/**
 	 * The selected and highlighted SceneJS node
@@ -44,9 +46,11 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 			console.error('Cannot activate ' + this.CLASS + ': Surfer or scene not ready');
 			return null;
 		}
-		this.active = true;
-		this.initEvents();
-		this.events.trigger('activated');
+		if (!this.active) {
+			this.active = true;
+			this.initEvents();
+			this.events.trigger('activated');
+		}
 		return this;
 	},
 
@@ -101,7 +105,8 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 		this.highlighted = this.SYSTEM.scene.findNode(hit.nodeId);
 		this.highlighted.insert('node', BIMSURFER.Constants.highlightSelectedObject);
 		this.lastSelected = Date.now();
-		this.events.trigger('select', [this.highlighted]);
+		var groupId = this.highlighted.findParentByType("translate").data.groupId;
+		this.events.trigger('select', [groupId, this.highlighted]);
 	},
 
 	/**
@@ -112,7 +117,7 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 		if(node != null)
 		{
 			node.splice();
-			this.events.trigger('unselect', [this.highlighted]);
+			this.events.trigger('unselect', [this.highlighted == null ? null : this.highlighted.findParentByType("translate").groupId, this.highlighted]);
 			this.highlighted = null;
 		}
 	}

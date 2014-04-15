@@ -56,7 +56,7 @@ BIMSURFER.Constants.materials = {
 	IfcRoof: {r: 0.837255, g: 0.203922, b: 0.270588, a: 1.0},
 	IfcSlab: {r: 0.637255, g: 0.603922, b: 0.670588, a: 1.0},
 	IfcWall: {r: 0.537255, g: 0.337255, b: 0.237255, a: 1.0},
-	IfcWallStandardCase: {r: 0.937255, g: 0.937255, b: 0.937255, a: 1.0},
+	IfcWallStandardCase: {r: 0.537255, g: 0.337255, b: 0.237255, a: 1.0},
 	IfcDoor: {r: 0.637255, g: 0.603922, b: 0.670588, a: 1.0},
 	IfcWindow: {r: 0.137255, g: 0.403922, b: 0.870588, a: 0.5},
 	IfcOpeningElement: {r: 0.137255, g: 0.403922, b: 0.870588, a: 0},
@@ -66,6 +66,7 @@ BIMSURFER.Constants.materials = {
 	IfcFurnishingElement: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
 	IfcCurtainWall: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
 	IfcStair: {r: 0.637255, g: 0.603922, b: 0.670588, a: 1.0},
+	IfcStairFlight: {r: 0.637255, g: 0.603922, b: 0.670588, a: 1.0},
 	IfcBuildingElementProxy: {r: 0.5, g: 0.5, b: 0.5, a: 1.0},
 	IfcFlowSegment: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
 	IfcFlowitting: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
@@ -74,9 +75,20 @@ BIMSURFER.Constants.materials = {
 	IfcSite: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
 	IfcLightFixture: {r: 0.8470588235, g: 0.8470588235, b: 0.870588, a: 1.0},
 	IfcDuctSegment: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcDistributionFlowElement: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcDuctFitting: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcPlate: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 0.5},
-	IfcAirTerminal: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0}
+	IfcAirTerminal: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcMember: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcCovering: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcTransportElement: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcFlowController: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcFlowFitting: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcRamp: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcFurniture: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcFooting: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcSystemFurnitureElement: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	DEFAULT: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0}
 }
 
 /*
@@ -96,7 +108,7 @@ BIMSURFER.Constants.highlightSelectedObject = {
 	type : 'material',
 	id : 'highlight',
 	emit : 0.0,
-	baseColor : {r: 0.0, g: 0.5, b: 0.5}
+	baseColor : {r: 0.0, g: 1, b: 0}
 }
 
 /*

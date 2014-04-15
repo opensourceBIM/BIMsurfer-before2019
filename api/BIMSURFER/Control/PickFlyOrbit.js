@@ -318,7 +318,7 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 			event.preventDefault();
 		}
 
-		event.returnValue = false;
+		event.preventDefault();
 		this.orbiting = true;
 	},
 
