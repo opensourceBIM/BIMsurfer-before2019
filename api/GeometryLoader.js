@@ -69,19 +69,17 @@ function GeometryLoader(bimServerApi, viewer) {
 	};
 	
 	this.updateProgress = function() {
-		console.log(o.state.nrObjectsRead, o.state.nrObjects);
 		if (o.state.nrObjectsRead < o.state.nrObjects) {
 			var progress = Math.ceil(50 * o.state.nrObjectsRead / o.state.nrObjects);
 			if (progress != o.state.lastProgress) {
 				o.progressListeners.forEach(function(progressListener){
 					progressListener(50 + progress);
 				});
-				o.viewer.SYSTEM.events.trigger('progressChanged', [progress]);
+				o.viewer.SYSTEM.events.trigger('progressChanged', [50 + progress]);
 				o.state.lastProgress = progress;
 			}
 			o.addReadObject();
 		} else {
-			console.log("test");
 			o.viewer.SYSTEM.events.trigger('progressDone');
 			o.progressListeners.forEach(function(progressListener){
 				progressListener(100);
@@ -276,6 +274,7 @@ function GeometryLoader(bimServerApi, viewer) {
 		if (topicId == o.topicId) {
 			o.progressListeners.forEach(function(progressListener){
 				progressListener(state.progress / 2);
+				o.viewer.SYSTEM.events.trigger('progressChanged', [state.progress / 2]);
 			});
 			if (state.state == "FINISHED") {
 				o.downloadInitiated();

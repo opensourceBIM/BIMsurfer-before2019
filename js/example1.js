@@ -57,6 +57,14 @@ $(function()
 				$(dialog).dialog('close');
 				o.viewer = new BIMSURFER.Viewer(o.bimServerApi, 'viewport');
 				resize();
+				
+				o.viewer.loadScene(function(){
+					var clickSelect = o.viewer.getControl("BIMSURFER.Control.ClickSelect");
+					clickSelect.activate();
+					clickSelect.events.register('select', o.nodeSelected);
+					clickSelect.events.register('unselect', o.nodeUnselected);
+				});
+				
 				showSelectProject();
 			});
 		});
@@ -202,10 +210,10 @@ $(function()
 							{
 								var checkedTypes = $(dialog).find('input:checkbox:checked');
 
-								var toLoad = [];
+								var toLoad = {};
 								$(checkedTypes).each(function()
 								{
-									toLoad.push($(this).val());
+									toLoad[$(this).val()] = {mode: 0};
 								});
 
 								$(dialog).dialog('close');
@@ -217,34 +225,27 @@ $(function()
 
 								$(window).resize(resize);
 								
-								o.viewer.loadScene(function(){
-									var clickSelect = o.viewer.getControl("BIMSURFER.Control.ClickSelect");
-									clickSelect.activate();
-									clickSelect.events.register('select', o.nodeSelected);
-									clickSelect.events.register('unselect', o.nodeUnselected);
-									
-									var geometryLoader = new GeometryLoader(o.bimServerApi, o.viewer);
+								var geometryLoader = new GeometryLoader(o.bimServerApi, o.viewer);
 
-									var progressdiv = $("<div class=\"progressdiv\">");
-									var text = $("<div class=\"text\">");
-									text.html(project.name);
-									var progress = $("<div class=\"progress progress-striped\">");
-									var progressbar = $("<div class=\"progress-bar\">");
-									progressdiv.append(text);
-									progressdiv.append(progress);
-									progress.append(progressbar);
-									
-									//containerDiv.find(".progressbars").append(progressdiv);
+								var progressdiv = $("<div class=\"progressdiv\">");
+								var text = $("<div class=\"text\">");
+								text.html(project.name);
+								var progress = $("<div class=\"progress progress-striped\">");
+								var progressbar = $("<div class=\"progress-bar\">");
+								progressdiv.append(text);
+								progressdiv.append(progress);
+								progress.append(progressbar);
+								
+								//containerDiv.find(".progressbars").append(progressdiv);
 
-									geometryLoader.addProgressListener(function(progress){
-										progressbar.css("width", progress + "%");
-										if (progress == 100) {
-											progressdiv.fadeOut(800);
-										}
-									});
-									geometryLoader.setLoadRevision(project.lastRevisionId, toLoad);
-									o.viewer.loadGeometry(geometryLoader);
+								geometryLoader.addProgressListener(function(progress){
+									progressbar.css("width", progress + "%");
+									if (progress == 100) {
+										progressdiv.fadeOut(800);
+									}
 								});
+								geometryLoader.setLoadRevision(project.lastRevisionId, toLoad);
+								o.viewer.loadGeometry(geometryLoader);
 							}
 						}
 					});
