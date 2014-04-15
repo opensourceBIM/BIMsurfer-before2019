@@ -53,13 +53,11 @@ $(function()
 	function connect(server, email, password) {
 		loadBimServerApi(server, null, function(bimServerApi){
 			o.bimServerApi = bimServerApi;
-			o.bimServerApi.init(function(){
-				o.bimServerApi.login(email, password, false, function(){
-					$(dialog).dialog('close');
-					o.viewer = new BIMSURFER.Viewer(o.bimServerApi, 'viewport');
-					resize();
-					showSelectProject();
-				});
+			o.bimServerApi.login(email, password, false, function(){
+				$(dialog).dialog('close');
+				o.viewer = new BIMSURFER.Viewer(o.bimServerApi, 'viewport');
+				resize();
+				showSelectProject();
 			});
 		});
 	}
@@ -160,8 +158,10 @@ $(function()
 	}
 	
 	function resize(){
-		$("#viewport").width($("panel-body").width() + "px");
-		$("#viewport").height(($(window).height() - $(".navbar").outerHeight() - $(".3dview .panel-heading").outerHeight() - 98) + "px");
+		$("#viewport").width($(window).width() + "px");
+		$("#viewport").height(($(window).height() - 98) + "px");
+		$("#viewport").css("width", $(window).width() + "px");
+		$("#viewport").css("height", ($(window).height() - 98) + "px");
 		o.viewer.resize($('div#viewport').width(), $('div#viewport').height());
 	};
 	
@@ -230,7 +230,7 @@ $(function()
 									text.html(project.name);
 									var progress = $("<div class=\"progress progress-striped\">");
 									var progressbar = $("<div class=\"progress-bar\">");
-									progressdiv.append(text)
+									progressdiv.append(text);
 									progressdiv.append(progress);
 									progress.append(progressbar);
 									
@@ -238,7 +238,6 @@ $(function()
 
 									geometryLoader.addProgressListener(function(progress){
 										progressbar.css("width", progress + "%");
-										console.log(progress);
 										if (progress == 100) {
 											progressdiv.fadeOut(800);
 										}

@@ -69,6 +69,7 @@ function GeometryLoader(bimServerApi, viewer) {
 	};
 	
 	this.updateProgress = function() {
+		console.log(o.state.nrObjectsRead, o.state.nrObjects);
 		if (o.state.nrObjectsRead < o.state.nrObjects) {
 			var progress = Math.ceil(50 * o.state.nrObjectsRead / o.state.nrObjects);
 			if (progress != o.state.lastProgress) {
@@ -80,6 +81,7 @@ function GeometryLoader(bimServerApi, viewer) {
 			}
 			o.addReadObject();
 		} else {
+			console.log("test");
 			o.viewer.SYSTEM.events.trigger('progressDone');
 			o.progressListeners.forEach(function(progressListener){
 				progressListener(100);
