@@ -119,6 +119,8 @@ function ReadLong(asyncStream, callback) {
 function AsyncStream() {
 	var othis = this;
 	
+	window.lastStream = othis;
+	
 	othis.arrayBuffer = null;
 	othis.dataView = null;
 	othis.pos = 4;

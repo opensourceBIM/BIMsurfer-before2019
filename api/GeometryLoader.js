@@ -82,7 +82,7 @@ function GeometryLoader(bimServerApi, viewer) {
 		} else {
 			o.viewer.SYSTEM.events.trigger('progressDone');
 			o.progressListeners.forEach(function(progressListener){
-				progressListener(100);
+				progressListener("done");
 			});
 			o.viewer.events.trigger('sceneLoaded', [o.viewer.scene]);
 			o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: o.topicId}, function(){
@@ -98,7 +98,6 @@ function GeometryLoader(bimServerApi, viewer) {
 		o.asyncStream = new AsyncStream();
 		o.viewer.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
 		o.viewer.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Continuous);
-		o.viewer.SYSTEM.events.trigger('progressChanged', [0]);
 		o.asyncStream.addReadUTF8(function(start){
 			if (start != "BGS") {
 				return false;

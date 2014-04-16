@@ -63,6 +63,8 @@ $(function()
 					clickSelect.activate();
 					clickSelect.events.register('select', o.nodeSelected);
 					clickSelect.events.register('unselect', o.nodeUnselected);
+					
+					var orbit = o.viewer.getControl("BIMSURFER.Control.PickFlyOrbit");
 				});
 				
 				showSelectProject();
