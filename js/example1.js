@@ -15,10 +15,6 @@ $(function()
 		var dialog = $('<div />').attr('title', 'Open a project');
 		var projectList = $('<ul />').attr('id', 'projects').appendTo(dialog);
 
-		var progressBar = new BIMSURFER.Control.ProgressBar('progress_bar');
-		o.viewer.addControl(progressBar);
-		progressBar.activate();
-		
 		o.bimServerApi.call("Bimsie1ServiceInterface", "getAllProjects", {onlyActive: true, onlyTopLevel: false}, function(projects){
 			projects.forEach(function(project){
 				if(project.lastRevisionId != -1)
