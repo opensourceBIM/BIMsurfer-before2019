@@ -103,9 +103,35 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 	pick: function(hit) {
 		this.unselect();
 		this.highlighted = this.SYSTEM.scene.findNode(hit.nodeId);
+		var groupId = this.highlighted.findParentByType("translate").data.groupId;
+
+//		var matrix = this.highlighted.nodes[0];
+//		var geometryNode = matrix.nodes[0];
+		
+//		var geometry = {
+//			type: "geometry",
+//			primitive: "lines"
+//		};
+//
+//		geometry.coreId = geometryNode.getCoreId() + "Lines";
+//		geometry.indices = geometryNode._core.arrays.indices;
+//		geometry.positions = geometryNode._core.arrays.positions;
+//		geometry.normals = geometryNode._core.arrays.normals;
+//		geometry.colors = geometryNode._core.arrays.colors;
+//
+//		
+//		var library = this.SYSTEM.scene.findNode("library-" + groupId);
+//		library.add("node", geometry);
+//		
+//		var newGeometry = {
+//			type: "geometry",
+//			coreId: geometryNode.getCoreId() + "Lines"
+//		}
+//		
+//		matrix.addNode(newGeometry);
+		
 		this.highlighted.insert('node', BIMSURFER.Constants.highlightSelectedObject);
 		this.lastSelected = Date.now();
-		var groupId = this.highlighted.findParentByType("translate").data.groupId;
 		this.events.trigger('select', [groupId, this.highlighted]);
 	},
 

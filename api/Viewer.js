@@ -22,7 +22,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	scene: null,
 	sceneLoaded: false,
 	loadQueue: null,
-	visibleTypes: null,
 	loadedProjects: null,
 	bimServerApi: null,
 	loadedGroups: [],
@@ -364,41 +363,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	},
 
 	/**
-	 * Shows an ifcType of a revision
-	 *
-	 * @param {String} typeName The name of the type to show
-	 * @param {BIMSURFER.ProjectRevision instance} revision The revision
-	 */
-	showType: function(typeNames, revision) {
-//		var _this = this;
-//		var i = this.loadedProjects.indexOf(revision.project);
-//		if(i == -1 || this.loadedProjects[i].loadedRevisions.indexOf(revision) == -1 || !revision.sceneLoaded) {
-//			console.error('Revision Scene is not loaded yet.');
-//			return;
-//		}
-//		var toLoad = [];
-//		typeNames.forEach(function(typeName){
-//			if(revision.ifcTypes.indexOf(typeName) == -1) {
-//				console.error('Type does not exist in loaded revision: ', typeName);
-//			} else if (revision.loadedTypes.indexOf(typeName) == -1) {
-//				toLoad.push(typeName);
-//			} else {
-//				if(revision.visibleTypes.indexOf(typeName.toLowerCase()) > -1) {
-//					return;
-//				}
-//				revision.visibleTypes.push(typeName.toLowerCase());
-//				_this.refreshMask();
-//			}
-//		});
-//		if (toLoad.length > 0) {
-//			this.loadQueue.push({revision: revision, types: toLoad});
-//			if(this.mode != 'loading' && this.mode != 'processing') {
-//				this.loadGeometry();
-//			}
-//		}
-	},
-
-	/**
 	 * Hides an ifcType of a revision.
 	 *
 	 * @param {String} typeName The name of the type to hide
@@ -418,13 +382,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 */
 	refreshMask: function() {
 		var mask = new Array();
-//		for(var i = 0; i < this.loadedProjects.length; i++) {
-//			for(var x = 0; x < this.loadedProjects[i].loadedRevisions.length; x++) {
-//				for(var y = 0; y < this.loadedProjects[i].loadedRevisions[x].visibleTypes.length; y++) {
-//					mask.push(this.loadedProjects[i].oid + '-' + this.loadedProjects[i].loadedRevisions[x].oid + '-' + this.loadedProjects[i].loadedRevisions[x].visibleTypes[y].toLowerCase());
-//				}
-//			}
-//		}
 
 		this.visibleTypes.forEach(function(type){
 			mask.push(type);

@@ -106,6 +106,7 @@ BIMSURFER.Constants.camera = {
  */
 BIMSURFER.Constants.highlightSelectedObject = {
 	type : 'material',
+	wire: true,
 	id : 'highlight',
 	emit : 0.0,
 	baseColor : {r: 0.0, g: 1, b: 0}

@@ -156,7 +156,9 @@ function GeometryLoader(bimServerApi, viewer) {
 						
 						var maincamera = o.viewer.scene.findNode("main-camera");
 						
-						var far = Math.max(modelBounds.max.x - modelBounds.min.x, modelBounds.max.y - modelBounds.min.y, modelBounds.max.z - modelBounds.min.z) * 5;
+						var diagonal = Math.sqrt(Math.pow(modelBounds.max.x - modelBounds.min.x, 2) + Math.pow(modelBounds.max.y - modelBounds.min.y, 2) + Math.pow(modelBounds.max.z - modelBounds.min.z, 2));
+						
+						var far = diagonal * 5; // 5 being a guessed constant that should somehow coincide with the max zoom-out-factor
 						
 						maincamera.setOptics({
 							type: 'perspective',
