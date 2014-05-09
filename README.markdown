@@ -7,7 +7,7 @@ A new version of Bimsurfer is developed to make BIM Surfer a module that can be 
 
 ### Demo
 Because the new BIM Surfer is a module that has to be configured there is not real one demo. And because the API documention is not finished yet, you have to know a bit about javascript to understand how you can use the current version of BIM Surfer.  
-There are two example implementation thoughtL: Have a look at example1.html in the repository, or at the way the BCF Forum project used BIM Surfer: https://github.com/opensourceBIM/BimConsiderationForum-BcfServer/blob/master/consideration-forum/js/bimsurfer.js  
+There are two example implementation thought: Have a look at example1.html in the repository, or at the way the BCF Forum project used BIM Surfer: https://github.com/opensourceBIM/BimConsiderationForum-BcfServer/blob/master/consideration-forum/js/bimsurfer.js  
   
 ###Featues:
 There ar not a lot of new features. The most important change is that BIM Surfer can now be used as a module. This enhances integration with you own applications.
