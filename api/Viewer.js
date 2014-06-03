@@ -352,7 +352,8 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	loadGeometry: function(geometryLoader) {
 		var o = this;
 		o.geometryLoaders.push(geometryLoader);
-		if (o.geometryLoaders.length <= 2) {
+		// TODO limit to something useful
+		if (o.geometryLoaders.length <= 20) {
 			geometryLoader.progressListeners.push(function(progress){
 				if (progress == "done") {
 					removeA(o.geometryLoaders, geometryLoader);

@@ -105,30 +105,39 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 		this.highlighted = this.SYSTEM.scene.findNode(hit.nodeId);
 		var groupId = this.highlighted.findParentByType("translate").data.groupId;
 
-//		var matrix = this.highlighted.nodes[0];
-//		var geometryNode = matrix.nodes[0];
-		
-//		var geometry = {
-//			type: "geometry",
-//			primitive: "lines"
-//		};
-//
-//		geometry.coreId = geometryNode.getCoreId() + "Lines";
-//		geometry.indices = geometryNode._core.arrays.indices;
-//		geometry.positions = geometryNode._core.arrays.positions;
-//		geometry.normals = geometryNode._core.arrays.normals;
-//		geometry.colors = geometryNode._core.arrays.colors;
-//
-//		
-//		var library = this.SYSTEM.scene.findNode("library-" + groupId);
-//		library.add("node", geometry);
-//		
-//		var newGeometry = {
-//			type: "geometry",
-//			coreId: geometryNode.getCoreId() + "Lines"
-//		}
-//		
-//		matrix.addNode(newGeometry);
+		var matrix = this.highlighted.nodes[0];
+		var geometryNode = matrix.nodes[0];
+
+		if (geometryNode._core.arrays.colors != null) {
+			var geometry = {
+				type: "geometry",
+				primitive: "triangles"
+			};
+	
+			geometry.coreId = geometryNode.getCoreId() + "Highlighted";
+			geometry.indices = geometryNode._core.arrays.indices;
+			geometry.positions = geometryNode._core.arrays.positions;
+			geometry.normals = geometryNode._core.arrays.normals;
+			
+			geometry.colors = [];
+			for (var i=0; i<geometryNode._core.arrays.colors.length; i+=4) {
+				geometry.colors[i] = 0;
+				geometry.colors[i+1] = 1;
+				geometry.colors[i+2] = 0;
+				geometry.colors[i+3] = 1;
+			}
+			
+			var library = this.SYSTEM.scene.findNode("library-" + groupId);
+			library.add("node", geometry);
+			
+			var newGeometry = {
+				type: "geometry",
+				coreId: geometryNode.getCoreId() + "Highlighted"
+			}
+			
+			matrix.removeNode(geometryNode);
+			matrix.addNode(newGeometry);
+		}
 		
 		this.highlighted.insert('node', BIMSURFER.Constants.highlightSelectedObject);
 		this.lastSelected = Date.now();
@@ -139,12 +148,30 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 	 * Event listener
 	 */
 	unselect: function() {
-		var node = this.SYSTEM.scene.findNode(BIMSURFER.Constants.highlightSelectedObject.id);
-		if(node != null)
-		{
-			node.splice();
-			this.events.trigger('unselect', [this.highlighted == null ? null : this.highlighted.findParentByType("translate").groupId, this.highlighted]);
-			this.highlighted = null;
+		var highlighted = this.SYSTEM.scene.findNode(BIMSURFER.Constants.highlightSelectedObject.id);
+		if (highlighted != null) {
+			var groupId = highlighted.findParentByType("translate").data.groupId;
+			if(highlighted != null)
+			{
+				var matrix = highlighted.nodes[0];
+				var geometryNode = matrix.nodes[0];
+				
+				if (geometryNode._core.arrays.colors != null) {
+					matrix.removeNode(geometryNode);
+					
+					var newGeometry = {
+						type: "geometry",
+						coreId: geometryNode.getCoreId().replace("Highlighted", "")
+					}
+					
+					matrix.addNode(newGeometry);
+				}
+				
+				highlighted.splice();
+				
+				this.events.trigger('unselect', [this.highlighted == null ? null : this.highlighted.findParentByType("translate").groupId, this.highlighted]);
+				this.highlighted = null;
+			}
 		}
 	}
 });
