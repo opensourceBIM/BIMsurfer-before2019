@@ -39,7 +39,7 @@ function GeometryLoader(bimServerApi, viewer) {
 									o.asyncStream.addReadFloatArray(nrNormals, function(normals){
 										o.asyncStream.addReadInt(function(nrColors){
 //											console.log("colors", nrColors);
-											o.asyncStream.addReadFloatArray(nrColors * 4, function(colors){
+											o.asyncStream.addReadFloatArray(nrColors, function(colors){
 //												console.log("add");
 												o.state.nrObjectsRead++;
 //												console.log(o.state.nrObjectsRead, o.state.nrObjects);
