@@ -1,5 +1,15 @@
 "use strict"
 
+// Some helper functions to deal with the camera math: Note the these
+// operate on vectors represented as JavaScript objects {x:, y:, z:} not
+// arrays or typed arrays.
+var vecCrossProduct = function(a, b) { var r = SceneJS_math_cross3Vec3([a.x, a.y, a.z], [b.x, b.y, b.z]); return {x:r[0], y:r[1], z:r[2]}; };
+var vecMultiplyScalar = function(a, m) { return {x:a.x*m, y:a.y*m, z:a.z*m}; };
+var vecSubtract = function(a, b) { return {x:a.x-b.x, y:a.y-b.y, z:a.z-b.z}; };
+var vecMagnitude = function(v) { var x = v.x, y = v.y, z = v.z; return Math.sqrt(x*x + y*y + z*z); };
+var vecNormalize = function(v) { return vecMultiplyScalar(v, 1/vecMagnitude(v)); };
+var vecNegate = function(v) { return {x:-v.x, y:-v.y, z:-v.z}; };
+
 /**
  * Class: BIMSURFER.Control.PickFlyOrbit
  * Control to control the main camera of the scene.
@@ -118,6 +128,51 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 		}
 		return this;
 	},
+	
+	ease: function(t, b, c, d) {
+		b = b || 0;
+		c = c || 1;
+		d = d || 1;
+		var ts = (t /= d) * t;
+		var tc = ts * t;
+		return b + c * (-1 * ts * ts + 4 * tc + -6 * ts + 4 * t);
+	},
+	
+	lerp: function(a, b, p) {
+		return a + (b-a) * p;
+	},
+	
+	lerp3: function(dest, a, b, p) {
+		for (var i = 0; i < 3; ++i) {
+			var component = String.fromCharCode('x'.charCodeAt(0) + i);
+			dest[component] = this.lerp(a[component], b[component], p);
+		}
+	},
+	
+	updateTimer: function()
+	{ 
+		// TODO: Use HTML5 Animation Frame
+		this.timeNow = +new Date();
+		if (this.flightStartTime === null) {
+			this.flightStartTime = this.timeNow;
+		}
+		this.timeElapsed = this.timeNow - this.flightStartTime;
+		this.timeElapsedNormalized = Math.min(this.timeElapsed / this.flightDuration, 1.0);
+		if (this.timeElapsed >= this.flightDuration) {
+			this.flying = false;
+			this.flightStartTime = null;
+			
+			this.rotating = false;
+			this.startYaw = this.startPitch = this.endYaw = this.endPitch = null;
+		}
+	},
+	
+	sphericalCoords: function(eye) {
+		var r     = vecMagnitude(eye);
+		var phi   = Math.acos(eye.z / r);
+		var theta = Math.atan2(eye.y, eye.x);
+		return {phi: phi, theta: theta};
+	},
 
 	/**
 	 * Event listener for every SceneJS tick
@@ -125,54 +180,44 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	tick: function()
 	{
 		if(this.flying) {
-			var timeNow = (new Date()).getTime();
-
-			if(this.flightStartTime == null) {
-				this.flightStartTime = timeNow;
-			}
-
-			var timeElapsed = timeNow - this.flightStartTime;
-
-			if (timeElapsed >= this.flightDuration) {
-				this.flying = false;
-				this.flightStartTime = null;
-			} else {
-				var easedTime = (function(t, b, c, d) {
-					var ts = (t /= d) * t;
-					var tc = ts * t;
-					return b + c * (-1 * ts * ts + 4 * tc + -6 * ts + 4 * t);
-				})((timeNow - this.flightStartTime) / this.flightDuration, 0, 1, 1);
-
-				this.currentPivot.x = this.startPivot.x + easedTime * (this.endPivot.x - this.startPivot.x);
-				this.currentPivot.y = this.startPivot.y + easedTime * (this.endPivot.y - this.startPivot.y);
-				this.currentPivot.z = this.startPivot.z + easedTime * (this.endPivot.z - this.startPivot.z);
-
-				// Need to rotate lookat
-				this.orbiting = true;
+			this.updateTimer();
+			var easedTime = this.ease(this.timeElapsedNormalized);
+			this.lerp3(this.currentPivot, this.startPivot, this.endPivot, easedTime);
+			// Need to rotate lookat
+			this.orbiting = true;
+		
+			if(this.rotating) {
+				this.pitch = this.lerp(this.startPitch, this.endPitch, easedTime);
+				this.yaw = this.lerp(this.startYaw, this.endYaw, easedTime);
 			}
 		}
 		if(this.orbiting) {
-			var startX = this.startEye.x;
-			var startY = this.startEye.y;
-			var startZ = this.startEye.z;
-			var radius = Math.sqrt(startX*startX + startY*startY + startZ*startZ);
+			var radius = vecMagnitude(this.startEye);
+			
+			var phiTheta = this.sphericalCoords(this.startEye);
+			var startPhi = phiTheta.phi;
+			var startTheta = phiTheta.theta;
+			
+			var PI_2 = 2*Math.PI;
 
-			var startPhi = Math.acos(this.startEye.z/radius);
-			var startTheta = Math.asin(this.startEye.y/(radius*Math.sin(startPhi))) + Math.PI;
-
-			var phi = 2*Math.PI - this.pitch * BIMSURFER.Constants.camera.orbitSpeedFactor - startPhi;
-			while(phi > 2*Math.PI) phi -= 2 * Math.PI;
-			while(phi < 0) phi += 2*Math.PI;
-			if(phi < Math.PI && this.direction != -1) {
-				this.direction = -1;
-				this.lookAt.set('up', {x: 0, y:0, z: -1});
-			} else if(phi >= Math.PI && this.direction != 1) {
-				this.direction = 1;
-				this.lookAt.set('up', {x: 0, y:0, z: 1});
+			var phi = this.pitch * BIMSURFER.Constants.camera.orbitSpeedFactor + startPhi;
+			
+			while(phi > PI_2) phi -= PI_2;
+			while(phi < 0   ) phi += PI_2;
+			
+			if(phi > Math.PI) {
+				if (this.direction != -1) {
+					this.direction = -1;
+					this.lookAt.set('up', {x: 0, y:0, z: -1});
+				}
+			} else {
+				if (this.direction != 1) {
+					this.direction = 1;
+					this.lookAt.set('up', {x: 0, y:0, z: 1});
+				}
 			}
 
-
-			var theta = 2 * Math.PI - this.yaw * BIMSURFER.Constants.camera.orbitSpeedFactor + startTheta;
+			var theta = this.yaw * BIMSURFER.Constants.camera.orbitSpeedFactor + startTheta;
 			var x = radius * Math.sin(phi) * Math.cos(theta);
 			var y = radius * Math.sin(phi) * Math.sin(theta);
 			var z = radius * Math.cos(phi);
@@ -203,7 +248,7 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 			// Update view transform
 			this.lookAt.setLook(this.currentPivot);
 			this.lookAt.setEye(this.eye);
-
+			
 			this.orbiting = false;
 		}
 	},
@@ -233,6 +278,56 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	},
 
 	/**
+	 * @return {Object} a structure containing eye point, view direction and up vector
+	 */
+	obtainView: function() {
+		var eye = this.lookAt.getEye();
+		var tgt = this.lookAt.getLook();
+		var up  = this.lookAt.getUp();
+
+		var dir = vecNormalize(vecSubtract(tgt, eye));
+		up = vecCrossProduct(vecCrossProduct(dir, up), dir);
+		up = vecNormalize(up);
+		
+		return {
+			eye: eye,
+			dir: dir,
+			up : up
+		};
+	},
+	
+	/**
+	 * @param {Object} a structure containing eye point, view direction and up vector
+	 */
+	restoreView: function(lookat) {
+		// Set the current camera orientation as our initial one and
+		// transition to the new one. The lookat structure does not
+		// contain the distance from camera to target so the end pivot
+		// will be set the same distance from the camera as it is now.
+		
+		var l = vecMagnitude(vecSubtract(this.eye, this.currentPivot));
+		
+		var cy = vecSubtract(this.eye, this.currentPivot);
+		this.startEye = {x:cy.x, y:cy.y, z:cy.z};
+		
+		var currentPT = this.sphericalCoords(this.startEye);
+		var eventualPT = this.sphericalCoords(vecNegate(lookat.dir));
+		
+		this.endYaw = (eventualPT.theta - currentPT.theta) / BIMSURFER.Constants.camera.orbitSpeedFactor;
+		this.endPitch = (eventualPT.phi - currentPT.phi) / BIMSURFER.Constants.camera.orbitSpeedFactor;
+		this.rotating = true;
+		 
+		this.startYaw = this.startPitch = this.yaw = this.pitch = 0;
+		this.zoom = this.prevZoom = 0;
+		this.startPivot = {x: this.currentPivot.x, y: this.currentPivot.y, z: this.currentPivot.z};
+		this.endPivot = vecSubtract(lookat.eye, vecNegate(vecMultiplyScalar(lookat.dir, l)));
+		
+		this.flightStartTime = null;
+		this.flightDuration = 1000;
+		this.flying = true;
+	},
+
+	/**
 	 * Handler for mouse and touch drag events
 	 *
 	 * @param {Number} x X coordinate
@@ -240,7 +335,7 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	 */
 	actionMove: function(x, y) {
 		if(this.orbitDragging) {
-			this.yaw += (x - this.lastX) * this.direction * 0.1;
+			this.yaw -= (x - this.lastX) * this.direction * 0.1;
 			this.pitch -= (y - this.lastY) * 0.1;
 			this.orbiting = true;
 		} else if(this.panDragging) {
