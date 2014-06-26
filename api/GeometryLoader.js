@@ -39,6 +39,9 @@ function GeometryLoader(bimServerApi, viewer) {
 									o.asyncStream.addReadFloatArray(nrNormals, function(normals){
 										o.asyncStream.addReadInt(function(nrColors){
 //											console.log("colors", nrColors);
+											if (o.state.version == 4) {
+												nrColors *= 4;
+											}
 											o.asyncStream.addReadFloatArray(nrColors, function(colors){
 //												console.log("add");
 												o.state.nrObjectsRead++;
@@ -103,9 +106,10 @@ function GeometryLoader(bimServerApi, viewer) {
 				return false;
 			}
 			o.asyncStream.addReadByte(function(version){
-				if (version != 4) {
+				if (version != 4 && version != 5) {
 					return false;
 				}
+				o.state.version = version;
 				o.asyncStream.addReadFloats(6, function(modelBounds){
 					var modelBounds = {
 						min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
