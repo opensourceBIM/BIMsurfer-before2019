@@ -5,6 +5,7 @@ function GeometryLoader(bimServerApi, viewer) {
 	o.state = {};
 	o.asyncStream = null;
 	o.progressListeners = [];
+	o.objectAddedListeners = [];
 
 	this.addProgressListener = function(progressListener) {
 		o.progressListeners.push(progressListener);
@@ -37,11 +38,12 @@ function GeometryLoader(bimServerApi, viewer) {
 								o.asyncStream.addReadInt(function(nrNormals){
 //									console.log("normals", nrNormals);
 									o.asyncStream.addReadFloatArray(nrNormals, function(normals){
-										if (o.state.version == 4) {
-											nrColors *= 4;
-										}
 										o.asyncStream.addReadInt(function(nrColors){
 //											console.log("colors", nrColors);
+											if (o.state.version == 4) {
+												// In version 4, the amount of colors was not consistent with all the other arrays
+												nrColors = nrColors * 4;
+											}
 											o.asyncStream.addReadFloatArray(nrColors, function(colors){
 //												console.log("add");
 												o.state.nrObjectsRead++;
@@ -108,8 +110,9 @@ function GeometryLoader(bimServerApi, viewer) {
 			o.asyncStream.addReadByte(function(version){
 				if (version != 4 && version != 5) {
 					return false;
+				} else {
+					o.state.version = version;
 				}
-				o.state.version = version;
 				o.asyncStream.addReadFloats(6, function(modelBounds){
 					var modelBounds = {
 						min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
@@ -140,18 +143,21 @@ function GeometryLoader(bimServerApi, viewer) {
 						o.boundsTranslate = o.viewer.scene.findNode("my-lights").addNode(o.boundsTranslate);
 					}
 					
-					o.modelNode = {
-						id: "model_node_" + o.groupId,
-						type: "translate",
-						x: 0,
-						y: 0,
-						z: 0,
-						data: {
-							groupId: o.groupId
-						},
-						nodes: []
-					};
-					o.modelNode = o.boundsTranslate.addNode(o.modelNode);
+					o.modelNode = o.viewer.scene.findNode("model_node_" + o.groupId);
+					if (o.modelNode == null) {
+						o.modelNode = {
+								id: "model_node_" + o.groupId,
+								type: "translate",
+								x: 0,
+								y: 0,
+								z: 0,
+								data: {
+									groupId: o.groupId
+								},
+								nodes: []
+						};
+						o.modelNode = o.boundsTranslate.addNode(o.modelNode);
+					}
 					
 					if (firstModel) {
 						var lookat = o.viewer.scene.findNode("main-lookAt");
@@ -206,6 +212,10 @@ function GeometryLoader(bimServerApi, viewer) {
 	};
 	
 	this.processGeometry = function(geometryType, indices, vertices, normals, colors) {
+		if (o.viewer.scene.findNode(o.state.objectId) != null) {
+			console.log("Node with id " + o.state.objectId + " already existed");
+			return;
+		}
 		if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
 			var geometry = {
 				type: "geometry",
@@ -234,9 +244,13 @@ function GeometryLoader(bimServerApi, viewer) {
 		}
 
 		var enabled = false;
-		var state = o.types[o.state.type];
-		if (state != null) {
-			enabled = state.mode == 0;
+		if (o.types != null) {
+			var state = o.types[o.state.type];
+			if (state != null) {
+				enabled = state.mode == 0;
+			}
+		} else {
+			enabled = true;
 		}
 		
 		var flags = {
@@ -267,6 +281,10 @@ function GeometryLoader(bimServerApi, viewer) {
 			}]
 		};
 		o.modelNode.addNode(flags);
+		
+		o.objectAddedListeners.forEach(function(listener){
+			listener(o.state.objectId);
+		});
 	};
 	
 	this.process = function(count){
@@ -298,6 +316,10 @@ function GeometryLoader(bimServerApi, viewer) {
 		o.options = {type: "types", roid: roid, types: types};
 	};
 	
+	this.setLoadOids = function(roids, oids) {
+		o.options = {type: "oids", roids: roids, oids: oids};
+	}
+	
 	this.start = function(){
 		if (o.options != null) {
 			if (o.options.type == "types") {
@@ -311,7 +333,7 @@ function GeometryLoader(bimServerApi, viewer) {
 						includeAllSubtypes : false,
 						useObjectIDM : false,
 						sync : false,
-						deep: true
+						deep: false
 					}, function(topicId){
 						o.topicId = topicId;
 						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
@@ -326,6 +348,21 @@ function GeometryLoader(bimServerApi, viewer) {
 						serializerOid : serializer.oid,
 						sync : false,
 						showOwn: true
+					}, function(topicId){
+						o.topicId = topicId;
+						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
+					});
+				});
+			} else if (o.options.type == "oids") {
+				o.groupId = o.options.roids[0];
+				o.oids = o.options.oids;
+				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin", function(serializer){
+					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByOids", {
+						roids: o.options.roids,
+						oids: o.options.oids,
+						serializerOid : serializer.oid,
+						sync : false,
+						deep: false
 					}, function(topicId){
 						o.topicId = topicId;
 						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
