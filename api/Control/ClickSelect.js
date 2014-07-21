@@ -141,7 +141,10 @@ BIMSURFER.Control.ClickSelect = BIMSURFER.Class(BIMSURFER.Control, {
 		
 		this.highlighted.insert('node', BIMSURFER.Constants.highlightSelectedObject);
 		this.lastSelected = Date.now();
-		this.events.trigger('select', [groupId, this.highlighted]);
+		var o = this;
+		window.setTimeout(function(){
+			o.events.trigger('select', [groupId, o.highlighted]);
+		}, 0);
 	},
 
 	/**
