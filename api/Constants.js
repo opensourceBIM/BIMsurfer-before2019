@@ -88,6 +88,7 @@ BIMSURFER.Constants.materials = {
 	IfcFurniture: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcFooting: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcSystemFurnitureElement: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
+	IfcSpace: {r: 0.137255, g: 0.303922, b: 0.670588, a: 0.5},
 	DEFAULT: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0}
 }
 
