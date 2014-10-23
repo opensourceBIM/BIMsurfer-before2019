@@ -1,14 +1,16 @@
 "use strict"
 
+
 // Some helper functions to deal with the camera math: Note the these
 // operate on vectors represented as JavaScript objects {x:, y:, z:} not
 // arrays or typed arrays.
 var vecCrossProduct = function(a, b) { var r = SceneJS_math_cross3Vec3([a.x, a.y, a.z], [b.x, b.y, b.z]); return {x:r[0], y:r[1], z:r[2]}; };
 var vecMultiplyScalar = function(a, m) { return {x:a.x*m, y:a.y*m, z:a.z*m}; };
-var vecSubtract = function(a, b) { return {x:a.x-b.x, y:a.y-b.y, z:a.z-b.z}; };
+var vecSubtract = function (a, b) { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; };
 var vecMagnitude = function(v) { var x = v.x, y = v.y, z = v.z; return Math.sqrt(x*x + y*y + z*z); };
 var vecNormalize = function(v) { return vecMultiplyScalar(v, 1/vecMagnitude(v)); };
 var vecNegate = function(v) { return {x:-v.x, y:-v.y, z:-v.z}; };
+var vecAdd = function (a, b) { return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }; };
 
 /**
  * Class: BIMSURFER.Control.PickFlyOrbit
@@ -23,6 +25,7 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	panDragging: false,
 	orbiting: false,
 	flying: false,
+	panning: false,
 	lastX: null,
 	lastY: null,
 	downX: null,
@@ -33,6 +36,8 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	pitch: 0,
 	zoom: 0,
 	prevZoom: 0,
+
+    rate: 40,
 
 	lookAt: null,
 	startEye: { x: 0, y: 0, z: 0 },
@@ -76,6 +81,8 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 		this.lookAt = this.SYSTEM.scene.findNode('main-lookAt');
 		this.eye = this.lookAt.getEye();
 		this.startEye = this.lookAt.getEye();
+
+		this.rate = Math.abs(this.eye.z) / 500;
 
 		this.look = this.lookAt.getLook();
 		this.currentPivot = this.look;
@@ -251,6 +258,13 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 			
 			this.orbiting = false;
 		}
+		if(this.panning) {
+
+		    this.lookAt.setLook(this.currentPivot);
+		    this.lookAt.setEye(this.eye);
+				 		  			      		  
+		    this.panning = false;
+        } 	
 	},
 
 	/**
@@ -338,8 +352,29 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 			this.yaw -= (x - this.lastX) * this.direction * 0.1;
 			this.pitch -= (y - this.lastY) * 0.1;
 			this.orbiting = true;
-		} else if(this.panDragging) {
+		} else if (this.panDragging) {
+		    
+		    var rate = this.rate;
 
+		    var eye = this.lookAt.getEye();
+		    var look = this.currentPivot;
+		    //var look = this.lookAt.getLook();
+		    var up = vecNormalize(this.lookAt.getUp());
+
+		    var forward = vecNormalize(vecSubtract({x: look.x, y: look.y, z: look.z}, {x: eye.x, y: eye.y, z: eye.z}));
+		    var axis = vecCrossProduct(up, forward);
+		    up = vecNormalize(vecCrossProduct(axis, forward));
+		    var right = vecNormalize(vecCrossProduct(forward, up));
+
+		    var moveX = vecMultiplyScalar(right, (x - this.lastX) * rate);
+		    var moveY = vecMultiplyScalar(up, -1 * (y - this.lastY) * rate);
+		    var move = vecAdd(moveX, moveY);
+
+		    this.currentPivot = vecAdd({ x: look.x, y: look.y, z: look.z }, move);
+		    //this.look = vecAdd({ x: look.x, y: look.y, z: look.z }, move);
+		    this.eye = vecAdd({ x: eye.x, y: eye.y, z: eye.z }, move);
+
+		    this.panning = true;
 		}
 
 		this.lastX = x;
@@ -356,9 +391,12 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 		this.lastY = this.downY = e.offsetY;
 		if(e.which == 1) { // Left click
 			this.orbitDragging = true;
-		}
-		if(e.which == 2) { // Middle click
+		}		
+		if (e.which == 2 || e.which == 3) { // Middle, Right click
 			this.panDragging = true;
+			
+			e.preventDefault();
+			e.stopPropagation();					
 		}
 	},
 
@@ -370,6 +408,10 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	mouseUp: function(e) {
 		this.orbitDragging = false;
 		this.panDragging = false;
+		if (e.which == 2 || e.which == 3) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
 	},
 
 	/**
