@@ -31,18 +31,19 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 		// Skips to the next alignment of 4 (source should have done the same!)
 		var skip = 4 - (this.pos % 4);
 		if(skip > 0 && skip != 4) {
+//			console.log("Skip", skip);
 			this.pos += skip;
 		}
 	},
 
 	readFloat: function() {
-		var value = this.dataView.getFloat32(this.pos);
+		var value = this.dataView.getFloat32(this.pos, true);
 		this.pos += 4;
 		return value;
 	},
 
 	readInt: function() {
-		var value = this.dataView.getInt32(this.pos);
+		var value = this.dataView.getInt32(this.pos, true);
 		this.pos += 4;
 		return value;
 	},
@@ -54,14 +55,40 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 	},
 
 	readLong: function() {
-		// We are throwing away the first 4 bytes here...
-		var value = this.dataView.getInt32(this.pos + 4);
+		// We are throwing away the last 4 bytes here...
+		var value = this.dataView.getInt32(this.pos, true);
 		this.pos += 8;
 		return value;
 	},
 
+	readFloatArray2: function(length) {
+		var results = [];
+		for (var i=0; i<length; i++) {
+			var value = this.dataView.getFloat32(this.pos, true);
+			this.pos += 4;
+			results.push(value);
+		}
+		return results;
+	},
+	
 	readFloatArray: function(length) {
 		var result = new Float32Array(this.arrayBuffer, this.pos, length);
+		this.pos += length * 4;
+		return result;
+	},
+
+	readIntArray2: function(length) {
+		var results = [];
+		for (var i=0; i<length; i++) {
+			var value = this.dataView.getInt32(this.pos, true);
+			this.pos += 4;
+			results.push(value);
+		}
+		return results;
+	},
+	
+	readIntArray: function(length) {
+		var result = new Int32Array(this.arrayBuffer, this.pos, length);
 		this.pos += length * 4;
 		return result;
 	}

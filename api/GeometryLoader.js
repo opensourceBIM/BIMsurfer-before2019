@@ -1,76 +1,46 @@
-function GeometryLoader(bimServerApi, viewer) {
+function GeometryLoader(bimServerApi, models, viewer) {
 	var o = this;
+	o.models = models;
 	o.bimServerApi = bimServerApi;
 	o.viewer = viewer;
 	o.state = {};
-	o.asyncStream = null;
 	o.progressListeners = [];
 	o.objectAddedListeners = [];
+	o.prepareReceived = false;
+	o.todo = [];
 
 	this.addProgressListener = function(progressListener) {
 		o.progressListeners.push(progressListener);
 	};
 	
-	this.addReadObject = function() {
-		o.asyncStream.addReadUTF8(function(type){
-			o.state.type = type;
-//			console.log("type", type);
-		});
-		o.asyncStream.addReadLong(function(objectId){
-//			console.log("objectid", objectId);
-			o.state.objectId = objectId;
-		});
-		o.asyncStream.addReadByte(function(geometryType){
-//			console.log("type", geometryType);
-			if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
-				o.asyncStream.addReadLong(function(coreId){
-//					console.log("coreid", coreId);
-					o.state.coreId = coreId;
-				});
-				o.asyncStream.addReadFloats(6, function(objectBounds){
-				});
-				o.asyncStream.addReadInt(function(nrIndices){
-//					console.log("indices", nrIndices);
-					o.asyncStream.addReadIntArray(nrIndices, function(indices){
-						o.asyncStream.addReadInt(function(nrVertices){
-//							console.log("vertices", nrVertices)
-							o.asyncStream.addReadFloatArray(nrVertices, function(vertices){
-								o.asyncStream.addReadInt(function(nrNormals){
-//									console.log("normals", nrNormals);
-									o.asyncStream.addReadFloatArray(nrNormals, function(normals){
-										o.asyncStream.addReadInt(function(nrColors){
-//											console.log("colors", nrColors);
-											if (o.state.version == 4) {
-												// In version 4, the amount of colors was not consistent with all the other arrays
-												nrColors = nrColors * 4;
-											}
-											o.asyncStream.addReadFloatArray(nrColors, function(colors){
-//												console.log("add");
-												o.state.nrObjectsRead++;
-//												console.log(o.state.nrObjectsRead, o.state.nrObjects);
-												o.processGeometry(geometryType, indices, vertices, normals, colors);
-												o.updateProgress();
-											});
-										});
-									});
-								});
-							});
-						});
-					});
-				});
-			} else if (geometryType == GEOMETRY_TYPE_INSTANCE) {
-				o.asyncStream.addReadLong(function(coreId){
-					o.state.coreId = coreId;
-					o.state.nrObjectsRead++;
-					
-					o.processGeometry(geometryType, null, null, null, null);
-					o.updateProgress();
-				});
+	this.readObject = function(data, geometryType) {
+		var type = data.readUTF8();
+		var roid = data.readLong();
+		var objectId = data.readLong();
+		data.align4();
+		var transformationMatrix = data.readFloatArray(16);
+		if (geometryType == 1) {
+			var coreId = data.readLong();
+			var objectBounds = data.readFloatArray(6);
+			var nrIndices = data.readInt();
+			var indices = data.readIntArray(nrIndices);
+			var nrVertices = data.readInt();
+			var vertices = data.readFloatArray(nrVertices);
+			var nrNormals = data.readInt();
+			var normals = data.readFloatArray(nrNormals);
+			var nrColors = data.readInt();
+			if (nrColors == 0) {
+				o.processGeometry(roid, objectId, geometryType, objectId, coreId, type, transformationMatrix, indices, vertices, normals, []);
+			} else {
+				var colors = data.readFloatArray(nrColors);
+				o.processGeometry(roid, objectId, geometryType, objectId, coreId, type, transformationMatrix, indices, vertices, normals, colors);
 			}
-		});
-		o.asyncStream.addReadFloatArray(16, function(transformationMatrix){
-			o.state.transformationMatrix = transformationMatrix;
-		});
+		} else if (geometryType == 2) {
+			var coreId = data.readLong();
+			o.processGeometry(roid, objectId, geometryType, objectId, coreId, type, transformationMatrix, null, null, null, null);
+		}
+		o.state.nrObjectsRead++;
+		o.updateProgress();
 	};
 	
 	this.updateProgress = function() {
@@ -83,7 +53,6 @@ function GeometryLoader(bimServerApi, viewer) {
 				o.viewer.SYSTEM.events.trigger('progressChanged', [50 + progress]);
 				o.state.lastProgress = progress;
 			}
-			o.addReadObject();
 		} else {
 			o.viewer.SYSTEM.events.trigger('progressDone');
 			o.progressListeners.forEach(function(progressListener){
@@ -100,95 +69,8 @@ function GeometryLoader(bimServerApi, viewer) {
 			nrObjectsRead: 0,
 			nrObjects: 0
 		};
-		o.asyncStream = new AsyncStream();
 		o.viewer.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
 		o.viewer.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Continuous);
-		o.asyncStream.addReadUTF8(function(start){
-			if (start != "BGS") {
-				return false;
-			}
-			o.asyncStream.addReadByte(function(version){
-				if (version != 4 && version != 5) {
-					return false;
-				} else {
-					o.state.version = version;
-				}
-				o.asyncStream.addReadFloats(6, function(modelBounds){
-					var modelBounds = {
-						min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
-						max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
-					};
-					
-					var center = {
-						x: (modelBounds.max.x + modelBounds.min.x) / 2,
-						y: (modelBounds.max.y + modelBounds.min.y) / 2,
-						z: (modelBounds.max.z + modelBounds.min.z) / 2,
-					};
-					
-//					console.log("Model Bounds", modelBounds);
-//					console.log("Center", center);
-					
-					o.boundsTranslate = o.viewer.scene.findNode("bounds_translate");
-					var firstModel = false;
-					if (o.boundsTranslate == null) {
-						var firstModel = true;
-						o.boundsTranslate = {
-							id: "bounds_translate",
-							type: "translate",
-							x: -center.x,
-							y: -center.y,
-							z: -center.z,
-							nodes: []
-						}
-						o.boundsTranslate = o.viewer.scene.findNode("my-lights").addNode(o.boundsTranslate);
-					}
-					
-					o.modelNode = o.viewer.scene.findNode("model_node_" + o.groupId);
-					if (o.modelNode == null) {
-						o.modelNode = {
-								id: "model_node_" + o.groupId,
-								type: "translate",
-								x: 0,
-								y: 0,
-								z: 0,
-								data: {
-									groupId: o.groupId
-								},
-								nodes: []
-						};
-						o.modelNode = o.boundsTranslate.addNode(o.modelNode);
-					}
-					
-					if (firstModel) {
-						var lookat = o.viewer.scene.findNode("main-lookAt");
-						var eye = { x: (modelBounds.max.x - modelBounds.min.x) * 0.5, y: (modelBounds.max.y - modelBounds.min.y) * -1, z: (modelBounds.max.z - modelBounds.min.z) * 0.5 };
-						lookat.set("eye", eye);
-						
-						var maincamera = o.viewer.scene.findNode("main-camera");
-						
-						var diagonal = Math.sqrt(Math.pow(modelBounds.max.x - modelBounds.min.x, 2) + Math.pow(modelBounds.max.y - modelBounds.min.y, 2) + Math.pow(modelBounds.max.z - modelBounds.min.z, 2));
-						
-						var far = diagonal * 5; // 5 being a guessed constant that should somehow coincide with the max zoom-out-factor
-						
-						maincamera.setOptics({
-							type: 'perspective',
-							far: far,
-							near: far / 1000,
-							aspect: jQuery(o.viewer.canvas).width() / jQuery(o.viewer.canvas).height(),
-							fovy: 37.8493
-						});
-					}
-				}); // model bounds
-				o.asyncStream.addReadInt(function(nrObjects){
-					o.state.nrObjects = nrObjects;
-					if (o.state.nrObjects > 0) {
-						o.addReadObject();
-					} else {
-						o.updateProgress();
-					}
-				});
-			});
-		});
 		
 		o.viewer.refreshMask();
 
@@ -205,91 +87,179 @@ function GeometryLoader(bimServerApi, viewer) {
 			topicId: o.groupId
 		};
 		
-		o.bimServerApi.setBinaryDataListener(o.groupId, function(data){
-			o.asyncStream.newData(data);
-		});
+		o.bimServerApi.setBinaryDataListener(o.groupId, o.binaryDataListener);
 		o.bimServerApi.downloadViaWebsocket(msg);
 	};
 	
-	this.processGeometry = function(geometryType, indices, vertices, normals, colors) {
-		if (o.viewer.scene.findNode(o.state.objectId) != null) {
-			console.log("Node with id " + o.state.objectId + " already existed");
-			return;
-		}
-		if (geometryType == GEOMETRY_TYPE_TRIANGLES) {
-			var geometry = {
-				type: "geometry",
-				primitive: "triangles"
-			};
-			
-			geometry.coreId = o.state.coreId;
-			geometry.indices = indices;
-			geometry.positions = vertices;
-			geometry.normals = normals;
-			
-			if (colors != null && colors.length > 0) {
-				geometry.colors = colors;
+	this.binaryDataListener = function(data){
+		o.todo.push(data);
+	};
+	
+	this.processGeometry = function(roid, oid, geometryType, objectId, coreId, type, transformationMatrix, indices, vertices, normals, colors) {
+		o.models[roid].get(oid, function(object){
+			if (o.viewer.scene.findNode(objectId) != null) {
+				console.log("Node with id " + objectId + " already existed");
+				return;
 			}
-			o.library.add("node", geometry);
-		}
-
-		var material = BIMSURFER.Constants.materials[o.state.type];
-		var hasTransparency = false;
-		if (material == null) {
-			console.log("material not found", o.state.type);
-			material = BIMSURFER.Constants.materials["DEFAULT"];
-		}
-		if (material.a < 1) {
-			hasTransparency = true;
-		}
-
-		var enabled = false;
-		if (o.types != null) {
-			var state = o.types[o.state.type];
-			if (state != null) {
-				enabled = state.mode == 0;
+			if (geometryType == 1) {
+				var geometry = {
+					type: "geometry",
+					primitive: "triangles"
+				};
+				
+				geometry.coreId = coreId;
+				geometry.indices = indices;
+				geometry.positions = vertices;
+				geometry.normals = normals;
+				
+				if (colors != null && colors.length > 0) {
+					geometry.colors = colors;
+				}
+				o.library.add("node", geometry);
 			}
-		} else {
-			enabled = true;
-		}
-		
-		var flags = {
-			type : "flags",
-			flags : {
-				transparent : hasTransparency
-			},
-			nodes : [{
-				type: "enable",
-				enabled: enabled,
+
+			var material = BIMSURFER.Constants.materials[type];
+			var hasTransparency = false;
+			if (material == null) {
+				console.log("material not found", type);
+				material = BIMSURFER.Constants.materials["DEFAULT"];
+			}
+			if (material.a < 1) {
+				hasTransparency = true;
+			}
+
+			var enabled = object.trans.mode == 0;
+			
+			var flags = {
+				type : "flags",
+				flags : {
+					transparent : hasTransparency
+				},
 				nodes : [{
-					type : "material",
-					baseColor: material,
-					alpha: material.a,
+					type: "enable",
+					enabled: enabled,
 					nodes : [{
-						type : "name",
-						id : o.state.objectId,
+						type : "material",
+						baseColor: material,
+						alpha: material.a,
 						nodes : [{
-							type: "matrix",
-                            elements: o.state.transformationMatrix,
-                            nodes:[{
-								type: "geometry",
-								coreId: o.state.coreId
+							type : "name",
+							id : objectId,
+							nodes : [{
+								type: "matrix",
+	                            elements: transformationMatrix,
+	                            nodes:[{
+									type: "geometry",
+									coreId: coreId
+								}]
 							}]
 						}]
 					}]
 				}]
-			}]
-		};
-		o.modelNode.addNode(flags);
-		
-		o.objectAddedListeners.forEach(function(listener){
-			listener(o.state.objectId);
+			};
+			o.modelNode.addNode(flags);
+			
+			o.objectAddedListeners.forEach(function(listener){
+				listener(objectId);
+			});
 		});
 	};
 	
+	this.readStart = function(data){
+		var start = data.readUTF8();
+		if (start != "BGS") {
+			console.log("Stream does not start with BGS (" + start + ")");
+			return false;
+		}
+		var version = data.readByte();
+		if (version != 4 && version != 5 && version != 6) {
+			console.log("Unimplemented version");
+			return false;
+		} else {
+			o.state.version = version;
+		}
+		data.align4();
+		var modelBounds = data.readFloatArray(6);
+		modelBounds = {
+				min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
+				max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
+		};
+		var center = {
+				x: (modelBounds.max.x + modelBounds.min.x) / 2,
+				y: (modelBounds.max.y + modelBounds.min.y) / 2,
+				z: (modelBounds.max.z + modelBounds.min.z) / 2,
+		};
+		
+		o.boundsTranslate = o.viewer.scene.findNode("bounds_translate");
+		var firstModel = false;
+		if (o.boundsTranslate == null) {
+			var firstModel = true;
+			o.boundsTranslate = {
+					id: "bounds_translate",
+					type: "translate",
+					x: -center.x,
+					y: -center.y,
+					z: -center.z,
+					nodes: []
+			}
+			o.boundsTranslate = o.viewer.scene.findNode("my-lights").addNode(o.boundsTranslate);
+		}
+		
+		o.modelNode = o.viewer.scene.findNode("model_node_" + o.groupId);
+		if (o.modelNode == null) {
+			o.modelNode = {
+					id: "model_node_" + o.groupId,
+					type: "translate",
+					x: 0,
+					y: 0,
+					z: 0,
+					data: {
+						groupId: o.groupId
+					},
+					nodes: []
+			};
+			o.modelNode = o.boundsTranslate.addNode(o.modelNode);
+		}
+		
+		if (firstModel) {
+			var lookat = o.viewer.scene.findNode("main-lookAt");
+			var eye = { x: (modelBounds.max.x - modelBounds.min.x) * 0.5, y: (modelBounds.max.y - modelBounds.min.y) * -1, z: (modelBounds.max.z - modelBounds.min.z) * 0.5 };
+			lookat.set("eye", eye);
+			
+			var maincamera = o.viewer.scene.findNode("main-camera");
+			
+			var diagonal = Math.sqrt(Math.pow(modelBounds.max.x - modelBounds.min.x, 2) + Math.pow(modelBounds.max.y - modelBounds.min.y, 2) + Math.pow(modelBounds.max.z - modelBounds.min.z, 2));
+			
+			var far = diagonal * 5; // 5 being a guessed constant that should somehow coincide with the max zoom-out-factor
+			
+			maincamera.setOptics({
+				type: 'perspective',
+				far: far,
+				near: far / 1000,
+				aspect: jQuery(o.viewer.canvas).width() / jQuery(o.viewer.canvas).height(),
+				fovy: 37.8493
+			});
+		}
+		o.state.nrObjects = data.readInt();
+//		console.log("Nr Objects", o.state.nrObjects);
+	};
+	
 	this.process = function(count){
-		if (o.asyncStream != null) {
-			o.asyncStream.process(Math.ceil(1 + o.state.nrObjects / 12));
+		var data = o.todo.shift();
+		while (data != null) {
+			if (data != null) {
+				data = new BIMSURFER.DataInputStreamReader(null, data);
+				var channel = data.readInt();
+				var messageType = data.readByte();
+				if (messageType == 0) {
+					o.readStart(data);
+				} else if (messageType == 1) {
+					o.readObject(data, 1);
+				} else if (messageType == 2) {
+					o.readObject(data, 2);
+				}
+			}
+			data = o.todo.shift();
 		}
 	};
 	
@@ -299,8 +269,13 @@ function GeometryLoader(bimServerApi, viewer) {
 				progressListener(state.progress / 2);
 				o.viewer.SYSTEM.events.trigger('progressChanged', [state.progress / 2]);
 			});
+			if (state.title == "Done preparing") {
+				if (!o.prepareReceived) {
+					o.prepareReceived = true;
+					o.downloadInitiated();
+				}
+			}
 			if (state.state == "FINISHED") {
-				o.downloadInitiated();
 				o.bimServerApi.unregisterProgressHandler(o.topicId, o.progressHandler);
 			}
 		}
@@ -319,13 +294,21 @@ function GeometryLoader(bimServerApi, viewer) {
 	this.setLoadOids = function(roids, oids) {
 		o.options = {type: "oids", roids: roids, oids: oids};
 	}
+
+	this.afterRegistration = function(topicId) {
+		Global.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {
+			topicId: o.topicId
+		}, function(state){
+			o.progressHandler(o.topicId, state);
+		});
+	}
 	
 	this.start = function(){
 		if (o.options != null) {
 			if (o.options.type == "types") {
 				o.groupId = o.options.roid;
 				o.types = o.options.types;
-				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin", function(serializer){
+				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
 					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
 						roids: [o.options.roid],
 						classNames : o.options.types,
@@ -336,13 +319,13 @@ function GeometryLoader(bimServerApi, viewer) {
 						deep: false
 					}, function(topicId){
 						o.topicId = topicId;
-						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
+						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler, o.afterRegistration);
 					});
 				});
 			} else if (o.options.type == "revision") {
 				o.groupId = o.options.roid;
 				o.types = o.options.types;
-				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin", function(serializer){
+				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
 					o.bimServerApi.call("Bimsie1ServiceInterface", "download", {
 						roid: o.options.roid,
 						serializerOid : serializer.oid,
@@ -350,13 +333,13 @@ function GeometryLoader(bimServerApi, viewer) {
 						showOwn: true
 					}, function(topicId){
 						o.topicId = topicId;
-						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
+						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler, o.afterRegistration);
 					});
 				});
 			} else if (o.options.type == "oids") {
 				o.groupId = o.options.roids[0];
 				o.oids = o.options.oids;
-				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometrySerializerPlugin", function(serializer){
+				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
 					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByOids", {
 						roids: o.options.roids,
 						oids: o.options.oids,
@@ -365,7 +348,7 @@ function GeometryLoader(bimServerApi, viewer) {
 						deep: false
 					}, function(topicId){
 						o.topicId = topicId;
-						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
+						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler, o.afterRegistration);
 					});
 				});
 			}
