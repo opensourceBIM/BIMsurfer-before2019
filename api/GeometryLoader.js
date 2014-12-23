@@ -20,24 +20,56 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		data.align4();
 		var transformationMatrix = data.readFloatArray(16);
 		if (geometryType == 1) {
-			var coreId = data.readLong();
 			var objectBounds = data.readFloatArray(6);
+			var coreId = data.readLong();
 			var nrIndices = data.readInt();
 			var indices = data.readIntArray(nrIndices);
 			var nrVertices = data.readInt();
+			if (nrVertices > 65536) {
+				console.log("Too many vertices", nrVertices);
+			}
 			var vertices = data.readFloatArray(nrVertices);
 			var nrNormals = data.readInt();
 			var normals = data.readFloatArray(nrNormals);
 			var nrColors = data.readInt();
-			if (nrColors == 0) {
-				o.processGeometry(roid, objectId, geometryType, objectId, coreId, type, transformationMatrix, indices, vertices, normals, []);
-			} else {
+			var colors = data.readFloatArray(nrColors);
+			
+			var geometry = {
+				type: "geometry",
+				primitive: "triangles"
+			};
+			
+			geometry.coreId = coreId;
+			geometry.indices = indices;
+			geometry.positions = vertices;
+			geometry.normals = normals;
+			
+			if (colors != null && colors.length > 0) {
+				geometry.colors = colors;
+			}
+			o.library.add("node", geometry);
+			o.processGeometry(roid, objectId, geometryType, objectId, [coreId], type, transformationMatrix, indices, vertices, normals, colors);
+		} else if (geometryType == 2) {
+			var coreId = data.readLong();
+			o.processGeometry(roid, objectId, geometryType, objectId, [coreId], type, transformationMatrix);
+		} else if (geometryType == 3) {
+			console.log("multi");
+			for (var i=0; i<nrParts; i++) {
+				var coreId = data.readLong();
+				var nrIndices = data.readInt();
+				var indices = data.readIntArray(nrIndices);
+				var nrVertices = data.readInt();
+				if (nrVertices > 65536) {
+					console.log("Too many vertices", nrVertices);
+				}
+				var vertices = data.readFloatArray(nrVertices);
+				var nrNormals = data.readInt();
+				var normals = data.readFloatArray(nrNormals);
+				var nrColors = data.readInt();
 				var colors = data.readFloatArray(nrColors);
 				o.processGeometry(roid, objectId, geometryType, objectId, coreId, type, transformationMatrix, indices, vertices, normals, colors);
 			}
-		} else if (geometryType == 2) {
-			var coreId = data.readLong();
-			o.processGeometry(roid, objectId, geometryType, objectId, coreId, type, transformationMatrix, null, null, null, null);
+		} else if (geometryType == 4) {
 		}
 		o.state.nrObjectsRead++;
 		o.updateProgress();
@@ -95,27 +127,11 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		o.todo.push(data);
 	};
 	
-	this.processGeometry = function(roid, oid, geometryType, objectId, coreId, type, transformationMatrix, indices, vertices, normals, colors) {
+	this.processGeometry = function(roid, oid, geometryType, objectId, coreIds, type, transformationMatrix) {
 		o.models[roid].get(oid, function(object){
 			if (o.viewer.scene.findNode(objectId) != null) {
 				console.log("Node with id " + objectId + " already existed");
 				return;
-			}
-			if (geometryType == 1) {
-				var geometry = {
-					type: "geometry",
-					primitive: "triangles"
-				};
-				
-				geometry.coreId = coreId;
-				geometry.indices = indices;
-				geometry.positions = vertices;
-				geometry.normals = normals;
-				
-				if (colors != null && colors.length > 0) {
-					geometry.colors = colors;
-				}
-				o.library.add("node", geometry);
 			}
 
 			var material = BIMSURFER.Constants.materials[type];
@@ -129,6 +145,14 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			}
 
 			var enabled = object.trans.mode == 0;
+			
+			var coreNodes = [];
+			coreIds.forEach(function(coreId){
+				coreNodes.push({
+					type: "geometry",
+					coreId: coreId
+				});
+			});
 			
 			var flags = {
 				type : "flags",
@@ -148,10 +172,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 							nodes : [{
 								type: "matrix",
 	                            elements: transformationMatrix,
-	                            nodes:[{
-									type: "geometry",
-									coreId: coreId
-								}]
+	                            nodes: coreNodes
 							}]
 						}]
 					}]
@@ -181,13 +202,13 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		data.align4();
 		var modelBounds = data.readFloatArray(6);
 		modelBounds = {
-				min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
-				max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
+			min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
+			max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
 		};
 		var center = {
-				x: (modelBounds.max.x + modelBounds.min.x) / 2,
-				y: (modelBounds.max.y + modelBounds.min.y) / 2,
-				z: (modelBounds.max.z + modelBounds.min.z) / 2,
+			x: (modelBounds.max.x + modelBounds.min.x) / 2,
+			y: (modelBounds.max.y + modelBounds.min.y) / 2,
+			z: (modelBounds.max.z + modelBounds.min.z) / 2,
 		};
 		
 		o.boundsTranslate = o.viewer.scene.findNode("bounds_translate");
@@ -195,12 +216,12 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		if (o.boundsTranslate == null) {
 			var firstModel = true;
 			o.boundsTranslate = {
-					id: "bounds_translate",
-					type: "translate",
-					x: -center.x,
-					y: -center.y,
-					z: -center.z,
-					nodes: []
+				id: "bounds_translate",
+				type: "translate",
+				x: -center.x,
+				y: -center.y,
+				z: -center.z,
+				nodes: []
 			}
 			o.boundsTranslate = o.viewer.scene.findNode("my-lights").addNode(o.boundsTranslate);
 		}
@@ -208,15 +229,15 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		o.modelNode = o.viewer.scene.findNode("model_node_" + o.groupId);
 		if (o.modelNode == null) {
 			o.modelNode = {
-					id: "model_node_" + o.groupId,
-					type: "translate",
-					x: 0,
-					y: 0,
-					z: 0,
-					data: {
-						groupId: o.groupId
-					},
-					nodes: []
+				id: "model_node_" + o.groupId,
+				type: "translate",
+				x: 0,
+				y: 0,
+				z: 0,
+				data: {
+					groupId: o.groupId
+				},
+				nodes: []
 			};
 			o.modelNode = o.boundsTranslate.addNode(o.modelNode);
 		}

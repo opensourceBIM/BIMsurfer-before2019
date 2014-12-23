@@ -21,11 +21,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	lights: null,
 	scene: null,
 	sceneLoaded: false,
-	loadQueue: null,
-	loadedProjects: null,
 	bimServerApi: null,
-	loadedGroups: [],
-	addToScene: [],
 	geometryLoaders: [],
 //	selectedObj: 'emtpy Selection',
 //	mouseRotate: 0,
@@ -77,9 +73,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}
 
 
-		this.loadQueue = new Array();
 		this.visibleTypes = new Array();
-		this.loadedProjects = new Array();
 
 		if(BIMSURFER.Util.isset(options, options.autoStart)) {
 			if(!BIMSURFER.Util.isset(options.autoStart.serverUrl, options.autoStart.serverUsername, options.autoStart.serverPassword, options.autoStart.projectOid)) {
@@ -268,21 +262,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		if(typeof options != 'object') {
 			options = {};
 		}
-		
-				
-		var self = this;
-		var CAPTURE_ID = "canvasCaptureNode";
-				
-		var addCaptureNode = function(nodes) {
-			if (options.useCapture) {
-				nodes.push({
-					type: "canvas/capture",
-					id  : CAPTURE_ID
-				});
-				
-			}
-			return nodes;
-		};
 
 		if (this.scene == null) {
 			try {
@@ -295,7 +274,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 						eye: (typeof options.eye == 'object' ? options.eye : { x: 1, y: 1, z: 1 }),
 						look: (typeof options.look == 'object' ? options.look : { x: 0.0, y: 0.0, z: 0.0 }),
 						up: (typeof options.up == 'object' ? options.up : { x: 0.0, y: 0.0, z: 1.0 }),
-						nodes: addCaptureNode([{
+						nodes: [{
 							type: 'camera',
 							id: 'main-camera',
 							optics: {
@@ -318,7 +297,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 									id: 'my-lights',
 									lights: []
 								}]
-							}])
+							}]
 						}]
 					}]
 				};
@@ -329,25 +308,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				this.scene = SceneJS.createScene(this.scene);
 				
 				var _this = this;
-								
-				if (options.useCapture) {
-					this.scene.getNode(CAPTURE_ID, function(node) {
-						var d;
-						node.on("image", function(data) {
-							d.resolve(data);
-						});
-						_this.capture = function(options) {
-							d = jQuery.Deferred();
-							node.capture({
-							        format: (options || {}).format || "png",
-							        width : (options || {}).width  || 1024,
-							        height: (options || {}).height || 1024
-							});
-							return d;
-						};
-					});
-				}
-								
 				this.scene.on("tick", function(){
 					_this.geometryLoaders.forEach(function(geometryLoader){
 						geometryLoader.process();
@@ -385,6 +345,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 */
 	loadGeometry: function(geometryLoader) {
 		var o = this;
+		
 		o.geometryLoaders.push(geometryLoader);
 		// TODO limit to something useful
 		if (o.geometryLoaders.length <= 20) {
