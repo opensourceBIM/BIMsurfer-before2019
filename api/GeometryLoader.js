@@ -25,9 +25,6 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			var nrIndices = data.readInt();
 			var indices = data.readIntArray(nrIndices);
 			var nrVertices = data.readInt();
-			if (nrVertices > 65536) {
-				console.log("Too many vertices", nrVertices);
-			}
 			var vertices = data.readFloatArray(nrVertices);
 			var nrNormals = data.readInt();
 			var normals = data.readFloatArray(nrNormals);
@@ -48,28 +45,49 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				geometry.colors = colors;
 			}
 			o.library.add("node", geometry);
-			o.processGeometry(roid, objectId, geometryType, objectId, [coreId], type, transformationMatrix, indices, vertices, normals, colors);
+			o.processGeometry(roid, objectId, geometryType, objectId, [coreId], type, transformationMatrix);
 		} else if (geometryType == 2) {
 			var coreId = data.readLong();
 			o.processGeometry(roid, objectId, geometryType, objectId, [coreId], type, transformationMatrix);
 		} else if (geometryType == 3) {
-			console.log("multi");
+			var coreIds = [];
+			var nrParts = data.readInt();
+			var objectBounds = data.readFloatArray(6);
 			for (var i=0; i<nrParts; i++) {
 				var coreId = data.readLong();
+				coreIds.push(coreId);
 				var nrIndices = data.readInt();
 				var indices = data.readIntArray(nrIndices);
 				var nrVertices = data.readInt();
-				if (nrVertices > 65536) {
-					console.log("Too many vertices", nrVertices);
-				}
 				var vertices = data.readFloatArray(nrVertices);
 				var nrNormals = data.readInt();
 				var normals = data.readFloatArray(nrNormals);
 				var nrColors = data.readInt();
 				var colors = data.readFloatArray(nrColors);
-				o.processGeometry(roid, objectId, geometryType, objectId, coreId, type, transformationMatrix, indices, vertices, normals, colors);
+				
+				var geometry = {
+					type: "geometry",
+					primitive: "triangles"
+				};
+				
+				geometry.coreId = coreId;
+				geometry.indices = indices;
+				geometry.positions = vertices;
+				geometry.normals = normals;
+				
+				if (colors != null && colors.length > 0) {
+					geometry.colors = colors;
+				}
+				o.library.add("node", geometry);
 			}
+			o.processGeometry(roid, objectId, geometryType, objectId, coreIds, type, transformationMatrix);
 		} else if (geometryType == 4) {
+			var nrCoreIds = data.readInt();
+			var coreIds = [];
+			for (var i=0; i<nrCoreIds; i++) {
+				coreIds.push(data.readLong());
+			}
+			o.processGeometry(roid, objectId, geometryType, objectId, coreIds, type, transformationMatrix);
 		}
 		o.state.nrObjectsRead++;
 		o.updateProgress();
@@ -77,12 +95,12 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	
 	this.updateProgress = function() {
 		if (o.state.nrObjectsRead < o.state.nrObjects) {
-			var progress = Math.ceil(50 * o.state.nrObjectsRead / o.state.nrObjects);
+			var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
 			if (progress != o.state.lastProgress) {
 				o.progressListeners.forEach(function(progressListener){
-					progressListener(50 + progress);
+					progressListener(progress);
 				});
-				o.viewer.SYSTEM.events.trigger('progressChanged', [50 + progress]);
+				o.viewer.SYSTEM.events.trigger('progressChanged', [progress]);
 				o.state.lastProgress = progress;
 			}
 		} else {
@@ -178,6 +196,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 					}]
 				}]
 			};
+			
 			o.modelNode.addNode(flags);
 			
 			o.objectAddedListeners.forEach(function(listener){
@@ -265,19 +284,18 @@ function GeometryLoader(bimServerApi, models, viewer) {
 //		console.log("Nr Objects", o.state.nrObjects);
 	};
 	
-	this.process = function(count){
+	this.process = function(){
 		var data = o.todo.shift();
 		while (data != null) {
-			if (data != null) {
-				data = new BIMSURFER.DataInputStreamReader(null, data);
-				var channel = data.readInt();
-				var messageType = data.readByte();
+			inputStream = new BIMSURFER.DataInputStreamReader(null, data);
+			var channel = inputStream.readInt();
+			var nrMessages = inputStream.readInt();
+			for (var i=0; i<nrMessages; i++) {
+				var messageType = inputStream.readByte();
 				if (messageType == 0) {
-					o.readStart(data);
-				} else if (messageType == 1) {
-					o.readObject(data, 1);
-				} else if (messageType == 2) {
-					o.readObject(data, 2);
+					o.readStart(inputStream);
+				} else {
+					o.readObject(inputStream, messageType);
 				}
 			}
 			data = o.todo.shift();
@@ -287,8 +305,8 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	this.progressHandler = function(topicId, state){
 		if (topicId == o.topicId) {
 			o.progressListeners.forEach(function(progressListener){
-				progressListener(state.progress / 2);
-				o.viewer.SYSTEM.events.trigger('progressChanged', [state.progress / 2]);
+				progressListener(state.progress);
+				o.viewer.SYSTEM.events.trigger('progressChanged', [state.progress]);
 			});
 			if (state.title == "Done preparing") {
 				if (!o.prepareReceived) {
