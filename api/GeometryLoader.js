@@ -337,6 +337,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	}
 
 	this.afterRegistration = function(topicId) {
+		console.log("after registration");
 		Global.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {
 			topicId: o.topicId
 		}, function(state){
