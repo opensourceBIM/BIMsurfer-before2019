@@ -281,6 +281,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			});
 		}
 		o.state.nrObjects = data.readInt();
+		o.updateProgress();
 //		console.log("Nr Objects", o.state.nrObjects);
 	};
 	
