@@ -98,7 +98,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
 			if (progress != o.state.lastProgress) {
 				o.progressListeners.forEach(function(progressListener){
-					progressListener(progress);
+					progressListener(progress, o.state.nrObjectsRead, o.state.nrObjects);
 				});
 				o.viewer.SYSTEM.events.trigger('progressChanged', [progress]);
 				o.state.lastProgress = progress;
@@ -106,7 +106,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		} else {
 			o.viewer.SYSTEM.events.trigger('progressDone');
 			o.progressListeners.forEach(function(progressListener){
-				progressListener("done");
+				progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
 			});
 			o.viewer.events.trigger('sceneLoaded', [o.viewer.scene]);
 			o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: o.topicId}, function(){
@@ -305,10 +305,10 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	
 	this.progressHandler = function(topicId, state){
 		if (topicId == o.topicId) {
-			o.progressListeners.forEach(function(progressListener){
-				progressListener(state.progress);
-				o.viewer.SYSTEM.events.trigger('progressChanged', [state.progress]);
-			});
+//			o.progressListeners.forEach(function(progressListener){
+//				progressListener(state.progress);
+//				o.viewer.SYSTEM.events.trigger('progressChanged', [state.progress]);
+//			});
 			if (state.title == "Done preparing") {
 				if (!o.prepareReceived) {
 					o.prepareReceived = true;
