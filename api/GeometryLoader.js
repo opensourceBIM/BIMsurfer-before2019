@@ -321,14 +321,13 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		}
 	};
 
-	// Loads everything, but only show the types given in types
-	this.setLoadRevision = function(roid, types) {
+	this.setLoadRevision = function(roid) {
 		o.options = {type: "revision", roid: roid, types: types};
 	};
 	
 	// Only loads the given types
-	this.setLoadTypes = function(roid, types) {
-		o.options = {type: "types", roid: roid, types: types};
+	this.setLoadTypes = function(roid, schema, types) {
+		o.options = {type: "types", schema: schema, roid: roid, types: types};
 	};
 	
 	this.setLoadOids = function(roids, oids) {
@@ -336,7 +335,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	}
 
 	this.afterRegistration = function(topicId) {
-		Global.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {
+		o.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {
 			topicId: o.topicId
 		}, function(state){
 			o.progressHandler(o.topicId, state);
@@ -346,12 +345,17 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	this.start = function(){
 		if (o.options != null) {
 			if (o.options.type == "types") {
+				var types = [];
+				for (var key in o.options.types) {
+					types.push(key);
+				}
 				o.groupId = o.options.roid;
 				o.types = o.options.types;
 				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
 					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
 						roids: [o.options.roid],
-						classNames : o.options.types,
+						schema: o.options.schema,
+						classNames : types,
 						serializerOid : serializer.oid,
 						includeAllSubtypes : false,
 						useObjectIDM : false,
@@ -364,7 +368,6 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				});
 			} else if (o.options.type == "revision") {
 				o.groupId = o.options.roid;
-				o.types = o.options.types;
 				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
 					o.bimServerApi.call("Bimsie1ServiceInterface", "download", {
 						roid: o.options.roid,

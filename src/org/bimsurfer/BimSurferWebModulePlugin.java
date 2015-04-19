@@ -38,4 +38,9 @@ public class BimSurferWebModulePlugin extends AbstractWebModulePlugin {
 	public String getDefaultContextPath() {
 		return "/bimsurfer";
 	}
+
+	@Override
+	public String getIdentifier() {
+		return "bimsurfer";
+	}
 }

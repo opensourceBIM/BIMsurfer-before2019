@@ -45,14 +45,8 @@ function loadBimServerApi(address, notifier, callback, errorCallback) {
 		} else {
 			if (BimServerApi != null) {
 				var bimServerApi = new BimServerApi(address, notifier);
-				bimServerApi.init(function(){
-					// TODO make 1 call
-					bimServerApi.call("AdminInterface", "getServerInfo", {}, function(serverInfo){
-						bimServerApi.call("AdminInterface", "getVersion", {}, function(version){
-							bimServerApi.version = version;
-							callback(bimServerApi, serverInfo);
-						});
-					});
+				bimServerApi.init(function(api, serverInfo){
+					callback(bimServerApi, serverInfo);
 				});
 			} else {
 				window.clearTimeout(timeoutId);

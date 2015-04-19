@@ -59,8 +59,6 @@ $(function()
 					clickSelect.activate();
 					clickSelect.events.register('select', o.nodeSelected);
 					clickSelect.events.register('unselect', o.nodeUnselected);
-					
-					var orbit = o.viewer.getControl("BIMSURFER.Control.PickFlyOrbit");
 				});
 				
 				showSelectProject();
@@ -172,7 +170,7 @@ $(function()
 	};
 	
 	function loadProject(project) {
-		o.model = o.bimServerApi.getModel(project.oid, project.lastRevisionId, false, function(model){
+		o.model = o.bimServerApi.getModel(project.oid, project.lastRevisionId, project.schema, false, function(model){
 //			model.getAllOfType("IfcProject", true, function(project){
 //				buildDecomposedTree(project, $(".tree"), 0);
 //			});
@@ -223,27 +221,34 @@ $(function()
 
 								$(window).resize(resize);
 								
-								var geometryLoader = new GeometryLoader(o.bimServerApi, o.viewer);
-
-								var progressdiv = $("<div class=\"progressdiv\">");
-								var text = $("<div class=\"text\">");
-								text.html(project.name);
-								var progress = $("<div class=\"progress progress-striped\">");
-								var progressbar = $("<div class=\"progress-bar\">");
-								progressdiv.append(text);
-								progressdiv.append(progress);
-								progress.append(progressbar);
-								
-								//containerDiv.find(".progressbars").append(progressdiv);
-
-								geometryLoader.addProgressListener(function(progress){
-									progressbar.css("width", progress + "%");
-									if (progress == 100) {
-										progressdiv.fadeOut(800);
-									}
-								});
-								geometryLoader.setLoadRevision(project.lastRevisionId, toLoad);
-								o.viewer.loadGeometry(geometryLoader);
+		                        var models = {};
+		                        models[project.lastRevisionId] = o.model;
+		                        for (var key in toLoad) {
+		                        	o.model.getAllOfType(key, true, function(object){
+		                        		object.trans.mode = 0;
+		                        	});
+		                        }
+		                        var geometryLoader = new GeometryLoader(o.bimServerApi, models, o.viewer);
+		                   
+		                        var progressdiv = $("<div class=\"progressdiv\">");
+		                        var text = $("<div class=\"text\">");
+		                        text.html(project.name);
+		                        var progress = $("<div class=\"progress progress-striped\">");
+		                        var progressbar = $("<div class=\"progress-bar\">");
+		                        progressdiv.append(text);
+		                        progressdiv.append(progress);
+		                        progress.append(progressbar);
+		                        
+		                        //containerDiv.find(".progressbars").append(progressdiv);
+		                        
+		                        geometryLoader.addProgressListener(function(progress){
+		                        	progressbar.css("width", progress + "%");
+		                        	if (progress == 100) {
+		                        		progressdiv.fadeOut(800);
+		                        	}
+		                        });
+		                        geometryLoader.setLoadTypes(project.lastRevisionId, project.schema, toLoad);
+		                        o.viewer.loadGeometry(geometryLoader);
 							}
 						}
 					});
