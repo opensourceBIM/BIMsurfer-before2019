@@ -50,7 +50,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		}
 
 		this.SYSTEM = this;
-		console.log(this);
 		this.div = div;
 		this.events = new BIMSURFER.Events(this);
 		this.connectedServers = new Array();
