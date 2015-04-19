@@ -265,6 +265,19 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 
 		if (this.scene == null) {
 			try {
+				var self = this;
+				var CAPTURE_ID = "canvasCaptureNode";
+						
+				var addCaptureNode = function(nodes) {
+					if (options.useCapture) {
+						nodes.push({
+							type: "canvas/capture",
+							id  : CAPTURE_ID
+						});
+						
+					}
+					return nodes;
+				};
 				this.scene = {
 					backfaces: false,
 					type: "scene",
@@ -275,29 +288,31 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 						look: (typeof options.look == 'object' ? options.look : { x: 0.0, y: 0.0, z: 0.0 }),
 						up: (typeof options.up == 'object' ? options.up : { x: 0.0, y: 0.0, z: 1.0 }),
 						nodes: [{
-							type: 'camera',
-							id: 'main-camera',
-							optics: {
-								type: 'perspective',
-								far: (typeof options.far == 'number' ? options.far : 100),
-								near: (typeof options.near == 'number' ? options.near : 0.001),
-								aspect: (typeof options.aspect ==  'number' ? options.aspect : jQuery(this.canvas).width() / jQuery(this.canvas).height()),
-								fovy: (typeof options.fovy ==  'number' ? options.fovy : 37.8493)
-							},
-							nodes: [{
-								type: 'renderer',
-								id: 'main-renderer',
-								clear: {
-									color: (typeof options.clearColor ==  'boolean' ? options.clearColor : true),
-									depth: (typeof options.clearDepth ==  'boolean' ? options.clearDepth : true),
-									stencil: (typeof options.clearStencil ==  'boolean' ? options.clearStencil : true)
+							nodes: addCaptureNode([{
+								type: 'camera',
+								id: 'main-camera',
+								optics: {
+									type: 'perspective',
+									far: (typeof options.far == 'number' ? options.far : 100),
+									near: (typeof options.near == 'number' ? options.near : 0.001),
+									aspect: (typeof options.aspect ==  'number' ? options.aspect : jQuery(this.canvas).width() / jQuery(this.canvas).height()),
+									fovy: (typeof options.fovy ==  'number' ? options.fovy : 37.8493)
 								},
 								nodes: [{
-									type: 'lights',
-									id: 'my-lights',
-									lights: []
+									type: 'renderer',
+									id: 'main-renderer',
+									clear: {
+										color: (typeof options.clearColor ==  'boolean' ? options.clearColor : true),
+										depth: (typeof options.clearDepth ==  'boolean' ? options.clearDepth : true),
+										stencil: (typeof options.clearStencil ==  'boolean' ? options.clearStencil : true)
+									},
+									nodes: [{
+										type: 'lights',
+										id: 'my-lights',
+										lights: []
+									}]
 								}]
-							}]
+							}])
 						}]
 					}]
 				};
@@ -308,6 +323,24 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				this.scene = SceneJS.createScene(this.scene);
 				
 				var _this = this;
+				if (options.useCapture) {
+					this.scene.getNode(CAPTURE_ID, function(node) {
+						var d;
+						node.on("image", function(data) {
+							d.resolve(data);
+						});
+						_this.capture = function(options) {
+							d = jQuery.Deferred();
+							node.capture({
+							        format: (options || {}).format || "png",
+							        width : (options || {}).width  || 1024,
+							        height: (options || {}).height || 1024
+							});
+							return d;
+						};
+					});
+				}
+				
 				this.scene.on("tick", function(){
 					_this.geometryLoaders.forEach(function(geometryLoader){
 						geometryLoader.process();
