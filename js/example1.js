@@ -7,6 +7,8 @@ $(function()
 	o.viewer = null;
 	o.bimServerApi = null;
 
+	SceneJS.configure({ pluginPath: "lib/scenejs/plugins" });
+	
 	function showSelectProject() {
 		$(this.window).resize(function(e) {
 			o.viewer.resize($('div#viewport').width(), $('div#viewport').height());
