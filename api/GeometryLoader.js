@@ -324,7 +324,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	};
 
 	this.setLoadRevision = function(roid) {
-		o.options = {type: "revision", roid: roid, types: types};
+		o.options = {type: "revision", roid: roid};
 	};
 	
 	this.setLoadTypes = function(roid, schema, types) {
