@@ -260,7 +260,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	loadScene: function(callback, options) {
 		SceneJS.reset();
 		if(typeof options != 'object') {
-			options = {};
+			options = {statusPopups: false};
 		}
 
 		if (this.scene == null) {
