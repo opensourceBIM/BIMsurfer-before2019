@@ -72,25 +72,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			}
 		}
 
-
 		this.visibleTypes = new Array();
-
-		if(BIMSURFER.Util.isset(options, options.autoStart)) {
-			if(!BIMSURFER.Util.isset(options.autoStart.serverUrl, options.autoStart.serverUsername, options.autoStart.serverPassword, options.autoStart.projectOid)) {
-				console.error('Some autostart parameters are missing');
-				return;
-			}
-			var _this = this;
-			var BIMServer = new BIMSURFER.Server(this, options.autoStart.serverUrl, options.autoStart.serverUsername, options.autoStart.serverPassword, false, true, true, function() {
-				if(BIMServer.loginStatus != 'loggedin') {
-					_this.div.innerHTML = 'Something went wrong while connecting';
-					console.error('Something went wrong while connecting');
-					return;
-				}
-				var project = BIMServer.getProjectByOid(options.autoStart.projectOid);
-				project.loadScene((BIMSURFER.Util.isset(options.autoStart.revisionOid) ? options.autoStart.revisionOid : null), true);
-			});
-		}
 	},
 
 	/**
@@ -260,8 +242,9 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	loadScene: function(callback, options) {
 		SceneJS.reset();
 		if(typeof options != 'object') {
-			options = {statusPopups: false};
+			options = {};
 		}
+		options.tatusPopups = false;
 
 		if (this.scene == null) {
 			try {
