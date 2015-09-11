@@ -110,10 +110,12 @@ BIMSURFER.Events = BIMSURFER.Class({
 	 * @return event
 	 */
 	normalizeEvent: function(event) {
-		if(!event.offsetX) {
-			event.offsetX = (event.pageX - jQuery(event.target).offset().left);
-			event.offsetY = (event.pageY - jQuery(event.target).offset().top);
-		}
+// 		Commented out because offsetX/Y are read only, from Chrome > 43 it's throwing an error, it seems this code never really did anything...
+
+//		if(!event.offsetX) {
+//			event.offsetX = (event.pageX - jQuery(event.target).offset().left);
+//			event.offsetY = (event.pageY - jQuery(event.target).offset().top);
+//		}
 		return event;
 	}
 });
