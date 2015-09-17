@@ -244,7 +244,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		if(typeof options != 'object') {
 			options = {};
 		}
-		options.tatusPopups = false;
 
 		if (this.scene == null) {
 			try {
@@ -303,7 +302,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				this.drawCanvas();
 				this.scene.canvasId = jQuery(this.canvas).attr('id');
 				this.scene.id = this.scene.canvasId;
-				this.scene = SceneJS.createScene(this.scene);
+				this.scene = SceneJS.createScene(this.scene, options);
 				
 				var _this = this;
 				if (options.useCapture) {
