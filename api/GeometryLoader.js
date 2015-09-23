@@ -336,7 +336,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	}
 
 	this.afterRegistration = function(topicId) {
-		Global.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {
+		o.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {
 			topicId: o.topicId
 		}, function(state){
 			o.progressHandler(o.topicId, state);
@@ -346,16 +346,16 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	this.start = function(){
 		if (o.options != null) {
 			if (o.options.type == "types") {
-				var types = o.options.types.map(function(type){
-					return type.name;
-				});
+				var typesArray = [];
+				for (var key in o.options.types) {
+					typesArray.push(key);
+				}
 				o.groupId = o.options.roid;
-				o.types = o.options.types;
 				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
 					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
 						roids: [o.options.roid],
 						schema: o.options.schema,
-						classNames : types,
+						classNames : typesArray,
 						serializerOid : serializer.oid,
 						includeAllSubtypes : false,
 						useObjectIDM : false,
