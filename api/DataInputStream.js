@@ -55,7 +55,7 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 	},
 
 	readLong: function() {
-		var value = this.dataView.getUint32(this.pos, true) + (2 ^ 32) * this.dataView.getUint32(this.pos + 4, true);
+		var value = this.dataView.getUint32(this.pos, true) + 0x100000000 * this.dataView.getUint32(this.pos + 4, true);
 		this.pos += 8;
 		return value;
 	},
