@@ -65,7 +65,9 @@ $(function()
 				
 				showSelectProject();
 			});
-		});
+		}), function(){
+			console.log("Error");
+		};
 	}
 
 	var dialog = $('<div />').attr('class', 'form').attr('title', 'Connect to a server');
