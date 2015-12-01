@@ -70,6 +70,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				console.log("Not found", geometryInfoOid);
 			} else {
 				o.models[roid].get(oid, function(object){
+					object.gid = geometryInfoOid;
 					if (o.viewer.scene.findNode(geometryInfoOid) != null) {
 						console.log("Node with id " + geometryInfoOid + " already existed");
 						return;
@@ -504,7 +505,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				for (var k in o.infoToOid) {
 				    if (o.infoToOid.hasOwnProperty(k)) {
 				    	if (k != null && k != "undefined") {
-				    		oids.push(k);
+				    		oids.push(parseInt(k, 10));
 				    	}
 				    }
 				}
@@ -513,10 +514,11 @@ function GeometryLoader(bimServerApi, models, viewer) {
 					type: "GeometryInfo",
 					oids: oids,
 					include: {
+						type: "GeometryInfo",
 						field: "data"
 					}
 				};
-				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin", function(serializer){
+				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin", function(serializer){
 					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByNewJsonQuery", {
 						roids: o.options.roids,
 						serializerOid : serializer.oid,

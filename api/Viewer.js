@@ -23,6 +23,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	sceneLoaded: false,
 	bimServerApi: null,
 	geometryLoaders: [],
+	tick: 0,
 //	selectedObj: 'emtpy Selection',
 //	mouseRotate: 0,
 //	oldZoom: 15,
@@ -323,7 +324,6 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				this.scene = SceneJS.createScene(this.scene);
 				
 				var _this = this;
-				var tick = 0;
 				
 				if (options.useCapture) {
 					this.scene.getNode(CAPTURE_ID, function(node) {
@@ -344,12 +344,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				}
 				
 				this.scene.on("tick", function(){
-					if (tick % 30 == 0) {
+					if (_this.tick % 30 == 0) {
 						_this.geometryLoaders.forEach(function(geometryLoader){
 							geometryLoader.process();
 						});
 					}
-					tick++;
+					_this.tick++;
 				});
 				
 				for(var i = 0; i < this.lights.length; i++) {
@@ -389,6 +389,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		if (o.geometryLoaders.length <= 20) {
 			geometryLoader.progressListeners.push(function(progress){
 				if (progress == "done") {
+					o.tick = 0;
 					removeA(o.geometryLoaders, geometryLoader);
 				}
 			});
