@@ -23,6 +23,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	sceneLoaded: false,
 	bimServerApi: null,
 	geometryLoaders: [],
+	tick: 0,
 //	selectedObj: 'emtpy Selection',
 //	mouseRotate: 0,
 //	oldZoom: 15,
@@ -72,7 +73,25 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 			}
 		}
 
+
 		this.visibleTypes = new Array();
+
+		if(BIMSURFER.Util.isset(options, options.autoStart)) {
+			if(!BIMSURFER.Util.isset(options.autoStart.serverUrl, options.autoStart.serverUsername, options.autoStart.serverPassword, options.autoStart.projectOid)) {
+				console.error('Some autostart parameters are missing');
+				return;
+			}
+			var _this = this;
+			var BIMServer = new BIMSURFER.Server(this, options.autoStart.serverUrl, options.autoStart.serverUsername, options.autoStart.serverPassword, false, true, true, function() {
+				if(BIMServer.loginStatus != 'loggedin') {
+					_this.div.innerHTML = 'Something went wrong while connecting';
+					console.error('Something went wrong while connecting');
+					return;
+				}
+				var project = BIMServer.getProjectByOid(options.autoStart.projectOid);
+				project.loadScene((BIMSURFER.Util.isset(options.autoStart.revisionOid) ? options.autoStart.revisionOid : null), true);
+			});
+		}
 	},
 
 	/**
@@ -302,9 +321,10 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				this.drawCanvas();
 				this.scene.canvasId = jQuery(this.canvas).attr('id');
 				this.scene.id = this.scene.canvasId;
-				this.scene = SceneJS.createScene(this.scene, options);
+				this.scene = SceneJS.createScene(this.scene);
 				
 				var _this = this;
+				
 				if (options.useCapture) {
 					this.scene.getNode(CAPTURE_ID, function(node) {
 						var d;
@@ -324,9 +344,12 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				}
 				
 				this.scene.on("tick", function(){
-					_this.geometryLoaders.forEach(function(geometryLoader){
-						geometryLoader.process();
-					});
+					if (_this.tick % 30 == 0) {
+						_this.geometryLoaders.forEach(function(geometryLoader){
+							geometryLoader.process();
+						});
+					}
+					_this.tick++;
 				});
 				
 				for(var i = 0; i < this.lights.length; i++) {
@@ -366,6 +389,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		if (o.geometryLoaders.length <= 20) {
 			geometryLoader.progressListeners.push(function(progress){
 				if (progress == "done") {
+					o.tick = 0;
 					removeA(o.geometryLoaders, geometryLoader);
 				}
 			});
