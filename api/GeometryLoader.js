@@ -246,7 +246,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 //				progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
 //			});
 //			o.viewer.events.trigger('sceneLoaded', [o.viewer.scene]);
-//			o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: o.topicId}, function(){
+//			o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {topicId: o.topicId}, function(){
 //			});
 //		}
 	};
@@ -271,7 +271,6 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		}
 		
 		var msg = {
-			longActionId: o.topicId,
 			topicId: o.topicId
 		};
 		
@@ -319,7 +318,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			progressListener("done", o.state.nrObjectsRead, o.state.nrObjectsRead);
 		});
 		o.viewer.events.trigger('sceneLoaded', [o.viewer.scene]);
-		o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: o.topicId}, function(){
+		o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {topicId: o.topicId}, function(){
 		});
 	}
 	
