@@ -26,11 +26,11 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	};
 	
 	this.readObject = function(data, geometryType) {
-		data.align4();
+		data.align8();
 		if (geometryType == 5) {
 			var roid = data.readLong();
 			var geometryInfoOid = data.readLong();
-			var objectBounds = data.readFloatArray(6);
+			var objectBounds = data.readDoubleArray(6);
 //			if (objectBounds[0] < o.modelBounds.min.x) {
 //				o.modelBounds.min.x = objectBounds[0];
 //			}
@@ -50,7 +50,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 //				o.modelBounds.max.z = objectBounds[5];
 //			}
 			
-			var transformationMatrix = data.readFloatArray(16);
+			var transformationMatrix = data.readDoubleArray(16);
 			var geometryDataOid = data.readLong();
 			var coreIds = [geometryDataOid];
 			o.infoToData[geometryInfoOid] = geometryDataOid;
@@ -335,9 +335,9 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		} else {
 			o.state.version = version;
 		}
-		data.align4();
+		data.align8();
 		
-		var modelBounds = data.readFloatArray(6);
+		var modelBounds = data.readDoubleArray(6);
 		o.modelBounds = {
 			min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
 			max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
