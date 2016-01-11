@@ -26,11 +26,11 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	};
 	
 	this.readObject = function(data, geometryType) {
-		data.align4();
+		data.align8();
 		if (geometryType == 5) {
 			var roid = data.readLong();
 			var geometryInfoOid = data.readLong();
-			var objectBounds = data.readFloatArray(6);
+			var objectBounds = data.readDoubleArray(6);
 //			if (objectBounds[0] < o.modelBounds.min.x) {
 //				o.modelBounds.min.x = objectBounds[0];
 //			}
@@ -50,7 +50,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 //				o.modelBounds.max.z = objectBounds[5];
 //			}
 			
-			var transformationMatrix = data.readFloatArray(16);
+			var transformationMatrix = data.readDoubleArray(16);
 			var geometryDataOid = data.readLong();
 			var coreIds = [geometryDataOid];
 			o.infoToData[geometryInfoOid] = geometryDataOid;
@@ -108,29 +108,29 @@ function GeometryLoader(bimServerApi, models, viewer) {
 					}
 
 					var flags = {
-							type : "flags",
-							flags : {
-								transparent : hasTransparency
-							},
+						type : "flags",
+						flags : {
+							transparent : hasTransparency
+						},
+						nodes : [{
+							type: "enable",
+							enabled: enabled,
 							nodes : [{
-								type: "enable",
-								enabled: enabled,
+								type : "material",
+								baseColor: material,
+								alpha: material.a,
 								nodes : [{
-									type : "material",
-									baseColor: material,
-									alpha: material.a,
+									type : "name",
+									id : geometryInfoOid,
+									oid: oid,
 									nodes : [{
-										type : "name",
-										id : geometryInfoOid,
-										oid: oid,
-										nodes : [{
-											type: "matrix",
-											elements: transformationMatrix,
-											nodes: coreNodes
-										}]
+										type: "matrix",
+										elements: transformationMatrix,
+										nodes: coreNodes
 									}]
 								}]
 							}]
+						}]
 					};
 					
 					o.modelNode.addNode(flags);
@@ -335,9 +335,9 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		} else {
 			o.state.version = version;
 		}
-		data.align4();
+		data.align8();
 		
-		var modelBounds = data.readFloatArray(6);
+		var modelBounds = data.readDoubleArray(6);
 		o.modelBounds = {
 			min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
 			max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
@@ -450,14 +450,6 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		o.options = {type: "oids", roids: roids, oids: oids};
 	}
 
-	this.afterRegistration = function(topicId) {
-		o.bimServerApi.call("Bimsie1NotificationRegistryInterface", "getProgress", {
-			topicId: o.topicId
-		}, function(state){
-			o.progressHandler(o.topicId, state);
-		});
-	}
-	
 	this.start = function(){
 		if (o.options != null) {
 			if (o.options.type == "types") {
@@ -478,7 +470,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 						deep: false
 					}, function(topicId){
 						o.topicId = topicId;
-						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler, o.afterRegistration);
+						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
 					});
 				});
 			} else if (o.options.type == "revision") {
@@ -492,7 +484,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 						showOwn: true
 					}, function(topicId){
 						o.topicId = topicId;
-						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler, o.afterRegistration);
+						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
 					});
 				});
 			} else if (o.options.type == "oids") {
@@ -525,7 +517,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 						query: JSON.stringify(query)
 					}, function(topicId){
 						o.topicId = topicId;
-						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler, o.afterRegistration);
+						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
 					});
 				});
 			}

@@ -36,6 +36,15 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 		}
 	},
 
+	align8: function() {
+		// Skips to the next alignment of 4 (source should have done the same!)
+		var skip = 8 - (this.pos % 8);
+		if(skip > 0 && skip != 8) {
+//			console.log("Skip", skip);
+			this.pos += skip;
+		}
+	},
+
 	readFloat: function() {
 		var value = this.dataView.getFloat32(this.pos, true);
 		this.pos += 4;
@@ -73,6 +82,12 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 	readFloatArray: function(length) {
 		var result = new Float32Array(this.arrayBuffer, this.pos, length);
 		this.pos += length * 4;
+		return result;
+	},
+
+	readDoubleArray: function(length) {
+		var result = new Float64Array(this.arrayBuffer, this.pos, length);
+		this.pos += length * 8;
 		return result;
 	},
 
