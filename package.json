@@ -1,0 +1,43 @@
+{
+  "name": "bimsurfer",
+  "version": "%VERSION%",
+  "description": "BIMsurfer is a JavaScript library to visualize BIM in 3D",
+  "author": {
+    "name": "Ruben de Laat",
+    "email": "ruben@logic-labs.nl"
+  },
+  "scripts": {},
+  "files": [
+    "js"
+  ],
+  "main": "index.html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opensourceBIM/BIMsurfer"
+  },
+  "bugs": {
+    "url": "https://github.com/opensourceBIM/BIMsurfer/issues"
+  },
+  "keywords": [],
+  "dependencies": {
+    "bimserverapi": "*",
+    "xhr2": "*"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-jshint": "*",
+    "grunt-contrib-nodeunit": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-concat": "*",
+    "grunt-contrib-cssmin": "*",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-github-releaser": "*",
+    "grunt-zip": "*"
+  },
+  "preferGlobal": true,
+  "private": false,
+  "analyze": true,
+  "license": "AGPL-3.0",
+  "readmeFilename": "README.md"
+}

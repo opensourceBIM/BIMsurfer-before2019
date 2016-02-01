@@ -2,7 +2,8 @@
 <PluginDescriptor>
 	<PluginImplementation>
 		<interfaceClass>org.bimserver.plugins.web.WebModulePlugin</interfaceClass>
-		<implementationClass>org.bimsurfer.BimSurferWebModulePlugin</implementationClass>
+		<implementationJson>bimsurfer.json</implementationJson>
+		<description>bimsurfer</description>
 		<enabled>true</enabled>
 	</PluginImplementation>
 </PluginDescriptor>
