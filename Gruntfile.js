@@ -70,8 +70,7 @@ module.exports = function(grunt) {
 						}
 					},
 					files : {
-						src : [ "output/bimsurfer-%VERSION%.zip",
-								"output/bimsurfer-bimserver-plugin-%VERSION%.jar" ]
+						src : [ "output/bimsurfer-%VERSION%.zip" ]
 					}
 				}
 			});
