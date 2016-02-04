@@ -3,7 +3,7 @@
   "groupId": "org.opensourcebim",
   "artifactId": "bimsurfer",
   "organization": "OpenSource BIM",
-  "version": "%VERSION%",
+  "version": "0.0.1",
   "description": "BIMsurfer is a JavaScript library to visualize BIM in 3D",
   "author": {
     "name": "Ruben de Laat",
