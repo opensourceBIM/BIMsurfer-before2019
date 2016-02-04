@@ -1,7 +1,0 @@
-{
-	"identifier": "bimsurfer",
-	"version": "%VERSION%",
-	"description": "BIMsurfer is a JavaScript library to visualize BIM in 3D",
-	"defaultName": "BIMsurfer",
-	"defaultContextPath": "bimsurfer"
-}

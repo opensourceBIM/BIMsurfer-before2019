@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PluginDescriptor>
-	<PluginImplementation>
-		<interfaceClass>org.bimserver.plugins.web.WebModulePlugin</interfaceClass>
-		<implementationJson>bimsurfer.json</implementationJson>
-		<description>bimsurfer</description>
-		<enabled>true</enabled>
-	</PluginImplementation>
+	<WebModulePlugin>
+		<identifier>bimsurfer</identifier>
+		<description>BIMsurfer is a JavaScript library to visualize BIM in 3D</description>
+	</WebModulePlugin>
 </PluginDescriptor>
