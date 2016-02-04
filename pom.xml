@@ -128,10 +128,9 @@
 		</dependency>
 	</dependencies>
 	<scm>
-		<url>https://github.com/opensourceBIM/BIMserver-JavaScript-API.git</url>
-		<connection>scm:git:https://github.com/opensourceBIM/BIMserver-JavaScript-API.git</connection>
-		<developerConnection>scm:git:https://github.com/opensourceBIM/BIMserver-JavaScript-API.git</developerConnection>
-		<tag>bimserverapi-0.0.70</tag>
+		<url>https://github.com/opensourceBIM/BIMsurfer.git</url>
+		<connection>scm:git:https://github.com/opensourceBIM/BIMsurfer.git</connection>
+		<developerConnection>scm:git:https://github.com/opensourceBIM/BIMsurfer.git</developerConnection>
 	</scm>
 	<organization>
 		<name>OpenSource BIM</name>
@@ -139,10 +138,10 @@
 	</organization>
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/opensourceBIM/BIMserver-JavaScript-API/issues</url>
+		<url>https://github.com/opensourceBIM/BIMsurfer/issues</url>
 	</issueManagement>
-	<name>BIMServer JavaScript API</name>
-	<url>https://github.com/opensourceBIM/BIMserver-JavaScript-API</url>
+	<name>BIMsurfer</name>
+	<url>https://github.com/opensourceBIM/BIMsurfer</url>
 	<licenses>
 		<license>
 			<name>GNU Affero General Public License</name>
