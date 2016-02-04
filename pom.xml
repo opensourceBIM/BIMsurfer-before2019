@@ -124,7 +124,7 @@
 		<dependency>
 			<groupId>org.opensourcebim</groupId>
 			<artifactId>bimserverapi</artifactId>
-			<version>0.0.80-SNAPSHOT</version>
+			<version>0.0.79</version>
 		</dependency>
 	</dependencies>
 	<scm>
