@@ -17,6 +17,22 @@
 				<directory>plugin</directory>
 				<targetPath>plugin</targetPath>
 			</resource>
+			<resource>
+				<directory>images</directory>
+				<targetPath>images</targetPath>
+			</resource>
+			<resource>
+				<directory>css</directory>
+				<targetPath>css</targetPath>
+			</resource>
+			<resource>
+				<directory>api</directory>
+				<targetPath>api</targetPath>
+			</resource>
+			<resource>
+				<directory>lib</directory>
+				<targetPath>lib</targetPath>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>
