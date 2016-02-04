@@ -83,5 +83,5 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks("grunt-contrib-clean");
 	grunt.loadNpmTasks("grunt-zip");
 
-	grunt.registerTask("default", [ "clean", "concat", "uglify", "cssmin", "copy", "zip", "github-release" ]);
+	grunt.registerTask("default", [ "clean", "concat", "uglify", "cssmin"]);
 };
