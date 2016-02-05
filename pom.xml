@@ -140,7 +140,7 @@
 		<dependency>
 			<groupId>org.opensourcebim</groupId>
 			<artifactId>bimserverapi</artifactId>
-			<version>0.0.79</version>
+			<version>0.0.83</version>
 		</dependency>
 	</dependencies>
 	<scm>
