@@ -122,7 +122,9 @@ function GeometryLoader(bimServerApi, models, viewer) {
 								nodes : [{
 									type : "name",
 									id : geometryInfoOid,
-									oid: oid,
+									data: {
+										object: object
+									},
 									nodes : [{
 										type: "matrix",
 										elements: transformationMatrix,
