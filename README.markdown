@@ -100,3 +100,11 @@ The type <id> refers to
 Users are free to mix and match these types of ids and the viewer will translate between them. Use of numeric identifiers is more efficient, hence numeric ids are returned by the viewer. The user can translate between them with toId() toGuid() respectively.
 
 
+
+| | | |
+| ------------ | ------------ | ------------ |
+| BimSurfer.BimSurfer() | constructor: no arguments |   |
+| BimSurfer.load({}) <br/> → promise  | bimserver<br/> username<br/> password<br/> poid<br/> roid<br/> query<br/><br/> -or-<br/> url|  Loads the elements and tree for the specific {poid, roid} or url. This is the simple viewer, hence, loaded models are directly shown |
+|  BimSurfer.getTree({})<br/> → promise | id: <id> or null <br/> nlevels: int | Returns a promise of the representation of the tree |
+| BimSurfer.setVisibility({}) <br/> → void | ids: Array of id <br/> entities: Array of string <br/> recursive: boolean (=false) <br/> visible: boolean | Show/hide previously unhidden elements specified by <id> or by entity type, e.g IfcWall. When recursive is set to true, hides children (aggregates, spatial structures, …) or subtypes<br/> NB: ids and entities are mutually exclusive |
+
