@@ -1,58 +1,90 @@
 
-    Copyright 2014, Bimsurfer.org
-    Bimsurfer is licensed under the GNU Affero General Public License, version 3.0.
+    Copyright 2016, bmsurfer.org
+    BIM Surfer will be licensed under the MIT License.
 
-## New version 2014-03
-A new version of BIMSurfer is developed to make BIM Surfer a module that can be integrated in 3rd party applications.
+## New version 2016 
+In 2016 a new version of BIM Surfer will be released.
+The code will be build from scratch into a component that can be re-used in other softwaretools. 
+The license will change to MIT license to allow liberal re-use in commercial applications.
 
-### Demo
-Because the new BIM Surfer is a module that has to be configured there is not really one demo. Also, because the API documentation is not finished yet, you have to know a bit about Javascript to understand how you can use the current version of BIM Surfer.  
-There are two example implementations though: Have a look at example1.html in the repository, or at the way the BCF Forum project used BIM Surfer: https://github.com/opensourceBIM/BimConsiderationForum-BcfServer/blob/master/consideration-forum/js/bimsurfer.js  
+At this moment an API is being designed. This file will elaborate about this API and the intended implementation.
 
-###Featues:
-There are not a lot of new features. The most important change is that BIM Surfer can now be used as a module. This enhances integration with your own applications.
+## Design rationale
+A BIM viewer module that can be used by 3d-novices without extensive knowledge on either web-frameworks or 3d frameworks. The example below serves to minimize boilerplate code, but is implemented on top of modular classes that can be instantiated manually as well. Legibility is prefered at all times. Hence, whenever sensible, methods take dictionaries rather than positional arguments
 
-## Installation
+```javascript
+var viewer = new BimSurfer();
 
-### BIM Surfer installation
+// Alternative 1: Load a model from an on-line BIMserver with existing bimserverapi/model:
+var bimServerApi = ...// existing bimserverapi
+var model = ...// existing bimserverapi model
+var viewerModel = viewer.load({bimserverapi: bimserverapi, model: model, query: …});
 
-#### To deploy BIM Surfer locally on your machine:
+// Alternative 2: Let bimsurfer create a bimsererapi and model
+// The load()'ing of a model happens asynchronously. Hence, it
+// returns a Promise with a then() function that accepts a 
+// method in case of success and (optionally) in case of error.
+viewer.load({bimserver: …, username: …, password: …,
+             poid: …, roid: …, query: …}).then(
+    function(model) { … },
+    function(error) { … }
+);
 
-1. Download a release and extract it into a folder somewhere.
-2. Open one of the examples using a WebGL compatible web browser.
+// Alternatively 3: load a model from file:
+var model = viewer.load({url: "/path/to/file.glTF"}).then(function(model) {
 
-#### To deploy BIM Surfer on a web server (e.g. apache):
+// getTree() returns a javascript notation of the tree.
+// `guid` and `nlevels` allow to only return a subset 
+// of the tree for performance reasons.
+var tree = model.getTree({guid: …, nlevels: …}).then(function(tree) {
 
-BIM Surfer is a client-side application. Thus, it is very easy to deploy on a web server.
+// Creating a DOM tree is framework specific, but examples
+// are provided for various frameworks [1]
+// [1] https://github.com/opensourceBIM/bimvie.ws-viewer/
+//             blob/master/index.html#L108
+var domtree = …;
 
-1. Simply place the code into a statically accessible directory on your server.
-2. Point a compatible web browser (see below) to the url.
+domtree.on("click", function(oid) {
+    viewer.viewFit({ids: [oid]});
+});
 
-One advantage of deploying BIM Surfer on a web server is that it obviates the need to circumvent certain cross-domain
-security policies that crop up when running the application locally.
+domtree.on("eye-click", function(oid) {
+    viewer.hide([oid]);
+});
 
-### BIMserver Installation
+// Event handlers on the viewer can be subscribed to using the 
+// on() method.
 
-In order to load IFC models into BIM Surfer you will first need to connect to a running BIMserver.
-For now it is recommended to use the latest version of BIMserver in development.
+function selectionChanged(currentlySelected, selectionChanged) {
 
-## Running BIMsurfer locally on your computer
+}
 
-Modern web browsers have security measures built in to prevent applications from accessing your computer.
-Google for some answers.
+viewer.on("selection-changed", selectionChanged);
 
-## Embedding BIMsurfer into another web page
-BIM Surfer now has an API to embed a viewer for your needs in one of your applications. When you are a developer it should be easy to read the source and find our how it works.
+// Event handler can be canceled using the off() method. Possibly
+// by using a wildcard to cancel all handlers on a particular
+// event.
+viewer.off("selection-changed", selectionChanged);
+viewer.off("selection-changed", "*");
+```
 
+### Advanced usage
+The example above favours ease of use over modularity and extensibility. In fact, the code above are merely shortcuts providing sensible defaults to functionally identical behaviour.
 
-## Third party libraries and licenses
+```javascript
+var viewer = BimSurfer.Viewer();
+// Still not so sure what to do with this
+var tree_view = BimSurfer.DojoTreeView();
+var canvas = BimSurfer.XeoEngineViewer();
+var loader = BimSurfer.BimServerLoader();
+var query = BimSurfer.RubenQueryEngine();
+var painter = BimSurfer.MaterialColorByEntity();
 
-Third party libraries used in this project:
-* jQuery
-  Licenses: `licenses/LICENSE-jquery-mit`, `licenses/LICENSE-jquery-gpl`
-* jQuery UI
-  Licenses: `licenses/LICENSE-jqueryui-mit`, `licenses/LICENSE-jqueryui-gpl`
-* SceneJS
-  Licenses: `licenses/LICENSE-scenejs-mit`, `licenses/LICENSE-scenejs-gpl`
-* glMatrix
-  Licenses: See the inline license in `static/lib/scenejs/scenejs.math.js`
+viewer.addTreeView(tree_view);
+viewer.addViewer(canvas);
+viewer.addLoader(loader);
+viewer.setPainter(painter);
+
+loader.load({bimserver: …, username: …, password: …,
+             poid: …, roid: …, query: …});
+```
