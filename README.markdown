@@ -1,15 +1,15 @@
 
-    Copyright 2016, bmsurfer.org
+    Copyright 2016, bimsurfer.org
     BIM Surfer will be licensed under the MIT License.
 
-## New version 2016 
+# New version 2016 
 In 2016 a new version of BIM Surfer will be released.
 The code will be build from scratch into a component that can be re-used in other softwaretools. 
 The license will change to MIT license to allow liberal re-use in commercial applications.
 
 At this moment an API is being designed. This file will elaborate about this API and the intended implementation.
 
-## Design rationale
+# Design rationale
 A BIM viewer module that can be used by 3d-novices without extensive knowledge on either web-frameworks or 3d frameworks. The example below serves to minimize boilerplate code, but is implemented on top of modular classes that can be instantiated manually as well. Legibility is prefered at all times. Hence, whenever sensible, methods take dictionaries rather than positional arguments
 
 ```javascript
@@ -88,3 +88,15 @@ viewer.setPainter(painter);
 loader.load({bimserver: …, username: …, password: …,
              poid: …, roid: …, query: …});
 ```
+
+# API reference
+
+NB: This is the “simple” viewer API
+NB2: What do we prefer? select/deselect or setSelectionState
+
+The type <id> refers to
+- A numeric identifier (“oid” / objectID in BIMserver jargon)
+- A textual guid (“GUID” / Globally Unique IDentifier in IFC jargon)
+Users are free to mix and match these types of ids and the viewer will translate between them. Use of numeric identifiers is more efficient, hence numeric ids are returned by the viewer. The user can translate between them with toId() toGuid() respectively.
+
+
