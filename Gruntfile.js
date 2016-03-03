@@ -14,7 +14,7 @@ module.exports = function(grunt) {
 				uglify : {
 					dist : {
 						files : {
-							"output/js/bimsurfer.min.js" : [ "tmp/bimsurfer.js" ]
+							"output/bimsurfer.min.js" : [ "tmp/bimsurfer.js" ]
 						}
 					}
 				},
