@@ -7,8 +7,8 @@ module.exports = function(grunt) {
 				concat : {
 					js : {
 						files : {
-							"tmp/bimsurfer.js" : [ "lib/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js", "lib/scenejs/*.js", "api/*.js",  "api/Control/*.js",  "api/Types/*.js", "api/Types/Light/*.js" ]
-						},
+							"tmp/bimsurfer.js" : [ "lib/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js", "lib/scenejs/*.js", "api/*.js", "api/Control/*.js", "api/Types/*.js", "api/Types/Light/*.js" ]
+						}
 					}
 				},
 				uglify : {

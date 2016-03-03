@@ -6,7 +6,7 @@
  */
 BIMSURFER.Light.Camera = BIMSURFER.Class(BIMSURFER.Light, {
 	CLASS: 'BIMSURFER.Light.Camera',
-	__construct: function(system)`{
+	__construct: function(system){
 		this.SYSTEM = system;
 		this.lightObject = {
 			type:		'light',
