@@ -99,5 +99,5 @@ The type <id> refers to
 - A textual guid (“GUID” / Globally Unique IDentifier in IFC jargon)
 Users are free to mix and match these types of ids and the viewer will translate between them. Use of numeric identifiers is more efficient, hence numeric ids are returned by the viewer. The user can translate between them with toId() toGuid() respectively.
 
-(https://raw.githubusercontent.com/opensourceBIM/BIMsurfer/master/API-1.png)
+![API concept](https://raw.githubusercontent.com/opensourceBIM/BIMsurfer/master/API-1.png)
 Sorry that this is a picture. We wanted to get the API out asap, and the markdown syntax dialect for tables just took too long.
