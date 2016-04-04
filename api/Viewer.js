@@ -310,6 +310,44 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 									nodes: [{
 										type: 'lights',
 										id: 'my-lights',
+										nodes: [
+											{
+											    type:"material",
+											    color:{ r:1, g:0, b:0 },
+											    nodes:[
+											        {
+											            type:"geometry/box",
+											            xSize: 100000,
+											            ySize: 1000,
+											            zSize: 1000
+											        }
+											    ]
+											},
+											{
+											    type:"material",
+											    color:{ r:0, g:1, b:0 },
+											    nodes:[
+											        {
+											            type:"geometry/box",
+											            xSize: 1000,
+											            ySize: 100000,
+											            zSize: 1000
+											        }
+											    ]
+											},
+											{
+											    type:"material",
+											    color:{ r:0, g:0, b:1 },
+											    nodes:[
+											        {
+											            type:"geometry/box",
+											            xSize: 1000,
+											            ySize: 1000,
+											            zSize: 100000
+											        }
+											    ]
+											}
+										],
 										lights: []
 									}]
 								}]
