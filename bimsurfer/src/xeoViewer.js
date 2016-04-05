@@ -83,17 +83,17 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
         // Objects that are currently selected, mapped to IDs
         var selectedObjects = {};
 
-        // Original object colors for resetting to
-        var objectColorResets = {};
-
-        // Original object visibilities for resetting to
-        var objectVisibleResets = {};
-
         // Lazy-generated array of selected object IDs, for return by #getSelected()
         var selectedObjectList = null;
 
+        // Bookmark of initial state to reset to - captured with #saveReset(), applied with #reset().
+        var resetBookmark = null;
+
         /**
          * Loads random objects into the viewer for testing.
+         *
+         * Subsequent calls to #reset will then set the viewer to the state right after the model was loaded.
+         *
          */
         this.loadRandom = function () {
 
@@ -123,6 +123,8 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
                 type = types[Math.round(Math.random() * types.length)];
                 this.createObject(roid, oid, objectId, ["myGeometry"], type, matrix);
             }
+
+            this.saveReset();
         };
 
         /**
@@ -200,14 +202,13 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
                 object.modes.transparent = true;
             }
 
-            objectColorResets[objectId] = color;
-            objectVisibleResets[objectId] = object.visibility.visible;
-
             return object;
         };
 
         /**
          * Loads glTF model.
+         *
+         * Subsequent calls to #reset will then set the viewer to the state right after the model was loaded.
          *
          * @param src
          */
@@ -226,18 +227,22 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
             model.on("loaded",
                 function () {
 
-                   // TODO: viewFit, but boundaries not yet ready on Model Entities
+                    // TODO: viewFit, but boundaries not yet ready on Model Entities
 
                     model.collection.iterate(function (component) {
                         if (component.isType("XEO.Entity")) {
                             self._addObject(component.id, "DEFAULT", component);
                         }
-                    })
+                    });
+
+                    self.saveReset();
                 });
         };
 
         /**
          * Clears the viewer.
+         *
+         * Subsequent calls to #reset will then set the viewer this clear state.
          */
         this.clear = function () {
 
@@ -256,8 +261,8 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
             rfcTypes = {};
             selectedObjects = {};
             selectedObjectList = null;
-            objectColorResets = {};
-            objectVisibleResets = {};
+
+            this.saveReset();
         };
 
         /**
@@ -456,16 +461,27 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
 
             // Set camera position
 
-            if (params.eye) {
-                camera.view.eye = params.eye;
-            }
+            if (params.animate) {
 
-            if (params.target) {
-                camera.view.look = params.target;
-            }
+                cameraFlight.flyTo({
+                    eye: params.eye,
+                    look: params.target,
+                    up: params.up
+                });
 
-            if (params.up) {
-                camera.view.up = params.up;
+            } else {
+
+                if (params.eye) {
+                    camera.view.eye = params.eye;
+                }
+
+                if (params.target) {
+                    camera.view.look = params.target;
+                }
+
+                if (params.up) {
+                    camera.view.up = params.up;
+                }
             }
 
             // Set camera FOV angle, only if currently perspective
@@ -509,9 +525,9 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
 
             var json = {
                 type: projectionType,
-                eye: view.eye.splice(0),
-                target: view.look.splice(0),
-                up: view.up.splice(0)
+                eye: view.eye.slice(0),
+                target: view.look.slice(0),
+                up: view.up.slice(0)
             };
 
             var project = camera.project;
@@ -552,7 +568,7 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
                 boundaryIndicator.geometry.aabb = aabb;
                 boundaryIndicator.visibility.visible = true;
 
-                cameraFlight.flyTo({aabb: aabb, stopFOV: 20 },
+                cameraFlight.flyTo({aabb: aabb, stopFOV: 20},
                     function () {
 
                         // Hide the boundary again
@@ -561,7 +577,7 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
 
             } else {
 
-                cameraFlight.jumpTo({aabb: aabb, stopFOV: 20 });
+                cameraFlight.jumpTo({aabb: aabb, stopFOV: 20});
             }
         };
 
@@ -670,55 +686,91 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
             return aabb;
         }
 
+        this.saveReset = function () {
+            resetBookmark = this.getBookmark();
+        };
+
         this.reset = function (params) {
+            this.setBookmark(resetBookmark, params);
+        };
 
-            params = params || {};
+        /**
+         * Returns a bookmark of xeoViewer state.
+         */
+        this.getBookmark = function () {
 
-            if (params.visibility || params.elementColors) {
+            var objectId;
+            var object;
+            var visible = [];
+            var colors = {};
+            var opacity;
 
-                var i;
-                var len;
-                var objectId;
-                var ids = params.ids || Object.keys(objects);
-                var visibility = params.visibility;
-                var elementColors = params.elementColors;
-                var object;
-
-                for (i = 0, len = ids.length; i < len; i++) {
-
-                    objectId = ids[i];
+            for (objectId in objects) {
+                if (objects.hasOwnProperty(objectId)) {
 
                     object = objects[objectId];
 
-                    if (!object) {
-                        continue;
+                    if (object.visibility.visible) {
+                        visible.push(objectId);
                     }
 
-                    if (visibility) {
-                        object.visibility.visible = objectVisibleResets[objectId];
-                    }
+                    opacity = object.modes.transparent ? object.material.opacity : 1.0;
 
-                    if (elementColors) {
-                        this._setObjectColor(object, objectColorResets[objectId]);
+                    colors[objectId] = object.material.diffuse.slice(0).concat(opacity); // RGBA
+                }
+            }
+
+            var camera = this.getCamera();
+            camera.animate = true; // Camera will fly to position when bookmark is restored
+
+            return {
+                colors: colors,
+                visible: visible,
+                selected: this.getSelected(),
+                camera: camera
+            };
+        };
+
+        /**
+         * Restores xeoViewer to a bookmark.
+         *
+         * @param bookmark
+         * @param params
+         */
+        this.setBookmark = function (bookmark, params) {
+
+            if (!params || params.elementColors) {
+
+                var objectId;
+                var object;
+                var colors = bookmark.colors;
+
+                for (objectId in colors) {
+                    if (colors.hasOwnProperty(objectId)) {
+                        object = objects[objectId];
+                        if (object) {
+                            this._setObjectColor(object, colors[objectId]);
+                        }
                     }
                 }
             }
 
-            if (params.selectionState) {
-
-                selectedObjects = {};
-                selectedObjectList = null;
-
-                // TODO: Fire event
+            if (!params || params.visibility) {
+                this.setVisibility({
+                    ids: bookmark.visible,
+                    visible: true
+                });
             }
 
-            if (params.cameraPosition) {
+            if (!params || params.selectionState) {
+                this.setSelectionState({
+                    ids: bookmark.selected,
+                    selected: true
+                });
+            }
 
-                // TODO: How was the original camera position specified?
-
-                console.warn("reset cameraPosition not implemented - doing a viewFit instead");
-
-                this.viewFit({animate: true});
+            if (!params || params.cameraPosition) {
+                this.setCamera(bookmark.camera);
             }
         };
 
@@ -726,7 +778,10 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
          * Set general configurations
          *
          * @param params
-         * @param {Boolean} [params.mouseRayPick] When true, camera flies to picked point, otherwise to boundary of picked object
+         * @param {Boolean} [params.mouseRayPick=true] When true, camera flies to orbit each clicked point, otherwise
+         * it flies to the boundary of the object that was clicked on.
+         * @param {Boolean} [params.gimbalLock=true] When true, camera always rotates about a fixed vertical axis,
+         * otherwise it rotates freely like a trackball.
          */
         this.setConfigs = function (params) {
 
@@ -735,10 +790,12 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
             if (params.mouseRayPick != undefined) {
                 cameraControl.mousePickEntity.rayPick = params.mouseRayPick;
             }
+
+            if (params.gimbalLock != undefined) {
+                camera.view.gimbalLockY = params.gimbalLockY;
+            }
         };
     }
 
     return xeoViewer;
-
-})
-;
+});
