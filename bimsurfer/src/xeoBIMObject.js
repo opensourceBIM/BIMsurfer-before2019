@@ -1,7 +1,14 @@
 define(function () {
 
     /**
-     A **XEO.BIMObject** represents a BIMSurfer object with a xeoEngine Scene.
+     A xeoEngine plugin that represents a BIMSurfer object with a xeoEngine scene.
+
+     An object consists of a set of XEO.Entity's that share components between them.
+
+     The components control functionality for the Entity's as a group, while the Entity's
+     themselves each have their own XEO.Geometry.
+
+     This way, we are able to have BIM objects containing multiple geometries.
 
      @class BIMObject
      @module XEO
@@ -24,36 +31,40 @@ define(function () {
          */
         type: "XEO.BIMObject",
 
+        // Constructor
+
         _init: function (cfg) {
 
-            // Modelling transform matrix
+            // Modelling transform component
             this.transform = this.create(XEO.Transform, { // http://xeoengine.org/docs/classes/Matrix.html
                 id: this.id + ".transform",
                 matrix: cfg.matrix
             });
 
-            // Controls visibility
+            // Visibility control component.
             this.visibility = this.create(XEO.Visibility, { // http://xeoengine.org/docs/classes/Visibility.html
                 id: this.id + ".visibility",
                 visible: true
             });
 
-            // Random color to start with - need to set color from type
+            // Material component
             this.material = this.create(XEO.PhongMaterial, { // http://xeoengine.org/docs/classes/Material.html
                 id: this.id + ".material",
-                diffuse: [Math.random(), Math.random(), Math.random()],
+                diffuse: [Math.random(), Math.random(), Math.random()], // Random color until we set for type
                 opacity: 1.0
             });
 
-            // Controls rendering effects (eg transparency) for each Entity individually
+            // Rendering modes component
             this.modes = this.create(XEO.Modes, { // http://xeoengine.org/docs/classes/Modes.html
                 id: this.id + ".modes",
-                transparent: false
+                transparent: false,
+                backfaces: false
             });
 
-            // Create an Entity for each Geometry
+            // Create a XEO.Entity for each XEO.Geometry
+            // Each XEO.Entity shares the components defined above
 
-            // TODO: If we can combine Geometries into one Entity, then we can just use a single Entity to represent an object
+            // TODO: If all geometries are of same primitive, then we can combine them
 
             this.entities = [];
             var entity;
@@ -76,20 +87,25 @@ define(function () {
             }
         },
 
+        // Define read-only properties of XEO.BIMObject
+
         _props: {
 
+            // World-space bounding volume
             worldBoundary: {
                 get: function () {
                     return this.entities[0].worldBoundary
                 }
             },
 
+            // View-space bounding volume
             viewBoundary: {
                 get: function () {
                     return this.entities[0].viewBoundary
                 }
             },
 
+            // Canvas-space bounding volume
             canvasBoundary: {
                 get: function () {
                     return this.entities[0].viewBoundary
@@ -97,5 +113,4 @@ define(function () {
             }
         }
     });
-
 });
