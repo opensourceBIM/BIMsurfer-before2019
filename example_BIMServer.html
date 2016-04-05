@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Example</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
+    <script>
+
+        var ADDRESS = "http://localhost:8082";
+        var USERNAME = "lindsay.kay@xeolabs.com ";
+        var PASSWORD = "zaphod69";
+        var VERSION = "2.0";
+
+        // This is a bit awkard. This seems to be necessary in order for the
+        // BIMserver modules to find themselves, but it destroys any option
+        // for further modularization in the client and ability to use data-main.
+        var require = {
+            baseUrl: ADDRESS + "/js",
+            urlArgs: "bust=" + VERSION
+        };
+
+        // Where does this come frome? The API crashes on the absence of this
+        // member function?
+        String.prototype.firstUpper = function () {
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        }
+    </script>
+
+    <link rel="stylesheet" href="css/style.css"/>
+
+    <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
+    <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
+    <script type="text/javascript">
+
+        // Loads a model from BIMServer, builds an explorer tree UI.
+        // Clicking on a tree node fits the view to its scene object.
+
+        require([
+                    "bimsurfer/src/BimSurfer.js",
+                    "bimsurfer/src/StaticTreeRenderer.js",
+                    "bimsurfer/lib/domReady.js!"
+                ],
+                function (BimSurfer, StaticTreeRenderer) {
+
+                    var bimSurfer = new BimSurfer({
+                        domNode: "viewerContainer"
+                    });
+
+                    // Load a model from BIMServer
+
+                    bimSurfer.load({
+                        bimserver: ADDRESS,
+                        username: USERNAME,
+                        password: PASSWORD,
+                        poid: 131073,
+                        roid: 65539,
+                        schema: "ifc2x3tc1" // < TODO: Deduce automatically
+                    })
+                            .then(function (model) {
+
+                                var oids = [];
+
+                                model.getTree().then(function (tree) {
+
+                                    // Build explorer UI
+
+                                    var domtree = new StaticTreeRenderer({
+                                        domNode: 'treeContainer',
+                                        tree: tree
+                                    });
+
+                                    domtree.build();
+
+                                    domtree.on("click",
+                                            function (oid) {
+
+                                                // Clicking an explorer node fits the view to its object
+
+                                                bimSurfer.setColor({
+                                                    ids: [oid],
+                                                    color: [1,0,0,1]
+                                                });
+
+                                                bimSurfer.viewFit({
+                                                    ids: [oid],
+                                                    animate: true
+                                                });
+                                            });
+                                });
+                            });
+
+                    // Lets us play with the Surfer in the console
+                    window.bimSurfer = bimSurfer;
+                });
+    </script>
+
+</head>
+<body>
+<div id="maincontainer">
+
+    <div id="topsection"><h1>BIMSurfer example</h1></div>
+
+    <div id="contentwrapper">
+        <div class="inner">
+            <div id="viewerContainer">
+
+            </div>
+        </div>
+    </div>
+
+    <div id="leftcolumn">
+        <div class="inner">
+            <div id="treeContainer"></div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Example</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
+    <script>
+
+        var ADDRESS = "http://localhost:8082";
+        var USERNAME = "admin@admin.admin";
+        var PASSWORD = "admin";
+        var VERSION = "2.0";
+
+        // This is a bit awkard. This seems to be necessary in order for the
+        // BIMserver modules to find themselves, but it destroys any option
+        // for further modularization in the client and ability to use data-main.
+        var require = {
+            baseUrl: ADDRESS + "/js",
+            urlArgs: "bust=" + VERSION
+        };
+
+        // Where does this come frome? The API crashes on the absence of this
+        // member function?
+        String.prototype.firstUpper = function () {
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        }
+    </script>
+
+    <link rel="stylesheet" href="css/style.css"/>
+
+    <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
+    <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
+    <script type="text/javascript">
+
+        require([
+                    "bimsurfer/src/BimSurfer.js",
+                    "bimsurfer/src/StaticTreeRenderer.js",
+                    "bimsurfer/lib/domReady.js!"
+                ],
+                function (BimSurfer, StaticTreeRenderer) {
+
+                    var bimSurfer = new BimSurfer({
+                        domNode: "viewerContainer"
+                    });
+
+                    // Viewer's local test mode, loads randomly generated objects
+
+                    bimSurfer.load({
+                        test: true
+                    });
+
+                    // Lets us play with the Surfer in the console
+                    window.bimSurfer = bimSurfer;
+
+                    // Create array of object IDs that match our test objects
+
+                    var objectIds = [];
+                    for (var i = 0, len = 100; i < len; i++) {
+                        objectIds.push("object" + i);
+                    }
+
+                    var idx = 0;
+
+//                    window.setInterval(
+//                            function () { // Dirty, but OK for demos
+//                                bimSurfer.viewFit({
+//                                    ids: [objectIds[idx++ % objectIds.length]],
+//                                    animate: true
+//                                });
+//                            }, 1000)
+                });
+    </script>
+
+</head>
+<body>
+<div id="maincontainer">
+
+    <div id="topsection"><h1>BIMSurfer example</h1></div>
+
+    <div id="contentwrapper">
+        <div class="inner">
+            <div id="viewerContainer">
+
+            </div>
+        </div>
+    </div>
+
+    <div id="leftcolumn">
+        <div class="inner">
+            <div id="treeContainer"></div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
