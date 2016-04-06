@@ -1,7 +1,7 @@
 define(function () {
 
     /**
-     A xeoEngine plugin that represents a BIMSurfer object with a xeoEngine scene.
+     A xeoEngine plugin that represents a BIMSurfer object within a xeoEngine scene.
 
      An object consists of a set of XEO.Entity's that share components between them.
 
@@ -12,18 +12,17 @@ define(function () {
 
      @class BIMObject
      @module XEO
-     @submodule controls
      @constructor
      @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
      @param [cfg] {*} Configs
-     @param [cfg.id] {String} Optional ID, unique among all components in the parent viewer, generated automatically when omitted.
-     @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this KeyboardAxisCamera.
+     @param [cfg.id] {String} Optional ID, unique among all components in the parent scene, generated automatically when omitted.
+     @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this XEO.BIMObject.
      @extends Component
      */
     XEO.BIMObject = XEO.Component.extend({
 
         /**
-         JavaScript class name for this Component.
+         JavaScript class name for this XEO.BIMObject.
 
          @property type
          @type String
@@ -37,26 +36,22 @@ define(function () {
 
             // Modelling transform component
             this.transform = this.create(XEO.Transform, { // http://xeoengine.org/docs/classes/Matrix.html
-                id: this.id + ".transform",
                 matrix: cfg.matrix
             });
 
             // Visibility control component.
             this.visibility = this.create(XEO.Visibility, { // http://xeoengine.org/docs/classes/Visibility.html
-                id: this.id + ".visibility",
                 visible: true
             });
 
             // Material component
             this.material = this.create(XEO.PhongMaterial, { // http://xeoengine.org/docs/classes/Material.html
-                id: this.id + ".material",
                 diffuse: [Math.random(), Math.random(), Math.random()], // Random color until we set for type
                 opacity: 1.0
             });
 
             // Rendering modes component
             this.modes = this.create(XEO.Modes, { // http://xeoengine.org/docs/classes/Modes.html
-                id: this.id + ".modes",
                 transparent: false,
                 backfaces: false
             });
@@ -72,10 +67,6 @@ define(function () {
             for (var i = 0, len = cfg.geometryIds.length; i < len; i++) {
 
                 entity = this.create(XEO.Entity, { // http://xeoengine.org/docs/classes/Entity.html
-                    id: this.id + ".entity." + i,
-                    meta: {
-                        objectId: this.id
-                    },
                     geometry: "geometry." + cfg.geometryIds[i],
                     transform: this.transform,
                     visibility: this.visibility,
