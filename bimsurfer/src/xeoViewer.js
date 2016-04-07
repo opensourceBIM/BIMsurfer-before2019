@@ -697,49 +697,81 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
         /**
          * Returns a bookmark of xeoViewer state.
          */
-        this.getBookmark = function () {
+        this.getBookmark = function (options) {
 
+            // Get everything by default
+            
+            var getVisible = !options || options.visible;
+            var getColors = !options || options.colors;
+            var getSelected = !options || options.selected;
+            var getCamera = !options || options.camera;
+
+            var bookmark = {};
+            
             var objectId;
             var object;
-            var visible = [];
-            var colors = {};
-            var opacity;
 
-            for (objectId in objects) {
-                if (objects.hasOwnProperty(objectId)) {
+            if (getVisible) {
+                
+                var visible = [];
+                
+                for (objectId in objects) {
+                    if (objects.hasOwnProperty(objectId)) {
 
-                    object = objects[objectId];
+                        object = objects[objectId];
 
-                    if (object.visibility.visible) {
-                        visible.push(objectId);
+                        if (getVisible && object.visibility.visible) {
+                            visible.push(objectId);
+                        }
                     }
-
-                    opacity = object.modes.transparent ? object.material.opacity : 1.0;
-
-                    colors[objectId] = object.material.diffuse.slice(0).concat(opacity); // RGBA
                 }
+                bookmark.visible = visible;
             }
 
-            var camera = this.getCamera();
-            camera.animate = true; // Camera will fly to position when bookmark is restored
+            if (getColors) {
 
-            return {
-                colors: colors,
-                visible: visible,
-                selected: this.getSelected(),
-                camera: camera
-            };
+                var opacity;
+                var colors = {};
+                
+                for (objectId in objects) {
+                    if (objects.hasOwnProperty(objectId)) {
+                        object = objects[objectId];
+                            opacity = object.modes.transparent ? object.material.opacity : 1.0;
+                            colors[objectId] = object.material.diffuse.slice(0).concat(opacity); // RGBA
+                    }
+                }
+                bookmark.colors = colors;
+            }
+            
+            if (getSelected) {
+                bookmark.selected = this.getSelected();
+            }
+
+            if (getCamera) {
+                var camera = this.getCamera();
+                camera.animate = true; // Camera will fly to position when bookmark is restored
+                bookmark.camera = camera;
+            }
+            
+            return bookmark;
         };
 
         /**
          * Restores xeoViewer to a bookmark.
          *
          * @param bookmark
-         * @param params
+         * @param options
          */
-        this.setBookmark = function (bookmark, params) {
+        this.setBookmark = function (bookmark, options) {
 
-            if (!params || params.elementColors) {
+            // Set everything by default, where provided in bookmark
+            
+            var setVisible = bookmark.visible && (!options || options.visible);
+            var setColors = bookmark.colors &&  (!options || options.colors);
+            var setSelected = bookmark.selected && (!options || options.selected);
+            var setCamera = bookmark.camera && (!options || options.camera);
+            
+            if (setColors) {
 
                 var objectId;
                 var object;
@@ -755,21 +787,21 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
                 }
             }
 
-            if (!params || params.visibility) {
+            if (setVisible) {
                 this.setVisibility({
                     ids: bookmark.visible,
                     visible: true
                 });
             }
 
-            if (!params || params.selectionState) {
+            if (setSelected) {
                 this.setSelectionState({
                     ids: bookmark.selected,
                     selected: true
                 });
             }
 
-            if (!params || params.cameraPosition) {
+            if (setCamera) {
                 this.setCamera(bookmark.camera);
             }
         };
