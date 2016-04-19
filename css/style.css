@@ -9,9 +9,30 @@ body{
     border-bottom: solid 1px #ddd;
 }
 
-h1 {
+h1, h2 {
     padding: 10px;
     margin: 0;
+}
+
+textarea, pre {
+    padding: 20px;
+    border: solid 1px #ddd;
+    background: #eee;
+    margin: 0 10px;
+    height: 12px;
+    line-height: 12px;
+    font-size: 12px;
+    width: 1000px;
+    display: block;
+}
+
+pre {
+    background: white;
+}
+
+button {
+    margin: 10px 10px;
+    width: 100px;
 }
 
 #contentwrapper{

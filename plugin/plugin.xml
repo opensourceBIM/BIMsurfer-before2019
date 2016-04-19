@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PluginDescriptor>
+	<WebModulePlugin>
+		<identifier>bimsurfer2</identifier>
+		<name>BIMsurferV2</name>
+		<description>BIMsurfer is a JavaScript library to visualize BIM in 3D</description>
+	</WebModulePlugin>
+</PluginDescriptor>
