@@ -812,8 +812,6 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
          * @param params
          * @param {Boolean} [params.mouseRayPick=true] When true, camera flies to orbit each clicked point, otherwise
          * it flies to the boundary of the object that was clicked on.
-         * @param {Boolean} [params.gimbalLock=true] When true, camera always rotates about a fixed vertical axis,
-         * otherwise it rotates freely like a trackball.
          */
         this.setConfigs = function (params) {
 
@@ -822,10 +820,29 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
             if (params.mouseRayPick != undefined) {
                 cameraControl.mousePickEntity.rayPick = params.mouseRayPick;
             }
+        };
 
-            if (params.gimbalLock != undefined) {
-                camera.view.gimbalLockY = params.gimbalLockY;
-            }
+        /**
+         Returns a snapshot of this xeoViewer as a Base64-encoded image.
+
+         #### Usage:
+         ````javascript
+         imageElement.src = xeoViewer.getSnapshot({
+             width: 500, // Defaults to size of canvas
+             height: 500,
+             format: "png" // Options are "jpeg" (default), "png" and "bmp"
+         });
+         ````
+
+         @method getSnapshot
+         @param {*} [params] Capture options.
+         @param {Number} [params.width] Desired width of result in pixels - defaults to width of canvas.
+         @param {Number} [params.height] Desired height of result in pixels - defaults to height of canvas.
+         @param {String} [params.format="jpeg"] Desired format; "jpeg", "png" or "bmp".
+         @returns {String} String-encoded image data.
+         */
+        this.getSnapshot = function(params) {
+            return this.scene.canvas.getSnapshot(params);
         };
     }
 

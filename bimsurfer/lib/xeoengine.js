@@ -4,7 +4,7 @@
  * A WebGL-based 3D visualization engine from xeoLabs
  * http://xeoengine.org/
  *
- * Built on 2016-04-01
+ * Built on 2016-04-20
  *
  * MIT License
  * Copyright 2016, Lindsay Kay
@@ -185,11 +185,6 @@
                 deltaTime: null
             };
 
-            var renderEvent = {
-                sceneId: null,
-                pass: null
-            };
-
             // Hoisted vars
 
             var taskBudget = 8; // How long we're allowed to spend on tasks in each frame
@@ -257,6 +252,16 @@
                         tickEvent.startTime = scene.startTime;
                         tickEvent.deltaTime = tickEvent.prevTime != null ? tickEvent.time - tickEvent.prevTime : 0;
 
+                        /**
+                         * Fired on each game loop iteration.
+                         *
+                         * @event tick
+                         * @param {String} sceneID The ID of this Scene.
+                         * @param {Number} startTime The time in seconds since 1970 that this Scene was instantiated.
+                         * @param {Number} time The time in seconds since 1970 of this "tick" event.
+                         * @param {Number} prevTime The time of the previous "tick" event from this Scene.
+                         * @param {Number} deltaTime The time in seconds since the previous "tick" event from this Scene.
+                         */
                         scene.fire("tick", tickEvent, true);
                     }
                 }
@@ -265,32 +270,10 @@
             }
 
             function render() {
-
-                var scene;
-                var passes;
-                var i;
-                var clear;
-
-                for (id in self.scenes) {
-                    if (self.scenes.hasOwnProperty(id)) {
-
-                        scene = self.scenes[id];
-                        passes = scene.passes;
-
-                        renderEvent.sceneId = id;
-
-                        for (i = 0; i < passes; i++) {
-
-                            renderEvent.pass = i;
-
-                            scene.fire("rendering", renderEvent, true);
-
-                            clear = (i === 0);
-
-                            scene._compile(clear); // Render, maybe rebuild draw list first
-
-                            scene.fire("rendered", renderEvent, true);
-                        }
+                var scenes = self.scenes;
+                for (id in scenes) {
+                    if (scenes.hasOwnProperty(id)) {
+                        scenes[id].render();
                     }
                 }
             }
@@ -598,6 +581,218 @@
 })
 ();
 ;/*
+ * Canvas2Image v0.1
+ * Copyright (c) 2008 Jacob Seidelin, cupboy@gmail.com
+ * MIT License [http://www.opensource.org/licenses/mit-license.php]
+ */
+
+var Canvas2Image = (function () {
+    // check if we have canvas support
+    var oCanvas = document.createElement("canvas"),
+        sc = String.fromCharCode,
+        strDownloadMime = "image/octet-stream",
+        bReplaceDownloadMime = false;
+
+    // no canvas, bail out.
+    if (!oCanvas.getContext) {
+        return {
+            saveAsBMP: function () {
+            },
+            saveAsPNG: function () {
+            },
+            saveAsJPEG: function () {
+            }
+        }
+    }
+
+    var bHasImageData = !!(oCanvas.getContext("2d").getImageData),
+        bHasDataURL = !!(oCanvas.toDataURL),
+        bHasBase64 = !!(window.btoa);
+
+    // ok, we're good
+    var readCanvasData = function (oCanvas) {
+        var iWidth = parseInt(oCanvas.width),
+            iHeight = parseInt(oCanvas.height);
+        return oCanvas.getContext("2d").getImageData(0, 0, iWidth, iHeight);
+    };
+
+    // base64 encodes either a string or an array of charcodes
+    var encodeData = function (data) {
+        var i, aData, strData = "";
+
+        if (typeof data == "string") {
+            strData = data;
+        } else {
+            aData = data;
+            for (i = 0; i < aData.length; i++) {
+                strData += sc(aData[i]);
+            }
+        }
+        return btoa(strData);
+    };
+
+    // creates a base64 encoded string containing BMP data takes an imagedata object as argument
+    var createBMP = function (oData) {
+        var strHeader = '',
+            iWidth = oData.width,
+            iHeight = oData.height;
+
+        strHeader += 'BM';
+
+        var iFileSize = iWidth * iHeight * 4 + 54; // total header size = 54 bytes
+        strHeader += sc(iFileSize % 256);
+        iFileSize = Math.floor(iFileSize / 256);
+        strHeader += sc(iFileSize % 256);
+        iFileSize = Math.floor(iFileSize / 256);
+        strHeader += sc(iFileSize % 256);
+        iFileSize = Math.floor(iFileSize / 256);
+        strHeader += sc(iFileSize % 256);
+
+        strHeader += sc(0, 0, 0, 0, 54, 0, 0, 0); // data offset
+        strHeader += sc(40, 0, 0, 0); // info header size
+
+        var iImageWidth = iWidth;
+        strHeader += sc(iImageWidth % 256);
+        iImageWidth = Math.floor(iImageWidth / 256);
+        strHeader += sc(iImageWidth % 256);
+        iImageWidth = Math.floor(iImageWidth / 256);
+        strHeader += sc(iImageWidth % 256);
+        iImageWidth = Math.floor(iImageWidth / 256);
+        strHeader += sc(iImageWidth % 256);
+
+        var iImageHeight = iHeight;
+        strHeader += sc(iImageHeight % 256);
+        iImageHeight = Math.floor(iImageHeight / 256);
+        strHeader += sc(iImageHeight % 256);
+        iImageHeight = Math.floor(iImageHeight / 256);
+        strHeader += sc(iImageHeight % 256);
+        iImageHeight = Math.floor(iImageHeight / 256);
+        strHeader += sc(iImageHeight % 256);
+
+        strHeader += sc(1, 0, 32, 0); // num of planes & num of bits per pixel
+        strHeader += sc(0, 0, 0, 0); // compression = none
+
+        var iDataSize = iWidth * iHeight * 4;
+        strHeader += sc(iDataSize % 256);
+        iDataSize = Math.floor(iDataSize / 256);
+        strHeader += sc(iDataSize % 256);
+        iDataSize = Math.floor(iDataSize / 256);
+        strHeader += sc(iDataSize % 256);
+        iDataSize = Math.floor(iDataSize / 256);
+        strHeader += sc(iDataSize % 256);
+
+        strHeader += sc(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); // these bytes are not used
+
+        var aImgData = oData.data,
+            strPixelData = "",
+            c, x, y = iHeight,
+            iOffsetX, iOffsetY, strPixelRow;
+
+        do {
+            iOffsetY = iWidth * (y - 1) * 4;
+            strPixelRow = "";
+            for (x = 0; x < iWidth; x++) {
+                iOffsetX = 4 * x;
+                strPixelRow += sc(
+                    aImgData[iOffsetY + iOffsetX + 2], // B
+                    aImgData[iOffsetY + iOffsetX + 1], // G
+                    aImgData[iOffsetY + iOffsetX],     // R
+                    aImgData[iOffsetY + iOffsetX + 3]  // A
+                );
+            }
+            strPixelData += strPixelRow;
+        } while (--y);
+
+        return encodeData(strHeader + strPixelData);
+    };
+
+    // sends the generated file to the client
+    var saveFile = function (strData) {
+        if (!window.open(strData)) {
+            document.location.href = strData;
+        }
+    };
+
+    var makeDataURI = function (strData, strMime) {
+        return "data:" + strMime + ";base64," + strData;
+    };
+
+    // generates a <img> object containing the imagedata
+    var makeImageObject = function (strSource) {
+        var oImgElement = document.createElement("img");
+        oImgElement.src = strSource;
+        return oImgElement;
+    };
+
+    var scaleCanvas = function (oCanvas, iWidth, iHeight) {
+        if (iWidth && iHeight) {
+            var oSaveCanvas = document.createElement("canvas");
+
+            oSaveCanvas.width = iWidth;
+            oSaveCanvas.height = iHeight;
+            oSaveCanvas.style.width = iWidth + "px";
+            oSaveCanvas.style.height = iHeight + "px";
+
+            var oSaveCtx = oSaveCanvas.getContext("2d");
+
+            oSaveCtx.drawImage(oCanvas, 0, 0, oCanvas.width, oCanvas.height, 0, 0, iWidth, iWidth);
+
+            return oSaveCanvas;
+        }
+        return oCanvas;
+    };
+
+    return {
+        saveAsPNG: function (oCanvas, bReturnImg, iWidth, iHeight) {
+            if (!bHasDataURL) return false;
+
+            var oScaledCanvas = scaleCanvas(oCanvas, iWidth, iHeight),
+                strMime = "image/png",
+                strData = oScaledCanvas.toDataURL(strMime);
+
+            if (bReturnImg) {
+                return makeImageObject(strData);
+            } else {
+                saveFile(bReplaceDownloadMime ? strData.replace(strMime, strDownloadMime) : strData);
+            }
+            return true;
+        },
+
+        saveAsJPEG: function (oCanvas, bReturnImg, iWidth, iHeight) {
+            if (!bHasDataURL) return false;
+
+            var oScaledCanvas = scaleCanvas(oCanvas, iWidth, iHeight),
+                strMime = "image/jpeg",
+                strData = oScaledCanvas.toDataURL(strMime);
+
+            // check if browser actually supports jpeg by looking for the mime type in the data uri. if not, return false
+            if (strData.indexOf(strMime) != 5) return false;
+
+            if (bReturnImg) {
+                return makeImageObject(strData);
+            } else {
+                saveFile(bReplaceDownloadMime ? strData.replace(strMime, strDownloadMime) : strData);
+            }
+            return true;
+        },
+
+        saveAsBMP: function (oCanvas, bReturnImg, iWidth, iHeight) {
+            if (!(bHasDataURL && bHasImageData && bHasBase64)) return false;
+
+            var oScaledCanvas = scaleCanvas(oCanvas, iWidth, iHeight),
+                strMime = "image/bmp",
+                oData = readCanvasData(oScaledCanvas),
+                strImgData = createBMP(oData);
+
+            if (bReturnImg) {
+                return makeImageObject(makeDataURI(strImgData, strMime));
+            } else {
+                saveFile(makeDataURI(strImgData, strMime));
+            }
+            return true;
+        }
+    };
+})();;/*
  Based on Simple JavaScript Inheritance
  By John Resig http://ejohn.org/
  MIT Licensed.
@@ -6623,8 +6818,8 @@
          * @static
          * @returns {Float32Array}
          */
-        vec2: function () {
-            return new Float32Array(2);
+        vec2: function (values) {
+            return new Float32Array(values || 2);
         },
 
         /**
@@ -6633,8 +6828,8 @@
          * @static
          * @returns {Float32Array}
          */
-        vec3: function () {
-            return new Float32Array(3);
+        vec3: function (values) {
+            return new Float32Array(values || 3);
         },
 
         /**
@@ -6643,8 +6838,8 @@
          * @static
          * @returns {Float32Array}
          */
-        vec4: function () {
-            return new Float32Array(4);
+        vec4: function (values) {
+            return new Float32Array(values || 4);
         },
 
         /**
@@ -6653,8 +6848,8 @@
          * @static
          * @returns {Float32Array}
          */
-        mat3: function () {
-            return new Float32Array(9);
+        mat3: function (values) {
+            return new Float32Array(values || 9);
         },
 
         /**
@@ -6663,8 +6858,8 @@
          * @static
          * @returns {Float32Array}
          */
-        mat4: function () {
-            return new Float32Array(16);
+        mat4: function (values) {
+            return new Float32Array(values || 16);
         },
 
         /**
@@ -6722,6 +6917,18 @@
                 return uuid.join('');
             };
         }(),
+
+        /**
+         * Clamps a value to the given range.
+         * @param {Number} value Value to clamp.
+         * @param {Number} min Lower bound.
+         * @param {Number} max Upper bound.
+         * @returns {Number} Clamped result.
+         */
+        clamp: function (value, min, max) {
+            return Math.max(min, Math.min(max, value));
+
+        },
 
         /**
          * Floating-point modulus
@@ -7905,8 +8112,8 @@
          * @method rotationMat4c
          * @static
          */
-        rotationMat4c: function (anglerad, x, y, z) {
-            return XEO.math.rotationMat4v(anglerad, [x, y, z]);
+        rotationMat4c: function (anglerad, x, y, z, mat) {
+            return XEO.math.rotationMat4v(anglerad, [x, y, z], mat);
         },
 
         /**
@@ -7938,6 +8145,103 @@
          */
         scalingMat4s: function (s) {
             return XEO.math.scalingMat4c(s, s, s);
+        },
+
+        /**
+         * Gets Euler angles from a 4x4 matrix.
+         *
+         * @param {Float32Array} mat The 4x4 matrix.
+         * @param {String} order Desired Euler angle order: "XYZ", "YXZ", "ZXY" etc.
+         * @param {Float32Array} [dest] Destination Euler angles, created by default.
+         * @returns {Float32Array} The Euler angles.
+         */
+        mat4ToEuler: function (mat, order, dest) {
+
+            dest = dest || XEO.math.vec4();
+
+            var clamp = XEO.math.clamp;
+
+            // Assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+
+            var m11 = mat[0], m12 = mat[4], m13 = mat[8];
+            var m21 = mat[1], m22 = mat[5], m23 = mat[9];
+            var m31 = mat[2], m32 = mat[6], m33 = mat[10];
+
+            if (order === 'XYZ') {
+
+                dest[1] = Math.asin(clamp(m13, -1, 1));
+
+                if (Math.abs(m13) < 0.99999) {
+                    dest[0] = Math.atan2(-m23, m33);
+                    dest[2] = Math.atan2(-m12, m11);
+                } else {
+                    dest[0] = Math.atan2(m32, m22);
+                    dest[2] = 0;
+
+                }
+
+            } else if (order === 'YXZ') {
+
+                dest[0] = Math.asin(-clamp(m23, -1, 1));
+
+                if (Math.abs(m23) < 0.99999) {
+                    dest[1] = Math.atan2(m13, m33);
+                    dest[2] = Math.atan2(m21, m22);
+                } else {
+                    dest[1] = Math.atan2(-m31, m11);
+                    dest[2] = 0;
+                }
+
+            } else if (order === 'ZXY') {
+
+                dest[0] = Math.asin(clamp(m32, -1, 1));
+
+                if (Math.abs(m32) < 0.99999) {
+                    dest[1] = Math.atan2(-m31, m33);
+                    dest[2] = Math.atan2(-m12, m22);
+                } else {
+                    dest[1] = 0;
+                    dest[2] = Math.atan2(m21, m11);
+                }
+
+            } else if (order === 'ZYX') {
+
+                dest[1] = Math.asin(-clamp(m31, -1, 1));
+
+                if (Math.abs(m31) < 0.99999) {
+                    dest[0] = Math.atan2(m32, m33);
+                    dest[2] = Math.atan2(m21, m11);
+                } else {
+                    dest[0] = 0;
+                    dest[2] = Math.atan2(-m12, m22);
+                }
+
+            } else if (order === 'YZX') {
+
+                dest[2] = Math.asin(clamp(m21, -1, 1));
+
+                if (Math.abs(m21) < 0.99999) {
+                    dest[0] = Math.atan2(-m23, m22);
+                    dest[1] = Math.atan2(-m31, m11);
+                } else {
+                    dest[0] = 0;
+                    dest[1] = Math.atan2(m13, m33);
+                }
+
+            } else if (order === 'XZY') {
+
+                dest[2] = Math.asin(-clamp(m12, -1, 1));
+
+                if (Math.abs(m12) < 0.99999) {
+                    dest[0] = Math.atan2(m32, m22);
+                    dest[1] = Math.atan2(m13, m11);
+                } else {
+                    dest[0] = Math.atan2(-m23, m33);
+                    dest[1] = 0;
+                }
+            }
+
+            return dest;
         },
 
         /**
@@ -8888,7 +9192,7 @@
                 nvecs[j2].push(n);
             }
 
-            var normals = new Array(positions.length);
+            var normals = new Float32Array(positions.length);
 
             // now go through and average out everything
             for (i = 0, len = nvecs.length; i < len; i++) {
@@ -9315,6 +9619,136 @@
             return dest;
         },
 
+        /**
+         * Initializes a quaternion from Euler angles.
+         *
+         * @param {Float32Array} euler The Euler angles.
+         * @param {String} order Euler angle order: "XYZ", "YXZ", "ZXY" etc.
+         * @param {Float32Array} [dest] Destination quaternion, created by default.
+         * @returns {Float32Array} The quaternion.
+         */
+        eulerToQuaternion: function (euler, order, dest) {
+
+            dest = dest || XEO.math.vec4();
+
+            // http://www.mathworks.com/matlabcentral/fileexchange/
+            // 	20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
+            //	content/SpinCalc.m
+
+            var c1 = Math.cos(euler[0] / 2);
+            var c2 = Math.cos(euler[1] / 2);
+            var c3 = Math.cos(euler[2] / 2);
+            var s1 = Math.sin(euler[0] / 2);
+            var s2 = Math.sin(euler[1] / 2);
+            var s3 = Math.sin(euler[2] / 2);
+
+            if (order === 'XYZ') {
+
+                dest[0] = s1 * c2 * c3 + c1 * s2 * s3;
+                dest[1] = c1 * s2 * c3 - s1 * c2 * s3;
+                dest[2] = c1 * c2 * s3 + s1 * s2 * c3;
+                dest[3] = c1 * c2 * c3 - s1 * s2 * s3;
+
+            } else if (order === 'YXZ') {
+
+                dest[0] = s1 * c2 * c3 + c1 * s2 * s3;
+                dest[1] = c1 * s2 * c3 - s1 * c2 * s3;
+                dest[2] = c1 * c2 * s3 - s1 * s2 * c3;
+                dest[3] = c1 * c2 * c3 + s1 * s2 * s3;
+
+            } else if (order === 'ZXY') {
+
+                dest[0] = s1 * c2 * c3 - c1 * s2 * s3;
+                dest[1] = c1 * s2 * c3 + s1 * c2 * s3;
+                dest[2] = c1 * c2 * s3 + s1 * s2 * c3;
+                dest[3] = c1 * c2 * c3 - s1 * s2 * s3;
+
+            } else if (order === 'ZYX') {
+
+                dest[0] = s1 * c2 * c3 - c1 * s2 * s3;
+                dest[1] = c1 * s2 * c3 + s1 * c2 * s3;
+                dest[2] = c1 * c2 * s3 - s1 * s2 * c3;
+                dest[3] = c1 * c2 * c3 + s1 * s2 * s3;
+
+            } else if (order === 'YZX') {
+
+                dest[0] = s1 * c2 * c3 + c1 * s2 * s3;
+                dest[1] = c1 * s2 * c3 + s1 * c2 * s3;
+                dest[2] = c1 * c2 * s3 - s1 * s2 * c3;
+                dest[3] = c1 * c2 * c3 - s1 * s2 * s3;
+
+            } else if (order === 'XZY') {
+
+                dest[0] = s1 * c2 * c3 - c1 * s2 * s3;
+                dest[1] = c1 * s2 * c3 - s1 * c2 * s3;
+                dest[2] = c1 * c2 * s3 + s1 * s2 * c3;
+                dest[3] = c1 * c2 * c3 + s1 * s2 * s3;
+            }
+
+            return dest;
+        },
+
+        mat4ToQuaternion: function (m, dest) {
+
+            dest = dest || XEO.math.vec4();
+
+            // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
+
+            // Assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+
+            var m11 = m[0];
+            var m12 = m[4];
+            var m13 = m[8];
+            var m21 = m[1];
+            var m22 = m[5];
+            var m23 = m[9];
+            var m31 = m[2];
+            var m32 = m[6];
+            var m33 = m[10];
+            var s;
+
+            var trace = m11 + m22 + m33;
+
+            if (trace > 0) {
+
+                s = 0.5 / Math.sqrt(trace + 1.0 );
+
+                dest[3] = 0.25 / s;
+                dest[0] = ( m32 - m23 ) * s;
+                dest[1] = ( m13 - m31 ) * s;
+                dest[2] = ( m21 - m12 ) * s;
+
+            } else if ( m11 > m22 && m11 > m33 ) {
+
+                s = 2.0 * Math.sqrt( 1.0 + m11 - m22 - m33 );
+
+                dest[3] = ( m32 - m23 ) / s;
+                dest[0] = 0.25 * s;
+                dest[1] = ( m12 + m21 ) / s;
+                dest[2] = ( m13 + m31 ) / s;
+
+            } else if ( m22 > m33 ) {
+
+                s = 2.0 * Math.sqrt( 1.0 + m22 - m11 - m33 );
+
+                dest[3] = ( m13 - m31 ) / s;
+                dest[0] = ( m12 + m21 ) / s;
+                dest[1] = 0.25 * s;
+                dest[2] = ( m23 + m32 ) / s;
+
+            } else {
+
+                s = 2.0 * Math.sqrt( 1.0 + m33 - m11 - m22 );
+
+                dest[3] = ( m21 - m12 ) / s;
+                dest[0] = ( m13 + m31 ) / s;
+                dest[1] = ( m23 + m32 ) / s;
+                dest[2] = 0.25 * s;
+            }
+
+            return dest;
+        },
+
         vec3PairToQuaternion: function (u, v, dest) {
 
             dest = dest || XEO.math.vec4();
@@ -9355,15 +9789,25 @@
             return math.normalizeQuaternion(dest);
         },
 
-        angleAxisToQuaternion: function (x, y, z, degrees, dest) {
+        angleAxisToQuaternion: function (angleAxis, dest) {
             dest = dest || XEO.math.vec4();
-            var angleRad = (degrees / 180.0) * Math.PI;
-            var halfAngle = angleRad / 2.0;
+            var halfAngle = angleAxis[3] / 2.0;
             var fsin = Math.sin(halfAngle);
-            dest[0] = fsin * x;
-            dest[1] = fsin * y;
-            dest[2] = fsin * z;
-            dest[4] = Math.cos(halfAngle);
+            dest[0] = fsin * angleAxis[0];
+            dest[1] = fsin * angleAxis[1];
+            dest[2] = fsin * angleAxis[2];
+            dest[3] = Math.cos(halfAngle);
+            return dest;
+        },
+
+        quaternionToEuler: function (euler, order, dest) {
+            dest = dest || XEO.math.vec4();
+            var halfAngle = euler[3] / 2.0;
+            var fsin = Math.sin(halfAngle);
+            dest[0] = fsin * euler[0];
+            dest[1] = fsin * euler[1];
+            dest[2] = fsin * euler[2];
+            dest[3] = Math.cos(halfAngle);
             return dest;
         },
 
@@ -9375,6 +9819,35 @@
             dest[1] = p3 * q1 + p1 * q3 + p2 * q0 - p0 * q2;
             dest[2] = p3 * q2 + p2 * q3 + p0 * q1 - p1 * q0;
             dest[3] = p3 * q3 - p0 * q0 - p1 * q1 - p2 * q2;
+            return dest;
+        },
+
+        vec3ApplyQuaternion: function (q, vec, dest) {
+
+            dest = dest || XEO.math.vec3();
+
+            var x = vec[0];
+            var y = vec[1];
+            var z = vec[2];
+
+            var qx = q[0];
+            var qy = q[1];
+            var qz = q[2];
+            var qw = q[3];
+
+            // calculate quat * vector
+
+            var ix = qw * x + qy * z - qz * y;
+            var iy = qw * y + qz * x - qx * z;
+            var iz = qw * z + qx * y - qy * x;
+            var iw = -qx * x - qy * y - qz * z;
+
+            // calculate result * inverse quat
+
+            dest[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            dest[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            dest[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+
             return dest;
         },
 
@@ -9437,6 +9910,10 @@
             return dest;
         },
 
+        inverseQuaternion: function (q, dest) {
+            return XEO.math.normalizeQuaternion(XEO.math.conjugateQuaternion(q, dest));
+        },
+
         quaternionToAngleAxis: function (q, angleAxis) {
             angleAxis = angleAxis || XEO.math.vec4();
             q = XEO.math.normalizeQuaternion(q, tempVec4);
@@ -9452,7 +9929,7 @@
                 angleAxis[0] = q[1] / s;
                 angleAxis[0] = q[2] / s;
             }
-            angleAxis[3] = angle * 57.295779579;
+            angleAxis[3] = angle; // * 57.295779579;
             return angleAxis;
         }
     };
@@ -10854,17 +11331,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @event warn
      * @param {String} value The warning message
      */
-
-    /**
-     * Fired on each game loop iteration.
-     *
-     * @event tick
-     * @param {String} sceneID The ID of this Scene.
-     * @param {Number} startTime The time in seconds since 1970 that this Scene was instantiated.
-     * @param {Number} time The time in seconds since 1970 of this "tick" event.
-     * @param {Number} prevTime The time of the previous "tick" event from this Scene.
-     * @param {Number} deltaTime The time in seconds since the previous "tick" event from this Scene.
-     */
     XEO.Scene = XEO.Component.extend({
 
         type: "XEO.Scene",
@@ -10949,7 +11415,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             });
 
             // Redraw as canvas resized
-            this.canvas.on("size",
+            this.canvas.on("boundary",
                 function () {
                     self._renderer.imageDirty = true;
                     self._renderer.render({
@@ -11181,6 +11647,60 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 this._dirtyEntities[entity.id] = entity;
             }
         },
+
+        /**
+         * Renders a single frame of this Scene.
+         *
+         * This forces a render of this Scene, even if nothing has updated since the last render.
+         *
+         * This method is typically used when we want to synchronously take a snapshot of the canvas and need everything
+         * rendered right at that moment.
+         *
+         * @method render
+         */
+        render: (function () {
+
+            var renderEvent = {
+                sceneId: null,
+                pass: null
+            };
+
+            return function () {
+
+                renderEvent.sceneId = this.id;
+
+                var passes = this._passes;
+                var i;
+                var clear;
+
+                for (i = 0; i < passes; i++) {
+
+                    renderEvent.pass = i;
+
+                    /**
+                     * Fired when about to render a frame for a Scene.
+                     *
+                     * @event rendering
+                     * @param {String} sceneID The ID of this Scene.
+                     * @param {Number} pass Index of the pass we are about to render (see {{#crossLink "Scene/passes:property"}}{{/crossLink}}).
+                     */
+                    this.fire("rendering", renderEvent, true);
+
+                    clear = (i === 0);
+
+                    this._compile(clear, true); // Render, maybe rebuild draw list first
+
+                    /**
+                     * Fired when we have just rendered a frame for a Scene.
+                     *
+                     * @event rendering
+                     * @param {String} sceneID The ID of this Scene.
+                     * @param {Number} pass Index of the pass we rendered (see {{#crossLink "Scene/passes:property"}}{{/crossLink}}).
+                     */
+                    this.fire("rendered", renderEvent, true);
+                }
+            }
+        })(),
 
         _props: {
 
@@ -12138,7 +12658,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 nc[1] = normals[ic3 + 1];
                                 nc[2] = normals[ic3 + 2];
 
-                                var normal  = math.addVec3(math.addVec3(
+                                var normal = math.addVec3(math.addVec3(
                                         math.mulVec3Scalar(na, barycentric[0], tempVec3),
                                         math.mulVec3Scalar(nb, barycentric[1], tempVec3b), tempVec3c),
                                     math.mulVec3Scalar(nc, barycentric[2], tempVec3d), tempVec3e);
@@ -12330,7 +12850,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * Compiles and renders this Scene
          * @private
          */
-        _compile: function (clear) {
+        _compile: function (clear, forceRender) {
 
             // Compile dirty entities into this._renderer
 
@@ -12369,7 +12889,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             // Only renders if there was a state update
 
             this._renderer.render({
-                clear: clear !== false // Clear buffers?
+                clear: clear !== false, // Clear buffers?
+                force: forceRender // Render frame even if no state updates?
             });
         },
 
@@ -14958,7 +15479,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var canvas = this.scene.canvas;
 
             // Recompute aspect from change in canvas size
-            this._canvasResized = canvas.on("size", this._scheduleUpdate, this);
+            this._canvasResized = canvas.on("boundary", this._scheduleUpdate, this);
 
             this.fovy = cfg.fovy;
             this.near = cfg.near;
@@ -15323,6 +15844,29 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             this.canvas.width = this.canvas.clientWidth;
             this.canvas.height = this.canvas.clientHeight;
 
+            /**
+             * Boundary of the Canvas in absolute browser window coordinates.
+             *
+             * ### Usage:
+             *
+             * ````javascript
+             * var boundary = myScene.canvas.boundary;
+             *
+             * var xmin = boundary[0];
+             * var ymin = boundary[1];
+             * var xmax = boundary[2];
+             * var ymax = boundary[3];
+             * ````
+             *
+             * @property boundary
+             * @type {{Array of Number}}
+             * @final
+             */
+            this.boundary = [
+                this.canvas.offsetLeft, this.canvas.offsetTop,
+                this.canvas.clientWidth, this.canvas.clientHeight
+            ];
+
             this._createOverlay();
             this._resizeOverlay();
 
@@ -15400,18 +15944,20 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                             canvas.width = canvas.clientWidth;
                             canvas.height = canvas.clientHeight;
 
+                            var boundary = self.boundary;
+
+                            boundary[0] = canvas.offsetLeft;
+                            boundary[1] = canvas.offsetTop;
+                            boundary[2] = newWidth;
+                            boundary[3] = newHeight;
+
                             /**
-                             * Fired whenever the canvas has resized
-                             * @event size
-                             * @param width {Number} The new canvas width
-                             * @param height {Number} The new canvas height
-                             * @param aspect {Number} The new canvas aspect ratio
+                             * Fired whenever this Canvas's {{#crossLink "Canvas/boundary:property"}}{{/crossLink}} property changes.
+                             *
+                             * @event boundary
+                             * @param value The property's new value
                              */
-                            self.fire("size", {
-                                width: newWidth,
-                                height: newHeight,
-                                aspect: newHeight / newWidth
-                            });
+                            self.fire("boundary", boundary);
 
                             lastCanvasWidth = newWidth;
                             lastCanvasHeight = newHeight;
@@ -15538,6 +16084,64 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                  */
                 this.fire("webglContextFailed", true, true);
             }
+        },
+
+        /**
+         Returns a snapshot of this Canvas as a Base64-encoded image.
+
+         #### Usage:
+         ````javascript
+         imageElement.src = myScene.canvas.getSnapshot({
+             width: 500, // Defaults to size of canvas
+             height: 500,
+             format: "png" // Options are "jpeg" (default), "png" and "bmp"
+         });
+         ````
+
+         @method getSnapshot
+         @param {*} [params] Capture options.
+         @param {Number} [params.width] Desired width of result in pixels - defaults to width of canvas.
+         @param {Number} [params.height] Desired height of result in pixels - defaults to height of canvas.
+         @param {String} [params.format="jpeg"] Desired format; "jpeg", "png" or "bmp".
+         @returns {String} String-encoded image data.
+         */
+        getSnapshot: function (params) {
+
+            if (!this.canvas) {
+                this.error("Can't get snapshot - no canvas.");
+                return;
+            }
+
+            // Force-render a frame
+            this.scene.render();
+
+            params = params || {};
+
+            var width = params.width || this.canvas.width;
+            var height = params.height || this.canvas.height;
+            var format = params.format || "jpeg";
+            var image;
+
+            switch (format) {
+                case "jpeg":
+                    image = Canvas2Image.saveAsJPEG(this.canvas, true, width, height);
+                    break;
+
+                case "png":
+                    image = Canvas2Image.saveAsPNG(this.canvas, true, width, height);
+                    break;
+
+                case "bmp":
+                    image = Canvas2Image.saveAsBMP(this.canvas, true, width, height);
+                    break;
+
+                default:
+                    this.error("Unsupported snapshot format: '" + format
+                        + "' - supported types are 'jpeg', 'bmp' and 'png' - defaulting to 'jpeg'");
+                    image = Canvas2Image.saveAsJPEG(this.canvas, true, width, height);
+            }
+
+            return image.src;
         },
 
         _props: {
@@ -16969,6 +17573,129 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         }
     });
 
+})();
+;/**
+ A **CameraController** is the base class for components that control Cameras.
+
+ @class CameraController
+ @module XEO
+ @submodule interaction
+ @constructor
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this CameraController in the default
+ {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
+ @param [cfg] {*} Configs
+ @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
+ generated automatically when omitted.
+ @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this CameraController.
+ @param [cfg.camera] {String|Camera} ID or instance of a {{#crossLink "Camera"}}Camera{{/crossLink}} for this CameraController.
+ Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this CameraController. Defaults to the
+ parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance, {{#crossLink "Scene/camera:property"}}camera{{/crossLink}}.
+ @param [cfg.active=true] {Boolean} Whether or not this CameraController is active.
+ @extends Component
+ */
+(function () {
+
+    "use strict";
+
+    XEO.CameraController = XEO.Component.extend({
+
+        type: "XEO.CameraController",
+
+        _init: function (cfg) {
+            this.camera = cfg.camera;
+            this.active = cfg.active !== false;
+        },
+
+        _props: {
+
+            /**
+             * The {{#crossLink "Camera"}}{{/crossLink}} attached to this CameraController.
+             *
+             * Must be within the same {{#crossLink "Scene"}}{{/crossLink}} as this CameraController. Defaults to the parent
+             * {{#crossLink "Scene"}}Scene's{{/crossLink}} default {{#crossLink "Scene/camera:property"}}camera{{/crossLink}} when set to
+             * a null or undefined value.
+             *
+             * @property camera
+             * @type Camera
+             */
+            camera: {
+
+                set: function (value) {
+
+                    /**
+                     * Fired whenever this CameraController's {{#crossLink "CameraController/camera:property"}}{{/crossLink}}
+                     * property changes.
+                     *
+                     * @event camera
+                     * @param value The property's new value
+                     */
+                    this._attach({
+                        name: "camera",
+                        type: "XEO.Camera",
+                        component: value,
+                        sceneDefault: true,
+                        //onAdded: this._transformUpdated,
+                        onAddedScope: this
+                    });
+                },
+
+                get: function () {
+                    return this._attached.camera;
+                }
+            },
+
+            /**
+             * Flag which indicates whether this CameraController is active or not.
+             *
+             * Fires an {{#crossLink "CameraController/active:event"}}{{/crossLink}} event on change.
+             *
+             * @property active
+             * @type Boolean
+             * @default true
+             */
+            active: {
+
+                set: function (value) {
+
+                    value = !!value;
+
+                    if (this._active === value) {
+                        return;
+                    }
+
+                    this._active = value;
+
+                    /**
+                     * Fired whenever this CameraController's {{#crossLink "CameraController/active:property"}}{{/crossLink}} property changes.
+                     * @event active
+                     * @param value The property's new value
+                     */
+                    this.fire('active', this._active);
+                },
+
+                get: function () {
+                    return this._active;
+                }
+            }
+        },
+
+        _getJSON: function () {
+
+            var json = {
+                active: this._active
+            };
+
+            if (this._attached.camera) {
+                json.camera = this._attached.camera.id;
+            }
+
+            return json;
+        },
+
+        _destroy: function () {
+            this.active = false;
+        }
+    });
 })();
 ;/**
  A **KeyboardAxisCamera** switches a {{#crossLink "Camera"}}{{/crossLink}} between preset left, right, anterior,
@@ -21715,7 +22442,7 @@ visibility.destroy();
                     memoryStats.positions -= this._state.positions.numItems;
                     this._state.positions.destroy();
                 }
-                this._state.positions = this._positionsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, new Float32Array(this._positionsData), this._positionsData.length, 3, usage) : null;
+                this._state.positions = this._positionsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._positionsData, this._positionsData.length, 3, usage) : null;
                 if (this._state.positions) {
                     memoryStats.positions += this._state.positions.numItems;
                 }
@@ -21731,7 +22458,7 @@ visibility.destroy();
                     memoryStats.colors -= this._state.colors.numItems;
                     this._state.colors.destroy();
                 }
-                this._state.colors = this._colorsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, new Float32Array(this._colorsData), this._colorsData.length, 4, usage) : null;
+                this._state.colors = this._colorsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._colorsData, this._colorsData.length, 4, usage) : null;
                 if (this._state.colors) {
                     memoryStats.colors += this._state.colors.numItems;
                 }
@@ -21750,7 +22477,7 @@ visibility.destroy();
                     this._normalsData = XEO.math.buildNormals(this._positionsData, this._indicesData);
                 }
 
-                this._state.normals = this._normalsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, new Float32Array(this._normalsData), this._normalsData.length, 3, usage) : null;
+                this._state.normals = this._normalsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._normalsData, this._normalsData.length, 3, usage) : null;
                 if (this._state.normals) {
                     memoryStats.normals += this._state.normals.numItems;
                 }
@@ -21767,7 +22494,7 @@ visibility.destroy();
                     memoryStats.uvs -= this._state.uv.numItems;
                     this._state.uv.destroy();
                 }
-                this._state.uv = this._uvData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, new Float32Array(this._uvData), this._uvData.length, 2, usage) : null;
+                this._state.uv = this._uvData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._uvData, this._uvData.length, 2, usage) : null;
                 if (this._state.uv) {
                     memoryStats.uvs += this._state.uv.numItems;
                 }
@@ -21785,9 +22512,7 @@ visibility.destroy();
                     this._state.indices.destroy();
                 }
 
-                var IndexArrayType = XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"] ? Uint32Array : Uint16Array;
-
-                this._state.indices = this._indicesData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, new IndexArrayType(this._indicesData), this._indicesData.length, 1, usage) : null;
+                this._state.indices = this._indicesData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, this._indicesData, this._indicesData.length, 1, usage) : null;
                 if (this._state.indices) {
                     memoryStats.indices += this._state.indices.numItems;
                 }
@@ -21832,7 +22557,7 @@ visibility.destroy();
             var usage = gl.STATIC_DRAW;
 
             this._tangents = this._tangentsData ?
-                new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, new Float32Array(this._tangentsData), this._tangentsData.length, 3, usage) : null;
+                new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._tangentsData, this._tangentsData.length, 3, usage) : null;
 
             if (this._tangents) {
                 memoryStats.tangents += this._tangents.numItems;
@@ -22007,7 +22732,7 @@ visibility.destroy();
              *
              * @property positions
              * @default null
-             * @type {Array of Number}
+             * @type Float32Array
              */
             positions: {
 
@@ -22015,6 +22740,10 @@ visibility.destroy();
 
                     // Only recompile when adding or removing this property, not when modifying
                     var dirty = (!this._positionsData !== !value);
+
+                    if (value && value.constructor != Float32Array) {
+                        value = new Float32Array(value);
+                    }
 
                     this._positionsData = value;
                     this._positionsDirty = true;
@@ -22065,7 +22794,7 @@ visibility.destroy();
              *
              * @property normals
              * @default null
-             * @type {Array of Number}
+             * @type Float32Array
              */
             normals: {
 
@@ -22073,6 +22802,10 @@ visibility.destroy();
 
                     // Only recompile when adding or removing this property, not when modifying
                     var dirty = (!this._normalsData !== !value);
+
+                    if (value && value.constructor != Float32Array) {
+                        value = new Float32Array(value);
+                    }
 
                     this._normalsData = value;
                     this._normalsDirty = true;
@@ -22111,7 +22844,7 @@ visibility.destroy();
              *
              * @property uv
              * @default null
-             * @type {Array of Number}
+             * @type Float32Array
              */
             uv: {
 
@@ -22119,6 +22852,10 @@ visibility.destroy();
 
                     // Only recompile when adding or removing this property, not when modifying
                     var dirty = (!this._uvData !== !value);
+
+                    if (value && value.constructor != Float32Array) {
+                        value = new Float32Array(value);
+                    }
 
                     this._uvData = value;
                     this._uvDirty = true;
@@ -22157,7 +22894,7 @@ visibility.destroy();
              *
              * @property colors
              * @default null
-             * @type {Array of Number}
+             * @type Float32Array
              */
             colors: {
 
@@ -22165,6 +22902,10 @@ visibility.destroy();
 
                     // Only recompile when adding or removing this property, not when modifying
                     var dirty = (!this._colorsData !== !value);
+
+                    if (value && value.constructor != Float32Array) {
+                        value = new Float32Array(value);
+                    }
 
                     this._colorsData = value;
                     this._colorsDirty = true;
@@ -22199,11 +22940,14 @@ visibility.destroy();
             /**
              * The Geometry's indices array.
              *
+             * If ````XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]```` is true, then this can be
+             * a ````Uint32Array````, otherwise it needs to be a ````Uint16Array````.
+             *
              * Fires a {{#crossLink "Geometry/indices:event"}}{{/crossLink}} event on change.
              *
              * @property indices
              * @default null
-             * @type {Array of Number}
+             * @type Uint16Array | Uint32Array
              */
             indices: {
 
@@ -22211,6 +22955,22 @@ visibility.destroy();
 
                     // Only recompile when adding or removing this property, not when modifying
                     var dirty = (!this._indicesData && !value);
+
+                    if (value) {
+
+                        var bigIndicesSupported = XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"];
+
+                        if (!bigIndicesSupported && value.constructor === Uint32Array) {
+                            this.error("This WebGL implementation does not support Uint32Array");
+                            return;
+                        }
+
+                        var IndexArrayType = bigIndicesSupported ? Uint32Array : Uint16Array;
+
+                        if (value.constructor != Uint16Array && value.constructor != Uint32Array) {
+                            value = new IndexArrayType(value);
+                        }
+                    }
 
                     this._indicesData = value;
                     this._indicesDirty = true;
@@ -26366,6 +27126,150 @@ XEO.PathGeometry = XEO.Geometry.extend({
                             self.fire("mouseclicked", params, true);
                         }
                     });
+            })();
+
+            // VR
+
+            (function () {
+
+                var orientationAngleLookup = {
+                    'landscape-primary': 90,
+                    'landscape-secondary': -90,
+                    'portrait-secondary': 180,
+                    'portrait-primary': 0
+                };
+
+                var orientation;
+                var orientationAngle;
+                var acceleration = XEO.math.vec3();
+                var accelerationIncludingGravity = XEO.math.vec3();
+
+                var orientationChangeEvent = {
+                    orientation: null,
+                    orientationAngle: 0
+                };
+
+                var deviceMotionEvent = {
+                    orientationAngle: 0,
+                    acceleration: null,
+                    accelerationIncludingGravity: accelerationIncludingGravity,
+                    rotationRate: XEO.math.vec3(),
+                    interval: 0
+                };
+
+                var deviceOrientationEvent = {
+                    alpha: 0,
+                    beta: 0,
+                    gamma: 0,
+                    absolute: false
+                };
+
+                if (!window.OrientationChangeEvent) {
+                    self.warn("Browser event not supported: orientationchange");
+
+                } else {
+
+                    window.addEventListener('orientationchange',
+                        self._orientationchangedListener = function () {
+
+                            orientation = window.screen.orientation || window.screen.mozOrientation || window.msOrientation || null;
+                            orientationAngle = orientation ? (orientationAngleLookup[orientation] || 0) : 0;
+
+                            orientationChangeEvent.orientation = orientation;
+                            orientationChangeEvent.orientationAngle = orientationAngle;
+
+                            /**
+                             * Fired when the orientation of the device has changed.
+                             *
+                             * @event orientationchange
+                             * @param orientation The orientation: "landscape-primary", "landscape-secondary", "portrait-secondary" or "portrait-primary"
+                             * @param orientationAngle The orientation angle in degrees: 90 for landscape-primary, -90 for landscape-secondary, 180 for portrait-secondary or 0 for portrait-primary.
+                             */
+                            self.fire("orientationchange", orientationChangeEvent);
+                        },
+                        false);
+                }
+
+                if (!window.DeviceMotionEvent) {
+                    self.warn("Browser event not supported: devicemotion");
+
+                } else {
+
+                    window.addEventListener('devicemotion',
+                        self._deviceMotionListener = function (e) {
+
+                            deviceMotionEvent.interval = e.interval;
+                            deviceMotionEvent.orientationAngle = orientationAngle;
+
+                            var accel = e.acceleration;
+
+                            if (accel) {
+                                acceleration[0] = accel.x;
+                                acceleration[1] = accel.y;
+                                acceleration[2] = accel.z;
+                                deviceMotionEvent.acceleration = acceleration;
+                            } else {
+                                deviceMotionEvent.acceleration = null;
+                            }
+
+                            var accelGrav = e.accelerationIncludingGravity;
+
+                            if (accelGrav) {
+                                accelerationIncludingGravity[0] = accelGrav.x;
+                                accelerationIncludingGravity[1] = accelGrav.y;
+                                accelerationIncludingGravity[2] = accelGrav.z;
+                                deviceMotionEvent.accelerationIncludingGravity = accelerationIncludingGravity;
+                            } else {
+                                deviceMotionEvent.accelerationIncludingGravity = null;
+                            }
+
+                            deviceMotionEvent.rotationRate = e.rotationRate;
+
+                            /**
+                             * Fires on a regular interval and returns data about the rotation
+                             * (in degrees per second) and acceleration (in meters per second squared) of the device, at that moment in
+                             * time. Some devices do not have the hardware to exclude the effect of gravity.
+                             *
+                             * @event devicemotion
+                             * @param Float32Array acceleration The acceleration of the device, in meters per second squared, as a 3-element vector. This value has taken into account the effect of gravity and removed it from the figures. This value may not exist if the hardware doesn't know how to remove gravity from the acceleration data.
+                             * @param Float32Array accelerationIncludingGravity The acceleration of the device, in meters per second squared, as a 3-element vector. This value includes the effect of gravity, and may be the only value available on devices that don't have a gyroscope to allow them to properly remove gravity from the data.
+                             * @param, Number interval The interval, in milliseconds, at which this event is fired. The next event will be fired in approximately this amount of time.
+                             * @param  Float32Array rotationRate The rates of rotation of the device about each axis, in degrees per second.
+                             */
+                            self.fire("devicemotion", deviceMotionEvent);
+                        },
+                        false);
+                }
+
+                if (!window.DeviceOrientationEvent) {
+                    self.warn("Browser event not supported: deviceorientation");
+
+                } else {
+
+                    window.addEventListener("deviceorientation",
+                        self._deviceOrientListener = function (e) {
+
+                            deviceOrientationEvent.gamma = e.gamma;
+                            deviceOrientationEvent.beta = e.beta;
+                            deviceOrientationEvent.alpha = e.alpha;
+                            deviceOrientationEvent.absolute = e.absolute;
+
+                            /**
+                             * Fired when fresh data is available from an orientation sensor about the current orientation
+                             * of the device as compared to the Earth coordinate frame. This data is gathered from a
+                             * magnetometer inside the device. See
+                             * <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Orientation_and_motion_data_explained">Orientation and motion data explained</a> for more info.
+                             *
+                             * @event deviceorientation
+                             * @param Number alpha The current orientation of the device around the Z axis in degrees; that is, how far the device is rotated around a line perpendicular to the device.
+                             * @param Number beta The current orientation of the device around the X axis in degrees; that is, how far the device is tipped forward or backward.
+                             * @param Number gamma The current orientation of the device around the Y axis in degrees; that is, how far the device is turned left or right.
+                             * @param Boolean absolute This value is true if the orientation is provided as a difference between the device coordinate frame and the Earth coordinate frame; if the device can't detect the Earth coordinate frame, this value is false.
+                             */
+                            self.fire("deviceorientation", deviceOrientationEvent);
+                        },
+                        false);
+                }
             })();
         },
 
@@ -35464,8 +36368,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     }
 
                     if (!value) {
-                        var canvas = this.scene.canvas;
-                        value = [0, 0, canvas.width, canvas.height];
+
+                        var canvasBoundary = this.scene.canvas.boundary;
+
+                        var width = canvasBoundary[2];
+                        var height = canvasBoundary[3];
+
+                        value = [0, 0, width, height];
                     }
 
                     this._state.boundary = value;
@@ -35513,10 +36422,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     this._autoBoundary = value;
 
                     if (this._autoBoundary) {
-                        this._onCanvasSize = this.scene.canvas.on("size",
-                            function (e) {
+                        this._onCanvasSize = this.scene.canvas.on("boundary",
+                            function (boundary) {
 
-                                this._state.boundary = [0, 0, e.width, e.height];
+                                var width = boundary[2];
+                                var height = boundary[3];
+
+                                this._state.boundary = [0, 0, width, height];
 
                                 /**
                                  Fired whenever this Viewport's {{#crossLink "Viewport/boundary:property"}}{{/crossLink}} property changes.
@@ -37793,7 +38705,7 @@ myTask2.setFailed();
  A **Transform** defines a modelling matrix to transform attached {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}}.
 
  <ul>
- <li>Sub-classes of Transform are: {{#crossLink "Translate"}}{{/crossLink}},
+ <li>Sub-classes of Transform include: {{#crossLink "Translate"}}{{/crossLink}},
  {{#crossLink "Scale"}}{{/crossLink}}, {{#crossLink "Rotate"}}{{/crossLink}}, and {{#crossLink "Quaternion"}}{{/crossLink}}</li>
  <li>Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.</li>
  <li>When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
@@ -38403,59 +39315,60 @@ myTask2.setFailed();
  The Entities share the same {{#crossLink "BoxGeometry"}}{{/crossLink}}.<br>
 
  ````javascript
-var quaternion = new XEO.Quaternion({
+ var quaternion = new XEO.Quaternion({
     xyzw: [0, 0, 0, 1], // Unit quaternion
 });
 
-var translate1 = new XEO.Translate({
+ var translate1 = new XEO.Translate({
    parent: quaternion,
    xyz: [-5, 0, 0] // Translate along -X axis
 });
 
-var translate2 = new XEO.Translate({
+ var translate2 = new XEO.Translate({
    parent: quaternion,
    xyz: [5, 0, 0] // Translate along +X axis
 });
 
-var scale = new XEO.Scale({
+ var scale = new XEO.Scale({
    parent: translate2,
    xyz: [1, 2, 1] // Scale x2 on Y axis
 });
 
-var geometry = new XEO.BoxGeometry();
+ var geometry = new XEO.BoxGeometry();
 
-var entity1 = new XEO.Entity(scene, {
+ var entity1 = new XEO.Entity(scene, {
    transform: translate1,
    geometry: geometry
 });
 
-var entity2 = new XEO.Entity({
+ var entity2 = new XEO.Entity({
    transform: scale,
    geometry: geometry
 });
  ````
 
-Since everything in xeoEngine is dynamically editable, we can restructure the transform hierarchy at any time.
+ Since everything in xeoEngine is dynamically editable, we can restructure the transform hierarchy at any time.
 
-Let's insert a {{#crossLink "Scale"}}{{/crossLink}} between the first Translate and the first {{#crossLink "Entity"}}{{/crossLink}}:
+ Let's insert a {{#crossLink "Scale"}}{{/crossLink}} between the first Translate and the first {{#crossLink "Entity"}}{{/crossLink}}:
 
-````javascript
-var scale2 = new XEO.Scale({
+ ````javascript
+ var scale2 = new XEO.Scale({
    parent: translate1,
    xyz: [1, 1, 2] // Scale x2 on Z axis
 });
 
-Entity2.transform = scale2;
+ Entity2.transform = scale2;
  ````
 
-And just for fun, we'll start spinning the Quaternion:
+ Let's spin the Quaternion:
 
-````javascript
-// Rotate 0.2 degrees about Y-axis on each frame
-scene.on("tick", function(e) {
-    quaternion.rotate([0, 1, 0, 0.2]);
-});
-````
+ ````javascript
+ // Rotate 0.2 degrees about Y-axis on each frame
+ scene.on("tick",
+ function(e) {
+        quaternion.rotate([0, 1, 0, 0.2]);
+    });
+ ````
  @class Quaternion
  @module XEO
  @submodule transforms
@@ -38476,15 +39389,20 @@ scene.on("tick", function(e) {
         type: "XEO.Quaternion",
 
         _init: function (cfg) {
+
             this._super(cfg);
+
             this.xyzw = cfg.xyzw;
         },
 
         _props: {
 
             /**
-             The quaternion elements
+
+             The quaternion elements.
+
              Fires an {{#crossLink "Quaternion/xyzw:event"}}{{/crossLink}} event on change.
+
              @property xyzw
              @default [0,0,0,1]
              @type {Array of Number}
@@ -38492,8 +39410,12 @@ scene.on("tick", function(e) {
             xyzw: {
 
                 set: function (value) {
-                    this._xyzw = value || [0, 0, 0, 1];
-//                this.matrix = XEO.math.scalingMat4v(this._xyzw);
+
+                    var math = XEO.math;
+
+                    this._xyzw = value || math.identityQuaternion();
+
+                    this.matrix = math.quaternionToMat4(this._xyzw, math.mat4());
 
                     /**
                      Fired whenever this Quaternion's {{#crossLink "Quaternion/xyzw:property"}}{{/crossLink}} property changes.
@@ -38505,7 +39427,7 @@ scene.on("tick", function(e) {
                 },
 
                 get: function () {
-                    return this._xyz;
+                    return this._xyzw;
                 }
             }
         },
@@ -38514,15 +39436,33 @@ scene.on("tick", function(e) {
          Rotates this Quaternion.
          Fires an {{#crossLink "Quaternion/xyzw:event"}}{{/crossLink}} event to notify of update to the Quaternion elements.
          @method rotate
-         @param {Array of Number} angleAxis Rotation in angle-axis form.
+         @param {Float32Array} angleAxis Rotation in angle-axis form.
          */
-        rotate: function (angleAxis) {
-            // TODO
-        },
+        rotate: (function () {
+
+            var math = XEO.math;
+            var tempAngleAxis = math.vec4();
+            var tempQuat = math.vec4();
+            var tempMat = math.mat4();
+
+            return function (angleAxis) {
+
+                // TODO: Make API work in radians so we don't have to do this?:
+
+                tempAngleAxis[0] = angleAxis[0];
+                tempAngleAxis[1] = angleAxis[1];
+                tempAngleAxis[2] = angleAxis[2];
+                tempAngleAxis[3] = angleAxis[3] * math.DEGTORAD;
+
+                math.angleAxisToQuaternion(tempAngleAxis, tempQuat);
+
+                this.xyzw = math.mulQuaternions(this._xyzw, tempQuat,  this._xyzw);
+            };
+        })(),
 
         _getJSON: function () {
             return {
-                xyzw: this.xyzw
+                xyzw: this._xyzw
             };
         }
     });
