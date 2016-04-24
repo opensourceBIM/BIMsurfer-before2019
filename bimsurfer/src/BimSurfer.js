@@ -9,6 +9,12 @@ define(["bimserverapi_BimServerApi", "bimsurfer/src/Notifier.js", "bimsurfer/src
         this._viewer = new xeoViewer({
             domNode: cfg.domNode
         });
+        
+        // This are arrays as multiple models might be loaded or unloaded.
+        this._idMapping = {
+            'toGuid': [],
+            'toId'  : []
+        };
 
         /**
          * Loads content into this BIMSurfer.
@@ -33,7 +39,6 @@ define(["bimserverapi_BimServerApi", "bimsurfer/src/Notifier.js", "bimsurfer/src
 
         this._loadFromServer = function (params) {
 
-            var self = this;
             var notifier = new Notifier();
             var bimServerApi = new BimServerApi(ADDRESS, notifier);
 
@@ -88,19 +93,27 @@ define(["bimserverapi_BimServerApi", "bimsurfer/src/Notifier.js", "bimsurfer/src
         };
 
         this._loadModel = function (model) {
-
+        
             model.getTree().then(function (tree) {
 
                 var oids = [];
+                var oidToGuid = {};
+                var guidToOid = {};
 
                 var visit = function (n) {
                     oids.push(n.id);
+                    oidToGuid[n.id] = n.guid;
+                    guidToOid[n.guid] = n.id;
+                    
                     for (var i = 0; i < (n.children || []).length; ++i) {
                         visit(n.children[i]);
                     }
                 };
 
                 visit(tree);
+                
+                self._idMapping.toGuid.push(oidToGuid);
+                self._idMapping.toId.push(guidToOid);
 
                 var models = {};
 
@@ -121,6 +134,35 @@ define(["bimserverapi_BimServerApi", "bimsurfer/src/Notifier.js", "bimsurfer/src
 
                 loader.start();
             });
+        };
+        
+        // Helper function to traverse over the mappings for individually loaded models
+        var _traverseMappings = function(mappings) {
+            return function(k) {
+                for (var i = 0; i < mappings.length; ++i) {
+                    var v = mappings[i][k];
+                    if (v) return v;
+                }
+                return null;
+            }
+        };
+        
+        /**
+         * Returns a list of object ids (oid) for the list of guids (GlobalId)
+         *
+         * @param guids List of globally unique identifiers from the IFC model
+         */
+        this.toId = function(guids) {
+            return guids.map(_traverseMappings(self._idMapping.toId));
+        };
+
+        /**
+         * Returns a list of guids (GlobalId) for the list of object ids (oid) 
+         *
+         * @param ids List of internal object ids from the BIMserver / glTF file
+         */
+        this.toGuid = function(ids) {
+            return ids.map(_traverseMappings(self._idMapping.toGuid));
         };
 
         /**

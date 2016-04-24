@@ -98,20 +98,25 @@
                                         f(n);
                                         return li;
                                     };
+                                    
                                     var oids = flatten(tree);
                                     _.shuffle(oids);
                                     oids.splice(10);
-                                    oids = "["+oids.join(", ")+"]";
+                                    var guids = bimSurfer.toGuid(oids);
                                     
+                                    oids = "["+oids.join(", ")+"]";
+                                    guids = "["+guids.map(function(s) {return '"'+s+'"';}).join(", ")+"]";
                                     
                                     var METHODS = [
                                         {name:'setVisibility',     args:[{name: "ids", value: oids}, {name: "visible", value:false}]},
                                         {name:'setSelectionState', args:[{name: "ids", value: oids}, {name: "selected", value:true}]},
-                                        {name:'getSelected', args:[], has_result: true},
+                                        {name:'getSelected', args:[], hasResult: true},
+                                        {name:'toId', args:[guids], hasResult: true},
+                                        {name:'toGuid', args:[oids], hasResult: true},
                                         {name:'setColor', args:[{name: "ids", value: oids}, {name: "color", value:"{1,0,0,1}"}]},
                                         {name:'viewFit', args:[{name: "ids", value: oids}, {name: "animate", value:500}]},
                                         {name:'setCamera', args:[{name: "type", value: "'ortho'"}]},
-                                        {name:'getCamera', args:[]},
+                                        {name:'getCamera', args:[], hasResult: true},
                                         {name:'reset', args:[{name: "cameraPosition", value: true}]},
                                     ];
 
@@ -121,19 +126,31 @@
 
                                     METHODS.forEach(function(m, i) {
                                         n.innerHTML += "<h2>"+m.name+"()</h2>";
+                                        
+                                        var hasNamedArgs = false;
                                         var args = m.args.map(function(a) {
-                                            return a.name + ":" + a.value;
+                                            if (a.name) {
+                                                hasNamedArgs = true;
+                                                return a.name + ":" + a.value;
+                                            } else {
+                                                return a;
+                                            }
                                         }).join(", ");
-                                        var cmd = "bimSurfer."+m.name+"({"+args+"});";
+                                        
+                                        if (hasNamedArgs) {
+                                            args = "{"+args+"}";
+                                        }
+                                        
+                                        var cmd = "bimSurfer."+m.name+"("+args+");";
                                         n.innerHTML += "<textarea id='code"+i+"' spellcheck=false>"+cmd+"</textarea>";
                                         exec_statement = "eval(document.getElementById(\"code"+i+"\").value)"
-                                        if (m.has_result) {
-                                            exec_statement = "document.getElementById(\"result"+i+"\").innerHTML = " + exec_statement;
+                                        if (m.hasResult) {
+                                            exec_statement = "document.getElementById(\"result"+i+"\").innerHTML = JSON.stringify(" + exec_statement + ").replace(/,/g, \", \")";
                                         } else {
                                             exec_statement += "; window.scrollTo(0,0)"
                                         }
                                         n.innerHTML += "<button onclick='"+exec_statement+"'>run</button>";
-                                        if (m.has_result) {
+                                        if (m.hasResult) {
                                             n.innerHTML += "<pre id='result"+i+"' />";
                                         }
                                     });

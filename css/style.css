@@ -28,6 +28,8 @@ textarea, pre {
 
 pre {
     background: white;
+    overflow: hidden;
+    white-space: pre-wrap;
 }
 
 button {
