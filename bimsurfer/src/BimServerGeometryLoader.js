@@ -105,25 +105,30 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
     				for (var k in o.infoToOid) {
     				    if (o.infoToOid.hasOwnProperty(k)) {
     				    	if (k != null && k != "undefined") {
-    				    		oids.push(parseInt(k, 10));
+    				    		oids.push(parseInt(o.infoToOid[k], 10));
     				    	}
     				    }
     				}
     				
     				var query = {
-    					type: "GeometryInfo",
+    					type: "IfcProduct",
+    					includeAllSubtypes: true,
     					oids: oids,
     					include: {
-    						type: "GeometryInfo",
-    						field: "data"
+    						type: "IfcProduct",
+    						field: "geometry",
+    						include: {
+    							type: "GeometryInfo",
+    							field: "data"
+    						}
     					}
     				};
                     o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
     					o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
     						roids: o.options.roids,
+    						query: JSON.stringify(query),
     						serializerOid : serializer.oid,
-    						sync : false,
-    						query: JSON.stringify(query)
+    						sync : false
     					}, function(topicId){
     						o.topicId = topicId;
     						o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler);
@@ -259,7 +264,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
                 });
                 // o.viewer.events.trigger('sceneLoaded', [o.viewer.scene.scene]);
-                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {actionId: o.topicId}, function () {
+                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {topicId: o.topicId}, function () {
                 });
             }
         };
@@ -287,13 +292,12 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
             var i;
 
-            stream.align4();
+            stream.align8();
 
-            var matrix = stream.readFloatArray(16);
+            var matrix = stream.readDoubleArray(16);
 
             if (geometryType == 1) {
-
-                objectBounds = stream.readFloatArray(6);
+                objectBounds = stream.readDoubleArray(6);
                 geometryId = stream.readLong();
                 numIndices = stream.readInt();
                 indices = stream.readIntArray(numIndices);

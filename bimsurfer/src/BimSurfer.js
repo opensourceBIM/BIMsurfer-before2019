@@ -1,4 +1,3 @@
-console.log(BimServerClient);
 var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer.js"];
 if (!BimServerClient) {
 	deps.push("bimserverapi_BimServerApi");
