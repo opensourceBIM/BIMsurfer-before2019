@@ -35,7 +35,6 @@
     "grunt-contrib-cssmin": "*",
     "grunt-contrib-copy": "*",
     "grunt-contrib-clean": "*",
-    "grunt-github-releaser": "*",
     "grunt-zip": "*"
   },
   "preferGlobal": true,
