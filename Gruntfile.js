@@ -53,29 +53,9 @@ module.exports = function(grunt) {
 						src: ["output/**"],
 						dest: "output/bimsurfer-%VERSION%.zip"
 					}
-				},
-				"github-release" : {
-					options : {
-						repository : "opensourceBIM/BIMsurfer",
-						auth : {
-							user : "%USERNAME%",
-							password : "%PASSWORD%"
-						},
-						release : {
-							tag_name : "%VERSION%",
-							name : "BIMsurfer %VERSION%",
-							body : "Testing...",
-							draft : false,
-							prerelease : true
-						}
-					},
-					files : {
-						src : [ "output/bimsurfer-%VERSION%.zip" ]
-					}
 				}
 			});
 
-	grunt.loadNpmTasks("grunt-github-releaser");
 	grunt.loadNpmTasks("grunt-contrib-concat");
 	grunt.loadNpmTasks("grunt-contrib-uglify");
 	grunt.loadNpmTasks("grunt-contrib-cssmin");
