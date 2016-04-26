@@ -137,7 +137,6 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
          * @private
          */
         this.createGeometry = function (geometryId, positions, normals, colors, indices) {
-
             var geometry = new XEO.Geometry(scene, { // http://xeoengine.org/docs/classes/Geometry.html
                 id: "geometry." + geometryId,
                 primitive: "triangles",
@@ -161,7 +160,6 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
          * @private
          */
         this.createObject = function (roid, oid, objectId, geometryIds, type, matrix) {
-
             var object = new XEO.BIMObject(scene, {
                 id: objectId,
                 geometryIds: geometryIds,

@@ -198,7 +198,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
             data.align4();
 
-            var boundary = data.readFloatArray(6);
+            var boundary = data.readDoubleArray(6);
 
             this._initCamera(boundary);
 
@@ -306,7 +306,9 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 numNormals = stream.readInt();
                 normals = stream.readFloatArray(numNormals);
                 numColors = stream.readInt();
-                colors = stream.readFloatArray(numColors);
+                if (numColors > 0) {
+                	colors = stream.readFloatArray(numColors);
+                }
 
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
 
@@ -334,6 +336,9 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     numNormals = stream.readInt();
                     normals = stream.readFloatArray(numNormals);
                     numColors = stream.readInt();
+                    if (numColors > 0) {
+                    	colors = stream.readFloatArray(numColors);
+                    }
                     colors = stream.readFloatArray(numColors);
 
                     this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
