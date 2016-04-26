@@ -6,8 +6,8 @@
         <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
         <script>
 
-            var ADDRESS = "http://localhost:8082";
-            var USERNAME = "admin@admin.admin";
+            var ADDRESS = "http://localhost:8080";
+            var USERNAME = "admin@bimserver.org";
             var PASSWORD = "admin";
             var VERSION = "2.0";
 
@@ -27,13 +27,18 @@
         </script>
 
         <link rel="stylesheet" href="css/style.css" />
-
+        <script type="text/javascript" src="../bimserverjavascriptapi/js/bimserverapiwebsocket.js"></script>
+        <script type="text/javascript" src="../bimserverjavascriptapi/js/bimserverclient.js"></script>
+        <script type="text/javascript" src="../bimserverjavascriptapi/js/bimserverapipromise.js"></script>
+        <script type="text/javascript" src="../bimserverjavascriptapi/js/ifc2x3tc1.js"></script>
+        <script type="text/javascript" src="../bimserverjavascriptapi/js/ifc4.js"></script>
+        <script type="text/javascript" src="../bimserverjavascriptapi/js/model.js"></script>
+        <script type="text/javascript" src="../bimserverjavascriptapi/js/translations_en.js"></script>
         <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
         <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
         <script type="text/javascript">
             require(["bimsurfer/src/app.js"], function() {});
         </script>
-
     </head>
     <body>
         <div id="maincontainer">

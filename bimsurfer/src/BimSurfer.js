@@ -1,5 +1,14 @@
-define(["bimserverapi_BimServerApi", "bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer.js"], function (BimServerApi, Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer) {
-
+console.log(BimServerClient);
+var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer.js"];
+if (!BimServerClient) {
+	deps.push("bimserverapi_BimServerApi");
+}
+define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, _BimServerApi) {
+	if (_BimServerApi) {
+		BimServerApi = _BimServerApi;
+	} else {
+		BimServerApi = BimServerClient;
+	}
     function BimSurfer(cfg) {
 
         var self = this;
@@ -77,17 +86,17 @@ define(["bimserverapi_BimServerApi", "bimsurfer/src/Notifier.js", "bimsurfer/src
                         // TODO: Preload not necessary combined with the bruteforce tree
                         var fired = false;
 
-                        model.query(PreloadQuery,
-                            function () {
-                                if (!fired) {
+//                        model.query(PreloadQuery,
+//                            function () {
+//                                if (!fired) {
                                     fired = true;
                                     var vmodel = new Model(params.api, model);
 
                                     self._loadModel(vmodel);
 
                                     resolve(vmodel);
-                                }
-                            });
+//                                }
+//                            });
                     });
             });
         };
@@ -101,7 +110,7 @@ define(["bimserverapi_BimServerApi", "bimsurfer/src/Notifier.js", "bimsurfer/src
                 var guidToOid = {};
 
                 var visit = function (n) {
-                    oids.push(n.id);
+                    oids[n.gid] = n.id;
                     oidToGuid[n.id] = n.guid;
                     guidToOid[n.guid] = n.id;
                     

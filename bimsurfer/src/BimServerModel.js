@@ -48,13 +48,13 @@ define(["bimsurfer/lib/text.js"], function(text) {
                 api.getJsonSerializer(function (jsonSerializer) {
                     
                     // Initiate download
-                    api.call("Bimsie1ServiceInterface", "download", {
-                        roid: model.roid,
+                    api.call("ServiceInterface", "downloadRevisions", {
+                        roids: [model.roid],
                         serializerOid: jsonSerializer.oid,
                         showOwn: false,
                         sync: true
                     }, function (laid) {
-                    
+                    	
                         // Construct download url
                         var url = api.generateRevisionDownloadUrl({
                             laid: laid,
@@ -135,7 +135,7 @@ define(["bimsurfer/lib/text.js"], function(text) {
                             });
                             
                             var make_element = function (o) {
-                                return {name: o.Name, id: o.id, guid: o.GlobalId, parent: o.parent};
+                                return {name: o.Name, id: o.id, guid: o.GlobalId, parent: o.parent, gid: o._rgeometry};
                             };
                             
                             var fold = (function() {

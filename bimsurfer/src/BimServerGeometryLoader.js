@@ -97,20 +97,38 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                         });
                     });
                 } else if (o.options.type == "oids") {
-                    o.groupId = o.options.roids[0];
-                    o.oids = o.options.oids;
-                    o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
-                        o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByOids", {
-                            roids: o.options.roids,
-                            oids: o.options.oids,
-                            serializerOid: serializer.oid,
-                            sync: false,
-                            deep: false
-                        }, function (topicId) {
-                            o.topicId = topicId;
-                            o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler, o._afterRegistration);
-                        });
-                    });
+    				o.groupId = o.options.roids[0];
+    				
+    				o.infoToOid = o.options.oids;
+    				
+    				var oids = [];
+    				for (var k in o.infoToOid) {
+    				    if (o.infoToOid.hasOwnProperty(k)) {
+    				    	if (k != null && k != "undefined") {
+    				    		oids.push(parseInt(k, 10));
+    				    	}
+    				    }
+    				}
+    				
+    				var query = {
+    					type: "GeometryInfo",
+    					oids: oids,
+    					include: {
+    						type: "GeometryInfo",
+    						field: "data"
+    					}
+    				};
+                    o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
+    					o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
+    						roids: o.options.roids,
+    						serializerOid : serializer.oid,
+    						sync : false,
+    						query: JSON.stringify(query)
+    					}, function(topicId){
+    						o.topicId = topicId;
+    						o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler);
+    					});
+    				});
                 }
             }
         };
