@@ -17,7 +17,7 @@ $(function()
 		var dialog = $('<div />').attr('title', 'Open a project');
 		var projectList = $('<ul />').attr('id', 'projects').appendTo(dialog);
 
-		o.bimServerApi.call("Bimsie1ServiceInterface", "getAllProjects", {onlyActive: true, onlyTopLevel: false}, function(projects){
+		o.bimServerApi.call("ServiceInterface", "getAllProjects", {onlyActive: true, onlyTopLevel: false}, function(projects){
 			projects.forEach(function(project){
 				if(project.lastRevisionId != -1)
 				{

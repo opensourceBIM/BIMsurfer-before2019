@@ -461,7 +461,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				o.groupId = o.options.roid;
 				o.types = o.options.types;
 				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
-					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
+					o.bimServerApi.call("ServiceInterface", "downloadByTypes", {
 						roids: [o.options.roid],
 						schema: o.options.schema,
 						classNames : types,
@@ -479,7 +479,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				o.groupId = o.options.roid;
 				o.types = o.options.types;
 				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
-					o.bimServerApi.call("Bimsie1ServiceInterface", "download", {
+					o.bimServerApi.call("ServiceInterface", "download", {
 						roid: o.options.roid,
 						serializerOid : serializer.oid,
 						sync : false,
@@ -512,7 +512,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 					}
 				};
 				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin", function(serializer){
-					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByNewJsonQuery", {
+					o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
 						roids: o.options.roids,
 						serializerOid : serializer.oid,
 						sync : false,
