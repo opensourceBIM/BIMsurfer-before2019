@@ -21,6 +21,25 @@ define([
             canvas: canvas
         });
 
+        // Redefine default light sources;
+        // create ambient light and single directional light behind viewpoint
+        scene.lights.lights = [
+
+            // Ambient light source #0
+            new XEO.AmbientLight(scene, {
+                color: [0.45, 0.45, 0.5],
+                intensity: 0.9
+            }),
+
+            // Directional light source #1
+            new XEO.DirLight(scene, {
+                dir: [0.0, 0.0, -1.0],
+                color: [1.0, 1.0, 1.0],
+                intensity: 1.0,
+                space: "view"
+            })
+        ];
+
         this.scene = scene;
 
         // The camera
@@ -137,7 +156,7 @@ define([
 
             this.clear();
 
-            var geometry = new XEO.SphereGeometry(scene, { // http://xeoengine.org/docs/classes/Geometry.html
+            var geometry = new XEO.BoxGeometry(scene, { // http://xeoengine.org/docs/classes/Geometry.html
                 id: "geometry.myGeometry"
             });
 
@@ -230,6 +249,7 @@ define([
             var color = DefaultMaterials[type] || DefaultMaterials["DEFAULT"];
 
             object.material.diffuse = [color[0], color[1], color[2]];
+            object.material.specular = [0, 0, 0];
 
             if (color[3] < 1) { // Transparent object
                 object.material.opacity = color[3];
