@@ -229,8 +229,6 @@ define([
 
             var color = DefaultMaterials[type] || DefaultMaterials["DEFAULT"];
 
-            color[3] = 0.5;
-
             object.material.diffuse = [color[0], color[1], color[2]];
 
             if (color[3] < 1) { // Transparent object
