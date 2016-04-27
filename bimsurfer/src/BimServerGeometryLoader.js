@@ -279,7 +279,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             var numNormals;
             var normals;
             var numColors;
-            var colors;
+            var colors = null;
 
             var i;
             
@@ -306,18 +306,9 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 numNormals = stream.readInt();
                 normals = stream.readFloatArray(numNormals);
                 numColors = stream.readInt();
-                if (numColors > 0 || BIMSERVER_VERSION == "1.4") {
+                if (numColors > 0) {
                 	colors = stream.readFloatArray(numColors);
                 }
-                
-                // @todo: debugging, remove
-                var maxi = 0;
-                for (var i = 0; i < indices.length; ++i) {
-                    if (indices[i] > maxi) {
-                        maxi = indices[i];
-                    }
-                }
-                console.log(maxi, positions.length / 3, normals.length / 3, colors.length / 4);
                                 
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
 
@@ -345,7 +336,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     numNormals = stream.readInt();
                     normals = stream.readFloatArray(numNormals);
                     numColors = stream.readInt();
-                    if (numColors > 0 || BIMSERVER_VERSION == "1.4") {
+                    if (numColors > 0) {
                     	colors = stream.readFloatArray(numColors);
                     }
 
@@ -387,8 +378,9 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 return;
             }
 
-            o.models[roid].get(oid,
-                function () {
+            
+            // o.models[roid].get(oid,
+                // function () {
 
                     if (o.viewer.scene.components[objectId]) {
                         console.log("Object with id " + objectId + " already existed");
@@ -397,11 +389,11 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
                     o.viewer.createObject(roid, oid, objectId, geometryIds, type, matrix);
 
-                    o.objectAddedListeners.forEach(function (listener) {
+                    // o.objectAddedListeners.forEach(function (listener) {
 
-                        listener(objectId);
-                    });
-                });
+                        // listener(objectId);
+                    // });
+                // });
         };
     }
 
