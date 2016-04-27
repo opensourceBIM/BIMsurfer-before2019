@@ -94,6 +94,16 @@ The result shows that only two objects are now selected:
 ["object2", "object4"]  
 ````
 
+Subscribing to selection updates:
+
+````javascript
+bimSurfer.on("selection-changed", 
+    function() {
+         var selected = bimSurfer.getSelected();
+         console.log("selection = " + JSON.stringify(selected));
+    });
+````
+
 ### Showing and hiding objects
 
 Hiding three objects by ID:
@@ -192,6 +202,16 @@ The returned value would be:
     "up": [0,1,0],
     "fovy": 65
 }
+````
+
+Subscribing to camera updates:
+
+````javascript
+bimSurfer.on("camera-changed", 
+    function() {
+         var camera = bimSurfer.getCamera();
+         console.log(JSON.stringify(camera));
+    });
 ````
  
 ### Fitting objects in view

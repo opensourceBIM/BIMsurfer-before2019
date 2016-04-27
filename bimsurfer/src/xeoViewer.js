@@ -1,8 +1,15 @@
-define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], function (DefaultMaterials) {
+define([
+    "bimsurfer/src/DefaultMaterials.js",
+    "bimsurfer/src/EventHandler.js",
+    "bimsurfer/src/xeoBIMObject.js"], function (DefaultMaterials, EventHandler) {
 
     function xeoViewer(cfg) {
 
         // Create xeoViewer
+
+        EventHandler.call(this);
+
+        var self = this;
 
         var domNode = document.getElementById(cfg.domNode);
         var canvas = document.createElement("canvas");
@@ -88,6 +95,37 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
 
         // Bookmark of initial state to reset to - captured with #saveReset(), applied with #reset().
         var resetBookmark = null;
+
+        /**
+         * Fired whenever this xeoViewer's camera changes.
+         * @event camera-changed
+         * @params New camera state, same as that got with #getCamera.
+         */
+        (function () {
+
+            // Fold xeoEngine's separate events for view and projection updates
+            // into a single update event, deferred to fire on next scene tick.
+
+            var cameraUpdated = false;
+
+            scene.on("tick",
+                function () {
+                    if (cameraUpdated) {
+                        self.fire("camera-changed", self.getCamera());
+                        cameraUpdated = false;
+                    }
+                });
+
+            camera.on("projectMatrix",
+                function () {
+                    cameraUpdated = true;
+                });
+
+            camera.on("viewMatrix",
+                function () {
+                    cameraUpdated = true;
+                });
+        })();
 
         /**
          * Loads random objects into the viewer for testing.
@@ -220,8 +258,6 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
 
             collection.add(model);
 
-            var self = this;
-
             model.on("loaded",
                 function () {
 
@@ -340,6 +376,8 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
                 return;
             }
 
+            var changed = false; // Only fire "selection-changed" when selection actually changes
+
             var selected = !!params.selected;
 
             var objectId;
@@ -354,6 +392,11 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
                     console.error("Object not found: '" + objectId + "'");
 
                 } else {
+
+                    if (!!selectedObjects[objectId] !== selected) {
+                        changed = true;
+                    }
+
                     if (selected) {
                         selectedObjects[objectId] = object;
                     } else {
@@ -361,8 +404,21 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
                             delete selectedObjects[objectId];
                         }
                     }
+
                     selectedObjectList = null; // Now needs lazy-rebuild
                 }
+            }
+
+            if (changed) {
+
+                selectedObjectList = Object.keys(selectedObjects);
+
+                /**
+                 * Fired whenever this xeoViewer's selection state changes.
+                 * @event selection-changed
+                 * @params Array of IDs of all currently-selected objects.
+                 */
+                this.fire("selection-changed", selectedObjectList);
             }
         };
 
@@ -698,21 +754,21 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
         this.getBookmark = function (options) {
 
             // Get everything by default
-            
+
             var getVisible = !options || options.visible;
             var getColors = !options || options.colors;
             var getSelected = !options || options.selected;
             var getCamera = !options || options.camera;
 
             var bookmark = {};
-            
+
             var objectId;
             var object;
 
             if (getVisible) {
-                
+
                 var visible = [];
-                
+
                 for (objectId in objects) {
                     if (objects.hasOwnProperty(objectId)) {
 
@@ -730,17 +786,17 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
 
                 var opacity;
                 var colors = {};
-                
+
                 for (objectId in objects) {
                     if (objects.hasOwnProperty(objectId)) {
                         object = objects[objectId];
-                            opacity = object.modes.transparent ? object.material.opacity : 1.0;
-                            colors[objectId] = object.material.diffuse.slice(0).concat(opacity); // RGBA
+                        opacity = object.modes.transparent ? object.material.opacity : 1.0;
+                        colors[objectId] = object.material.diffuse.slice(0).concat(opacity); // RGBA
                     }
                 }
                 bookmark.colors = colors;
             }
-            
+
             if (getSelected) {
                 bookmark.selected = this.getSelected();
             }
@@ -750,7 +806,7 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
                 camera.animate = true; // Camera will fly to position when bookmark is restored
                 bookmark.camera = camera;
             }
-            
+
             return bookmark;
         };
 
@@ -763,12 +819,12 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
         this.setBookmark = function (bookmark, options) {
 
             // Set everything by default, where provided in bookmark
-            
+
             var setVisible = bookmark.visible && (!options || options.visible);
-            var setColors = bookmark.colors &&  (!options || options.colors);
+            var setColors = bookmark.colors && (!options || options.colors);
             var setSelected = bookmark.selected && (!options || options.selected);
             var setCamera = bookmark.camera && (!options || options.camera);
-            
+
             if (setColors) {
 
                 var objectId;
@@ -839,10 +895,12 @@ define(["bimsurfer/src/DefaultMaterials.js", "bimsurfer/src/xeoBIMObject.js"], f
          @param {String} [params.format="jpeg"] Desired format; "jpeg", "png" or "bmp".
          @returns {String} String-encoded image data.
          */
-        this.getSnapshot = function(params) {
+        this.getSnapshot = function (params) {
             return this.scene.canvas.getSnapshot(params);
         };
     }
+
+    xeoViewer.prototype = Object.create(EventHandler.prototype);
 
     return xeoViewer;
 });

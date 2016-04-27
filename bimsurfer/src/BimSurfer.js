@@ -1,5 +1,5 @@
 // Backwards compatibility
-var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer.js"];
+var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer.js", "bimsurfer/src/EventHandler.js"];
 if (typeof(BimServerClient) == 'undefined') {
     window.BIMSERVER_VERSION = "1.4";
 	deps.push("bimserverapi_BimServerApi");
@@ -7,7 +7,7 @@ if (typeof(BimServerClient) == 'undefined') {
     window.BIMSERVER_VERSION = "1.5";
 }
 
-define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, _BimServerApi) {
+define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, EventHandler, _BimServerApi) {
 	
     // Backwards compatibility
     var BimServerApi;
@@ -21,10 +21,28 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
         var self = this;
 
+        EventHandler.call(this);
+
         cfg = cfg || {};
 
-        this._viewer = new xeoViewer({
+        var viewer = new xeoViewer({
             domNode: cfg.domNode
+        });
+
+        /**
+         * Fired whenever this BIMSurfer's camera changes.
+         * @event camera-changed
+         */
+        viewer.on("camera-changed", function() {
+           self.fire("camera-changed");
+        });
+
+        /**
+         * Fired whenever this BIMSurfer's selection changes.
+         * @event selection-changed
+         */
+        viewer.on("selection-changed", function() {
+            self.fire("selection-changed");
         });
         
         // This are arrays as multiple models might be loaded or unloaded.
@@ -40,7 +58,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.load = function (params) {
 
             if (params.test) {
-                this._viewer.loadRandom();
+                viewer.loadRandom();
                 return null;
 
             } else if (params.bimserver) {
@@ -80,7 +98,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
         this._loadFrom_glTF = function (params) {
             if (params.src) {
-                this._viewer.loadglTF(params.src);
+                viewer.loadglTF(params.src);
             }
         };
 
@@ -141,7 +159,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 // TODO: Ugh. Undecorate some of the newly created classes
                 models[model.model.roid] = model.model;
 
-                var loader = new GeometryLoader(model.api, models, self._viewer);
+                var loader = new GeometryLoader(model.api, models, viewer);
 
                 loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
                     console.log("Loading... (" + nrObjectsRead + "/" + totalNrObjects + ")");
@@ -149,7 +167,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
                 loader.setLoadOids([model.model.roid], oids);
 
-                self._viewer.scene.on("tick", function () { // TODO: Fire "tick" event from xeoViewer
+                viewer.scene.on("tick", function () { // TODO: Fire "tick" event from xeoViewer
                     loader.process();
                 });
 
@@ -195,7 +213,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @param params
          */
         this.setVisibility = function (params) {
-            this._viewer.setVisibility(params);
+            viewer.setVisibility(params);
         };
 
         /**
@@ -204,14 +222,14 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @param params
          */
         this.setSelectionState = function (params) {
-            return this._viewer.setSelectionState(params);
+            return viewer.setSelectionState(params);
         };
 
         /**
          * Gets a list of selected elements.
          */
         this.getSelected = function () {
-            return this._viewer.getSelected();
+            return viewer.getSelected();
         };
 
         /**
@@ -220,7 +238,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @param params
          */
         this.setColor = function (params) {
-            this._viewer.setColor(params);
+            viewer.setColor(params);
         };
 
         /**
@@ -232,14 +250,14 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @param params
          */
         this.viewFit = function (params) {
-            this._viewer.viewFit(params);
+            viewer.viewFit(params);
         };
 
         /**
          *
          */
         this.getCamera = function () {
-            return this._viewer.getCamera();
+            return viewer.getCamera();
         };
 
         /**
@@ -247,7 +265,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @param params
          */
         this.setCamera = function (params) {
-            this._viewer.setCamera(params);
+            viewer.setCamera(params);
         };
 
         /**
@@ -255,9 +273,11 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @param params
          */
         this.reset = function (params) {
-            this._viewer.reset(params);
+            viewer.reset(params);
         }
     }
+
+    BimSurfer.prototype = Object.create(EventHandler.prototype);
 
     return BimSurfer;
 

@@ -25,9 +25,12 @@ define(function() {
     
     EventHandler.prototype.fire = function(evt, args) {
         var h = this.handlers[evt];
+        if (!h) {
+            return;
+        }
         for (var i = 0; i < h.length; ++i) {
             h[i].apply(this, args);
-        };
+        }
     };
     
     return EventHandler;
