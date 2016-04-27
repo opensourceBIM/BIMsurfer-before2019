@@ -60,82 +60,67 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
          * Starts this loader.
          */
         this.start = function () {
-            if (o.options != null) {
-                if (o.options.type == "types") {
-                    var types = o.options.types.map(function (type) {
-                        return type.name;
-                    });
-                    o.groupId = o.options.roid;
-                    o.types = o.options.types;
-                    o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
-                        o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
-                            roids: [o.options.roid],
-                            schema: o.options.schema,
-                            classNames: types,
-                            serializerOid: serializer.oid,
-                            includeAllSubtypes: false,
-                            useObjectIDM: false,
-                            sync: false,
-                            deep: false
-                        }, function (topicId) {
-                            o.topicId = topicId;
-                            o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler, o._afterRegistration);
-                        });
-                    });
-                } else if (o.options.type == "revision") {
-                    o.groupId = o.options.roid;
-                    o.types = o.options.types;
-                    o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
-                        o.bimServerApi.call("Bimsie1ServiceInterface", "download", {
-                            roid: o.options.roid,
-                            serializerOid: serializer.oid,
-                            sync: false,
-                            showOwn: true
-                        }, function (topicId) {
-                            o.topicId = topicId;
-                            o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler, o._afterRegistration);
-                        });
-                    });
-                } else if (o.options.type == "oids") {
-    				o.groupId = o.options.roids[0];
-    				
-    				o.infoToOid = o.options.oids;
-    				
-    				var oids = [];
-    				for (var k in o.infoToOid) {
-    				    if (o.infoToOid.hasOwnProperty(k)) {
-    				    	if (k != null && k != "undefined") {
-    				    		oids.push(parseInt(o.infoToOid[k], 10));
-    				    	}
-    				    }
-    				}
-    				
-    				var query = {
-    					type: "IfcProduct",
-    					includeAllSubtypes: true,
-    					oids: oids,
-    					include: {
-    						type: "IfcProduct",
-    						field: "geometry",
-    						include: {
-    							type: "GeometryInfo",
-    							field: "data"
-    						}
-    					}
-    				};
-                    o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
-    					o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
-    						roids: o.options.roids,
-    						query: JSON.stringify(query),
-    						serializerOid : serializer.oid,
-    						sync : false
-    					}, function(topicId){
-    						o.topicId = topicId;
-    						o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler);
-    					});
-    				});
-                }
+            if (!o.options || o.options.type !== "oids") {
+                throw new Error("Invalid loader configuration");
             }
+            
+            if (BIMSERVER_VERSION == "1.4") {
+            
+                o.groupId = o.options.roids[0];
+                o.oids = o.options.oids;
+                o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
+                    o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByOids", {
+                        roids: o.options.roids,
+                        oids: o.options.oids,
+                        serializerOid: serializer.oid,
+                        sync: false,
+                        deep: false
+                    }, function (topicId) {
+                        o.topicId = topicId;
+                        o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler, o._afterRegistration);
+                    });
+                });
+            
+            } else {
+            
+                o.groupId = o.options.roids[0];            
+                o.infoToOid = o.options.oids;
+                
+                var oids = [];
+                for (var k in o.infoToOid) {
+                    if (o.infoToOid.hasOwnProperty(k)) {
+                        if (k != null && k != "undefined") {
+                            oids.push(parseInt(o.infoToOid[k], 10));
+                        }
+                    }
+                }
+                
+                var query = {
+                    type: "IfcProduct",
+                    includeAllSubtypes: true,
+                    oids: oids,
+                    include: {
+                        type: "IfcProduct",
+                        field: "geometry",
+                        include: {
+                            type: "GeometryInfo",
+                            field: "data"
+                        }
+                    }
+                };
+                o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
+                    o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
+                        roids: o.options.roids,
+                        query: JSON.stringify(query),
+                        serializerOid : serializer.oid,
+                        sync : false
+                    }, function(topicId){
+                        o.topicId = topicId;
+                        o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler);
+                    });
+                });
+            }
+            
         };
 
         this._progressHandler = function (topicId, state) {
@@ -198,7 +183,11 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
             data.align4();
 
-            var boundary = data.readDoubleArray(6);
+            if (BIMSERVER_VERSION == "1.4") {
+                var boundary = data.readFloatArray(6);
+            } else {
+                var boundary = data.readDoubleArray(6);
+            }
 
             this._initCamera(boundary);
 
@@ -264,8 +253,10 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
                 });
                 // o.viewer.events.trigger('sceneLoaded', [o.viewer.scene.scene]);
-                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {topicId: o.topicId}, function () {
-                });
+                
+                var d = {};
+                d[BIMSERVER_VERSION == "1.4" ? "actionId" : "topicId"] = o.topicId;
+                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", d, function () {});
             }
         };
 
@@ -291,13 +282,22 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             var colors;
 
             var i;
-
-            stream.align8();
-
-            var matrix = stream.readDoubleArray(16);
+            
+            if (BIMSERVER_VERSION == "1.4") {
+                stream.align4();
+                var matrix = stream.readFloatArray(16);
+            } else {
+                stream.align8();
+                var matrix = stream.readDoubleArray(16);
+            }
 
             if (geometryType == 1) {
-                objectBounds = stream.readDoubleArray(6);
+                if (BIMSERVER_VERSION == "1.4") {
+                    objectBounds = stream.readFloatArray(6);
+                } else {
+                    objectBounds = stream.readDoubleArray(6);
+                }
+                
                 geometryId = stream.readLong();
                 numIndices = stream.readInt();
                 indices = stream.readIntArray(numIndices);
@@ -306,10 +306,19 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 numNormals = stream.readInt();
                 normals = stream.readFloatArray(numNormals);
                 numColors = stream.readInt();
-                if (numColors > 0) {
+                if (numColors > 0 || BIMSERVER_VERSION == "1.4") {
                 	colors = stream.readFloatArray(numColors);
                 }
-
+                
+                // @todo: debugging, remove
+                var maxi = 0;
+                for (var i = 0; i < indices.length; ++i) {
+                    if (indices[i] > maxi) {
+                        maxi = indices[i];
+                    }
+                }
+                console.log(maxi, positions.length / 3, normals.length / 3, colors.length / 4);
+                                
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
 
                 this._createObject(roid, oid, objectId, [geometryId], type, matrix);
@@ -336,10 +345,9 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     numNormals = stream.readInt();
                     normals = stream.readFloatArray(numNormals);
                     numColors = stream.readInt();
-                    if (numColors > 0) {
+                    if (numColors > 0 || BIMSERVER_VERSION == "1.4") {
                     	colors = stream.readFloatArray(numColors);
                     }
-                    colors = stream.readFloatArray(numColors);
 
                     this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
 

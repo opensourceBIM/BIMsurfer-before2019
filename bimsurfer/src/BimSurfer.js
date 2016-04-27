@@ -1,13 +1,22 @@
+// Backwards compatibility
 var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer.js"];
-if (!BimServerClient) {
+if (typeof(BimServerClient) == 'undefined') {
+    window.BIMSERVER_VERSION = "1.4";
 	deps.push("bimserverapi_BimServerApi");
+} else {
+    window.BIMSERVER_VERSION = "1.5";
 }
+
 define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, _BimServerApi) {
-	if (_BimServerApi) {
+	
+    // Backwards compatibility
+    var BimServerApi;
+    if (_BimServerApi) {
 		BimServerApi = _BimServerApi;
 	} else {
-		BimServerApi = BimServerClient;
+        BimServerApi = BimServerClient;
 	}
+    
     function BimSurfer(cfg) {
 
         var self = this;
@@ -109,7 +118,11 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 var guidToOid = {};
 
                 var visit = function (n) {
-                    oids[n.gid] = n.id;
+                    if (BIMSERVER_VERSION == "1.4") {
+                        oids.push(n.id);
+                    } else {
+                        oids[n.gid] = n.id;
+                    }
                     oidToGuid[n.id] = n.guid;
                     guidToOid[n.guid] = n.id;
                     

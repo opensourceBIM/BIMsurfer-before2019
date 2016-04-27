@@ -13,6 +13,15 @@ define(["bimsurfer/lib/text.js"], function(text) {
     };
     */
     
+    // Backwards compatibility
+    if (BIMSERVER_VERSION === "1.4") {
+        var SERVICE_INTERFACE = "Bimsie1ServiceInterface";
+        var DOWNLOAD          = "downloadRevisions";
+    } else {
+        var SERVICE_INTERFACE = "ServiceInterface";
+        var DOWNLOAD          = "downloadRevisions";
+    }   
+    
     function BimServerModel(api, model) {
     
         this.api = api;
@@ -48,7 +57,7 @@ define(["bimsurfer/lib/text.js"], function(text) {
                 api.getJsonSerializer(function (jsonSerializer) {
                     
                     // Initiate download
-                    api.call("ServiceInterface", "downloadRevisions", {
+                    api.call(SERVICE_INTERFACE, DOWNLOAD, {
                         roids: [model.roid],
                         serializerOid: jsonSerializer.oid,
                         showOwn: false,
