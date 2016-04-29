@@ -233,6 +233,10 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	};
 	
 	this.updateProgress = function() {
+		o.progressListeners.forEach(function(progressListener){
+			progressListener("Loading", -1);
+		});
+
 //		if (o.state.nrObjectsRead < o.state.nrObjects) {
 //			var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
 //			if (progress != o.state.lastProgress) {
@@ -259,10 +263,10 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			nrObjectsRead: 0,
 			nrObjects: 0
 		};
-		o.viewer.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
-		o.viewer.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Continuous);
+//		o.viewer.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
+//		o.viewer.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Continuous);
 		
-		o.viewer.refreshMask();
+//		o.viewer.refreshMask();
 
 		o.library = o.viewer.scene.findNode("library-" + o.groupId);
 		if (o.library == null) {
@@ -319,7 +323,6 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		o.progressListeners.forEach(function(progressListener){
 			progressListener("done", o.state.nrObjectsRead, o.state.nrObjectsRead);
 		});
-		o.viewer.events.trigger('sceneLoaded', [o.viewer.scene]);
 		o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {topicId: o.topicId}, function(){
 		});
 	}
@@ -399,6 +402,8 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				aspect: jQuery(o.viewer.canvas).width() / jQuery(o.viewer.canvas).height(),
 				fovy: 37.8493
 			});
+			
+			o.viewer.events.trigger('sceneLoaded', [o.viewer.scene]);
 		}
 		o.state.mode = 1;
 //o.state.nrObjects = data.readInt();

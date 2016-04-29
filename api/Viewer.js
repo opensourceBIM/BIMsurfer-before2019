@@ -382,7 +382,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				}
 				
 				this.scene.on("tick", function(){
-					if (_this.tick % 30 == 0) {
+					if (_this.tick % 5 == 0) {
 						_this.geometryLoaders.forEach(function(geometryLoader){
 							geometryLoader.process();
 						});
@@ -398,7 +398,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				this.addControl(clickSelect);
 				
 				if(this.scene != null) {
-					this.scene.set('tagMask', '^()$');
+//					this.scene.set('tagMask', '^()$');
 
 					this.initEvents();
 					this.sceneLoaded = true;
