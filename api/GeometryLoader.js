@@ -416,16 +416,14 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		while (data != null) {
 			inputStream = new BIMSURFER.DataInputStreamReader(null, data);
 			var channel = inputStream.readInt();
-			var nrMessages = inputStream.readInt();
-			for (var i=0; i<nrMessages; i++) {
-				var messageType = inputStream.readByte();
-				if (messageType == 0) {
-					o.readStart(inputStream);
-				} else if (messageType == 6) {
-					o.readEnd(inputStream);
-				} else {
-					o.readObject(inputStream, messageType);
-				}
+			var nrMessage = inputStream.readInt(); // Always 1
+			var messageType = inputStream.readByte();
+			if (messageType == 0) {
+				o.readStart(inputStream);
+			} else if (messageType == 6) {
+				o.readEnd(inputStream);
+			} else {
+				o.readObject(inputStream, messageType);
 			}
 			data = o.todo.shift();
 		}
