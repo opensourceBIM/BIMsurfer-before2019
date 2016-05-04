@@ -94,7 +94,7 @@ define(function () {
                         yDelta = (canvasPos[1] - yMoved) * orbitSensitivity;
 
                         if (xDelta !== 0) {
-                            camera.view.rotateEyeY(xDelta);
+                            camera.view.rotateEyeY(-xDelta);
                         }
 
                         if (yDelta !== 0) {
@@ -116,7 +116,7 @@ define(function () {
                         yDelta = (canvasPos[1] - yMoved) * orbitSensitivity;
 
                         if (xDelta !== 0) {
-                            camera.view.rotateEyeY(xDelta);
+                            camera.view.rotateEyeY(-xDelta);
                         }
 
                         if (yDelta !== 0) {
