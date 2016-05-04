@@ -16068,6 +16068,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                             lastCanvasWidth = newWidth;
                             lastCanvasHeight = newHeight;
+
+                            lastWindowWidth = window.innerWidth;
+                            lastWindowHeight = window.innerHeight;
                         }
                     }
                 });
