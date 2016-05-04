@@ -1,7 +1,13 @@
 define([
     "bimsurfer/src/DefaultMaterials.js",
     "bimsurfer/src/EventHandler.js",
-    "bimsurfer/src/xeoBIMObject.js"], function (DefaultMaterials, EventHandler) {
+    "bimsurfer/src/xeoViewer/controls/bimCameraControl.js",
+    "bimsurfer/src/xeoViewer/entities/bimObject.js",
+    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper.js",
+    "bimsurfer/src/xeoViewer/transforms/bimOrtho.js"
+], function (DefaultMaterials, EventHandler) {
+
+    "use strict";
 
     function xeoViewer(cfg) {
 
@@ -22,16 +28,13 @@ define([
         });
 
         // Redefine default light sources;
-        // create ambient light and single directional light behind viewpoint
         scene.lights.lights = [
 
-            // Ambient light source #0
             new XEO.AmbientLight(scene, {
                 color: [0.45, 0.45, 0.5],
                 intensity: 0.9
             }),
 
-            // Directional light source #1
             new XEO.DirLight(scene, {
                 dir: [0.0, 0.0, -1.0],
                 color: [1.0, 1.0, 1.0],
@@ -40,37 +43,11 @@ define([
             })
         ];
 
-        this.scene = scene;
+        // Provides user input
+        var input = scene.input;
 
-        // The camera
-        var camera = this.scene.camera;
-
-        // Disable Y-axis gimbal lock constraint
-        camera.view.gimbalLockY = false;
-
-        // Component for each projection type,
-        // to swap on the camera when we switch projection types
-        var projections = {
-
-            persp: camera.project, // Camera has a XEO.Perspective by default
-
-            ortho: new XEO.Ortho(scene, {
-                left: -1.0,
-                right: 1.0,
-                bottom: -1.0,
-                top: 1.0,
-                near: 0.1,
-                far: 1000
-            })
-        };
-
-        // The current projection type
-        var projectionType = "persp";
-
-        // Mouse and keyboard camera control
-        var cameraControl = new XEO.CameraControl(scene); // http://xeoengine.org/docs/classes/CameraControl.html
-
-        cameraControl.mousePickEntity.rayPick = true;
+        // Using the scene's default camera
+        var camera = scene.camera;
 
         // Flies cameras to objects
         var cameraFlight = new XEO.CameraFlight(scene); // http://xeoengine.org/docs/classes/CameraFlight.html
@@ -79,26 +56,7 @@ define([
         var collection = new XEO.Collection(scene); // http://xeoengine.org/docs/classes/Collection.html
 
         // Shows a wireframe box at the given boundary
-        var boundaryIndicator = new XEO.Entity(scene, {
-
-            geometry: new XEO.BoundaryGeometry(scene),
-
-            material: new XEO.PhongMaterial(scene, {
-                diffuse: [0, 0, 0],
-                ambient: [0, 0, 0],
-                specular: [0, 0, 0],
-                emissive: [1.0, 1.0, 0.6],
-                lineWidth: 4
-            }),
-
-            visibility: new XEO.Visibility(scene, {
-                visible: false
-            }),
-
-            modes: new XEO.Modes(scene, {
-                collidable: false // Effectively has no boundary
-            })
-        });
+        var boundaryHelper = new XEO.BIMBoundaryHelper(scene);
 
         // Objects mapped to IDs
         var objects = {};
@@ -115,25 +73,33 @@ define([
         // Bookmark of initial state to reset to - captured with #saveReset(), applied with #reset().
         var resetBookmark = null;
 
-        /**
-         * Fired whenever this xeoViewer's camera changes.
-         * @event camera-changed
-         * @params New camera state, same as that got with #getCamera.
-         */
+        // Component for each projection type,
+        // to swap on the camera when we switch projection types
+        var projections = {
+
+            persp: camera.project, // Camera has a XEO.Perspective by default
+
+            ortho: new XEO.BIMOrtho(scene, {
+                scale: 1.0,
+                top: 1.0,
+                near: 0.1,
+                far: 1000
+            })
+        };
+
+        // The current projection type
+        var projectionType = "persp";
+
+        //-----------------------------------------------------------------------------------------------------------
+        // Camera notifications
+        //-----------------------------------------------------------------------------------------------------------
+
         (function () {
 
             // Fold xeoEngine's separate events for view and projection updates
-            // into a single update event, deferred to fire on next scene tick.
+            // into a single "camera-changed" event, deferred to fire on next scene tick.
 
             var cameraUpdated = false;
-
-            scene.on("tick",
-                function () {
-                    if (cameraUpdated) {
-                        self.fire("camera-changed", self.getCamera());
-                        cameraUpdated = false;
-                    }
-                });
 
             camera.on("projectMatrix",
                 function () {
@@ -144,19 +110,86 @@ define([
                 function () {
                     cameraUpdated = true;
                 });
+
+            scene.on("tick",
+                function () {
+
+                    /**
+                     * Fired on the iteration of each "game loop" for this xeoViewer.
+                     * @event tick
+                     * @param {String} sceneID The ID of this Scene.
+                     * @param {Number} startTime The time in seconds since 1970 that this xeoViewer was instantiated.
+                     * @param {Number} time The time in seconds since 1970 of this "tick" event.
+                     * @param {Number} prevTime The time of the previous "tick" event from this xeoViewer.
+                     * @param {Number} deltaTime The time in seconds since the previous "tick" event from this xeoViewer.
+                     */
+                    self.fire("tick");
+
+                    if (cameraUpdated) {
+
+                        /**
+                         * Fired whenever this xeoViewer's camera changes.
+                         * @event camera-changed
+                         * @params New camera state, same as that got with #getCamera.
+                         */
+                        self.fire("camera-changed", self.getCamera());
+                        cameraUpdated = false;
+                    }
+                });
         })();
+
+        //-----------------------------------------------------------------------------------------------------------
+        // Camera control
+        //-----------------------------------------------------------------------------------------------------------
+
+        var cameraControl = new XEO.BIMCameraControl(scene, {
+            camera: camera
+        });
+
+        cameraControl.on("pick",
+            function (hit) {
+
+                // Get BIM object ID from entity metadata
+
+                var entity = hit.entity;
+
+                if (!entity.meta) {
+                    return;
+                }
+
+                var objectId = entity.meta.objectId;
+
+                if (objectId === undefined) {
+                    return;
+                }
+
+                var selected = !!selectedObjects[objectId]; // Object currently selected?
+                var shiftDown = scene.input.keyDown[input.KEY_SHIFT]; // Shift key down?
+
+                self.setSelectionState({
+                    ids: [objectId],
+                    selected: !selected, // Picking an object toggles its selection status
+                    clear: !shiftDown // Clear selection first if shift not down
+                });
+            });
+
+        cameraControl.on("nopick",
+            function (hit) {
+                self.setSelectionState({
+                    clear: true
+                });
+            });
 
         /**
          * Loads random objects into the viewer for testing.
          *
          * Subsequent calls to #reset will then set the viewer to the state right after the model was loaded.
-         *
          */
         this.loadRandom = function () {
 
             this.clear();
 
-            var geometry = new XEO.BoxGeometry(scene, { // http://xeoengine.org/docs/classes/Geometry.html
+            var geometry = new XEO.SphereGeometry(scene, { // http://xeoengine.org/docs/classes/Geometry.html
                 id: "geometry.myGeometry"
             });
 
@@ -217,6 +250,12 @@ define([
          * @private
          */
         this.createObject = function (roid, oid, objectId, geometryIds, type, matrix) {
+
+            if (objects[objectId]) {
+                console.log("Object with id " + objectId + " already exists, ignoring");
+                return;
+            }
+
             var object = new XEO.BIMObject(scene, {
                 id: objectId,
                 geometryIds: geometryIds,
@@ -242,6 +281,7 @@ define([
             // Register object against ID
             objects[objectId] = object;
 
+            // Register object against IFC type
             // Register object against IFC type
             var types = (rfcTypes[type] || (rfcTypes[type] = {}));
             types[objectId] = object;
@@ -382,54 +422,66 @@ define([
          * @param params
          * @param params.ids IDs of objects to update.
          * @param params.selected Whether to select or not
+         * @param params.clear Whether to clear selection state prior to updating
          */
         this.setSelectionState = function (params) {
 
             params = params || {};
 
-            var ids = params.ids;
-
-            if (!ids) {
-                console.error("Param expected: 'ids'");
-                return;
-            }
-
             var changed = false; // Only fire "selection-changed" when selection actually changes
-
             var selected = !!params.selected;
-
             var objectId;
             var object;
 
-            for (var i = 0, len = ids.length; i < len; i++) {
-
-                objectId = ids[i];
-                object = objects[objectId];
-
-                if (!object) {
-                    console.error("Object not found: '" + objectId + "'");
-
-                } else {
-
-                    if (!!selectedObjects[objectId] !== selected) {
+            if (params.clear) {
+                for (objectId in selectedObjects) {
+                    if (selectedObjects.hasOwnProperty(objectId)) {
+                        delete selectedObjects[objectId];
                         changed = true;
                     }
+                }
+            }
 
-                    if (selected) {
-                        selectedObjects[objectId] = object;
+            var ids = params.ids;
+
+            if (ids) {
+
+                for (var i = 0, len = ids.length; i < len; i++) {
+
+                    objectId = ids[i];
+                    object = objects[objectId];
+
+                    if (!object) {
+                        console.error("Object not found: '" + objectId + "'");
+
                     } else {
-                        if (selectedObjects[objectId]) {
-                            delete selectedObjects[objectId];
-                        }
-                    }
 
-                    selectedObjectList = null; // Now needs lazy-rebuild
+                        if (!!selectedObjects[objectId] !== selected) {
+                            changed = true;
+                        }
+
+                        if (selected) {
+                            selectedObjects[objectId] = object;
+                        } else {
+                            if (selectedObjects[objectId]) {
+                                delete selectedObjects[objectId];
+                            }
+                        }
+
+                        selectedObjectList = null; // Now needs lazy-rebuild
+                    }
                 }
             }
 
             if (changed) {
 
                 selectedObjectList = Object.keys(selectedObjects);
+
+                // Show boundary around selected objects
+                setBoundaryState({
+                    ids: selectedObjectList,
+                    show: selectedObjectList.length > 0
+                });
 
                 /**
                  * Fired whenever this xeoViewer's selection state changes.
@@ -572,16 +624,7 @@ define([
                 if (projectionType !== "ortho") {
                     console.error("Ignoring update to 'scale' for current '" + projectionType + "' camera");
                 } else {
-
-                    // Not updating near and far clipping plane distances
-
-                    var project = camera.project;
-                    var scale = params.scale;
-
-                    project.left = -scale[0];
-                    project.bottom = -scale[1];
-                    project.right = scale[0];
-                    project.top = scale[1];
+                    camera.project.scale = params.scale;
                 }
             }
         };
@@ -637,14 +680,14 @@ define([
             if (params.animate) {
 
                 // Show the boundary we are flying to
-                boundaryIndicator.geometry.aabb = aabb;
-                boundaryIndicator.visibility.visible = true;
+                //boundaryHelper.geometry.aabb = aabb;
+                //boundaryHelper.visibility.visible = true;
 
-                cameraFlight.flyTo({aabb: aabb, stopFOV: 20},
+                cameraFlight.flyTo({ aabb: aabb, stopFOV: 20 },
                     function () {
 
                         // Hide the boundary again
-                        boundaryIndicator.visibility.visible = false;
+                        //boundaryHelper.visibility.visible = false;
                     });
 
             } else {
@@ -652,6 +695,19 @@ define([
                 cameraFlight.jumpTo({aabb: aabb, stopFOV: 20});
             }
         };
+
+        // Updates the boundary helper
+        function setBoundaryState(params) {
+
+            if (params.aabb) {
+                boundaryHelper.geometry.aabb = aabb;
+
+            } else if (params.ids) {
+                boundaryHelper.geometry.aabb = getObjectsAABB(params.ids);
+            }
+
+            boundaryHelper.visibility.visible = !!params.show;
+        }
 
         // Returns an axis-aligned bounding box (AABB) that encloses the given objects
         function getObjectsAABB(ids) {
@@ -914,7 +970,7 @@ define([
          @returns {String} String-encoded image data.
          */
         this.getSnapshot = function (params) {
-            return this.scene.canvas.getSnapshot(params);
+            return scene.canvas.getSnapshot(params);
         };
     }
 

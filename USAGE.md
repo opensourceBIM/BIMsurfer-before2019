@@ -165,7 +165,7 @@ Setting the view volume size for orthographic, switching to orthographic project
 ````javascript
 bimSurfer.setCamera({ 
     type:"ortho", 
-    scale: [10,10,10]
+    scale: 0.1
 });
 ````
 

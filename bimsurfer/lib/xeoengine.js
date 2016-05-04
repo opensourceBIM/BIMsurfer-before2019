@@ -4,7 +4,7 @@
  * A WebGL-based 3D visualization engine from xeoLabs
  * http://xeoengine.org/
  *
- * Built on 2016-04-27
+ * Built on 2016-05-04
  *
  * MIT License
  * Copyright 2016, Lindsay Kay
@@ -8585,6 +8585,103 @@ var Canvas2Image = (function () {
         },
 
         /**
+         * Rotate a 3D vector around the x-axis
+         * 
+         * @method rotateVec3X
+         * @param {Float32Array} a The vec3 point to rotate
+         * @param {Float32Array} b The origin of the rotation
+         * @param {Number} c The angle of rotation
+         * @param {Float32Array} dest The receiving vec3
+         * @returns {Float32Array} dest
+         */
+        rotateVec3X: function (a, b, c, dest) {
+
+            var p = [], r = [];
+            
+            //Translate point to the origin
+            p[0] = a[0] - b[0];
+            p[1] = a[1] - b[1];
+            p[2] = a[2] - b[2];
+            
+            //perform rotation
+            r[0] = p[0];
+            r[1] = p[1] * Math.cos(c) - p[2] * Math.sin(c);
+            r[2] = p[1] * Math.sin(c) + p[2] * Math.cos(c);
+            
+            //translate to correct position
+            dest[0] = r[0] + b[0];
+            dest[1] = r[1] + b[1];
+            dest[2] = r[2] + b[2];
+            
+            return dest;
+        },
+        
+        /**
+         * Rotate a 3D vector around the y-axis
+         *
+         * @method rotateVec3Y
+         * @param {Float32Array} a The vec3 point to rotate
+         * @param {Float32Array} b The origin of the rotation
+         * @param {Number} c The angle of rotation
+         * @param {Float32Array} dest The receiving vec3
+         * @returns {Float32Array} dest
+         */
+        rotateVec3Y: function (a, b, c, dest) {
+            
+            var p = [], r = [];
+            
+            //Translate point to the origin
+            p[0] = a[0] - b[0];
+            p[1] = a[1] - b[1];
+            p[2] = a[2] - b[2];
+
+            //perform rotation
+            r[0] = p[2] * Math.sin(c) + p[0] * Math.cos(c);
+            r[1] = p[1];
+            r[2] = p[2] * Math.cos(c) - p[0] * Math.sin(c);
+
+            //translate to correct position
+            dest[0] = r[0] + b[0];
+            dest[1] = r[1] + b[1];
+            dest[2] = r[2] + b[2];
+
+            return dest;
+        },
+
+        /**
+         * Rotate a 3D vector around the z-axis
+         *
+         * @method rotateVec3Z
+         * @param {Float32Array} a The vec3 point to rotate
+         * @param {Float32Array} b The origin of the rotation
+         * @param {Number} c The angle of rotation
+         * @param {Float32Array} dest The receiving vec3
+         * 
+         * @returns {Float32Array} dest
+         */
+        rotateVec3Z: function (a, b, c, dest) {
+            
+            var p = [], r = [];
+            
+            //Translate point to the origin
+            p[0] = a[0] - b[0];
+            p[1] = a[1] - b[1];
+            p[2] = a[2] - b[2];
+
+            //perform rotation
+            r[0] = p[0] * Math.cos(c) - p[1] * Math.sin(c);
+            r[1] = p[0] * Math.sin(c) + p[1] * Math.cos(c);
+            r[2] = p[2];
+
+            //translate to correct position
+            dest[0] = r[0] + b[0];
+            dest[1] = r[1] + b[1];
+            dest[2] = r[2] + b[2];
+
+            return dest;
+        },
+
+        /**
          * Transforms a four-element vector by a 4x4 projection matrix.
          * @method projectVec4
          * @static
@@ -9363,11 +9460,11 @@ var Canvas2Image = (function () {
                 i = indices[location];
                 vi = i * 3;
 
-                pickPositions[pvi]     = positions[vi];
+                pickPositions[pvi] = positions[vi];
                 pickPositions[pvi + 1] = positions[vi + 1];
                 pickPositions[pvi + 2] = positions[vi + 2];
 
-                pickColors[pci]     = r;
+                pickColors[pci] = r;
                 pickColors[pci + 1] = g;
                 pickColors[pci + 2] = b;
                 pickColors[pci + 3] = a;
@@ -9397,8 +9494,8 @@ var Canvas2Image = (function () {
                 pickPositions[pvi + 7] = positions[vi + 1];
                 pickPositions[pvi + 8] = positions[vi + 2];
 
-                pickColors[pci + 8]  = r;
-                pickColors[pci + 9]  = g;
+                pickColors[pci + 8] = r;
+                pickColors[pci + 9] = g;
                 pickColors[pci + 10] = b;
                 pickColors[pci + 11] = a;
 
@@ -9711,25 +9808,25 @@ var Canvas2Image = (function () {
 
             if (trace > 0) {
 
-                s = 0.5 / Math.sqrt(trace + 1.0 );
+                s = 0.5 / Math.sqrt(trace + 1.0);
 
                 dest[3] = 0.25 / s;
                 dest[0] = ( m32 - m23 ) * s;
                 dest[1] = ( m13 - m31 ) * s;
                 dest[2] = ( m21 - m12 ) * s;
 
-            } else if ( m11 > m22 && m11 > m33 ) {
+            } else if (m11 > m22 && m11 > m33) {
 
-                s = 2.0 * Math.sqrt( 1.0 + m11 - m22 - m33 );
+                s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
 
                 dest[3] = ( m32 - m23 ) / s;
                 dest[0] = 0.25 * s;
                 dest[1] = ( m12 + m21 ) / s;
                 dest[2] = ( m13 + m31 ) / s;
 
-            } else if ( m22 > m33 ) {
+            } else if (m22 > m33) {
 
-                s = 2.0 * Math.sqrt( 1.0 + m22 - m11 - m33 );
+                s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
 
                 dest[3] = ( m13 - m31 ) / s;
                 dest[0] = ( m12 + m21 ) / s;
@@ -9738,7 +9835,7 @@ var Canvas2Image = (function () {
 
             } else {
 
-                s = 2.0 * Math.sqrt( 1.0 + m33 - m11 - m22 );
+                s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
 
                 dest[3] = ( m21 - m12 ) / s;
                 dest[0] = ( m13 + m31 ) / s;
@@ -12466,6 +12563,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var triangleVertices = XEO.math.vec3();
             var position = XEO.math.vec4();
             var worldPos = XEO.math.vec4();
+            var viewPos = XEO.math.vec4();
             var barycentric = XEO.math.vec3();
 
             var na = XEO.math.vec3();
@@ -12483,6 +12581,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             var tempVec4 = XEO.math.vec4();
             var tempVec4b = XEO.math.vec4();
+            var tempVec4c = XEO.math.vec4();
 
             var tempVec3 = XEO.math.vec3();
             var tempVec3b = XEO.math.vec3();
@@ -12633,6 +12732,16 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                             worldPos[2] = tempVec4b[2];
 
                             hit.worldPos = worldPos;
+                            
+                            // Get View-space cartesian coordinates of the ray-triangle intersection
+
+                            math.transformVec4(entity.camera.view.matrix, worldPos, tempVec4c);
+
+                            viewPos[0] = tempVec4c[0];
+                            viewPos[1] = tempVec4c[1];
+                            viewPos[2] = tempVec4c[2];
+
+                            hit.viewPos = viewPos;
 
                             // Get barycentric coordinates of the ray-triangle intersection
 
@@ -14210,11 +14319,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     value = value || XEO.math.identityMat4();
 
-                    if (!this._matrix) {
-                        this._matrix = XEO.math.mat4();
-                    }
-
-                    this._matrix.set(value);
+                    this._state.matrix.set(value);
 
                     this._renderer.imageDirty = true;
 
@@ -14223,23 +14328,27 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                      * @event matrix
                      * @param value The property's new value
                      */
-                    this.fire("matrix", this._matrix);
+                    this.fire("matrix", this._state.matrix);
                 },
 
                 get: function () {
-                    return this._matrix;
+                    return this._state.matrix;
                 }
             }
         },
 
         _compile: function () {
-            this._renderer.modelProjection = this._state;
+            this._renderer.projTransform = this._state;
         },
 
         _getJSON: function () {
             return {
-                matrix: Array.prototype.slice.call(this._matrix)
+                matrix: Array.prototype.slice.call(this._state.matrix)
             };
+        },
+
+        _destroy: function () {
+            this._state.destroy();
         }
     });
 
@@ -14928,7 +15037,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     look[1] = value[1];
                     look[2] = value[2];
 
-                    this._scheduleUpdate(0);; // Ensure matrix built on next "tick";
+                    this._scheduleUpdate(0); // Ensure matrix built on next "tick";
 
                     /**
                      * Fired whenever this Lookat's  {{#crossLink "Lookat/look:property"}}{{/crossLink}} property changes.
@@ -15476,10 +15585,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             this._near = 0.1;
             this._far = 10000.0;
 
-            var canvas = this.scene.canvas;
-
             // Recompute aspect from change in canvas size
-            this._canvasResized = canvas.on("boundary", this._scheduleUpdate, this);
+            this._canvasResized = this.scene.canvas.on("boundary", this._scheduleUpdate, this);
 
             this.fovy = cfg.fovy;
             this.near = cfg.near;

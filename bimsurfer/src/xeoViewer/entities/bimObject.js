@@ -1,7 +1,9 @@
 define(function () {
 
+    "use strict";
+
     /**
-     A xeoEngine plugin that represents a BIMSurfer object within a xeoEngine scene.
+     Custom xeoEngine component that represents a BIMSurfer object within a xeoEngine scene.
 
      An object consists of a set of XEO.Entity's that share components between them.
 
@@ -67,6 +69,9 @@ define(function () {
             for (var i = 0, len = cfg.geometryIds.length; i < len; i++) {
 
                 entity = this.create(XEO.Entity, { // http://xeoengine.org/docs/classes/Entity.html
+                    meta: {
+                        objectId: this.id
+                    },
                     geometry: "geometry." + cfg.geometryIds[i],
                     transform: this.transform,
                     visibility: this.visibility,

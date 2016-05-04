@@ -382,17 +382,13 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             // o.models[roid].get(oid,
                 // function () {
 
-                    if (o.viewer.scene.components[objectId]) {
-                        console.log("Object with id " + objectId + " already existed");
-                        return;
+                    if (o.viewer.createObject(roid, oid, objectId, geometryIds, type, matrix)) {
+
+                        // o.objectAddedListeners.forEach(function (listener) {
+                        // listener(objectId);
+                        // });
                     }
 
-                    o.viewer.createObject(roid, oid, objectId, geometryIds, type, matrix);
-
-                    // o.objectAddedListeners.forEach(function (listener) {
-
-                        // listener(objectId);
-                    // });
                 // });
         };
     }

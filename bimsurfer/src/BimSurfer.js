@@ -1,5 +1,5 @@
 // Backwards compatibility
-var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer.js", "bimsurfer/src/EventHandler.js"];
+var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer/xeoViewer.js", "bimsurfer/src/EventHandler.js"];
 if (typeof(BimServerClient) == 'undefined') {
     window.BIMSERVER_VERSION = "1.4";
 	deps.push("bimserverapi_BimServerApi");
@@ -167,7 +167,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
                 loader.setLoadOids([model.model.roid], oids);
 
-                viewer.scene.on("tick", function () { // TODO: Fire "tick" event from xeoViewer
+                viewer.on("tick", function () { // TODO: Fire "tick" event from xeoViewer
                     loader.process();
                 });
 
