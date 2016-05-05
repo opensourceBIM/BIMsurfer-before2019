@@ -17,7 +17,7 @@ define(function () {
             this.near = cfg.near;
             this.far = cfg.far;
 
-            this._canvasResized = this.scene.canvas.on("boundary", this._scheduleUpdate, this);
+            this._onCanvasBoundary = this.scene.canvas.on("boundary", this._scheduleUpdate, this);
         },
 
         _props: {
@@ -57,36 +57,39 @@ define(function () {
         },
 
         _update: function () {
-
+            
+            var scene = this.scene;
             var scale = this._scale;
-            var canvas = this.scene.canvas.canvas;
-            var halfWidth = canvas.clientWidth * 0.5 * scale;
-            var halfHeight = canvas.clientHeight * 0.5 * scale;
-            var aspect = halfWidth / halfHeight;
+            var canvas = scene.canvas.canvas;
+            var canvasWidth = canvas.clientWidth;
+            var canvasHeight = canvas.clientHeight;
+            var halfSize = 0.5 * scale;
+            var aspect = canvasWidth / canvasHeight;
+
             var left;
             var right;
             var top;
             var bottom;
 
-            if (halfWidth > halfHeight) {
-                left = -halfWidth;
-                right = halfWidth;
-                top = halfWidth / aspect;
-                bottom = -halfWidth / aspect;
+            if (canvasWidth > canvasHeight) {
+                left = -halfSize;
+                right = halfSize;
+                top = halfSize / aspect;
+                bottom = -halfSize / aspect;
 
             } else {
-                left = -halfHeight / aspect;
-                right = halfHeight / aspect;
-                top = halfHeight;
-                bottom = -halfHeight;
+                left = -halfSize * aspect;
+                right = halfSize * aspect;
+                top = halfSize;
+                bottom = -halfSize;
             }
 
-            this.matrix = XEO.math.orthoMat4c(left, right, bottom, top, this._near, this._far, this.__matrix || (this.__matrix = XEO.math.mat4()));
+            this.matrix = XEO.math.orthoMat4c(left, right, bottom, top, this._near, this._far, this.__tempMat || (this.__tempMat = XEO.math.mat4()));
         },
 
         _destroy: function () {
             this._super();
-            this.scene.canvas.off(this._canvasResized);
+            this.scene.canvas.off(this._onCanvasBoundary);
         }
     });
 });

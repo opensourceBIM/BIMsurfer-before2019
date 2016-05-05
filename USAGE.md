@@ -165,9 +165,11 @@ Setting the view volume size for orthographic, switching to orthographic project
 ````javascript
 bimSurfer.setCamera({ 
     type:"ortho", 
-    scale: 0.1
+    scale: 100
 });
 ````
+This uses the same technique as Blender, where the scale argument relates to the "real world" size of the model, meaning 
+that if you set scale to 100, then your view would at most encompass an element of 100 units size.    
 
 Setting the camera projection to perspective:
 
