@@ -700,7 +700,7 @@ define([
         function setBoundaryState(params) {
 
             if (params.aabb) {
-                boundaryHelper.geometry.aabb = aabb;
+                boundaryHelper.geometry.aabb = params.aabb;
 
             } else if (params.ids) {
                 boundaryHelper.geometry.aabb = getObjectsAABB(params.ids);
@@ -733,6 +733,7 @@ define([
                     worldBoundary = object.worldBoundary;
 
                     if (worldBoundary) {
+
                         return worldBoundary.aabb;
 
                     } else {
@@ -758,7 +759,7 @@ define([
             var ymax = -100000;
             var zmax = -100000;
 
-            var aabb = XEO.math.AABB3();
+            var aabb;
 
             for (i = 0, len = ids.length; i < len; i++) {
 
@@ -770,6 +771,7 @@ define([
                 }
 
                 worldBoundary = object.worldBoundary;
+
                 if (!worldBoundary) {
                     continue;
                 }
@@ -804,14 +806,16 @@ define([
                 }
             }
 
-            aabb.min[0] = xmin;
-            aabb.min[1] = ymin;
-            aabb.min[2] = zmin;
-            aabb.max[0] = xmax;
-            aabb.max[1] = ymax;
-            aabb.max[2] = zmax;
+            var result = XEO.math.AABB3();
 
-            return aabb;
+            result.min[0] = xmin;
+            result.min[1] = ymin;
+            result.min[2] = zmin;
+            result.max[0] = xmax;
+            result.max[1] = ymax;
+            result.max[2] = zmax;
+
+            return result;
         }
 
         this.saveReset = function () {
