@@ -3,10 +3,8 @@ define(function () {
     "use strict";
 
     /**
-     Custom xeoEngine component that picks and orbits objects with the mouse.
 
-     Unfortunately this is a rather complex piece of code because the modal inter-dependencies
-     between the input handlers.
+     Controls camera with mouse and keyboard, handles selection of entities and rotation point.
 
      */
     XEO.BIMCameraControl = XEO.Component.extend({
@@ -14,6 +12,8 @@ define(function () {
         type: "XEO.BIMCameraControl",
 
         _init: function (cfg) {
+
+            var self = this;
 
             // Configs
 
@@ -23,12 +23,9 @@ define(function () {
             var sensitivityKeyboardRotate = cfg.sensitivityKeyboardRotate || 0.5;
             var sensitivityMouseZoom = cfg.sensitivityMouseZoom || 0.5;
             var sensitivityKeyboardZoom = cfg.sensitivityKeyboardZoom || 0.5;
-            
+
             var canvasPickTolerance = 4;
             var worldPickTolerance = 3;
-
-
-            var self = this;
 
             var math = XEO.math;
 
@@ -65,10 +62,11 @@ define(function () {
 
             var flying = false;
 
-            // Momentarily shows a dot at each newly-selected pivot point
+            // Rotation point indicator
+
             var pickHelper = this.create(XEO.Entity, {
                 geometry: this.create(XEO.SphereGeometry, {
-                    radius: 0.5
+                    radius: 1.0
                 }),
                 material: this.create(XEO.PhongMaterial, {
                     diffuse: [0, 0, 0],
@@ -88,21 +86,31 @@ define(function () {
                 })
             });
 
-            var pickHelperHide;
+            // Shows the rotation point indicator
+            // at the given position for one second
 
-            function updatePickHelper(pos) {
-                pickHelper.transform.xyz = pos;
-                pickHelper.visibility.visible = true;
-                if (pickHelperHide) {
-                    clearTimeout(pickHelperHide);
-                    pickHelperHide = null;
-                }
-                pickHelperHide = setTimeout(function () {
-                        pickHelper.visibility.visible = false;
+            var showRotationPoint = (function () {
+
+                var pickHelperHide = null;
+
+                return function (pos) {
+
+                    pickHelper.transform.xyz = pos;
+                    pickHelper.visibility.visible = true;
+
+                    if (pickHelperHide) {
+                        clearTimeout(pickHelperHide);
                         pickHelperHide = null;
-                    },
-                    1000)
-            }
+                    }
+
+                    pickHelperHide = setTimeout(function () {
+                            pickHelper.visibility.visible = false;
+                            pickHelperHide = null;
+                        },
+                        1000)
+                };
+            })();
+
 
             var pickTimer;
 
@@ -119,23 +127,25 @@ define(function () {
                 clearTimeout(pickTimer);
             }
 
+
             function resetRotate() {
 
                 pickClicks = 0;
-                
+
                 rotationDeltas[0] = 0;
                 rotationDeltas[1] = 0;
 
                 rotateStartEye = camera.view.eye.slice();
                 rotateStartLook = camera.view.look.slice();
                 math.addVec3(rotateStartEye, camera.view.up, rotateStartUp);
-                
+
                 setOrbitPitchAxis();
             }
 
             function setOrbitPitchAxis() {
                 math.cross3Vec3(math.normalizeVec3(math.subVec3(camera.view.eye, camera.view.look, [])), camera.view.up, orbitPitchAxis);
             }
+
 
             input.on("mousedown",
                 function (canvasPos) {
@@ -167,8 +177,6 @@ define(function () {
 
                     if (pickHit) {
 
-                        //    setOrbitPitchAxis();
-
                         var pickWorldPos = pickHit.worldPos.slice();
                         var pickCanvasPos = canvasPos.slice();
 
@@ -184,7 +192,7 @@ define(function () {
 
                                 rotatePos = pickWorldPos;
 
-                                updatePickHelper(pickWorldPos);
+                                showRotationPoint(pickWorldPos);
 
                                 pickClicks = 2;
                             }
@@ -197,7 +205,7 @@ define(function () {
                             firstPickCanvasPos = pickCanvasPos;
                             firstPickTime = pickTime;
                         }
-                        
+
                     } else {
 
                         pickClicks = 0;
@@ -212,12 +220,18 @@ define(function () {
                     mouseDown = true;
                 });
 
+            // Returns true if the two Canvas-space points are
+            // close enough to be considered the same point
+
             function closeEnoughCanvas(p, q) {
                 return p[0] >= (q[0] - canvasPickTolerance) &&
                     p[0] <= (q[0] + canvasPickTolerance) &&
                     p[1] >= (q[1] - canvasPickTolerance) &&
                     p[1] <= (q[1] + canvasPickTolerance);
             }
+
+            // Returns true if the two World-space points are
+            // close enough to be considered the same point
 
             function closeEnoughWorld(p, q) {
                 return p[0] >= (q[0] - worldPickTolerance) &&
@@ -411,54 +425,60 @@ define(function () {
             // Keyboard zoom camera
             //---------------------------------------------------------------------------------------------------------
 
-            scene.on("tick",
-                function (params) {
+            (function () {
 
-                    if (!input.mouseover) {
-                        return;
-                    }
+                var tempVec3a = XEO.math.vec3();
+                var tempVec3b = XEO.math.vec3();
+                var tempVec3c = XEO.math.vec3();
 
-                    if (mouseDown) {
-                        return;
-                    }
+                scene.on("tick",
+                    function (params) {
 
-                    if (flying) {
-                        return;
-                    }
-
-                    var elapsed = params.deltaTime;
-
-                    if (!input.ctrlDown && !input.altDown) {
-
-                        var wkey = input.keyDown[input.KEY_ADD];
-                        var skey = input.keyDown[input.KEY_SUBTRACT];
-
-                        if (wkey || skey) {
-
-                            var delta = 0;
-
-                            if (skey) {
-                                delta = elapsed * 0.1 * sensitivityKeyboardZoom; // Want sensitivity configs in [0..1] range
-                            } else if (wkey) {
-                                delta = -elapsed * 0.1 * sensitivityKeyboardZoom;
-                            }
-
-                            var view = camera.view;
-                            var eye = view.eye;
-                            var look = view.look;
-
-                            // Get vector from eye to center of rotationDeltas
-                            var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), delta);
-
-                            // Move eye and look along the vector
-                            view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
-                            view.look = math.addVec3(look, eyePivotVec, tempVec3c);
-
-                            resetRotate();
+                        if (!input.mouseover) {
+                            return;
                         }
-                    }
-                });
 
+                        if (mouseDown) {
+                            return;
+                        }
+
+                        if (flying) {
+                            return;
+                        }
+
+                        var elapsed = params.deltaTime;
+
+                        if (!input.ctrlDown && !input.altDown) {
+
+                            var wkey = input.keyDown[input.KEY_ADD];
+                            var skey = input.keyDown[input.KEY_SUBTRACT];
+
+                            if (wkey || skey) {
+
+                                var delta = 0;
+
+                                if (skey) {
+                                    delta = elapsed * 0.1 * sensitivityKeyboardZoom; // Want sensitivity configs in [0..1] range
+                                } else if (wkey) {
+                                    delta = -elapsed * 0.1 * sensitivityKeyboardZoom;
+                                }
+
+                                var view = camera.view;
+                                var eye = view.eye;
+                                var look = view.look;
+
+                                // Get vector from eye to center of rotationDeltas
+                                var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), delta);
+
+                                // Move eye and look along the vector
+                                view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
+                                view.look = math.addVec3(look, eyePivotVec, tempVec3c);
+
+                                resetRotate();
+                            }
+                        }
+                    });
+            })();
             //---------------------------------------------------------------------------------------------------------
             // Mouse zoom
             // Roll mouse wheel to move eye and look closer or further from center of rotationDeltas 
@@ -539,7 +559,6 @@ define(function () {
                             if (targeting) {
 
                                 var view = camera.view;
-
                                 var eye = view.eye;
                                 var look = view.look;
 
@@ -549,14 +568,14 @@ define(function () {
                                 // Move eye and look along the vector
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
                                 view.look = math.addVec3(look, eyePivotVec, tempVec3c);
-                                view.zoom(progress);
+                                //  view.zoom(progress);
 
                                 resetRotate();
                             }
                         }
                     });
 
-                scene.on("tick",
+                scene.on("XXtick",
                     function () {
 
                         if (mouseDown) {
