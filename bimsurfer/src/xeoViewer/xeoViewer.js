@@ -4,7 +4,7 @@ define([
     "bimsurfer/src/xeoViewer/controls/bimCameraControl.js",
     "bimsurfer/src/xeoViewer/entities/bimObject.js",
     "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper.js",
-    "bimsurfer/src/xeoViewer/transforms/bimOrtho.js"
+    "bimsurfer/src/xeoViewer/helpers/bimAxisHelper.js"
 ], function (DefaultMaterials, EventHandler) {
 
     "use strict";
@@ -31,8 +31,8 @@ define([
         scene.lights.lights = [
 
             new XEO.AmbientLight(scene, {
-                color: [0.45, 0.45, 0.5],
-                intensity: 0.9
+                color: [0.65, 0.65, 0.75],
+                intensity: 1.0
             }),
 
             new XEO.DirLight(scene, {
@@ -58,6 +58,13 @@ define([
         // Shows a wireframe box at the given boundary
         var boundaryHelper = new XEO.BIMBoundaryHelper(scene);
 
+        // Shows a gnomon which indicates the directions of the World-space coordinate axis
+        var axisHelper = new XEO.BIMAxisHelper({
+            lookat: camera.view,
+            visible: true,
+            size: [200, 200]
+        });
+
         // Objects mapped to IDs
         var objects = {};
 
@@ -79,9 +86,8 @@ define([
 
             persp: camera.project, // Camera has a XEO.Perspective by default
 
-            ortho: new XEO.BIMOrtho(scene, {
+            ortho: new XEO.Ortho(scene, {
                 scale: 1.0,
-                top: 1.0,
                 near: 0.1,
                 far: 1000
             })
@@ -189,7 +195,7 @@ define([
 
             this.clear();
 
-            var geometry = new XEO.SphereGeometry(scene, { // http://xeoengine.org/docs/classes/Geometry.html
+            var geometry = new XEO.BoxGeometry(scene, { // http://xeoengine.org/docs/classes/Geometry.html
                 id: "geometry.myGeometry"
             });
 
@@ -204,15 +210,21 @@ define([
             var matrix;
             var types = Object.keys(DefaultMaterials);
 
-            for (var i = 0; i < 50; i++) {
+            for (var i = 0; i < 100; i++) {
                 objectId = "object" + i;
                 oid = objectId;
-                translate = XEO.math.translationMat4c(Math.random() * 40 - 20, Math.random() * 40 - 20, Math.random() * 40 - 20);
-                scale = XEO.math.scalingMat4c(Math.random() * 5 + 0.2, Math.random() * 5 + 0.2, Math.random() * 5 + 0.2);
+                translate = XEO.math.translationMat4c(Math.random() * 200 - 100, Math.random() * 200 - 100, Math.random() * 200 - 100);
+                scale = XEO.math.scalingMat4c(Math.random() * 32 + 0.2, Math.random() * 32 + 0.2, Math.random() * 10 + 0.2);
                 matrix = XEO.math.mulMat4(translate, scale);
                 type = types[Math.round(Math.random() * types.length)];
                 this.createObject(roid, oid, objectId, ["myGeometry"], type, matrix);
             }
+
+            this.setCamera({ // Conventional BIM/Autocad camera
+                eye: [0, -300, 0],
+                look: [0, 0, 0],
+                up: [0, 0, 1]
+            });
 
             this.saveReset();
         };
@@ -281,7 +293,6 @@ define([
             // Register object against ID
             objects[objectId] = object;
 
-            // Register object against IFC type
             // Register object against IFC type
             var types = (rfcTypes[type] || (rfcTypes[type] = {}));
             types[objectId] = object;
@@ -683,7 +694,7 @@ define([
                 //boundaryHelper.geometry.aabb = aabb;
                 //boundaryHelper.visibility.visible = true;
 
-                cameraFlight.flyTo({ aabb: aabb, stopFOV: 20 },
+                cameraFlight.flyTo({aabb: aabb, stopFOV: 20},
                     function () {
 
                         // Hide the boundary again

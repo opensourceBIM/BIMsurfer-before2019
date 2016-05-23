@@ -4,7 +4,7 @@
  * A WebGL-based 3D visualization engine from xeoLabs
  * http://xeoengine.org/
  *
- * Built on 2016-05-04
+ * Built on 2016-05-19
  *
  * MIT License
  * Copyright 2016, Lindsay Kay
@@ -3344,7 +3344,7 @@ var Canvas2Image = (function () {
             if (states.billboard.active) {
 
                 add("void billboard(inout mat4 mat) {");
-                add("   mat[0][0] = -1.0;");
+                add("   mat[0][0] = 1.0;");
                 add("   mat[0][1] = 0.0;");
                 add("   mat[0][2] = 0.0;");
                 if (states.billboard.spherical) {
@@ -14332,6 +14332,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 },
 
                 get: function () {
+
+                    if (this._updateScheduled) {
+                        this._update();
+                    }
+
                     return this._state.matrix;
                 }
             }
@@ -14359,6 +14364,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  <ul>
  <li>{{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with viewing transform components, such as
  {{#crossLink "Lookat"}}Lookat{{/crossLink}}, to define viewpoints for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
+ <li>A Frustum lets us explicitly set the positions of the left, right, top, bottom, near and far planes, which is useful
+ for asymmetrical view volumes, such as those used for stereo viewing.</li>
+ <li>An Frustum's {{#crossLink "Frustum/near:property"}}{{/crossLink}} and {{#crossLink "Frustum/far:property"}}{{/crossLink}} properties
+ specify the distances to the WebGL clipping planes.</li>
+ <li>Use {{#crossLink "Ortho"}}{{/crossLink}} if you just want to specify the X,Y frustum extents with a single scale factor,
+ ie. without individually specifying the distance to each frustum plane.</li>
+ <li>Use {{#crossLink "Perspective"}}{{/crossLink}} if you need perspective projection.</li>
  <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Ortho components create within xeoEngine's shaders.</li>
  </ul>
 
@@ -14368,6 +14380,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  <ul>
  <li>[Camera with frustum projection](../../examples/#camera_frustum)</li>
+ <li>[Stereo viewing with frustum projection](../../examples/#effects_stereo)</li>
  </ul>
 
  ## Usage
@@ -14412,7 +14425,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  @param [cfg.top=1] {Number} Position of the Frustum's top plane on the View-space Y-axis.
  @param [cfg.near=0.1] {Number} Position of the Frustum's near plane on the View-space Z-axis.
  @param [cfg.far=1000] {Number} Position of the Frustum's far plane on the positive View-space Z-axis.
- @extends Component
+ @extends Projection
  */
 (function () {
 
@@ -14424,9 +14437,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.ProjTransform({
-                matrix: XEO.math.identityMat4()
-            });
+            this._super(cfg);
 
             this._left = -1.0;
             this._right = 1.0;
@@ -14443,6 +14454,17 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             this.top = cfg.top;
             this.near = cfg.near;
             this.far = cfg.far;
+        },
+
+        _update: function () {
+            this.matrix = XEO.math.frustumMat4( // Assign to XEO.Projection#matrix
+                this._left,
+                this._right,
+                this._bottom,
+                this._top,
+                this._near,
+                this._far,
+                this.__tempMat || (this.__tempMat = XEO.math.mat4()));
         },
 
         _props: {
@@ -14631,63 +14653,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 get: function () {
                     return this._far;
                 }
-            },
-
-            /**
-             * The elements of this Frustum's projection transform matrix.
-             *
-             * Fires a {{#crossLink "Frustum/matrix:event"}}{{/crossLink}} event on change.
-             *
-             * @property matrix
-             * @type {Float64Array}
-             */
-            matrix: {
-
-                get: function () {
-
-                    if (this._buildScheduled) {
-
-                        // Matrix update is scheduled for next frame.
-                        // Lazy-build the matrix now, while leaving the update
-                        // scheduled. The update task will fire a "matrix" event,
-                        // without needlessly rebuilding the matrix again.
-
-                        this._build();
-
-                        this._buildScheduled = false;
-                    }
-
-                    return this._state.matrix;
-                }
             }
-        },
-
-        _build: function () {
-
-            XEO.math.frustumMat4(
-                this._left,
-                this._right,
-                this._bottom,
-                this._top,
-                this._near,
-                this._far,
-                this._state.matrix);
-        },
-
-        _update: function () {
-
-            this._renderer.imageDirty = true;
-
-            /**
-             * Fired whenever this Frustum's  {{#crossLink "Lookat/matrix:property"}}{{/crossLink}} property is regenerated.
-             * @event matrix
-             * @param value The property's new value
-             */
-            this.fire("matrix", this._state.matrix);
-        },
-
-        _compile: function () {
-            this._renderer.projTransform = this._state;
         },
 
         _getJSON: function () {
@@ -14699,13 +14665,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 near: this._near,
                 far: this._far
             };
-        },
-
-        _destroy: function () {
-            this._state.destroy();
         }
     });
-
 })();
 ;/**
  A **Lookat** defines a viewing transform as an {{#crossLink "Lookat/eye:property"}}eye{{/crossLink}} position, a
@@ -15165,7 +15126,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  <ul>
  <li>{{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with viewing transform components, such as
  {{#crossLink "Lookat"}}Lookat{{/crossLink}}, to define viewpoints on attached {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>Alternatively, use {{#crossLink "Perspective"}}{{/crossLink}} if you need perspective projection.</li>
+ <li>An Ortho works like Blender's orthographic projection, where the positions of the left, right, top and bottom planes are
+ implicitly specified with a single {{#crossLink "Ortho/scale:property"}}{{/crossLink}} property, which causes the frustum to be symmetrical on X and Y axis, large enough to
+ contain the number of units given by {{#crossLink "Ortho/scale:property"}}{{/crossLink}}.</li>
+ <li>An Ortho's {{#crossLink "Ortho/near:property"}}{{/crossLink}} and {{#crossLink "Ortho/far:property"}}{{/crossLink}} properties
+ specify the distances to the WebGL clipping planes.</li>
+ <li>Use {{#crossLink "Frustum"}}{{/crossLink}} if you need to individually specify the position of each of the frustum
+ planes, eg. for an asymmetrical view volume, such as those used for stereo viewing.</li>
+ <li>Use {{#crossLink "Perspective"}}{{/crossLink}} if you need perspective projection.</li>
  <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Ortho components create within xeoEngine's shaders.</li>
  </ul>
 
@@ -15190,11 +15158,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              up: [0, 1, 0]
          }),
 
-         project: new XEO.Frustum(scene, {
-             left: -3.0,
-             right: 3.0,
-             bottom: -3.0,
-             top: 3.0,
+         project: new XEO.Ortho(scene, {
+             scale: 100.0,  // Fit at least 100 units within the ortho volume X & Y extents
              near: 0.1,
              far: 1000
          })
@@ -15213,13 +15178,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  @param [cfg] {*} Configs
  @param [cfg.id] {String} Optional ID, unique among all components in the parent scene, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Ortho.
- @param [cfg.left=-1.0] {Number} Position of the left plane on the View-space X-xyz.
- @param [cfg.right=1.0] {Number} Position of the right plane on the View-space X-axis.
- @param [cfg.top=1.0] {Number} Position of the top plane on the View-space Y-axis.
- @param [cfg.bottom=-1.0] {Number} Position of the bottom plane on the View-space Y-axis.
+ @param [cfg.scale=1.0] {Number} Scale factor for this Ortho's extents on X and Y axis.
  @param [cfg.near=0.1] {Number} Position of the near plane on the View-space Z-axis.
  @param [cfg.far=10000] {Number} Position of the far plane on the positive View-space Z-axis.
- @extends Component
+ @extends Projection
  */
 (function () {
 
@@ -15231,150 +15193,77 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.ProjTransform({
-                matrix: XEO.math.identityMat4(XEO.math.mat4())
-            });
+            this._super(cfg);
 
-            // Ortho view volume
-            this._left = -1.0;
-            this._right = 1.0;
-            this._top = 1.0;
-            this._bottom = -1.0;
-            this._near = 0.1;
-            this._far = 10000.0;
-
-            // Set properties on this component
-            this.left = cfg.left;
-            this.right = cfg.right;
-            this.top = cfg.top;
-            this.bottom = cfg.bottom;
+            this.scale = cfg.scale;
             this.near = cfg.near;
             this.far = cfg.far;
+
+            this._onCanvasBoundary = this.scene.canvas.on("boundary", this._scheduleUpdate, this);
+        },
+
+        _update: function () {
+
+            var scene = this.scene;
+            var scale = this._scale;
+            var canvas = scene.canvas.canvas;
+            var canvasWidth = canvas.clientWidth;
+            var canvasHeight = canvas.clientHeight;
+            var halfSize = 0.5 * scale;
+            var aspect = canvasWidth / canvasHeight;
+
+            var left;
+            var right;
+            var top;
+            var bottom;
+
+            if (canvasWidth > canvasHeight) {
+                left = -halfSize;
+                right = halfSize;
+                top = halfSize / aspect;
+                bottom = -halfSize / aspect;
+
+            } else {
+                left = -halfSize * aspect;
+                right = halfSize * aspect;
+                top = halfSize;
+                bottom = -halfSize;
+            }
+
+            this.matrix = XEO.math.orthoMat4c( // Assign to XEO.Projection#matrix
+                left, right, bottom, top, this._near, this._far, this.__tempMat || (this.__tempMat = XEO.math.mat4()));
         },
 
         _props: {
 
             /**
-             * Position of this Ortho's left plane on the View-space X-axis.
+             * Scale factor for this Ortho's extents on X and Y axis.
              *
-             * Fires a {{#crossLink "Ortho/left:event"}}{{/crossLink}} event on change.
+             * Fires a {{#crossLink "Ortho/scale:event"}}{{/crossLink}} event on change.
              *
-             * @property left
-             * @default -1.0
+             * @property scale
+             * @default 1.0
              * @type Number
              */
-            left: {
+            scale: {
 
                 set: function (value) {
 
-                    this._left = (value !== undefined && value !== null) ? value : -1.0;
+                    this._scale = (value !== undefined && value !== null) ? value : 1.0;
 
                     this._scheduleUpdate(0); // Ensure matrix built on next "tick"
 
                     /**
-                     * Fired whenever this Ortho's  {{#crossLink "Ortho/left:property"}}{{/crossLink}} property changes.
+                     * Fired whenever this Ortho's {{#crossLink "Ortho/scale:property"}}{{/crossLink}} property changes.
                      *
-                     * @event left
+                     * @event scale
                      * @param value The property's new value
                      */
-                    this.fire("left", this._left);
+                    this.fire("scale", this._scale);
                 },
 
                 get: function () {
-                    return this._left;
-                }
-            },
-
-            /**
-             * Position of this Ortho's right plane on the View-space X-axis.
-             *
-             * Fires a {{#crossLink "Ortho/right:event"}}{{/crossLink}} event on change.
-             *
-             * @property right
-             * @default 1.0
-             * @type Number
-             */
-            right: {
-
-                set: function (value) {
-
-                    this._right = (value !== undefined && value !== null) ? value : 1.0;
-
-                    this._scheduleUpdate();
-
-                    /**
-                     * Fired whenever this Ortho's  {{#crossLink "Ortho/right:property"}}{{/crossLink}} property changes.
-                     *
-                     * @event right
-                     * @param value The property's new value
-                     */
-                    this.fire("right", this._right);
-                },
-
-                get: function () {
-                    return this._right;
-                }
-            },
-
-            /**
-             * Position of this Ortho's top plane on the View-space Y-axis.
-             *
-             * Fires a {{#crossLink "Ortho/top:event"}}{{/crossLink}} event on change.
-             *
-             * @property top
-             * @default 1.0
-             * @type Number
-             */
-            top: {
-
-                set: function (value) {
-
-                    this._top = (value !== undefined && value !== null) ? value : 1.0;
-
-                    this._scheduleUpdate();
-
-                    /**
-                     * Fired whenever this Ortho's  {{#crossLink "Ortho/top:property"}}{{/crossLink}} property changes.
-                     *
-                     * @event top
-                     * @param value The property's new value
-                     */
-                    this.fire("top", this._top);
-                },
-
-                get: function () {
-                    return this._top;
-                }
-            },
-
-            /**
-             * Position of this Ortho's bottom plane on the View-space Y-axis.
-             *
-             * Fires a {{#crossLink "Ortho/bottom:event"}}{{/crossLink}} event on change.
-             *
-             * @property bottom
-             * @default -1.0
-             * @type Number
-             */
-            bottom: {
-
-                set: function (value) {
-
-                    this._bottom = (value !== undefined && value !== null) ? value : -1.0;
-
-                    this._scheduleUpdate();
-
-                    /**
-                     * Fired whenever this Ortho's  {{#crossLink "Ortho/bottom:property"}}{{/crossLink}} property changes.
-                     *
-                     * @event bottom
-                     * @param value The property's new value
-                     */
-                    this.fire("bottom", this._bottom);
-                },
-
-                get: function () {
-                    return this._bottom;
+                    return this._scale;
                 }
             },
 
@@ -15391,7 +15280,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 set: function (value) {
 
-                    this._near = (value !== undefined && value !== null) ? value :  0.1;
+                    this._near = (value !== undefined && value !== null) ? value : 0.1;
 
                     this._scheduleUpdate();
 
@@ -15422,7 +15311,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 set: function (value) {
 
-                    this._far = (value !== undefined && value !== null) ? value :  10000.0;
+                    this._far = (value !== undefined && value !== null) ? value : 10000.0;
 
                     this._scheduleUpdate();
 
@@ -15438,73 +15327,20 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 get: function () {
                     return this._far;
                 }
-            },
-
-            /**
-             * The elements of this Ortho's projection transform matrix.
-             *
-             * Fires a {{#crossLink "Ortho/matrix:event"}}{{/crossLink}} event on change.
-             *
-             * @property matrix
-             * @type {Float64Array}
-             */
-            matrix: {
-
-                get: function () {
-
-                    if (this._buildScheduled) {
-
-                        // Matrix update is scheduled for next frame.
-                        // Lazy-build the matrix now, while leaving the update
-                        // scheduled. The update task will fire a "matrix" event,
-                        // without needlessly rebuilding the matrix again.
-
-                        this._build();
-
-                        this._buildScheduled = false;
-                    }
-
-                    return this._state.matrix;
-                }
             }
-        },
-
-        _build: function () {
-
-            XEO.math.orthoMat4c(this._left, this._right, this._bottom, this._top, this._near, this._far, this._state.matrix);
-
-            this._renderer.imageDirty = true;
-        },
-
-        _update: function () {
-
-            this._renderer.imageDirty = true;
-
-            /**
-             * Fired whenever this Frustum's  {{#crossLink "Lookat/matrix:property"}}{{/crossLink}} property is regenerated.
-             * @event matrix
-             * @param value The property's new value
-             */
-            this.fire("matrix", this._state.matrix);
-        },
-
-        _compile: function () {
-            this._renderer.projTransform = this._state;
         },
 
         _getJSON: function () {
             return {
-                left: this._left,
-                right: this._right,
-                top: this._top,
-                bottom: this._bottom,
+                scale: this._scale,
                 near: this._near,
                 far: this._far
             };
         },
 
         _destroy: function () {
-            this._state.destroy();
+            this._super();
+            this.scene.canvas.off(this._onCanvasBoundary);
         }
     });
 
@@ -15576,9 +15412,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.ProjTransform({
-                matrix: XEO.math.identityMat4(XEO.math.mat4())
-            });
+            this._super(cfg);
 
             this._dirty = false;
             this._fovy = 60.0;
@@ -15598,15 +15432,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var canvas = this.scene.canvas.canvas;
             var aspect = canvas.clientWidth / canvas.clientHeight;
 
-            XEO.math.perspectiveMatrix4(this._fovy * (Math.PI / 180.0), aspect, this._near, this._far, this._state.matrix);
-
-            /**
-             * Fired whenever this Perspective's {{#crossLink "Perspective/matrix:property"}}{{/crossLink}} property changes.
-             *
-             * @event matrix
-             * @param value The property's new value
-             */
-            this.fire("matrix", this._state.matrix);
+            this.matrix = XEO.math.perspectiveMatrix4( // Assign to XEO.Projection#matrix
+                this._fovy * (Math.PI / 180.0), aspect, this._near, this._far,  this.__tempMat || (this.__tempMat = XEO.math.mat4()));
         },
 
         _props: {
@@ -15707,31 +15534,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 get: function () {
                     return this._far;
                 }
-            },
-
-            /**
-             * The elements of this Perspective's projection transform matrix.
-             *
-             * Fires a {{#crossLink "Perspective/matrix:event"}}{{/crossLink}} event on change.
-             *
-             * @property matrix
-             * @type {Float64Array}
-             */
-            matrix: {
-
-                get: function () {
-
-                    if (this._updateScheduled) {
-                        this._update();
-                    }
-
-                    return this._state.matrix;
-                }
             }
-        },
-
-        _compile: function () {
-            this._renderer.projTransform = this._state;
         },
 
         _getJSON: function () {
@@ -15744,9 +15547,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         _destroy: function () {
 
-            this.scene.canvas.off(this._canvasResized);
+            this._super();
 
-            this._state.destroy();
+            this.scene.canvas.off(this._canvasResized);
         }
     });
 
@@ -19263,6 +19066,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         this._onMouseDown = input.on("mousedown",
                             function (e) {
 
+                                if (!input.mouseover) {
+                                    return;
+                                }
+
                                 xDelta = 0;
                                 yDelta = 0;
 
@@ -19295,7 +19102,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 yDelta = 0;
                             });
 
-                        this._onMouseOver = input.on("mouseover",
+                        this._onMouseEnter = input.on("mouseenter",
                             function () {
 
                                 over = true;
@@ -19304,7 +19111,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 yDelta = 0;
                             });
 
-                        this._onMouseOut = input.on("mouseout",
+                        this._onMouseLeave = input.on("mouseleave",
                             function () {
 
                                 over = false;
@@ -19340,8 +19147,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         input.off(this._onMouseDown);
                         input.off(this._onMouseUp);
                         input.off(this._onMouseMove);
-                        input.off(this._onMouseOver);
-                        input.off(this._onMouseOut);
+                        input.off(this._onMouseEnter);
+                        input.off(this._onMouseLeave);
                     }
 
                     /**
@@ -19590,6 +19397,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         this._onMouseDown = input.on("mousedown",
                             function (e) {
 
+                                if (!input.mouseover) {
+                                    return;
+                                }
+
                                 if ((input.mouseDownLeft && input.mouseDownRight) ||
                                     (input.mouseDownLeft && input.keyDown[input.KEY_SHIFT]) ||
                                     input.mouseDownMiddle) {
@@ -19609,13 +19420,18 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 down = false;
                             });
 
-                        this._onMouseUp = input.on("mouseout",
+                        this._onMouseLeave = input.on("mouseleave",
                             function () {
                                 down = false;
                             });
 
                         this._onMouseMove = input.on("mousemove",
                             function (e) {
+
+                                if (!input.mouseover) {
+                                    return;
+                                }
+
                                 if (down) {
                                     xDelta += (e[0] - lastX) * self._sensitivity;
                                     yDelta += (e[1] - lastY) * self._sensitivity;
@@ -19783,12 +19599,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         var downX;
                         var downY;
 
-                        this._onMouseOver = input.on("mouseover",
+                        this._onMouseEnter = input.on("mouseenter",
                             function () {
                                 over = true;
                             });
 
-                        this._onMouseOut = input.on("mouseout",
+                        this._onMouseLeave = input.on("mouseleave",
                             function () {
                                 over = false;
                             });
@@ -27034,10 +26850,10 @@ XEO.PathGeometry = XEO.Geometry.extend({
                     /**
                      * Fired whenever the mouse is moved into of the parent
                      * {{#crossLink "Scene"}}Scene{{/crossLink}}'s {{#crossLink "Canvas"}}Canvas{{/crossLink}}.
-                     * @event mouseover
+                     * @event mouseenter
                      * @param value {[Number, Number]} The mouse coordinates within the {{#crossLink "Canvas"}}Canvas{{/crossLink}},
                      */
-                    self.fire("mouseover", coords, true);
+                    self.fire("mouseenter", coords, true);
                 });
 
             cfg.element.addEventListener("mouseleave",
@@ -27054,14 +26870,14 @@ XEO.PathGeometry = XEO.Geometry.extend({
                     /**
                      * Fired whenever the mouse is moved out of the parent
                      * {{#crossLink "Scene"}}Scene{{/crossLink}}'s {{#crossLink "Canvas"}}Canvas{{/crossLink}}.
-                     * @event mouseout
+                     * @event mouseleave
                      * @param value {[Number, Number]} The mouse coordinates within the {{#crossLink "Canvas"}}Canvas{{/crossLink}},
                      */
-                    self.fire("mouseout", coords, true);
+                    self.fire("mouseleave", coords, true);
                 });
 
 
-            cfg.element.addEventListener("mousedown",
+            document.addEventListener("mousedown",
                 this._mouseDownListener = function (e) {
 
                     if (!self.enabled) {
@@ -27095,9 +26911,13 @@ XEO.PathGeometry = XEO.Geometry.extend({
                      * @param value {[Number, Number]} The mouse coordinates within the {{#crossLink "Canvas"}}Canvas{{/crossLink}},
                      */
                     self.fire("mousedown", coords, true);
+
+                    if (self.mouseover) {
+                        e.preventDefault();
+                    }
                 });
 
-            cfg.element.addEventListener("mouseup",
+            document.addEventListener("mouseup",
                 this._mouseUpListener = function (e) {
 
                     if (!self.enabled) {
@@ -27131,9 +26951,13 @@ XEO.PathGeometry = XEO.Geometry.extend({
                      * @param value {[Number, Number]} The mouse coordinates within the {{#crossLink "Canvas"}}Canvas{{/crossLink}},
                      */
                     self.fire("mouseup", coords, true);
-                });
 
-            cfg.element.addEventListener("dblclick",
+                    if (self.mouseover) {
+                        e.preventDefault();
+                    }
+                }, true);
+
+            document.addEventListener("dblclick",
                 this._dblClickListener = function (e) {
 
                     if (!self.enabled) {
@@ -27169,9 +26993,13 @@ XEO.PathGeometry = XEO.Geometry.extend({
                      * @param value {[Number, Number]} The mouse coordinates within the {{#crossLink "Canvas"}}Canvas{{/crossLink}},
                      */
                     self.fire("dblclick", coords, true);
+
+                    if (self.mouseover) {
+                        e.preventDefault();
+                    }
                 });
 
-            cfg.element.addEventListener("mousemove",
+            document.addEventListener("mousemove",
                 this._mouseMoveListener = function (e) {
 
                     if (!self.enabled) {
@@ -27187,6 +27015,10 @@ XEO.PathGeometry = XEO.Geometry.extend({
                      * @param value {[Number, Number]} The mouse coordinates within the {{#crossLink "Canvas"}}Canvas{{/crossLink}},
                      */
                     self.fire("mousemove", coords, true);
+
+                    if (self.mouseover) {
+                        e.preventDefault();
+                    }
                 });
 
             cfg.element.addEventListener("mousewheel",
@@ -32111,7 +31943,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 magFilter: null,
                 wrapS: null,
                 wrapT: null,
-                flipY: null
+                flipY: null,
+
+                pageTableTexture: null
             });
 
             // Data source
@@ -32119,6 +31953,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             this._src = null;   // URL string
             this._image = null; // HTMLImageElement
             this._target = null;// XEO.RenderTarget
+
+            this._pageTable = null; // Float32Array
 
             // Transformation
 
@@ -32301,6 +32137,32 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 }
 
                 this._propsDirty = false;
+            }
+
+            if (this._pageTableDirty) {
+
+                if (this._image) {
+
+                    if (this._onTargetActive) {
+                        this._target.off(this._onTargetActive);
+                        this._onTargetActive = null;
+                    }
+
+                    if (state.texture && state.texture.renderBuffer) {
+
+                        // Detach from "virtual texture" provided by render target
+                        state.texture = null;
+                    }
+
+                    if (!state.texture) {
+                        state.texture = new XEO.renderer.webgl.Texture2D(gl);
+                    }
+
+                    state.texture.setImage(this._image, state);
+
+                    this._imageDirty = false;
+                    this._propsDirty = true; // May now need to regenerate mipmaps etc
+                }
             }
 
             this._renderer.imageDirty = true;
@@ -32522,6 +32384,36 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 get: function () {
                     return this._attached.target;
+                }
+            },
+
+            /**
+             * Page table for sparse virtual texturing.
+             *
+             * Fires an {{#crossLink "Texture/pageTable:event"}}{{/crossLink}} event on change.
+             *
+             * @property pageTable
+             * @default null
+             * @type {Float32Array}
+             */
+            pageTable: {
+
+                set: function (value) {
+
+                    this._pageTable = value;
+
+                    this._imageDirty = true;
+
+                    /**
+                     * Fired whenever this Texture's  {{#crossLink "Texture/pageTable:property"}}{{/crossLink}} property changes.
+                     * @event pageTable
+                     * @param value {Float32Array} The property's new value
+                     */
+                    this.fire("pageTable", this._pageTable);
+                },
+
+                get: function () {
+                    return this._state._pageTable;
                 }
             },
 
@@ -32942,6 +32834,10 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             } else if (this._image) {
                 // TODO: Image data
                 // json.src = image.src;
+            }
+
+            if (false && this._state.pageTable !== false) {
+                json.pageTable = this._state.pageTable;
             }
 
             return json;
