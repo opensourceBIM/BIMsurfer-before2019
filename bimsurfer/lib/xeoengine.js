@@ -4,7 +4,7 @@
  * A WebGL-based 3D visualization engine from xeoLabs
  * http://xeoengine.org/
  *
- * Built on 2016-05-19
+ * Built on 2016-05-24
  *
  * MIT License
  * Copyright 2016, Lindsay Kay
@@ -10756,9 +10756,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * @param {String} [params.type] Optional expected type of base type of the child; when supplied, will
          * cause an exception if the given child is not the same type or a subtype of this.
          * @param {Boolean} [params.sceneDefault=false]
-         * @param {Function} [params.onAttached] Optional callback called before event is fired
-         * * @param {Function} [params.onAttached.callback] Callback function
+         * @param {Function} [params.onAttached] Optional callback called when component attached
+         * @param {Function} [params.onAttached.callback] Callback function
          * @param {Function} [params.onAttached.scope] Optional scope for callback
+         * @param {Function} [params.onDetached] Optional callback called when component is detached
+         * @param {Function} [params.onDetached.callback] Callback function
+         * @param {Function} [params.onDetached.scope] Optional scope for callback
          * @param {{String:Function}} [params.on] Callbacks to subscribe to properties on component
          * @param {Boolean} [params.recompiles=true] When true, fires "dirty" events on this component
          * @private
@@ -13716,16 +13719,17 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             return -c * t * (t - 2) + b;
         },
 
+        /**
+         * Stops an earlier flyTo, fires arrival callback.
+         * @method stop
+         */
         stop: function () {
 
             if (!this._flying) {
                 return;
             }
 
-            // Hide boundary
             this._boundaryIndicator.visibility.visible = false;
-
-            //this.scene.off(this._tick);
 
             this._flying = false;
 
@@ -13746,6 +13750,30 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             }
 
             this.fire("stopped", true, true);
+        },
+
+        /**
+         * Cancels an earlier flyTo without calling the arrival callback.
+         * @method cancel
+         */
+        cancel: function () {
+
+            if (!this._flying) {
+                return;
+            }
+
+            this._boundaryIndicator.visibility.visible = false;
+
+            this._flying = false;
+
+            this._time1 = null;
+            this._time2 = null;
+
+            if (this._callback) {
+                this._callback = null;
+            }
+
+            this.fire("canceled", true, true);
         },
 
         _props: {
@@ -15764,8 +15792,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              *
              * var xmin = boundary[0];
              * var ymin = boundary[1];
-             * var xmax = boundary[2];
-             * var ymax = boundary[3];
+             * var width = boundary[2];
+             * var height = boundary[3];
              * ````
              *
              * @property boundary
@@ -19397,10 +19425,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         this._onMouseDown = input.on("mousedown",
                             function (e) {
 
-                                if (!input.mouseover) {
-                                    return;
-                                }
-
                                 if ((input.mouseDownLeft && input.mouseDownRight) ||
                                     (input.mouseDownLeft && input.keyDown[input.KEY_SHIFT]) ||
                                     input.mouseDownMiddle) {
@@ -19420,18 +19444,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 down = false;
                             });
 
-                        this._onMouseLeave = input.on("mouseleave",
+                        this._onMouseUp = input.on("mouseout",
                             function () {
                                 down = false;
                             });
 
                         this._onMouseMove = input.on("mousemove",
                             function (e) {
-
-                                if (!input.mouseover) {
-                                    return;
-                                }
-
                                 if (down) {
                                     xDelta += (e[0] - lastX) * self._sensitivity;
                                     yDelta += (e[1] - lastY) * self._sensitivity;
@@ -19991,6 +20010,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                                     if (targeting) {
                                         camera.view.zoom(progress);
+
+                                        if (camera.project.isType("XEO.Ortho")) {
+
+                                        }
                                     }
                                 }
                             });

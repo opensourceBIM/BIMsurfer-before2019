@@ -117,15 +117,22 @@ define(function () {
 
             // Fires a "pick" after a timeout period unless clearPickTimer is called before then.
             function startPickTimer() {
+
+                if (pickTimer) {
+                    clearPickTimer();
+                }
+
                 pickTimer = setTimeout(function () {
                     pickClicks = 0;
                     self.fire("pick", pickHit);
+                    pickTimer = null;
                 }, 250);
             }
 
             // Stops a previous call to startPickTimer from firing a "pick"
             function clearPickTimer() {
                 clearTimeout(pickTimer);
+                pickTimer = null;
             }
 
 
@@ -269,6 +276,10 @@ define(function () {
                 function (canvasPos) {
 
                     if (!input.mouseover) {
+                        return;
+                    }
+
+                    if (flying) {
                         return;
                     }
 
@@ -635,7 +646,9 @@ define(function () {
 
                     flying = true;
 
-                    setCursor("wait");
+                    setCursor("wait", true);
+
+                    flight.cancel();
 
                     flight.flyTo({
                             look: look,
