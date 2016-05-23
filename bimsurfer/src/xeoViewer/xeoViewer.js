@@ -549,11 +549,12 @@ define([
                 object = objects[objectId];
 
                 if (!object) {
+                    // No return on purpose to continue changing color of
+                    // other potentially valid object identifiers.
                     console.error("Object not found: '" + objectId + "'");
-                    return;
+                } else {
+                    this._setObjectColor(object, color);
                 }
-
-                this._setObjectColor(object, color);
             }
         };
 
