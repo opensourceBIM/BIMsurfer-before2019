@@ -24,6 +24,8 @@ define(function () {
             var sensitivityMouseZoom = cfg.sensitivityMouseZoom || 0.5;
             var sensitivityKeyboardZoom = cfg.sensitivityKeyboardZoom || 0.5;
 
+            var orthoScaleRate = 5.0; // Rate at which orthographic scale changes with zoom
+
             var canvasPickTolerance = 4;
             var worldPickTolerance = 3;
 
@@ -317,7 +319,7 @@ define(function () {
                     mouseDownPos[0] = canvasPos[0];
                     mouseDownPos[1] = canvasPos[1];
 
-                    setCursor("move");
+                    setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
                 });
 
             function rotate(p) {
@@ -466,7 +468,7 @@ define(function () {
                                 camera.view.look = rotate(rotateStartLook);
                                 camera.view.up = math.subVec3(rotate(rotateStartUp), camera.view.eye, tempVec3);
 
-                                setCursor("grab");
+                                setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
                             }
                         }
                     });
@@ -525,6 +527,10 @@ define(function () {
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
                                 view.look = math.addVec3(look, eyePivotVec, tempVec3c);
 
+                                if (camera.project.isType("XEO.Ortho")) {
+                                    camera.project.scale += delta * orthoScaleRate;
+                                }
+
                                 setCursor("crosshair");
 
                                 resetRotate();
@@ -532,6 +538,7 @@ define(function () {
                         }
                     });
             })();
+
             //---------------------------------------------------------------------------------------------------------
             // Mouse zoom
             // Roll mouse wheel to move eye and look closer or further from center of rotationDeltas 
@@ -621,6 +628,10 @@ define(function () {
                                 // Move eye and look along the vector
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
                                 view.look = math.addVec3(look, eyePivotVec, tempVec3c);
+
+                                if (camera.project.isType("XEO.Ortho")) {
+                                    camera.project.scale += delta * orthoScaleRate;
+                                }
 
                                 setCursor("crosshair");
 
