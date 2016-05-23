@@ -48,8 +48,9 @@ define(function () {
             var pickHit; // Hit record from the most recent pick
             var pickClicks = 0; // Number of times we've clicked on same spot on entity
 
-            var firstPickCanvasPos; // Canvas position of first pick
-            var firstPickWorldPos; // World position of first pick
+            var mouseClickPos = math.vec2(); // Canvas position of last mouseDown
+            var firstPickCanvasPos = math.vec2(); // Canvas position of first pick
+            var firstPickWorldPos = math.vec2(); // World position of first pick
             var firstPickTime; // Time of first pick
 
             var rotatePos = math.vec3([0, 0, 0]); // World-space pivot point we're currently rotating about
@@ -146,9 +147,28 @@ define(function () {
                 math.cross3Vec3(math.normalizeVec3(math.subVec3(camera.view.eye, camera.view.look, [])), camera.view.up, orbitPitchAxis);
             }
 
+            var setCursor = (function () {
+
+                var t;
+
+                return function (cursor, persist) {
+
+                    clearTimeout(t);
+
+                    self.scene.canvas.overlay.style["cursor"] = cursor;
+
+                    if (!persist) {
+                        t = setTimeout(function () {
+                            self.scene.canvas.overlay.style["cursor"] = "auto";
+                        }, 100);
+                    }
+                };
+            })();
 
             input.on("mousedown",
                 function (canvasPos) {
+
+                    canvasPos = canvasPos.slice();
 
                     if (!input.mouseover) {
                         return;
@@ -178,7 +198,7 @@ define(function () {
                     if (pickHit) {
 
                         var pickWorldPos = pickHit.worldPos.slice();
-                        var pickCanvasPos = canvasPos.slice();
+                        var pickCanvasPos = canvasPos;
 
                         var pickTime = Date.now();
 
@@ -193,9 +213,9 @@ define(function () {
                                 rotatePos = pickWorldPos;
 
                                 showRotationPoint(pickWorldPos);
-
-                                pickClicks = 2;
                             }
+
+                            pickClicks = 0;
 
                         } else {
 
@@ -210,6 +230,9 @@ define(function () {
 
                         pickClicks = 0;
                     }
+
+                    mouseClickPos[0] = canvasPos[0];
+                    mouseClickPos[1] = canvasPos[1];
 
                     mouseDownPos[0] = canvasPos[0];
                     mouseDownPos[1] = canvasPos[1];
@@ -250,6 +273,18 @@ define(function () {
                     }
 
                     if (!mouseDown) {
+
+                        var hit = scene.pick({
+                            canvasPos: canvasPos,
+                            rayPick: true
+                        });
+
+                        if (hit) {
+                            setCursor("pointer", true);
+                        } else {
+                            setCursor("auto", true);
+                        }
+
                         return;
                     }
 
@@ -270,6 +305,8 @@ define(function () {
 
                     mouseDownPos[0] = canvasPos[0];
                     mouseDownPos[1] = canvasPos[1];
+
+                    setCursor("move");
                 });
 
             function rotate(p) {
@@ -309,27 +346,30 @@ define(function () {
 
                     if (input.mouseover) {
 
-                        if (pickClicks === 2) {
-                            pickClicks = 0;
-                            return;
-                        }
-
                         if (firstPickCanvasPos && closeEnoughCanvas(canvasPos, firstPickCanvasPos)) {
 
                             if (pickClicks === 1) {
+
                                 if (shiftDown) {
+
                                     pickClicks = 0;
+
                                     self.fire("pick", pickHit);
 
                                 } else {
                                     startPickTimer();
                                 }
+
                             } else {
-                                self.fire("nopick");
+                                //  self.fire("nopick");
                             }
 
                         } else if (pickClicks === 0) {
-                            self.fire("nopick");
+
+                            if (mouseClickPos && closeEnoughCanvas(canvasPos, mouseClickPos)) {
+
+                                self.fire("nopick");
+                            }
                         }
                     }
                 });
@@ -415,7 +455,7 @@ define(function () {
                                 camera.view.look = rotate(rotateStartLook);
                                 camera.view.up = math.subVec3(rotate(rotateStartUp), camera.view.eye, tempVec3);
 
-
+                                setCursor("grab");
                             }
                         }
                     });
@@ -473,6 +513,8 @@ define(function () {
                                 // Move eye and look along the vector
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
                                 view.look = math.addVec3(look, eyePivotVec, tempVec3c);
+
+                                setCursor("crosshair");
 
                                 resetRotate();
                             }
@@ -568,39 +610,12 @@ define(function () {
                                 // Move eye and look along the vector
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
                                 view.look = math.addVec3(look, eyePivotVec, tempVec3c);
-                                //  view.zoom(progress);
+
+                                setCursor("crosshair");
 
                                 resetRotate();
                             }
                         }
-                    });
-
-                scene.on("XXtick",
-                    function () {
-
-                        if (mouseDown) {
-                            return;
-                        }
-
-                        if (!delta || !newTarget) {
-                            return;
-                        }
-
-                        if (flying) {
-                            return;
-                        }
-
-                        var view = camera.view;
-
-                        var eye = view.eye;
-                        var look = view.look;
-
-                        var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), delta);
-
-                        view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
-                        view.look = math.addVec3(look, eyePivotVec, tempVec3c);
-
-                        delta = 0;
                     });
             })();
 
@@ -620,12 +635,16 @@ define(function () {
 
                     flying = true;
 
+                    setCursor("wait");
+
                     flight.flyTo({
                             look: look,
                             eye: eye,
                             up: up
                         },
                         function () {
+
+                            setCursor("auto");
 
                             resetRotate();
 
@@ -751,6 +770,8 @@ define(function () {
                                 camera.view.pan(tempVec3);
 
                                 resetRotate();
+
+                                setCursor("e-resize");
                             }
                         }
                     });
