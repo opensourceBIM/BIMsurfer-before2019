@@ -190,8 +190,15 @@ define([
          * Loads random objects into the viewer for testing.
          *
          * Subsequent calls to #reset will then set the viewer to the state right after the model was loaded.
+         *
+         * @method loadRandom
+         * @param {*} params Parameters
+         * @param {Number} [params.numEntities=200] Number of entities to create.
+         * @param {Number} [params.size=200] Size of model on every axis.
          */
-        this.loadRandom = function () {
+        this.loadRandom = function (params) {
+
+            params = params || {};
 
             this.clear();
 
@@ -210,27 +217,29 @@ define([
             var matrix;
             var types = Object.keys(DefaultMaterials);
 
-            for (var i = 0; i < 100; i++) {
+            var numEntities = params.numEntities || 200;
+            var size = params.size || 200;
+            var halfSize = size / 2;
+
+            for (var i = 0; i < numEntities; i++) {
                 objectId = "object" + i;
                 oid = objectId;
-                translate = XEO.math.translationMat4c(Math.random() * 200 - 100, Math.random() * 200 - 100, Math.random() * 200 - 100);
+                translate = XEO.math.translationMat4c(Math.random() * size - halfSize, Math.random() * size - halfSize, Math.random() * size - halfSize);
                 scale = XEO.math.scalingMat4c(Math.random() * 32 + 0.2, Math.random() * 32 + 0.2, Math.random() * 10 + 0.2);
                 matrix = XEO.math.mulMat4(translate, scale);
                 type = types[Math.round(Math.random() * types.length)];
                 this.createObject(roid, oid, objectId, ["myGeometry"], type, matrix);
             }
 
-            this.setCamera({ // Conventional BIM/Autocad camera
-                eye: [0, -300, 0],
-                look: [0, 0, 0],
-                up: [0, 0, 1]
-            });
+            this.viewFit();
 
             this.saveReset();
         };
 
         /**
          * Creates a geometry.
+         *
+         * @method createGeometry
          * @param geometryId
          * @param positions
          * @param normals
@@ -673,7 +682,7 @@ define([
          *
          * @param params
          */
-        this.viewFit = function (params) {
+        this.viewFit = function (params, ok) {
 
             params = params || {};
 
@@ -700,6 +709,10 @@ define([
 
                         // Hide the boundary again
                         //boundaryHelper.visibility.visible = false;
+
+                        if (ok) {
+                            ok();
+                        }
                     });
 
             } else {
