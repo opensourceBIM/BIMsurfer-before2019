@@ -151,7 +151,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				var coreId = data.readLong();
 				coreIds.push(coreId);
 				var nrIndices = data.readInt();
-				var indices = data.readIntArray(nrIndices);
+				var indices = data.readShortArray(nrIndices);
 				var nrVertices = data.readInt();
 				var vertices = data.readFloatArray(nrVertices);
 				var nrNormals = data.readInt();
@@ -191,7 +191,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		} else if (geometryType == 1) {
 			var geometryDataOid = data.readLong();
 			var nrIndices = data.readInt();
-			var indices = data.readIntArray(nrIndices);
+			var indices = data.readShortArray(nrIndices);
 			var nrVertices = data.readInt();
 			var vertices = data.readFloatArray(nrVertices);
 			var nrNormals = data.readInt();
@@ -334,7 +334,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 4 && version != 5 && version != 6 && version != 7) {
+		if (version != 8) {
 			console.log("Unimplemented version");
 			return false;
 		} else {

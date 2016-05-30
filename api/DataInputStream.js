@@ -105,5 +105,11 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 		var result = new Int32Array(this.arrayBuffer, this.pos, length);
 		this.pos += length * 4;
 		return result;
+	},
+	
+	readShortArray: function(length) {
+		var result = new Int16Array(this.arrayBuffer, this.pos, length);
+		this.pos += length * 2;
+		return result;
 	}
 });
