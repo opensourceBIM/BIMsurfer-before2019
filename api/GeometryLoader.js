@@ -9,6 +9,11 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	o.prepareReceived = false;
 	o.todo = [];
 	
+	o.stats = {
+		nrPrimitives: 0,
+		nrVertices: 0
+	};
+	
 	// GeometryInfo.oid -> GeometryData.oid
 	o.infoToData = {};
 	
@@ -151,8 +156,11 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				var coreId = data.readLong();
 				coreIds.push(coreId);
 				var nrIndices = data.readInt();
+				o.stats.nrPrimitives += nrIndices / 3;
 				var indices = data.readShortArray(nrIndices);
+				data.align4();
 				var nrVertices = data.readInt();
+				o.stats.nrVertices += nrVertices;
 				var vertices = data.readFloatArray(nrVertices);
 				var nrNormals = data.readInt();
 				var normals = data.readFloatArray(nrNormals);
@@ -192,8 +200,11 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			var geometryDataOid = data.readLong();
 			var nrIndices = data.readInt();
 			var indices = data.readShortArray(nrIndices);
+			o.stats.nrPrimitives += nrIndices / 3;
+			data.align4();
 			var nrVertices = data.readInt();
 			var vertices = data.readFloatArray(nrVertices);
+			o.stats.nrVertices += nrVertices;
 			var nrNormals = data.readInt();
 			var normals = data.readFloatArray(nrNormals);
 			var nrColors = data.readInt();
@@ -318,6 +329,8 @@ function GeometryLoader(bimServerApi, models, viewer) {
 //			aspect: jQuery(o.viewer.canvas).width() / jQuery(o.viewer.canvas).height(),
 //			fovy: 37.8493
 //		});
+		
+		console.log(o.stats);
 		
 		o.viewer.SYSTEM.events.trigger('progressDone');
 		o.progressListeners.forEach(function(progressListener){
@@ -514,7 +527,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 						field: "data"
 					}
 				};
-				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin", function(serializer){
+				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin2", function(serializer){
 					o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
 						roids: o.options.roids,
 						serializerOid : serializer.oid,
