@@ -28,16 +28,14 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
                 var channel = stream.readInt();
                 var nrMessages = stream.readInt();
+                var messageType = stream.readByte();
 
-                for (var i = 0; i < nrMessages; i++) {
-
-                    var messageType = stream.readByte();
-
-                    if (messageType == 0) {
-                        o._readStart(stream);
-                    } else {
-                        o._readObject(stream, messageType);
-                    }
+                if (messageType == 0) {
+                    o._readStart(stream);
+    			} else if (messageType == 6) {
+    				o._readEnd(stream);
+    			} else {
+    				o._readObject(stream, messageType);
                 }
 
                 data = o.todo.shift();
@@ -108,7 +106,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                         }
                     }
                 };
-                o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
+                o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin2", function (serializer) {
                     o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
                         roids: o.options.roids,
                         query: JSON.stringify(query),
@@ -165,6 +163,9 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             });
         };
 
+        this._readEnd = function (data) {
+        };
+        
         this._readStart = function (data) {
 
             var start = data.readUTF8();
@@ -176,12 +177,18 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
             var version = data.readByte();
 
-            if (version != 4 && version != 5 && version != 6) {
-                console.error("Unimplemented version");
-                return false;
+            if (BIMSERVER_VERSION == "1.4") {
+	            if (version != 4 && version != 5 && version != 6) {
+	                console.error("Unimplemented version");
+	                return false;
+	            }
+            } else {
+	            if (version != 8) {
+	                console.error("Unimplemented version");
+	                return false;
+	            }
             }
-
-            data.align4();
+            data.align8();
 
             if (BIMSERVER_VERSION == "1.4") {
                 var boundary = data.readFloatArray(6);
@@ -192,7 +199,10 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             this._initCamera(boundary);
 
             o.state.mode = 1;
-            o.state.nrObjects = data.readInt();
+            
+            if (BIMSERVER_VERSION == "1.4") {
+            	o.state.nrObjects = data.readInt();
+            }
 
             o._updateProgress();
         };
@@ -261,11 +271,14 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
         };
 
         this._readObject = function (stream, geometryType) {
+        	if (BIMSERVER_VERSION != "1.4") {
+        		stream.align8();
+        	}
 
-            var type = stream.readUTF8();
-            var roid = stream.readLong(); // TODO: Needed?
-            var objectId = stream.readLong();
-            var oid = objectId;
+//            var type = stream.readUTF8();
+//            var roid = stream.readLong(); // TODO: Needed?
+//            var objectId = stream.readLong();
+//            var oid = objectId;
 
             var geometryId;
             var geometryIds = [];
@@ -283,24 +296,30 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
             var i;
             
-            if (BIMSERVER_VERSION == "1.4") {
-                stream.align4();
-                var matrix = stream.readFloatArray(16);
-            } else {
-                stream.align8();
-                var matrix = stream.readDoubleArray(16);
-            }
 
             if (geometryType == 1) {
-                if (BIMSERVER_VERSION == "1.4") {
-                    objectBounds = stream.readFloatArray(6);
-                } else {
-                    objectBounds = stream.readDoubleArray(6);
-                }
+//                if (BIMSERVER_VERSION == "1.4") {
+//                    stream.align4();
+//                    var matrix = stream.readFloatArray(16);
+//                } else {
+//                    stream.align8();
+//                    var matrix = stream.readDoubleArray(16);
+//                }
+//
+//                if (BIMSERVER_VERSION == "1.4") {
+//                    objectBounds = stream.readFloatArray(6);
+//                } else {
+//                    objectBounds = stream.readDoubleArray(6);
+//                }
                 
                 geometryId = stream.readLong();
                 numIndices = stream.readInt();
-                indices = stream.readIntArray(numIndices);
+                if (BIMSERVER_VERSION == "1.4") {
+                	indices = stream.readIntArray(numIndices);
+                } else {
+                	indices = stream.readShortArray(numIndices);
+                	stream.align4();
+                }
                 numPositions = stream.readInt();
                 positions = stream.readFloatArray(numPositions);
                 numNormals = stream.readInt();
@@ -312,7 +331,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                                 
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
 
-                this._createObject(roid, oid, objectId, [geometryId], type, matrix);
+//                this._createObject(roid, oid, objectId, [geometryId], type, matrix);
 
             } else if (geometryType == 2) {
 
@@ -330,7 +349,14 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
                     geometryId = stream.readLong();
                     numIndices = stream.readInt();
-                    indices = stream.readIntArray(numIndices);
+                    
+                    if (BIMSERVER_VERSION == "1.4") {
+                    	indices = stream.readIntArray(numIndices);
+                    } else {
+                    	indices = stream.readShortArray(numIndices);
+                    	stream.align4();
+                    }
+                    
                     numPositions = stream.readInt();
                     positions = stream.readFloatArray(numPositions);
                     numNormals = stream.readInt();
@@ -360,6 +386,18 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
                 this._createObject(roid, oid, objectId, geometryIds, type, matrix);
 
+            } else if (geometryType == 5) {
+            	var roid = stream.readLong();
+    			var geometryInfoOid = stream.readLong();
+    			var objectBounds = stream.readDoubleArray(6);
+    			var matrix = stream.readDoubleArray(16);
+    			var geometryDataOid = stream.readLong();
+    			var oid = o.infoToOid[geometryInfoOid];
+    			
+    			o.models[roid].get(oid, function(object){
+					object.gid = geometryInfoOid;
+					o._createObject(roid, oid, oid, [geometryDataOid], null, matrix);
+    			});
             } else {
 
                 //this.warn("Unsupported geometry type: " + geometryType);
