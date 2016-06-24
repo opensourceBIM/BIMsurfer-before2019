@@ -1,4 +1,4 @@
-function GeometryLoader(bimServerApi, models, viewer) {
+function GeometryLoader(bimServerApi, models, viewer, type) {
 	var o = this;
 	o.models = models;
 	o.bimServerApi = bimServerApi;
@@ -8,6 +8,11 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	o.objectAddedListeners = [];
 	o.prepareReceived = false;
 	o.todo = [];
+	o.type = type;
+	
+	if (o.type == null) {
+		o.type = "triangles";
+	}
 	
 	o.stats = {
 		nrPrimitives: 0,
@@ -169,11 +174,16 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				
 				var geometry = {
 					type: "geometry",
-					primitive: "triangles"
+					primitive: o.type
 				};
 				
 				geometry.coreId = coreId;
-				geometry.indices = indices;
+				
+				if (o.type == "lines") {
+					geometry.indices = o.convertToLines(indices);
+				} else {
+					geometry.indices = indices;
+				}
 				geometry.positions = vertices;
 				geometry.normals = normals;
 				
@@ -212,11 +222,15 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			
 			var geometry = {
 				type: "geometry",
-				primitive: "triangles"
+				primitive: o.type
 			};
 			
 			geometry.coreId = geometryDataOid;
-			geometry.indices = indices;
+			if (o.type == "lines") {
+				geometry.indices = o.convertToLines(indices);
+			} else {
+				geometry.indices = indices;
+			}
 			geometry.positions = vertices;
 			geometry.normals = normals;
 			
@@ -242,6 +256,20 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		o.state.nrObjectsRead++;
 		o.updateProgress();
 	};
+	
+	this.convertToLines = function(indices) {
+		var lineIndices = [];
+		for (var i=0; i<indices.length; i+=3) {
+			var i1 = indices[i];
+			var i2 = indices[i+1];
+			var i3 = indices[i+2];
+			
+			lineIndices.push(i1, i2);
+			lineIndices.push(i2, i3);
+			lineIndices.push(i3, i1);
+		}
+		return lineIndices;
+	}
 	
 	this.updateProgress = function() {
 		o.progressListeners.forEach(function(progressListener){
