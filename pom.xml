@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.opensourcebim</groupId>
 	<artifactId>bimsurfer</artifactId>
-	<version>0.0.22-SNAPSHOT</version>
+	<version>0.0.22</version>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -147,7 +147,7 @@
 		<url>https://github.com/opensourceBIM/BIMsurfer.git</url>
 		<connection>scm:git:https://github.com/opensourceBIM/BIMsurfer.git</connection>
 		<developerConnection>scm:git:https://github.com/opensourceBIM/BIMsurfer.git</developerConnection>
-		<tag>bimsurfer-0.0.15</tag>
+		<tag>bimsurfer-0.0.22</tag>
 	</scm>
 	<organization>
 		<name>OpenSource BIM</name>
