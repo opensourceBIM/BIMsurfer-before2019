@@ -298,20 +298,6 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             
 
             if (geometryType == 1) {
-//                if (BIMSERVER_VERSION == "1.4") {
-//                    stream.align4();
-//                    var matrix = stream.readFloatArray(16);
-//                } else {
-//                    stream.align8();
-//                    var matrix = stream.readDoubleArray(16);
-//                }
-//
-//                if (BIMSERVER_VERSION == "1.4") {
-//                    objectBounds = stream.readFloatArray(6);
-//                } else {
-//                    objectBounds = stream.readDoubleArray(6);
-//                }
-                
                 geometryId = stream.readLong();
                 numIndices = stream.readInt();
                 if (BIMSERVER_VERSION == "1.4") {
@@ -330,23 +316,10 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 }
                                 
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
-
-//                this._createObject(roid, oid, objectId, [geometryId], type, matrix);
-
             } else if (geometryType == 2) {
-
-                geometryId = stream.readLong();
-
-                this._createObject(roid, oid, objectId, [geometryId], type, matrix);
-
             } else if (geometryType == 3) {
-
                 numParts = stream.readInt();
-
                 for (i = 0; i < numParts; i++) {
-
-                    // Object contains multiple geometries
-
                     geometryId = stream.readLong();
                     numIndices = stream.readInt();
                     
@@ -367,25 +340,8 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     }
 
                     this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
-
-                    geometryIds.push(geometryId);
                 }
-
-                this._createObject(roid, oid, objectId, geometryIds, type, matrix);
-
             } else if (geometryType == 4) {
-
-                // Object contains multiple instances of geometries
-
-                numGeometries = stream.readInt();
-                geometryIds = [];
-
-                for (i = 0; i < numGeometries; i++) {
-                    geometryIds.push(stream.readLong());
-                }
-
-                this._createObject(roid, oid, objectId, geometryIds, type, matrix);
-
             } else if (geometryType == 5) {
             	var roid = stream.readLong();
     			var geometryInfoOid = stream.readLong();
@@ -396,7 +352,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
     			
     			o.models[roid].get(oid, function(object){
 					object.gid = geometryInfoOid;
-					o._createObject(roid, oid, oid, [geometryDataOid], null, matrix);
+					o._createObject(roid, oid, oid, [geometryDataOid], object.getType(), matrix);
     			});
             } else {
 
