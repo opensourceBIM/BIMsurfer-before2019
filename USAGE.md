@@ -152,6 +152,9 @@ bimSurfer.setCamera({
 });
 ````
 
+Then "target" will then be the position we'll orbit about with the mouse or arrow keys (until we double-click an object to 
+ select a different orbit position).
+
 Setting the camera projection to orthographic:
 
 ````javascript
