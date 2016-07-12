@@ -4,6 +4,9 @@ require(["bimsurfer/src/BimSurfer.js", "bimsurfer/src/StaticTreeRenderer.js", "b
         domNode: "viewerContainer"
     });
 
+    // For console debugging
+    window.bimSurfer = bimSurfer;
+
     // Viewer's local test mode, loads randomly generated objects
     //
     //bimSurfer.load({
@@ -22,7 +25,7 @@ require(["bimsurfer/src/BimSurfer.js", "bimsurfer/src/StaticTreeRenderer.js", "b
 
             model.getTree().then(function (tree) {
 
-                domtree = new StaticTreeRenderer({
+                var domtree = new StaticTreeRenderer({
                     domNode: 'treeContainer',
                     tree: tree
                 });
@@ -32,7 +35,12 @@ require(["bimsurfer/src/BimSurfer.js", "bimsurfer/src/StaticTreeRenderer.js", "b
                 domtree.on("click",
                     function (oid) {
 
+                        // Clicking an explorer node fits the view to its object
 
+                        bimSurfer.viewFit({
+                            ids: [oid],
+                            animate: true
+                        });
 
 
                     });
