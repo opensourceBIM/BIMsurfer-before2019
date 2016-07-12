@@ -11,6 +11,9 @@ define([
 
     function xeoViewer(cfg) {
 
+        // Distance to WebGL's far clipping plane.
+        const FAR_CLIP = 5000;
+
         // Create xeoViewer
 
         EventHandler.call(this);
@@ -43,11 +46,17 @@ define([
             })
         ];
 
+        // Attached to all objects to fit the model inside the view volume
+        var scale = new XEO.Scale(scene, {
+            xyz: [1, 1, 1]
+        });
+
         // Provides user input
         var input = scene.input;
 
         // Using the scene's default camera
         var camera = scene.camera;
+        camera.project.far = FAR_CLIP;
 
         // Flies cameras to objects
         var cameraFlight = new XEO.CameraFlight(scene); // http://xeoengine.org/docs/classes/CameraFlight.html
@@ -89,7 +98,7 @@ define([
             ortho: new XEO.Ortho(scene, {
                 scale: 1.0,
                 near: 0.1,
-                far: 1000
+                far: FAR_CLIP
             })
         };
 
@@ -187,6 +196,16 @@ define([
             });
 
         /**
+         * Sets the global scale for models loaded into the viewer.
+         *
+         * @method setScale
+         * @param {Number} s Scale factor.
+         */
+        this.setScale = function (s) {
+            scale.xyz = [s, s, s];
+        };
+
+        /**
          * Loads random objects into the viewer for testing.
          *
          * Subsequent calls to #reset will then set the viewer to the state right after the model was loaded.
@@ -282,6 +301,8 @@ define([
                 geometryIds: geometryIds,
                 matrix: matrix
             });
+
+            object.transform.parent = scale; // Apply model scaling
 
             this._addObject(objectId, type, object);
 
@@ -622,6 +643,7 @@ define([
 
                 if (params.target) {
                     camera.view.look = params.target;
+                    cameraControl.rotatePos = camera.view.look; // Rotate about target initially
                 }
 
                 if (params.up) {
@@ -713,6 +735,9 @@ define([
                         if (ok) {
                             ok();
                         }
+
+                        // Now orbiting the point we flew to
+                        cameraControl.rotatePos = camera.view.look;
                     });
 
             } else {
@@ -843,16 +868,29 @@ define([
             return result;
         }
 
+        /**
+         * Remembers the current state of the viewer so that it can be reset to this state with
+         * a subsequent call to #reset.
+         */
         this.saveReset = function () {
             resetBookmark = this.getBookmark();
         };
 
+        /**
+         * Resets the state of this viewer to the state previously saved with #saveReset.
+         * @param {*} params A mask which specifies which aspects of viewer state to reset.
+         */
         this.reset = function (params) {
+            if (!resetBookmark) {
+                console.log("Ignoring call to xeoViewer.reset - xeoViewer.saveReset not called previously.");
+                return;
+            }
             this.setBookmark(resetBookmark, params);
         };
 
         /**
          * Returns a bookmark of xeoViewer state.
+         * @param {*} options A mask which specifies which aspects of viewer state to bookmark.
          */
         this.getBookmark = function (options) {
 
@@ -969,6 +1007,7 @@ define([
          * @param params
          * @param {Boolean} [params.mouseRayPick=true] When true, camera flies to orbit each clicked point, otherwise
          * it flies to the boundary of the object that was clicked on.
+         * @param {Number} [params.mouseRayPick=true] When true, camera flies to orbit each clicked point, otherwise
          */
         this.setConfigs = function (params) {
 

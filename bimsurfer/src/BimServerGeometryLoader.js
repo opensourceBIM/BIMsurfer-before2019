@@ -61,9 +61,9 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             if (!o.options || o.options.type !== "oids") {
                 throw new Error("Invalid loader configuration");
             }
-            
+
             if (BIMSERVER_VERSION == "1.4") {
-            
+
                 o.groupId = o.options.roids[0];
                 o.oids = o.options.oids;
                 o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
@@ -78,12 +78,12 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                         o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler, o._afterRegistration);
                     });
                 });
-            
+
             } else {
-            
-                o.groupId = o.options.roids[0];            
+
+                o.groupId = o.options.roids[0];
                 o.infoToOid = o.options.oids;
-                
+
                 var oids = [];
                 for (var k in o.infoToOid) {
                     if (o.infoToOid.hasOwnProperty(k)) {
@@ -92,7 +92,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                         }
                     }
                 }
-                
+
                 var query = {
                     type: "IfcProduct",
                     includeAllSubtypes: true,
@@ -118,7 +118,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     });
                 });
             }
-            
+
         };
 
         this._progressHandler = function (topicId, state) {
@@ -165,7 +165,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
         this._readEnd = function (data) {
         };
-        
+
         this._readStart = function (data) {
 
             var start = data.readUTF8();
@@ -199,7 +199,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             this._initCamera(boundary);
 
             o.state.mode = 1;
-            
+
             if (BIMSERVER_VERSION == "1.4") {
             	o.state.nrObjects = data.readInt();
             }
@@ -222,26 +222,31 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 var ymax = boundary[4];
                 var zmax = boundary[5];
 
-                var center = [
-                    (xmax + xmin) / 2,
-                    (ymax + ymin) / 2,
-                    (zmax + zmin) / 2
-                ];
-
                 var diagonal = Math.sqrt(
                     Math.pow(xmax - xmin, 2) +
                     Math.pow(ymax - ymin, 2) +
                     Math.pow(zmax - zmin, 2));
 
+                var scale = 100 / diagonal;
+
+                this.viewer.setScale(scale); // Temporary until we find a better scaling system.
+
                 var far = diagonal * 5; // 5 being a guessed constant that should somehow coincide with the max zoom-out-factor
+
+                var center = [
+                    scale * ((xmax + xmin) / 2),
+                    scale * ((ymax + ymin) / 2),
+                    scale * ((zmax + zmin) / 2)
+                ];
 
                 this.viewer.setCamera({
                     target: center,
                     up: [0, 0, 1],
-                    eye: [center[0] - 50, center[1] - 100, center[2]],
-                    far: far,
-                    near: far / 1000,
-                    fovy: 37.8493
+                    eye: [center[0] - scale * diagonal, center[1] - scale * diagonal, center[2] + scale * diagonal],
+                    far: 5000,
+                    near: 0.1,
+                    fovy: 35.8493,
+                    scale: 0.001
                 });
             }
         };
@@ -263,7 +268,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
                 });
                 // o.viewer.events.trigger('sceneLoaded', [o.viewer.scene.scene]);
-                
+
                 var d = {};
                 d[BIMSERVER_VERSION == "1.4" ? "actionId" : "topicId"] = o.topicId;
                 o.bimServerApi.call("ServiceInterface", "cleanupLongAction", d, function () {});
@@ -295,7 +300,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             var colors = null;
 
             var i;
-            
+
 
             if (geometryType == 1) {
                 geometryId = stream.readLong();
@@ -314,7 +319,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 if (numColors > 0) {
                 	colors = stream.readFloatArray(numColors);
                 }
-                                
+
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
             } else if (geometryType == 2) {
             } else if (geometryType == 3) {
@@ -322,14 +327,14 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 for (i = 0; i < numParts; i++) {
                     geometryId = stream.readLong();
                     numIndices = stream.readInt();
-                    
+
                     if (BIMSERVER_VERSION == "1.4") {
                     	indices = stream.readIntArray(numIndices);
                     } else {
                     	indices = stream.readShortArray(numIndices);
                     	stream.align4();
                     }
-                    
+
                     numPositions = stream.readInt();
                     positions = stream.readFloatArray(numPositions);
                     numNormals = stream.readInt();
@@ -349,7 +354,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
     			var matrix = stream.readDoubleArray(16);
     			var geometryDataOid = stream.readLong();
     			var oid = o.infoToOid[geometryInfoOid];
-    			
+
     			o.models[roid].get(oid, function(object){
 					object.gid = geometryInfoOid;
 					o._createObject(roid, oid, oid, [geometryDataOid], object.getType(), matrix);
@@ -372,7 +377,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 return;
             }
 
-            
+
             // o.models[roid].get(oid,
                 // function () {
 

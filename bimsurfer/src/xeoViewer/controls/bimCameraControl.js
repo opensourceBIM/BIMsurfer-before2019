@@ -15,6 +15,8 @@ define(function () {
 
             var self = this;
 
+            var math = XEO.math;
+
             // Configs
 
             var sensitivityMouseRotate = cfg.sensitivityMouseRotate || 1.0;
@@ -24,12 +26,10 @@ define(function () {
             var sensitivityMouseZoom = cfg.sensitivityMouseZoom || 0.5;
             var sensitivityKeyboardZoom = cfg.sensitivityKeyboardZoom || 0.5;
 
-            var orthoScaleRate = 5.0; // Rate at which orthographic scale changes with zoom
+            var orthoScaleRate = 0.02; // Rate at which orthographic scale changes with zoom
 
             var canvasPickTolerance = 4;
             var worldPickTolerance = 3;
-
-            var math = XEO.math;
 
             var tempVec3a = math.vec3();
             var tempVec3b = math.vec3();
@@ -55,7 +55,7 @@ define(function () {
             var firstPickWorldPos = math.vec2(); // World position of first pick
             var firstPickTime; // Time of first pick
 
-            var rotatePos = math.vec3([0, 0, 0]); // World-space pivot point we're currently rotating about
+            this._rotatePos = math.vec3([0, 0, 0]); // World-space pivot point we're currently rotating about
 
             var mouseDownPos = math.vec2(); // Mouse's last position while down
             var rotationDeltas = math.vec2(); // Accumulated angle deltas while rotating with keyboard or mouse
@@ -219,7 +219,7 @@ define(function () {
 
                                 // Double-clicked
 
-                                rotatePos = pickWorldPos;
+                                self._rotatePos = pickWorldPos;
 
                                 showRotationPoint(pickWorldPos);
                             }
@@ -305,28 +305,44 @@ define(function () {
                         return;
                     }
 
-                    var math = XEO.math;
+                    var panning = input.keyDown[input.KEY_SHIFT] || input.mouseDownMiddle || (input.mouseDownLeft && input.mouseDownRight);
 
-                    rotationDeltas[0] += (canvasPos[0] - mouseDownPos[0]) * sensitivityMouseRotate;
-                    rotationDeltas[1] += (canvasPos[1] - mouseDownPos[1]) * sensitivityMouseRotate;
+                    var xDelta = (canvasPos[0] - mouseDownPos[0]) * sensitivityMouseRotate;
+                    var yDelta = (canvasPos[1] - mouseDownPos[1]) * sensitivityMouseRotate;
 
-                    math.rotationMat4v(rotationDeltas[1] * math.DEGTORAD, orbitPitchAxis, pitchMat);
+                    if (!panning) {
 
-                    camera.view.eye = rotate(rotateStartEye);
-                    camera.view.look = rotate(rotateStartLook);
-                    camera.view.up = math.subVec3(rotate(rotateStartUp), camera.view.eye, []);
+                        // Orbiting
 
-                    mouseDownPos[0] = canvasPos[0];
-                    mouseDownPos[1] = canvasPos[1];
+                        var math = XEO.math;
 
-                    setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
+                        rotationDeltas[0] += xDelta;
+                        rotationDeltas[1] += yDelta;
+
+                        math.rotationMat4v(rotationDeltas[1] * math.DEGTORAD, orbitPitchAxis, pitchMat);
+
+                        camera.view.eye = rotate(rotateStartEye);
+                        camera.view.look = rotate(rotateStartLook);
+                        camera.view.up = math.subVec3(rotate(rotateStartUp), camera.view.eye, []);
+
+                        mouseDownPos[0] = canvasPos[0];
+                        mouseDownPos[1] = canvasPos[1];
+
+                        setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
+
+                    } else {
+
+                        // Panning vertically and horizontally
+
+                        camera.view.pan([xDelta * sensitivityMousePan, yDelta * sensitivityMousePan, 0]);
+                    }
                 });
 
             function rotate(p) {
-                var p1 = math.subVec3(p, rotatePos, tempVec3a);
+                var p1 = math.subVec3(p, self._rotatePos, tempVec3a);
                 var p2 = math.transformVec3(pitchMat, p1, tempVec3b);
-                var p3 = math.addVec3(p2, rotatePos, tempVec3c);
-                return math.rotateVec3Z(p3, rotatePos, -rotationDeltas[0] * math.DEGTORAD, math.vec3());
+                var p3 = math.addVec3(p2, self._rotatePos, tempVec3c);
+                return math.rotateVec3Z(p3, self._rotatePos, -rotationDeltas[0] * math.DEGTORAD, math.vec3());
             }
 
             input.on("keydown",
@@ -521,7 +537,7 @@ define(function () {
                                 var look = view.look;
 
                                 // Get vector from eye to center of rotationDeltas
-                                var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), delta);
+                                var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, self._rotatePos, tempVec3a), tempVec3b), delta);
 
                                 // Move eye and look along the vector
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
@@ -555,6 +571,7 @@ define(function () {
                 var tempVec3a = XEO.math.vec3();
                 var tempVec3b = XEO.math.vec3();
                 var tempVec3c = XEO.math.vec3();
+                var tempVec3d = XEO.math.vec3();
 
                 input.on("mousewheel",
                     function (_delta) {
@@ -588,7 +605,7 @@ define(function () {
                             return;
                         }
 
-                        var f = 0.5;
+                        var f = sensitivityMouseZoom * 10.0;
 
                         if (newTarget) {
                             target = delta * f;
@@ -623,11 +640,11 @@ define(function () {
                                 var look = view.look;
 
                                 // Get vector from eye to center of rotationDeltas
-                                var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), delta);
+                                var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, self._rotatePos, tempVec3a), tempVec3b), delta);
 
                                 // Move eye and look along the vector
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
-                                view.look = math.addVec3(look, eyePivotVec, tempVec3c);
+                                view.look = math.addVec3(look, eyePivotVec, tempVec3d);
 
                                 if (camera.project.isType("XEO.Ortho")) {
                                     camera.project.scale += delta * orthoScaleRate;
@@ -693,6 +710,8 @@ define(function () {
                         var diag = XEO.math.getAABBDiag(aabb);
                         var stopFOV = 55;
                         var dist = Math.abs((diag) / Math.tan(stopFOV / 2));
+
+                        self._rotatePos.set(center);
 
                         switch (keyCode) {
 
@@ -800,6 +819,20 @@ define(function () {
                         }
                     });
             })();
+        },
+
+        _props: {
+
+            // The position we're currently orbiting
+            rotatePos: {
+
+                set: function (value) {
+
+                    if (value) {
+                        this._rotatePos.set(value);
+                    }
+                }
+            }
         }
     });
 });
