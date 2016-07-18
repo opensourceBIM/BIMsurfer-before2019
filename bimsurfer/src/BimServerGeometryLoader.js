@@ -204,6 +204,8 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             	o.state.nrObjects = data.readInt();
             }
 
+            //this.viewer.createModel("foo");
+
             o._updateProgress();
         };
 
@@ -357,7 +359,8 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
     			o.models[roid].get(oid, function(object){
 					object.gid = geometryInfoOid;
-					o._createObject(roid, oid, oid, [geometryDataOid], object.getType(), matrix);
+                    var modelId = null; // TODO: set to the model ID
+					o._createObject(modelId, roid, oid, oid, [geometryDataOid], object.getType(), matrix);
     			});
             } else {
 
@@ -370,7 +373,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             o._updateProgress();
         };
 
-        this._createObject = function (roid, oid, objectId, geometryIds, type, matrix) {
+        this._createObject = function (modelId, roid, oid, objectId, geometryIds, type, matrix) {
 
             if (o.state.mode == 0) {
                 console.log("Mode is still 0, should be 1");
@@ -380,8 +383,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
             // o.models[roid].get(oid,
                 // function () {
-
-                    if (o.viewer.createObject(roid, oid, objectId, geometryIds, type, matrix)) {
+                    if (o.viewer.createObject(modelId, roid, oid, objectId, geometryIds, type, matrix)) {
 
                         // o.objectAddedListeners.forEach(function (listener) {
                         // listener(objectId);

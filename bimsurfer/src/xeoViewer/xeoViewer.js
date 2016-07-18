@@ -2,6 +2,7 @@ define([
     "bimsurfer/src/DefaultMaterials.js",
     "bimsurfer/src/EventHandler.js",
     "bimsurfer/src/xeoViewer/controls/bimCameraControl.js",
+    "bimsurfer/src/xeoViewer/entities/bimModel.js",
     "bimsurfer/src/xeoViewer/entities/bimObject.js",
     "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper.js",
     "bimsurfer/src/xeoViewer/helpers/bimAxisHelper.js"
@@ -73,6 +74,9 @@ define([
             visible: true,
             size: [200, 200]
         });
+
+        // Models mapped to their IDs
+        var models = {};
 
         // Objects mapped to IDs
         var objects = {};
@@ -279,8 +283,33 @@ define([
             collection.add(geometry);
         };
 
+
+        /**
+         * Creates a model.
+         *
+         * @param modelId
+         * @returns {XEO.BIMModel} The new model
+         * @private
+         */
+        this.createModel = function (modelId) {
+
+            if (models[modelId]) {
+                console.log("Model with id " + modelId + " already exists, won't recreate");
+                return;
+            }
+
+            var model = new XEO.BIMModel(scene, {});
+
+            models[modelId] = model;
+
+            collection.add(model);
+
+            return model;
+        };
+
         /**
          * Creates an object.
+         * @param [modelId] Optional model ID
          * @param roid
          * @param oid
          * @param objectId
@@ -289,10 +318,19 @@ define([
          * @param matrix
          * @private
          */
-        this.createObject = function (roid, oid, objectId, geometryIds, type, matrix) {
+        this.createObject = function (modelId, roid, oid, objectId, geometryIds, type, matrix) {
+
+            if (modelId) {
+                var model = models[modelId];
+                if (!model) {
+                    console.log("Can't create object - model not found: " + modelId);
+                    return;
+                }
+                objectId = modelId + ":" + objectId;
+            }
 
             if (objects[objectId]) {
-                console.log("Object with id " + objectId + " already exists, ignoring");
+                console.log("Object with id " + objectId + " already exists, won't recreate");
                 return;
             }
 
@@ -304,7 +342,11 @@ define([
 
             object.transform.parent = scale; // Apply model scaling
 
-            this._addObject(objectId, type, object);
+            this._addObject(type, object);
+
+            if (model) {
+                model.collection.add(object);
+            }
 
             return object;
         };
@@ -312,20 +354,20 @@ define([
         /**
          * Inserts an object into this viewer
          *
+         * @param {String} type
          * @param {XEO.Entity | XEO.BIMObject} object
-         * @returns The object.
          * @private
          */
-        this._addObject = function (objectId, type, object) {
+        this._addObject = function (type, object) {
 
             collection.add(object);
 
             // Register object against ID
-            objects[objectId] = object;
+            objects[object.id] = object;
 
             // Register object against IFC type
             var types = (rfcTypes[type] || (rfcTypes[type] = {}));
-            types[objectId] = object;
+            types[object.id] = object;
 
             var color = DefaultMaterials[type] || DefaultMaterials["DEFAULT"];
 
@@ -336,8 +378,6 @@ define([
                 object.material.opacity = color[3];
                 object.modes.transparent = true;
             }
-
-            return object;
         };
 
         /**
@@ -357,6 +397,8 @@ define([
 
             collection.add(model);
 
+            models[model.id] = model;
+
             model.on("loaded",
                 function () {
 
@@ -364,12 +406,35 @@ define([
 
                     model.collection.iterate(function (component) {
                         if (component.isType("XEO.Entity")) {
-                            self._addObject(component.id, "DEFAULT", component);
+                            self._addObject("DEFAULT", component);
                         }
                     });
 
                     self.saveReset();
                 });
+        };
+
+        /**
+         * Destroys a model and all its objects.
+         *
+         * @param modelId
+         */
+        this.destroyModel = function (modelId) {
+
+            var model = models[modelId];
+
+            if (!model) {
+                console.warn("Can't destroy model - model not found: " + modelId);
+                return;
+            }
+
+            model.collection.iterate(function (component) {
+                component.destroy();
+            });
+
+            model.destroy();
+
+            delete models[modelId];
         };
 
         /**
@@ -703,6 +768,7 @@ define([
         /**
          *
          * @param params
+         * @param ok
          */
         this.viewFit = function (params, ok) {
 

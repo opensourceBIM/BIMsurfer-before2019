@@ -36,6 +36,9 @@ define(function () {
 
         _init: function (cfg) {
 
+            // Model this object belongs to, will be null when no model
+            this.model = cfg.model; // XEO.BIMModel
+
             // Modelling transform component
             this.transform = this.create(XEO.Transform, { // http://xeoengine.org/docs/classes/Matrix.html
                 matrix: cfg.matrix
