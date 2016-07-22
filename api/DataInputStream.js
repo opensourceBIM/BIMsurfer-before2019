@@ -85,7 +85,7 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 			this.pos += length * 4;
 			return result;
 		} catch (e) {
-			debugger;
+			console.error(e, this.arrayBuffer.byteLength, this.pos, length);
 		}
 	},
 
@@ -117,7 +117,7 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 			this.pos += length * 2;
 			return result;
 		} catch (e) {
-			debugger;
+			console.error(e, this.pos, length);
 		}
 	}
 });

@@ -456,8 +456,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 		var data = o.todo.shift();
 		while (data != null) {
 			inputStream = new BIMSURFER.DataInputStreamReader(null, data);
-			var channel = inputStream.readInt();
-			var nrMessage = inputStream.readInt(); // Always 1
+			var topicId = inputStream.readLong(); // Which we don't use here
 			var messageType = inputStream.readByte();
 			if (messageType == 0) {
 				o.readStart(inputStream);

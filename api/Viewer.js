@@ -424,7 +424,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		
 		o.geometryLoaders.push(geometryLoader);
 		// TODO limit to something useful
-		if (o.geometryLoaders.length <= 20) {
+		if (o.geometryLoaders.length <= 4000) {
 			geometryLoader.progressListeners.push(function(progress){
 				if (progress == "done") {
 					o.tick = 0;
