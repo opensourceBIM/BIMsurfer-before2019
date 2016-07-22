@@ -95,16 +95,6 @@ define(["bimsurfer/lib/StringView.js"], function(StringView) {
             this.pos += length * 4;
             return result;
         };
-
-        this.readShortArray = function(length) {
-    		try {
-    			var result = new Int16Array(this.arrayBuffer, this.pos, length);
-    			this.pos += length * 2;
-    			return result;
-    		} catch (e) {
-    			debugger;
-    		}
-    	};
     }
     
     return DataInputStreamReader;
