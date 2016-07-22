@@ -151,7 +151,7 @@ define([
                          * @event camera-changed
                          * @params New camera state, same as that got with #getCamera.
                          */
-                        self.fire("camera-changed", self.getCamera());
+                        self.fire("camera-changed", [self.getCamera()]);
                         cameraUpdated = false;
                     }
                 });
@@ -594,7 +594,7 @@ define([
                  * @event selection-changed
                  * @params Array of IDs of all currently-selected objects.
                  */
-                this.fire("selection-changed", selectedObjectList);
+                this.fire("selection-changed", [selectedObjectList]);
             }
         };
 
