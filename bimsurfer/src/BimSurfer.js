@@ -34,7 +34,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @event camera-changed
          */
         viewer.on("camera-changed", function() {
-           self.fire("camera-changed");
+           self.fire("camera-changed", arguments);
         });
 
         /**
@@ -42,7 +42,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @event selection-changed
          */
         viewer.on("selection-changed", function() {
-            self.fire("selection-changed");
+            self.fire("selection-changed", arguments);
         });
         
         // This are arrays as multiple models might be loaded or unloaded.

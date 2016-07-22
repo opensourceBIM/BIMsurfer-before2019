@@ -48,13 +48,15 @@
                     });
 
                     // Load a model from BIMServer
+                    
+                    var roid = 65539;
 
                     bimSurfer.load({
                         bimserver: ADDRESS,
                         username: USERNAME,
                         password: PASSWORD,
                         poid: 131073,
-                        roid: 65539,
+                        roid: roid,
                         schema: "ifc2x3tc1" // < TODO: Deduce automatically
                     })
                             .then(function (model) {
@@ -72,20 +74,26 @@
                                     domtree.build();
                                     
                                     domtree.on("click",
-                                            function (oid) {
+                                            function (oid, selected) {
 
                                                 // Clicking an explorer node fits the view to its object
 
                                                 bimSurfer.setColor({
-                                                    ids: [oid],
+                                                    ids: [roid + ":" + oid],
                                                     color: [1,0,0,1]
                                                 });
 
                                                 bimSurfer.viewFit({
-                                                    ids: [oid],
+                                                    ids: selected.map(function(oid) {return roid+':'+oid}),
                                                     animate: true
                                                 });
                                             });
+                                            
+                                    bimSurfer.on("selection-changed", function(selected) {
+                                        domtree.setSelected(selected.map(function(oid) {
+                                            return oid.split(':')[1];
+                                        }), domtree.SELECT_EXCLUSIVE);
+                                    });
                                             
                                     // Write API ref
                                             
