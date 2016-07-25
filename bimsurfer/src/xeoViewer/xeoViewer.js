@@ -477,11 +477,15 @@ define([
             params = params || {};
 
             var ids = params.ids;
+            var types = params.types;
 
-            if (!ids) {
-                console.error("Param expected: ids");
+            if (!ids && !types) {
+                console.error("Param expected: ids or types");
                 return;
             }
+            
+            ids = ids || [];
+            types = types || [];
 
             //var recursive = !!params.recursive;
             var visible = params.visible !== false;
@@ -489,36 +493,26 @@ define([
             var i;
             var len;
             var id;
-            var types;
             var objectId;
             var object;
+            
+            for (i = 0, len = types.length; i < len; i++) {
+                var typedict = rfcTypes[types[i]] || {};
+                debugger;
+                Object.keys(typedict).forEach(function(id) {
+                    var object = typedict[id];
+                    object.visibility.visible = visible;
+                });
+            }
 
             for (i = 0, len = ids.length; i < len; i++) {
-
                 id = ids[i];
-
-                types = rfcTypes[id];
-
-                if (types) {
-
-                    for (objectId in types) {
-                        if (types.hasOwnProperty(objectId)) {
-                            object = types[objectId];
-                            object.visibility.visible = visible;
-                        }
-                    }
-
+                object = objects[id];
+                if (!object) {
+                    console.error("RFC type or object not found: '" + id + "'");
                 } else {
-
-                    object = objects[id];
-
-                    if (!object) {
-                        console.error("RFC type or object not found: '" + id + "'");
-
-                    } else {
-                        object.visibility.visible = visible;
-                    }
-                }
+                    object.visibility.visible = visible;
+                }                
             }
         };
 

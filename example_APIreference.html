@@ -68,31 +68,29 @@
                                     // Build explorer UI
 
                                     var domtree = new StaticTreeRenderer({
-                                        domNode: 'treeContainer',
-                                        tree: tree
-                                    });                                    
+                                        domNode: 'treeContainer'
+                                    });
+                                    
+                                    domtree.addModel({name: "", id:roid, tree:tree});
                                     domtree.build();
                                     
                                     domtree.on("click",
-                                            function (oid, selected) {
-
+                                            function (id, selected) {
                                                 // Clicking an explorer node fits the view to its object
 
                                                 bimSurfer.setColor({
-                                                    ids: [roid + ":" + oid],
+                                                    ids: id,
                                                     color: [1,0,0,1]
                                                 });
 
                                                 bimSurfer.viewFit({
-                                                    ids: selected.map(function(oid) {return roid+':'+oid}),
+                                                    ids: selected,
                                                     animate: true
                                                 });
                                             });
                                             
                                     bimSurfer.on("selection-changed", function(selected) {
-                                        domtree.setSelected(selected.map(function(oid) {
-                                            return oid.split(':')[1];
-                                        }), domtree.SELECT_EXCLUSIVE);
+                                        domtree.setSelected(selected, domtree.SELECT_EXCLUSIVE);
                                     });
                                             
                                     // Write API ref
@@ -117,6 +115,7 @@
                                     
                                     var METHODS = [
                                         {name:'setVisibility',     args:[{name: "ids", value: oids}, {name: "visible", value:false}]},
+                                        {name:'setVisibility',     args:[{name: "types", value: '["IfcWallStandardCase"]'}, {name: "visible", value:false}]},
                                         {name:'setSelectionState', args:[{name: "ids", value: oids}, {name: "selected", value:true}]},
                                         {name:'getSelected', args:[], hasResult: true},
                                         {name:'toId', args:[guids], hasResult: true},
