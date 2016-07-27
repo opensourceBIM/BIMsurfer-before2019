@@ -52,7 +52,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         /**
-         * Loads content into this BIMSurfer.
+         * Loads a model into this BIMSurfer.
          * @param params
          */
         this.load = function (params) {
@@ -159,6 +159,8 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 // TODO: Ugh. Undecorate some of the newly created classes
                 models[model.model.roid] = model.model;
 
+                viewer.createModel(model.model.roid);
+
                 var loader = new GeometryLoader(model.api, models, viewer);
 
                 loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
@@ -187,7 +189,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 return null;
             }
         };
-        
+
         /**
          * Returns a list of object ids (oid) for the list of guids (GlobalId)
          *
@@ -223,15 +225,15 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          **
          * @param params
          */
-        this.setSelectionState = function (params) {
-            return viewer.setSelectionState(params);
+        this.setSelection = function (params) {
+            return viewer.setSelection(params);
         };
 
         /**
          * Gets a list of selected elements.
          */
-        this.getSelected = function () {
-            return viewer.getSelected();
+        this.getSelection = function () {
+            return viewer.getSelection();
         };
 
         /**

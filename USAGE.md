@@ -66,13 +66,13 @@ The following usage examples in this guide will refer to objects from the genera
 Selecting four objects:
 
 ````javascript
-bimSurfer.setSelectionState({ids: ["object3", "object2", "object4", "object6"], selected: true });
+bimSurfer.setSelection({ids: ["object3", "object2", "object4", "object6"], selected: true });
 ````
 
 then querying which objects are selected:
 
 ````javascript
-bimSurfer.getSelected()
+bimSurfer.getSelection()
 ````
 
 The result shows that those four objects are currently selected:
@@ -84,8 +84,8 @@ The result shows that those four objects are currently selected:
 If we then deselect two objects, then query the selection again:
 
 ````javascript
-bimSurfer.setSelectionState({ids: ["object3", "object6"], selected: false });
-bimSurfer.getSelected()
+bimSurfer.setSelection({ids: ["object3", "object6"], selected: false });
+bimSurfer.getSelection()
 ````
 
 The result shows that only two objects are now selected:
@@ -99,7 +99,7 @@ Subscribing to selection updates:
 ````javascript
 bimSurfer.on("selection-changed", 
     function() {
-         var selected = bimSurfer.getSelected();
+         var selected = bimSurfer.getSelection();
          console.log("selection = " + JSON.stringify(selected));
     });
 ````
