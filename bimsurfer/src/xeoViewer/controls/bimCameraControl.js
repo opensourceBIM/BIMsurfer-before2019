@@ -584,7 +584,7 @@ define(function () {
                             return;
                         }
 
-                        delta = _delta;
+                        delta = -_delta;
 
                         if (delta === 0) {
                             targeting = false;
