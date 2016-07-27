@@ -204,8 +204,6 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             	o.state.nrObjects = data.readInt();
             }
 
-            //this.viewer.createModel("foo");
-
             o._updateProgress();
         };
 
@@ -242,13 +240,13 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 ];
 
                 this.viewer.setCamera({
+                    type: "persp",
                     target: center,
                     up: [0, 0, 1],
                     eye: [center[0] - scale * diagonal, center[1] - scale * diagonal, center[2] + scale * diagonal],
                     far: 5000,
                     near: 0.1,
-                    fovy: 35.8493,
-                    scale: 0.001
+                    fovy: 35.8493
                 });
             }
         };
@@ -359,7 +357,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
     			o.models[roid].get(oid, function(object){
 					object.gid = geometryInfoOid;
-                    var modelId = null; // TODO: set to the model ID
+                    var modelId = roid; // TODO: set to the model ID
 					o._createObject(modelId, roid, oid, oid, [geometryDataOid], object.getType(), matrix);
     			});
             } else {
