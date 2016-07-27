@@ -84,10 +84,16 @@ define([
         // For each RFC type, a map of objects mapped to their IDs
         var rfcTypes = {};
 
+        // Objects that are currently visible, mapped to IDs
+        var visibleObjects = {};
+
+        // Lazy-generated array of visible object IDs, for return by #getVisibility()
+        var visibleObjectList = null;
+
         // Objects that are currently selected, mapped to IDs
         var selectedObjects = {};
 
-        // Lazy-generated array of selected object IDs, for return by #getSelected()
+        // Lazy-generated array of selected object IDs, for return by #getSelection()
         var selectedObjectList = null;
 
         // Bookmark of initial state to reset to - captured with #saveReset(), applied with #reset().
@@ -185,7 +191,7 @@ define([
                 var selected = !!selectedObjects[objectId]; // Object currently selected?
                 var shiftDown = scene.input.keyDown[input.KEY_SHIFT]; // Shift key down?
 
-                self.setSelectionState({
+                self.setSelection({
                     ids: [objectId],
                     selected: !selected, // Picking an object toggles its selection status
                     clear: !shiftDown // Clear selection first if shift not down
@@ -194,7 +200,7 @@ define([
 
         cameraControl.on("nopick",
             function (hit) {
-                self.setSelectionState({
+                self.setSelection({
                     clear: true
                 });
             });
@@ -457,6 +463,8 @@ define([
 
             objects = {};
             rfcTypes = {};
+            visibleObjects = {};
+            visibleObjectList = null;
             selectedObjects = {};
             selectedObjectList = null;
 
@@ -466,14 +474,13 @@ define([
         /**
          * Sets the visibility of objects specified by ID or IFC type.
          *
-         * TODO: Handle recursion for subtypes.
-         *
          * @param params
          * @param params.ids IDs of objects or IFC types to update.
          * @param params.color Color to set.
          */
         this.setVisibility = function (params) {
 
+            var changed = false; // Only fire "visibility-changed" when visibility updates are actually made
             params = params || {};
 
             var ids = params.ids;
@@ -483,7 +490,7 @@ define([
                 console.error("Param expected: ids or types");
                 return;
             }
-            
+
             ids = ids || [];
             types = types || [];
 
@@ -495,13 +502,23 @@ define([
             var id;
             var objectId;
             var object;
-            
+
+            if (params.clear) {
+                for (objectId in visibleObjects) {
+                    if (visibleObjects.hasOwnProperty(objectId)) {
+                        delete visibleObjects[objectId];
+                        changed = true;
+                    }
+                }
+            }
+
             for (i = 0, len = types.length; i < len; i++) {
                 var typedict = rfcTypes[types[i]] || {};
                 debugger;
-                Object.keys(typedict).forEach(function(id) {
+                Object.keys(typedict).forEach(function (id) {
                     var object = typedict[id];
                     object.visibility.visible = visible;
+                    changed = true;
                 });
             }
 
@@ -512,19 +529,42 @@ define([
                     console.error("RFC type or object not found: '" + id + "'");
                 } else {
                     object.visibility.visible = visible;
-                }                
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                visibleObjectList = Object.keys(visibleObjects);
+
+                /**
+                 * Fired whenever objects become invisible or invisible
+                 * @event visibility-changed
+                 * @params Array of IDs of all currently-visible objects.
+                 */
+                this.fire("visibility-changed", [visibleObjectList]);
             }
         };
 
         /**
-         *
+         * Returns array of IDs of objects that are currently visible
+         */
+        this.getVisibility = function () {
+            if (visibleObjectList) {
+                return visibleObjectList;
+            }
+            visibleObjectList = Object.keys(visibleObjects);
+            return visibleObjectList;
+        };
+
+        /**
+         * Select or deselect some objects.
          *
          * @param params
-         * @param params.ids IDs of objects to update.
-         * @param params.selected Whether to select or not
+         * @param params.ids IDs of objects.
+         * @param params.selected Whether to select or deselect the objects
          * @param params.clear Whether to clear selection state prior to updating
          */
-        this.setSelectionState = function (params) {
+        this.setSelection = function (params) {
 
             params = params || {};
 
@@ -594,9 +634,8 @@ define([
 
         /**
          * Returns array of IDs of objects that are currently selected
-         *
          */
-        this.getSelected = function () {
+        this.getSelection = function () {
             if (selectedObjectList) {
                 return selectedObjectList;
             }
@@ -999,7 +1038,7 @@ define([
             }
 
             if (getSelected) {
-                bookmark.selected = this.getSelected();
+                bookmark.selected = this.getSelection();
             }
 
             if (getCamera) {
@@ -1050,7 +1089,7 @@ define([
             }
 
             if (setSelected) {
-                this.setSelectionState({
+                this.setSelection({
                     ids: bookmark.selected,
                     selected: true
                 });
