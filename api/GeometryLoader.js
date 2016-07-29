@@ -120,12 +120,32 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 					var flags = {
 						type : "flags",
 						flags : {
-							transparent : hasTransparency
+							transparent : true
 						},
 						nodes : [{
 							type: "enable",
 							enabled: enabled,
 							nodes : [{
+								type : "material",
+								baseColor: material,
+								alpha: 1,
+								nodes : [{
+									type: "translate",
+									x: objectBounds[0] + (objectBounds[3] - objectBounds[0]) / 2,
+									y: objectBounds[1] + (objectBounds[4] - objectBounds[1]) / 2,
+									z: objectBounds[2] + (objectBounds[5] - objectBounds[2]) / 2,
+									nodes : [{
+										type: "scale",
+										x: (objectBounds[3] - objectBounds[0]) / 2,
+										y: (objectBounds[4] - objectBounds[1]) / 2,
+										z: (objectBounds[5] - objectBounds[2]) / 2,
+										nodes: [{
+											type: "geometry/box",
+											wire: true
+										}]
+									}]
+								}]
+							}, {
 								type : "material",
 								baseColor: material,
 								alpha: material.a,
