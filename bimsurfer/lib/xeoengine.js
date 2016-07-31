@@ -15987,13 +15987,24 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             if (!this.canvas || !this.overlay) {
                 return;
             }
+            
+            var getElementXY = function(e) {
+                var x = 0, y = 0;
+                while (e) {
+                    x += e.offsetLeft;
+                    y += e.offsetTop;
+                    e = e.offsetParent;
+                }
+                return {x:x, y:y};
+            }
 
             var canvas = this.canvas;
             var overlay = this.overlay;
             var overlayStyle = overlay.style;
 
-            overlayStyle["left"] = canvas.offsetLeft + "px";
-            overlayStyle["top"] = canvas.offsetTop + "px";
+            var xy = getElementXY(canvas);
+            overlayStyle["left"] = xy.x + "px";
+            overlayStyle["top"] = xy.y + "px";
             overlayStyle["width"] = canvas.clientWidth + "px";
             overlayStyle["height"] = canvas.clientHeight + "px";
         },
