@@ -1,11 +1,16 @@
 // Backwards compatibility
 var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer/xeoViewer.js", "bimsurfer/src/EventHandler.js"];
+
+/*
 if (typeof(BimServerClient) == 'undefined') {
     window.BIMSERVER_VERSION = "1.4";
-	deps.push("bimserverapi_BimServerApi");
+    deps.push("bimserverapi_BimServerApi");
 } else {
     window.BIMSERVER_VERSION = "1.5";
 }
+*/
+
+window.BIMSERVER_VERSION = "1.5";
 
 define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, EventHandler, _BimServerApi) {
 	

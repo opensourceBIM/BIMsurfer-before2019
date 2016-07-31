@@ -10,15 +10,8 @@
         var USERNAME = "admin@admin.admin";
         var PASSWORD = "admin";
         var VERSION = "2.0";
-
-        // This is a bit awkard. This seems to be necessary in order for the
-        // BIMserver modules to find themselves, but it destroys any option
-        // for further modularization in the client and ability to use data-main.
-        var require = {
-            baseUrl: ADDRESS + "/js",
-            urlArgs: "bust=" + VERSION
-        };
-
+        var PATH = "/apps/bimserverjavascriptapi/js/";
+        
         // Where does this come frome? The API crashes on the absence of this
         // member function?
         String.prototype.firstUpper = function () {
@@ -26,7 +19,7 @@
         }
     </script>
 
-    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="css/apiref.css"/>
 
     <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
     <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
@@ -39,10 +32,18 @@
         require([
                     "bimsurfer/src/BimSurfer.js",
                     "bimsurfer/src/StaticTreeRenderer.js",
-                    "bimsurfer/lib/domReady.js!"
+                    "bimsurfer/src/MetaDataRenderer.js",
+                    "bimsurfer/lib/domReady.js!",
+                    ADDRESS + PATH + "bimserverapiwebsocket.js",
+                    ADDRESS + PATH + "bimserverclient.js",
+                    ADDRESS + PATH + "bimserverapipromise.js",
+                    ADDRESS + PATH + "ifc2x3tc1.js",
+                    ADDRESS + PATH + "ifc4.js",
+                    ADDRESS + PATH + "model.js",
+                    ADDRESS + PATH + "translations_en.js"
                 ],
-                function (BimSurfer, StaticTreeRenderer) {
-
+                function (BimSurfer, StaticTreeRenderer, MetaDataRenderer) {
+                    //return;
                     var bimSurfer = new BimSurfer({
                         domNode: "viewerContainer"
                     });
@@ -71,7 +72,12 @@
                                         domNode: 'treeContainer'
                                     });
                                     
+                                    var metadata = new MetaDataRenderer({
+                                        domNode: 'dataContainer'
+                                    });
+                                    
                                     domtree.addModel({name: "", id:roid, tree:tree});
+                                    metadata.addModel({name: "", id:roid, model:model});
                                     domtree.build();
                                     
                                     domtree.on("click",
@@ -91,6 +97,7 @@
                                             
                                     bimSurfer.on("selection-changed", function(selected) {
                                         domtree.setSelected(selected, domtree.SELECT_EXCLUSIVE);
+                                        metadata.setSelected(selected);
                                     });
                                             
                                     // Write API ref
@@ -176,9 +183,10 @@
 
     <div id="topsection"><h1>BIMSurfer API Reference</h1></div>
 
+    <!--
     <div id="contentwrapper">
         <div class="inner">
-            <div id="viewerContainer">
+            <div id="">
 
             </div>
         </div>
@@ -186,7 +194,25 @@
 
     <div id="leftcolumn">
         <div class="inner">
-            <div id="treeContainer"></div>
+            <div id=""></div>
+        </div>
+    </div>
+    -->
+    
+    <div id="contentwrapper">
+        <div id="colmid">
+            <div id="colright">
+                <div id="col1wrap">
+                    <div id="col1pad">
+                        <div id="viewerContainer">
+                        </div>
+                    </div>
+                </div>
+                <div id="treeContainer">
+                </div>
+                <div id="dataContainer">
+                </div>
+            </div>
         </div>
     </div>
     
