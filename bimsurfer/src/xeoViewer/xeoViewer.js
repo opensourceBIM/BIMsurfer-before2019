@@ -4,8 +4,7 @@ define([
     "bimsurfer/src/xeoViewer/controls/bimCameraControl.js",
     "bimsurfer/src/xeoViewer/entities/bimModel.js",
     "bimsurfer/src/xeoViewer/entities/bimObject.js",
-    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper.js",
-    "bimsurfer/src/xeoViewer/helpers/bimAxisHelper.js"
+    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper.js"
 ], function (DefaultMaterials, EventHandler) {
 
     "use strict";
@@ -67,13 +66,6 @@ define([
 
         // Shows a wireframe box at the given boundary
         var boundaryHelper = new XEO.BIMBoundaryHelper(scene);
-
-        // Shows a gnomon which indicates the directions of the World-space coordinate axis
-        var axisHelper = new XEO.BIMAxisHelper({
-            lookat: camera.view,
-            visible: true,
-            size: [200, 200]
-        });
 
         // Models mapped to their IDs
         var models = {};
