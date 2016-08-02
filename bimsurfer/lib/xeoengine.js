@@ -4,7 +4,7 @@
  * A WebGL-based 3D visualization engine from xeoLabs
  * http://xeoengine.org/
  *
- * Built on 2016-05-24
+ * Built on 2016-08-02
  *
  * MIT License
  * Copyright 2016, Lindsay Kay
@@ -96,7 +96,6 @@
          * @final
          * @property stats
          * @type {*}
-         * @final
          */
         this.stats = {
             build: {
@@ -802,7 +801,9 @@ var Canvas2Image = (function () {
 
     var initializing = false;
 
-    var fnTest = /xyz/.test(function () { xyz; }) ? /\b_super\b/ : /.*/;
+    var fnTest = /xyz/.test(function () {
+        xyz;
+    }) ? /\b_super\b/ : /.*/;
 
     // The base Class implementation (does nothing)
     this.Class = function () {
@@ -873,12 +874,13 @@ var Canvas2Image = (function () {
                 })(name, prop[name]) : prop[name];
         }
 
-        if (prop.type) {
-
-            // Create array of type names to indicate inheritance chain,
-            // to support "isType" queries on components
-            prototype.superTypes = _super.superTypes ? _super.superTypes.concat(_super.type) : [];
+        if (!prop.type) {
+            prop.type = _super.type + "_" + createUUID();
         }
+
+        // Create array of type names to indicate inheritance chain,
+        // to support "isType" queries on components
+        prototype.superTypes = _super.superTypes ? _super.superTypes.concat(_super.type) : [];
 
         // The dummy class constructor
         function Class() {
@@ -899,6 +901,36 @@ var Canvas2Image = (function () {
 
         return Class;
     };
+
+    /**
+     * Returns a new UUID.
+     * @method createUUID
+     * @static
+     * @return string The new UUID
+     */
+    var createUUID = (function () {
+        // http://www.broofa.com/Tools/Math.uuid.htm
+        var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
+        var uuid = new Array(36);
+        var rnd = 0, r;
+        return function () {
+            for (var i = 0; i < 36; i++) {
+                if (i === 8 || i === 13 || i === 18 || i === 23) {
+                    uuid[i] = '-';
+                } else if (i === 14) {
+                    uuid[i] = '4';
+                } else {
+                    if (rnd <= 0x02) {
+                        rnd = 0x2000000 + ( Math.random() * 0x1000000 ) | 0;
+                    }
+                    r = rnd & 0xf;
+                    rnd = rnd >> 4;
+                    uuid[i] = chars[( i === 19 ) ? ( r & 0x3 ) | 0x8 : r];
+                }
+            }
+            return uuid.join('');
+        };
+    })();
 })();
 
 ;(function () {
@@ -1089,6 +1121,10 @@ var Canvas2Image = (function () {
         this._pickObjectChunkList = [];  // State chunk list to render scene to pick buffer
         this._pickObjectChunkListLen = 0;
 
+        // Tracks the index of the first chunk in the transparency pass. The first run of chunks
+        // in the list are for opaque objects, while the remainder are for transparent objects.
+        // This supports a mode in which we only render the opaque chunks.
+        this._drawChunkListTransparentIndex = -1;
 
         // The frame context holds state shared across a single render of the
         // draw list, along with any results of the render, such as pick hits
@@ -1588,7 +1624,8 @@ var Canvas2Image = (function () {
 
         if (this.imageDirty || params.force) {
             this._doDrawList({                  // Render the draw list
-                clear: (params.clear !== false) // Clear buffers by default
+                clear: (params.clear !== false), // Clear buffers by default
+                opaqueOnly: params.opaqueOnly
             });
             this.stats.frame.frameCount++;
             this.imageDirty = false;
@@ -1869,8 +1906,14 @@ var Canvas2Image = (function () {
 
                         // Don't reapply repeated chunks
 
-                        this._drawChunkList[this._drawChunkListLen++] = chunk;
+                        this._drawChunkList[this._drawChunkListLen] = chunk;
                         this._lastDrawChunkId[i] = chunk.id;
+
+                        if (chunk.state && chunk.state.transparent && this._drawChunkListTransparentIndex < 0) {
+                            this._drawChunkListTransparentIndex = this._drawChunkListLen;
+                        }
+
+                        this._drawChunkListLen++
                     }
                 }
 
@@ -2039,10 +2082,10 @@ var Canvas2Image = (function () {
                 // Convert picked pixel color to primitive index
 
                 pix = pickBuf.read(canvasX, canvasY);
-                var primitiveIndex = pix[0] + (pix[1] * 256) + (pix[2] * 256 * 256) + (pix[3] * 256 * 256 * 256);
-                primitiveIndex *= 3; // Convert from triangle number to first vertex in indices
+                var primIndex = pix[0] + (pix[1] * 256) + (pix[2] * 256 * 256) + (pix[3] * 256 * 256 * 256);
+                primIndex *= 3; // Convert from triangle number to first vertex in indices
 
-                hit.primitiveIndex = primitiveIndex;
+                hit.primIndex = primIndex;
             }
         }
 
@@ -2058,6 +2101,7 @@ var Canvas2Image = (function () {
      * @param {Boolean} params.pickObject
      * @param {Boolean} params.rayPick
      * @param {Boolean} params.object
+     * @param {Boolean} params.opaqueOnly
      * @private
      */
     XEO.renderer.Renderer.prototype._doDrawList = function (params) {
@@ -2161,7 +2205,11 @@ var Canvas2Image = (function () {
 
             var startTime = (new Date()).getTime();
 
-            for (i = 0, len = this._drawChunkListLen; i < len; i++) {
+
+            // Option to only render opaque objects
+            len = (params.opaqueOnly && this._drawChunkListTransparentIndex >= 0 ? this._drawChunkListTransparentIndex : this._drawChunkListLen);
+
+            for (i = 0; i < len; i++) {
                 this._drawChunkList[i].draw(frameCtx);
             }
 
@@ -2188,6 +2236,53 @@ var Canvas2Image = (function () {
         }
 
         this.stats.frame.drawChunks = this._drawChunkListLen;
+    };
+
+    /**
+     * Reads the colors of some pixels in the last rendered frame.
+     *
+     * @param {Float32Array} pixels
+     * @param {Float32Array} colors
+     * @param {Number} len
+     * @param {Boolean} opaqueOnly
+     */
+    XEO.renderer.Renderer.prototype.readPixels = function (pixels, colors, len, opaqueOnly) {
+
+        if (!this._readPixelBuf) {
+            this._readPixelBuf = new XEO.renderer.webgl.RenderBuffer({
+                gl: this._canvas.gl,
+                canvas: this._canvas.canvas
+            });
+        }
+
+        this._readPixelBuf.bind();
+
+        this._readPixelBuf.clear();
+
+        this.render({
+            force: true,
+            opaqueOnly: opaqueOnly
+        });
+
+        var color;
+        var i;
+        var j;
+        var k;
+
+        for (i = 0; i < len; i++) {
+
+            j = i * 2;
+            k = i * 4;
+
+            color = this._readPixelBuf.read(pixels[j], pixels[j + 1]);
+
+            colors[k] = color[0];
+            colors[k + 1] = color[1];
+            colors[k + 2] = color[2];
+            colors[k + 3] = color[3];
+        }
+
+        this._readPixelBuf.unbind();
     };
 
     /**
@@ -2629,7 +2724,7 @@ var Canvas2Image = (function () {
 
      @constructor
      @param cfg {*} Configs
-     @param cfg.boundary {Array of Number} Canvas-space viewport extents.
+     @param cfg.boundary {Float32Array} Canvas-space viewport extents.
      @extends renderer.State
      */
     XEO.renderer.Viewport = XEO.renderer.State.extend({
@@ -6815,6 +6910,7 @@ var Canvas2Image = (function () {
         /**
          * Returns a new, uninitialized two-element vector.
          * @method vec2
+         * @param [values] Initial values.
          * @static
          * @returns {Float32Array}
          */
@@ -6825,6 +6921,7 @@ var Canvas2Image = (function () {
         /**
          * Returns a new, uninitialized three-element vector.
          * @method vec3
+         * @param [values] Initial values.
          * @static
          * @returns {Float32Array}
          */
@@ -6835,6 +6932,7 @@ var Canvas2Image = (function () {
         /**
          * Returns a new, uninitialized four-element vector.
          * @method vec4
+         * @param [values] Initial values.
          * @static
          * @returns {Float32Array}
          */
@@ -6845,6 +6943,7 @@ var Canvas2Image = (function () {
         /**
          * Returns a new, uninitialized 3x3 matrix.
          * @method mat3
+         * @param [values] Initial values.
          * @static
          * @returns {Float32Array}
          */
@@ -6855,6 +6954,7 @@ var Canvas2Image = (function () {
         /**
          * Returns a new, uninitialized 4x4 matrix.
          * @method mat4
+         * @param [values] Initial values.
          * @static
          * @returns {Float32Array}
          */
@@ -8586,36 +8686,37 @@ var Canvas2Image = (function () {
 
         /**
          * Rotate a 3D vector around the x-axis
-         * 
+         *
          * @method rotateVec3X
          * @param {Float32Array} a The vec3 point to rotate
          * @param {Float32Array} b The origin of the rotation
          * @param {Number} c The angle of rotation
          * @param {Float32Array} dest The receiving vec3
          * @returns {Float32Array} dest
+         * @static
          */
         rotateVec3X: function (a, b, c, dest) {
 
             var p = [], r = [];
-            
+
             //Translate point to the origin
             p[0] = a[0] - b[0];
             p[1] = a[1] - b[1];
             p[2] = a[2] - b[2];
-            
+
             //perform rotation
             r[0] = p[0];
             r[1] = p[1] * Math.cos(c) - p[2] * Math.sin(c);
             r[2] = p[1] * Math.sin(c) + p[2] * Math.cos(c);
-            
+
             //translate to correct position
             dest[0] = r[0] + b[0];
             dest[1] = r[1] + b[1];
             dest[2] = r[2] + b[2];
-            
+
             return dest;
         },
-        
+
         /**
          * Rotate a 3D vector around the y-axis
          *
@@ -8625,11 +8726,12 @@ var Canvas2Image = (function () {
          * @param {Number} c The angle of rotation
          * @param {Float32Array} dest The receiving vec3
          * @returns {Float32Array} dest
+         * @static
          */
         rotateVec3Y: function (a, b, c, dest) {
-            
+
             var p = [], r = [];
-            
+
             //Translate point to the origin
             p[0] = a[0] - b[0];
             p[1] = a[1] - b[1];
@@ -8656,13 +8758,13 @@ var Canvas2Image = (function () {
          * @param {Float32Array} b The origin of the rotation
          * @param {Number} c The angle of rotation
          * @param {Float32Array} dest The receiving vec3
-         * 
          * @returns {Float32Array} dest
+         * @static
          */
         rotateVec3Z: function (a, b, c, dest) {
-            
+
             var p = [], r = [];
-            
+
             //Translate point to the origin
             p[0] = a[0] - b[0];
             p[1] = a[1] - b[1];
@@ -8683,12 +8785,19 @@ var Canvas2Image = (function () {
 
         /**
          * Transforms a four-element vector by a 4x4 projection matrix.
+         *
          * @method projectVec4
+         * @param {Float32Array} p 3D View-space coordinate
+         * @param {Float32Array} q 2D Projected coordinate
+         * @returns {Float32Array} 2D Projected coordinate
          * @static
          */
-        projectVec4: function (v) {
-            var f = 1.0 / v[3];
-            return [v[0] * f, v[1] * f, v[2] * f, 1.0];
+        projectVec4: function (p, q) {
+            var f = 1.0 / p[3];
+            q = q || XEO.math.vec2();
+            q[0] = v[0] * f;
+            q[1] = v[1] * f;
+            return q;
         },
 
         /**
@@ -9237,6 +9346,46 @@ var Canvas2Image = (function () {
             aabb2.max[1] = canvasHeight - Math.floor(ymin * canvasHeight);
 
             return aabb;
+        },
+
+        /**
+         * Calculates the normal vector of a triangle
+         *
+         * @method triangleNormal
+         * @param a
+         * @param b
+         * @param c
+         * @param normal
+         * @returns {*}
+         */
+        triangleNormal: function (a, b, c, normal) {
+
+            normal = normal || XEO.math.vec3();
+
+            var p1x = b[0] - a[0];
+            var p1y = b[1] - a[1];
+            var p1z = b[2] - a[2];
+
+            var p2x = c[0] - a[0];
+            var p2y = c[1] - a[1];
+            var p2z = c[2] - a[2];
+
+            var p3x = p1y * p2z - p1z * p2y;
+            var p3y = p1z * p2x - p1x * p2z;
+            var p3z = p1x * p2y - p1y * p2x;
+
+            var mag = Math.sqrt(p3x * p3x + p3y * p3y + p3z * p3z);
+            if (mag === 0) {
+                normal[0] = 0;
+                normal[1] = 0;
+                normal[2] = 0;
+            } else {
+                normal[0] = p3x / mag;
+                normal[1] = p3y / mag;
+                normal[2] = p3z / mag;
+            }
+
+            return normal
         },
 
         /**
@@ -9952,10 +10101,10 @@ var Canvas2Image = (function () {
 
             dest = XEO.math.identityMat4(dest);
 
-            var q0 = q[0];
-            var q1 = q[1];
-            var q2 = q[2];
-            var q3 = q[3];
+            var q0 = q[0];  //x
+            var q1 = q[1];  //y
+            var q2 = q[2];  //z
+            var q3 = q[3];  //w
 
             var tx = 2.0 * q0;
             var ty = 2.0 * q1;
@@ -9974,15 +10123,16 @@ var Canvas2Image = (function () {
             var tzz = tz * q2;
 
             dest[0] = 1.0 - (tyy + tzz);
-            dest[1] = txy - twz;
-            dest[2] = txz + twy;
+            dest[1] = txy + twz;
+            dest[2] = txz - twy;
 
-            dest[4] = txy + twz;
+            dest[4] = txy - twz;
             dest[5] = 1.0 - (txx + tzz);
-            dest[6] = tyz - twx;
+            dest[6] = tyz + twx;
 
-            dest[8] = txz - twy;
-            dest[9] = tyz + twx;
+            dest[8] = txz + twy;
+            dest[9] = tyz - twx;
+
             dest[10] = 1.0 - (txx + tyy);
 
             return dest;
@@ -12567,7 +12717,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var position = XEO.math.vec4();
             var worldPos = XEO.math.vec4();
             var viewPos = XEO.math.vec4();
-            var barycentric = XEO.math.vec3();
+            var bary = XEO.math.vec3();
 
             var na = XEO.math.vec3();
             var nb = XEO.math.vec3();
@@ -12660,7 +12810,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     hit.entity = entity; // Swap string ID for XEO.Entity
 
-                    if (hit.primitiveIndex !== undefined && hit.primitiveIndex > -1) {
+                    if (hit.primIndex !== undefined && hit.primIndex > -1) {
 
                         var geometry = entity.geometry;
 
@@ -12673,7 +12823,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                             // Get the World-space positions of the triangle's vertices
 
-                            var i = hit.primitiveIndex; // Indicates the first triangle index in the indices array
+                            var i = hit.primIndex; // Indicates the first triangle index in the indices array
 
                             var indices = geometry.indices;
                             var positions = geometry.positions;
@@ -12748,9 +12898,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                             // Get barycentric coordinates of the ray-triangle intersection
 
-                            math.cartesianToBarycentric2(position, a, b, c, barycentric);
+                            math.cartesianToBarycentric2(position, a, b, c, bary);
 
-                            hit.barycentric = barycentric;
+                            hit.bary = bary;
 
                             // Get interpolated normal vector
 
@@ -12771,9 +12921,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 nc[2] = normals[ic3 + 2];
 
                                 var normal = math.addVec3(math.addVec3(
-                                        math.mulVec3Scalar(na, barycentric[0], tempVec3),
-                                        math.mulVec3Scalar(nb, barycentric[1], tempVec3b), tempVec3c),
-                                    math.mulVec3Scalar(nc, barycentric[2], tempVec3d), tempVec3e);
+                                        math.mulVec3Scalar(na, bary[0], tempVec3),
+                                        math.mulVec3Scalar(nb, bary[1], tempVec3b), tempVec3c),
+                                    math.mulVec3Scalar(nc, bary[2], tempVec3d), tempVec3e);
 
                                 hit.normal = math.transformVec3(entity.transform.leafMatrix, normal, tempVec3f);
                             }
@@ -12795,9 +12945,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                                 hit.uv = math.addVec3(
                                     math.addVec3(
-                                        math.mulVec2Scalar(uva, barycentric[0], tempVec3g),
-                                        math.mulVec2Scalar(uvb, barycentric[1], tempVec3h), tempVec3i),
-                                    math.mulVec2Scalar(uvc, barycentric[2], tempVec3j), tempVec3k);
+                                        math.mulVec2Scalar(uva, bary[0], tempVec3g),
+                                        math.mulVec2Scalar(uvb, bary[1], tempVec3h), tempVec3i),
+                                    math.mulVec2Scalar(uvc, bary[2], tempVec3j), tempVec3k);
                             }
                         }
                     }
@@ -13678,7 +13828,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             }
         },
 
-
         _update: function () {
 
             if (!this._flying) {
@@ -13832,241 +13981,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         _destroy: function () {
             this.stop();
-        }
-    });
-
-})();
-;/**
- A **CameraPath** flies a {{#crossLink "Camera"}}{{/crossLink}} along a {{#crossLink "Curve"}}{{/crossLink}}.
-
- ## Usage
-
- In the example below we create an {{#crossLink "Entity"}}{{/crossLink}} and a {{#crossLink "Camera"}}{{/crossLink}},
- then we create a {{#crossLink "CameraPath"}}{{/crossLink}} that binds the {{#crossLink "Camera"}}{{/crossLink}} to a
- {{#crossLink "SplineCurve"}}{{/crossLink}}. Finally, we periodically update the position 't' on
- the {{#crossLink "SplineCurve"}}{{/crossLink}} within the {{#crossLink "Scene"}}{{/crossLink}}'s animation loop, which
- causes the {{#crossLink "Camera"}}{{/crossLink}} to move with that position along the {{#crossLink "SplineCurve"}}{{/crossLink}}.
-
- ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
-         eye: [0, 0, 10],
-         look: [0, 0, 0],
-         up: [0, 1, 0]
-     }),
-     project: new XEO.Perspective({
-         fovy: 60,
-         near: 0.1,
-         far: 1000
-     })
- });
-
- var entity = new XEO.Entity({
-     camera: camera,
-     geometry: new XEO.BoxGeometry()
- });
-
- var spline = new XEO.SplineCurve({
-     points: [
-         [0, 0, 100],
-         [10, 5, 60],
-         [7, 2, 20],
-         [2, -1, 10]
-     ]
- });
-
- new XEO.CameraPath({
-    camera: camera,
-    path: spline
- });
-
- // Periodically update the position 't' on the SplineCurve, which causes the CameraPath
- // to interpolate the Camera to that position
-
- XEO.scene.on("tick", function(e) {
-     var t = (e.time - e.startTime) * 0.01;
-     spline.t = t;
- });
- ````
-
- @class CameraPath
- @module XEO
- @submodule animation
- @constructor
- @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}.
- @param [cfg] {*} Configuration
- @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
- @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this CameraPath.
- @param [cfg.camera] {String|Camera} ID or instance of a {{#crossLink "Camera"}}Camera{{/crossLink}} to control.
- Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this CameraPath. Defaults to the
- parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance, {{#crossLink "Scene/camera:property"}}camera{{/crossLink}}.
- @param [cfg.path] {String|Curve} ID or instance of a {{#crossLink "Curve"}}{{/crossLink}} to move along.
- @extends Component
- */
-(function () {
-
-    "use strict";
-
-    XEO.CameraPath = XEO.Component.extend({
-
-        /**
-         JavaScript class name for this Component.
-
-         @property type
-         @type String
-         @final
-         */
-        type: "XEO.CameraPath",
-
-        _init: function (cfg) {
-
-            this.freeRotate = cfg.freeRotate;
-            this.camera = cfg.camera;
-            this.path = cfg.path;
-        },
-
-        _props: {
-
-            /**
-             * Flag which indicates whether the viewing direction is free to move around.
-             *
-             * Fires a {{#crossLink "MouseRotateCamera/freeRotate:event"}}{{/crossLink}} event on change.
-             *
-             * @property freeRotate
-             * @default false
-             * @type Boolean
-             */
-            freeRotate: {
-
-                set: function (value) {
-
-                    value = !!value;
-
-                    this._freeRotate = value;
-
-                    /**
-                     * Fired whenever this MouseRotateCamera's {{#crossLink "MouseRotateCamera/freeRotate:property"}}{{/crossLink}} property changes.
-                     * @event freeRotate
-                     * @param value The property's new value
-                     */
-                    this.fire('freeRotate', this._freeRotate);
-                },
-
-                get: function () {
-                    return this._freeRotate;
-                }
-            },
-
-            /**
-             * The Camera for this CameraPath.
-             *
-             * When set to a null or undefined value, will default to the parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s
-             * default {{#crossLink "Scene/camera:property"}}{{/crossLink}}.
-             *
-             * Fires a {{#crossLink "CameraPath/camera:event"}}{{/crossLink}} event on change.
-             *
-             * @property camera
-             * @type Camera
-             */
-            camera: {
-
-                set: function (value) {
-
-                    /**
-                     * Fired whenever this CameraPaths's {{#crossLink "CameraPath/camera:property"}}{{/crossLink}} property changes.
-                     * @event camera
-                     * @param value The property's new value
-                     */
-                    this._attach({
-                        name: "camera",
-                        type: "XEO.Camera",
-                        component: value,
-                        sceneDefault: true,
-                        onAttached: {
-                            callback: this._update,
-                            scope: this
-                        }
-                    });
-                },
-
-                get: function () {
-                    return this._attached.camera;
-                }
-            },
-
-            /**
-             * The Curve for this CameraPath.
-             *
-             * Fires a {{#crossLink "CameraPath/path:event"}}{{/crossLink}} event on change.
-             *
-             * @property path
-             * @type {Path}
-             */
-            path: {
-
-                set: function (value) {
-
-                    /**
-                     * Fired whenever this CameraPaths's {{#crossLink "CameraPath/path:property"}}{{/crossLink}} property changes.
-                     * @event path
-                     * @param value The property's new value
-                     */
-                    this._attach({
-                        name: "path",
-                        type: "XEO.Path",
-                        component: value,
-                        sceneDefault: false,
-                        on: {
-                            t: {
-                                callback: this._update,
-                                scope: this
-                            }
-                        }
-                    });
-                },
-
-                get: function () {
-                    return this._attached.path;
-                }
-            }
-        },
-
-        _update: function () {
-
-            var camera = this._attached.camera;
-            var path = this._attached.path;
-
-            if (!camera || !path) {
-                return;
-            }
-
-            var point = path.point;
-            var tangent = path.tangent;
-
-            var view = camera.view;
-
-            view.eye = point;
-
-            if (!this._freeRotate) {
-                view.look = [point[0] + tangent[0], point[1] + tangent[1], point[2] + tangent[2]];
-            }
-        },
-
-        _getJSON: function () {
-
-            var json = {
-                freeRotate: this._freeRotate
-            };
-
-            if (this._attached.camera) {
-                json.camera = this._attached.camera.id;
-            }
-
-            if (this._attached.path) {
-                json.path = this._attached.path.id;
-            }
-
-            return json;
         }
     });
 
@@ -14345,9 +14259,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 set: function (value) {
 
-                    value = value || XEO.math.identityMat4();
-
-                    this._state.matrix.set(value);
+                    this._state.matrix.set(value || XEO.math.identityMat4());
 
                     this._renderer.imageDirty = true;
 
@@ -14753,6 +14665,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
+    var tempVec3 = XEO.math.vec3();
+    var tempVec3b = XEO.math.vec3();
+    var tempVec3c = XEO.math.vec3();
+    var tempVec3d = XEO.math.vec3();
+    var tempVec3e = XEO.math.vec3();
+    var tempVec3f = XEO.math.vec3();
+
+
     XEO.Lookat = XEO.Component.extend({
 
         type: "XEO.Lookat",
@@ -14765,9 +14685,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             this._state = new XEO.renderer.ViewTransform({
                 matrix: mat,
                 normalMatrix: invMat,
-                eye: [0, 0, 10.0],
-                look: [0, 0, 0],
-                up: [0, 1, 0]
+                eye: XEO.math.vec3([0, 0, 10.0]),
+                look: XEO.math.vec3([0, 0, 0]),
+                up: XEO.math.vec3([0, 1, 0])
             });
 
             this._buildScheduled = false;
@@ -14786,18 +14706,18 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         rotateEyeY: function (angle) {
 
             // Get 'look' -> 'eye' vector
-            var eye2 = XEO.math.subVec3(this._state.eye, this._state.look, []);
+            var eye2 = XEO.math.subVec3(this._state.eye, this._state.look, tempVec3);
 
-            var mat = XEO.math.rotationMat4v(angle * 0.0174532925, this._gimbalLockY ? [0, 1, 0] : this._state.up);
-            eye2 = XEO.math.transformPoint3(mat, eye2, []);
+            var mat = XEO.math.rotationMat4v(angle * 0.0174532925, this._gimbalLockY ? XEO.math.vec3([0, 1, 0]) : this._state.up);
+            eye2 = XEO.math.transformPoint3(mat, eye2, tempVec3b);
 
             // Set eye position as 'look' plus 'eye' vector
-            this.eye = XEO.math.addVec3(eye2, this._state.look, []);
+            this.eye = XEO.math.addVec3(eye2, this._state.look, tempVec3c);
 
             if (this._gimbalLockY) {
 
                 // Rotate 'up' vector about orthogonal vector
-                this.up = XEO.math.transformPoint3(mat, this._state.up, []);
+                this.up = XEO.math.transformPoint3(mat, this._state.up, tempVec3d);
             }
         },
 
@@ -14809,20 +14729,20 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         rotateEyeX: function (angle) {
 
             // Get 'look' -> 'eye' vector
-            var eye2 = XEO.math.subVec3(this._state.eye, this._state.look, []);
+            var eye2 = XEO.math.subVec3(this._state.eye, this._state.look, tempVec3);
 
             // Get orthogonal vector from 'eye' and 'up'
-            var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(eye2, []), XEO.math.normalizeVec3(this._state.up, []));
+            var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(eye2, tempVec3b), XEO.math.normalizeVec3(this._state.up, tempVec3c));
 
             // Rotate 'eye' vector about orthogonal vector
             var mat = XEO.math.rotationMat4v(angle * 0.0174532925, left);
-            eye2 = XEO.math.transformPoint3(mat, eye2, []);
+            eye2 = XEO.math.transformPoint3(mat, eye2, tempVec3d);
 
             // Set eye position as 'look' plus 'eye' vector
-            this.eye = XEO.math.addVec3(eye2, this._state.look, []);
+            this.eye = XEO.math.addVec3(eye2, this._state.look, tempVec3e);
 
             // Rotate 'up' vector about orthogonal vector
-            this.up = XEO.math.transformPoint3(mat, this._state.up, []);
+            this.up = XEO.math.transformPoint3(mat, this._state.up, tempVec3f);
         },
 
         /**
@@ -14835,14 +14755,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         rotateLookY: function (angle) {
 
             // Get 'look' -> 'eye' vector
-            var look2 = XEO.math.subVec3(this._state.look, this._state.eye, []);
+            var look2 = XEO.math.subVec3(this._state.look, this._state.eye, tempVec3);
 
             // Rotate 'look' vector about 'up' vector
             var mat = XEO.math.rotationMat4v(angle * 0.0174532925, this._state.up);
-            look2 = XEO.math.transformPoint3(mat, look2, []);
+            look2 = XEO.math.transformPoint3(mat, look2, tempVec3b);
 
             // Set look position as 'look' plus 'eye' vector
-            this.look = XEO.math.addVec3(look2, this._state.eye, []);
+            this.look = XEO.math.addVec3(look2, this._state.eye, tempVec3c);
         },
 
         /**
@@ -14853,20 +14773,20 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         rotateLookX: function (angle) {
 
             // Get 'look' -> 'eye' vector
-            var look2 = XEO.math.subVec3(this._state.look, this._state.eye, []);
+            var look2 = XEO.math.subVec3(this._state.look, this._state.eye, tempVec3);
 
             // Get orthogonal vector from 'eye' and 'up'
-            var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(look2, []), XEO.math.normalizeVec3(this._state.up, []));
+            var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(look2, tempVec3b), XEO.math.normalizeVec3(this._state.up, tempVec3c));
 
             // Rotate 'look' vector about orthogonal vector
             var mat = XEO.math.rotationMat4v(angle * 0.0174532925, left);
-            look2 = XEO.math.transformPoint3(mat, look2, []);
+            look2 = XEO.math.transformPoint3(mat, look2, tempVec3d);
 
             // Set eye position as 'look' plus 'eye' vector
-            this.look = XEO.math.addVec3(look2, this._state.eye, []);
+            this.look = XEO.math.addVec3(look2, this._state.eye, tempVec3e);
 
             // Rotate 'up' vector about orthogonal vector
-            this.up = XEO.math.transformPoint3(mat, this._state.up, []);
+            this.up = XEO.math.transformPoint3(mat, this._state.up, tempVecf);
         },
 
         /**
@@ -14876,7 +14796,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         pan: function (pan) {
 
             // Get 'look' -> 'eye' vector
-            var eye2 = XEO.math.subVec3(this._state.eye, this._state.look, []);
+            var eye2 = XEO.math.subVec3(this._state.eye, this._state.look, tempVec3);
 
             // Building this pan vector
             var vec = [0, 0, 0];
@@ -14886,7 +14806,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 // Pan along orthogonal vector to 'look' and 'up'
 
-                var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(eye2, []), XEO.math.normalizeVec3(this._state.up, []));
+                var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(eye2, []), XEO.math.normalizeVec3(this._state.up, tempVec3b));
 
                 v = XEO.math.mulVec3Scalar(left, pan[0]);
 
@@ -14899,7 +14819,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 // Pan along 'up' vector
 
-                v = XEO.math.mulVec3Scalar(XEO.math.normalizeVec3(this._state.up, []), pan[1]);
+                v = XEO.math.mulVec3Scalar(XEO.math.normalizeVec3(this._state.up, tempVec3c), pan[1]);
 
                 vec[0] += v[0];
                 vec[1] += v[1];
@@ -14910,15 +14830,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 // Pan along 'eye'- -> 'look' vector
 
-                v = XEO.math.mulVec3Scalar(XEO.math.normalizeVec3(eye2, []), pan[2]);
+                v = XEO.math.mulVec3Scalar(XEO.math.normalizeVec3(eye2, tempVec3d), pan[2]);
 
                 vec[0] += v[0];
                 vec[1] += v[1];
                 vec[2] += v[2];
             }
 
-            this.eye = XEO.math.addVec3(this._state.eye, vec, []);
-            this.look = XEO.math.addVec3(this._state.look, vec, []);
+            this.eye = XEO.math.addVec3(this._state.eye, vec, tempVec3e);
+            this.look = XEO.math.addVec3(this._state.look, vec, tempVec3f);
         },
 
         /**
@@ -14927,13 +14847,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          */
         zoom: function (delta) {
 
-            var vec = XEO.math.subVec3(this._state.eye, this._state.look, []); // Get vector from eye to look
-            var lenLook = Math.abs(XEO.math.lenVec3(vec, []));    // Get len of that vector
+            var vec = XEO.math.subVec3(this._state.eye, this._state.look, tempVec3); // Get vector from eye to look
+            var lenLook = Math.abs(XEO.math.lenVec3(vec, tempVec3b));    // Get len of that vector
             var newLenLook = Math.abs(lenLook + delta);         // Get new len after zoom
 
-            var dir = XEO.math.normalizeVec3(vec, []);  // Get normalised vector
+            var dir = XEO.math.normalizeVec3(vec, tempVec3c);  // Get normalised vector
 
-            this.eye = XEO.math.addVec3(this._state.look, XEO.math.mulVec3Scalar(dir, newLenLook), []);
+            this.eye = XEO.math.addVec3(this._state.look, XEO.math.mulVec3Scalar(dir, newLenLook), tempVec3d);
         },
 
         _props: {
@@ -14975,19 +14895,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              *
              * @property eye
              * @default [0,0,10]
-             * @type Array(Number)
+             * @type Float32Array
              */
             eye: {
 
                 set: function (value) {
 
-                    value = value || [0, 0, 10];
-
-                    var eye = this._state.eye;
-
-                    eye[0] = value[0];
-                    eye[1] = value[1];
-                    eye[2] = value[2];
+                    this._state.eye.set(value || [0, 0, 10]);
 
                     this._scheduleUpdate(0); // Ensure matrix built on next "tick"
 
@@ -15012,19 +14926,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              *
              * @property look
              * @default [0,0,0]
-             * @type Array(Number)
+             * @type Float32Array
              */
             look: {
 
                 set: function (value) {
 
-                    value = value || [0, 0, 0];
-
-                    var look = this._state.look;
-
-                    look[0] = value[0];
-                    look[1] = value[1];
-                    look[2] = value[2];
+                    this._state.look.set(value || [0, 0, 0]);
 
                     this._scheduleUpdate(0); // Ensure matrix built on next "tick";
 
@@ -15047,19 +14955,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * Fires an {{#crossLink "Lookat/up:event"}}{{/crossLink}} event on change.
              * @property up
              * @default [0,1,0]
-             * @type Array(Number)
+             * @type Float32Array
              */
             up: {
 
                 set: function (value) {
 
-                    value = value || [0, 1, 0];
-
-                    var up = this._state.up;
-
-                    up[0] = value[0];
-                    up[1] = value[1];
-                    up[2] = value[2];
+                    this._state.up.set(value || [0, 1, 0]);
 
                     this._scheduleUpdate(0); // Ensure matrix built on next "tick"
 
@@ -15987,28 +15889,27 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             if (!this.canvas || !this.overlay) {
                 return;
             }
-            
-            var getElementXY = function(e) {
-                var x = 0, y = 0;
-                while (e) {
-                    x += e.offsetLeft;
-                    y += e.offsetTop;
-                    e = e.offsetParent;
-                }
-                return {x:x, y:y};
-            }
 
             var canvas = this.canvas;
             var overlay = this.overlay;
             var overlayStyle = overlay.style;
 
-            var xy = getElementXY(canvas);
+            var xy = this._getElementXY(canvas);
             overlayStyle["left"] = xy.x + "px";
             overlayStyle["top"] = xy.y + "px";
             overlayStyle["width"] = canvas.clientWidth + "px";
             overlayStyle["height"] = canvas.clientHeight + "px";
         },
 
+        _getElementXY: function (e) {
+            var x = 0, y = 0;
+            while (e) {
+                x += e.offsetLeft;
+                y += e.offsetTop;
+                e = e.offsetParent;
+            }
+            return {x: x, y: y};
+        },
 
         /**
          * Initialises the WebGL context
@@ -16094,6 +15995,32 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             }
 
             return image.src;
+        },
+
+        /**
+         Reads colors of pixels from the last rendered frame.
+
+         <p>Call this method like this:</p>
+
+         ````JavaScript
+
+         // Ignore transparent pixels (default is false)
+         var opaqueOnly = true;
+
+         var colors = new Float32Array(8);
+
+         myCanvas.readPixels([ 100, 22, 12, 33 ], colors, 2, opaqueOnly);
+         ````
+
+         Then the r,g,b components of the colors will be set to the colors at those pixels.
+
+         @param {Float32Array} pixels
+         @param {Float32Array} colors
+         @param {Number} size
+         @param {Boolean} opaqueOnly
+         */
+        readPixels: function (pixels, colors, size, opaqueOnly) {
+            return this.scene._renderer.readPixels(pixels, colors, size, opaqueOnly);
         },
 
         _props: {
@@ -16643,13 +16570,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
              @property dir
              @default [1.0, 1.0, 1.0]
-             @type Array(Number)
+             @type Float32Array
              */
             dir: {
 
                 set: function (value) {
 
-                    this._state.dir =  value || [1, 0, 0];
+                    this._state.dir =  value || XEO.math.vec3([1, 0, 0]);
 
                     this._renderer.imageDirty = true;
 
@@ -16657,7 +16584,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                      Fired whenever this Clip's {{#crossLink "Clip/dir:property"}}{{/crossLink}} property changes.
 
                      @event dir
-                     @param  value  {Array(Number)} The property's new value
+                     @param  value  {Float32Array} The property's new value
                      */
                     this.fire("dir", this._state.dir);
                 },
@@ -19058,50 +18985,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         var over = false;
                         var angle;
 
-                        this._onTick = this.scene.on("tick",
-                            function () {
-
-                                var camera = this._attached.camera;
-
-                                if (!camera) {
-                                    return;
-                                }
-
-                                if (!over) {
-                                    return;
-                                }
-
-                                if (!down) {
-                                    return;
-                                }
-
-                                if (xDelta !== 0) {
-
-                                    angle = -xDelta * this._sensitivity;
-
-                                    if (this._firstPerson) {
-                                        camera.view.rotateLookY(angle);
-                                    } else {
-                                        camera.view.rotateEyeY(angle);
-                                    }
-
-                                    xDelta = 0;
-                                }
-
-                                if (yDelta !== 0) {
-
-                                    angle = yDelta * this._sensitivity;
-
-                                    if (this._firstPerson) {
-                                        camera.view.rotateLookX(-angle);
-                                    } else {
-                                        camera.view.rotateEyeX(angle);
-                                    }
-
-                                    yDelta = 0;
-                                }
-                            }, this);
-
                         this._onMouseDown = input.on("mousedown",
                             function (e) {
 
@@ -19163,6 +19046,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         this._onMouseMove = input.on("mousemove",
                             function (e) {
 
+                                // Apply mouse drags as soon as we get them, so that we can correctly
+                                // apply the rotations.
+
                                 if (!over) {
                                     return;
                                 }
@@ -19171,11 +19057,47 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                     return;
                                 }
 
-                                xDelta += (e[0] - lastX) * this._sensitivity;
-                                yDelta += (e[1] - lastY) * this._sensitivity;
+                                var xDelta = (e[0] - lastX) * this._sensitivity;
+                                var yDelta = (e[1] - lastY) * this._sensitivity;
 
                                 lastX = e[0];
                                 lastY = e[1];
+
+                                var camera = this._attached.camera;
+
+                                if (!camera) {
+                                    return;
+                                }
+
+                                if (!over) {
+                                    return;
+                                }
+
+                                if (!down) {
+                                    return;
+                                }
+
+                                if (xDelta !== 0) {
+
+                                    angle = -xDelta * this._sensitivity;
+
+                                    if (this._firstPerson) {
+                                        camera.view.rotateLookY(angle);
+                                    } else {
+                                        camera.view.rotateEyeY(angle);
+                                    }
+                                }
+
+                                if (yDelta !== 0) {
+
+                                    angle = yDelta * this._sensitivity;
+
+                                    if (this._firstPerson) {
+                                        camera.view.rotateLookX(-angle);
+                                    } else {
+                                        camera.view.rotateEyeX(angle);
+                                    }
+                                }
 
                             }, this);
 
@@ -19555,7 +19477,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  mousePickEntity.on("pick", function(e) {
     var entity = e.entity;
     var canvasPos = e.canvasPos;
-    var primitiveIndex = e.primitiveIndex;
+    var primIndex = e.primIndex;
  });
 
  // Handle nothing picked
@@ -20490,9 +20412,9 @@ visibility.destroy();
         },
 
 
-        _getPointAt: function (u) {
+        getPointAt: function (u) {
 
-            var t = this._getUToTMapping(u);
+            var t = this.getUToTMapping(u);
 
             return this.getPoint(t);
 
@@ -20529,7 +20451,7 @@ visibility.destroy();
             var d, pts = [];
 
             for (d = 0; d <= divisions; d++) {
-                pts.push(this._getPointAt(d / divisions));
+                pts.push(this.getPointAt(d / divisions));
             }
 
             return pts;
@@ -20582,7 +20504,7 @@ visibility.destroy();
 
         // Given u ( 0 .. 1 ), get a t to find p. This gives you points which are equi distance
 
-        _getUToTMapping: function (u, distance) {
+        getUToTMapping: function (u, distance) {
 
             var arcLengths = this._getLengths();
 
@@ -20802,7 +20724,7 @@ visibility.destroy();
 
              @property v0
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             v0: {
 
@@ -20814,7 +20736,7 @@ visibility.destroy();
                      * @event v0
                      * @param value The property's new value
                      */
-                    this.fire("v0", this._v0 = value || [0, 0, 0]);
+                    this.fire("v0", this._v0 = value || XEO.math.vec3([0, 0, 0]));
                 },
 
                 get: function () {
@@ -20829,7 +20751,7 @@ visibility.destroy();
 
              @property v1
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             v1: {
 
@@ -20841,7 +20763,7 @@ visibility.destroy();
                      * @event v1
                      * @param value The property's new value
                      */
-                    this.fire("v1", this._v1 = value || [0, 0, 0]);
+                    this.fire("v1", this._v1 = value || XEO.math.vec3([0, 0, 0]));
                 },
 
                 get: function () {
@@ -20856,7 +20778,7 @@ visibility.destroy();
 
              @property v2
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             v2: {
 
@@ -20868,7 +20790,7 @@ visibility.destroy();
                      * @event v2
                      * @param value The property's new value
                      */
-                    this.fire("v2", this._v2 = value || [0, 0, 0]);
+                    this.fire("v2", this._v2 = value || XEO.math.vec3([0, 0, 0]));
                 },
 
                 get: function () {
@@ -20883,7 +20805,7 @@ visibility.destroy();
 
              @property v3
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             v3: {
 
@@ -20895,7 +20817,7 @@ visibility.destroy();
                      * @event v3
                      * @param value The property's new value
                      */
-                    this.fire("v3", this._v3 = value || [0, 0, 0]);
+                    this.fire("v3", this._v3 = value || XEO.math.vec3([0, 0, 0]));
                 },
 
                 get: function () {
@@ -20983,11 +20905,11 @@ visibility.destroy();
  A **SplineCurve** is a {{#crossLink "Curve"}}{{/crossLink}} along which a 3D position can be animated.
 
  <ul>
-    <li>As shown in the diagram below, a SplineCurve is defined by three or more control points.</li>
-    <li>You can sample a {{#crossLink "SplineCurve/point:property"}}{{/crossLink}} and a {{#crossLink "Curve/tangent:property"}}{{/crossLink}}
+ <li>As shown in the diagram below, a SplineCurve is defined by three or more control points.</li>
+ <li>You can sample a {{#crossLink "SplineCurve/point:property"}}{{/crossLink}} and a {{#crossLink "Curve/tangent:property"}}{{/crossLink}}
  vector on a SplineCurve for any given value of {{#crossLink "SplineCurve/t:property"}}{{/crossLink}} in the range [0..1].</li>
-    <li>When you set {{#crossLink "SplineCurve/t:property"}}{{/crossLink}} on a SplineCurve, its {{#crossLink "SplineCurve/point:property"}}{{/crossLink}} and {{#crossLink "Curve/tangent:property"}}{{/crossLink}} properties will update accordingly.</li>
-    <li>To build a complex path, you can combine an unlimited combination of SplineCurves,
+ <li>When you set {{#crossLink "SplineCurve/t:property"}}{{/crossLink}} on a SplineCurve, its {{#crossLink "SplineCurve/point:property"}}{{/crossLink}} and {{#crossLink "Curve/tangent:property"}}{{/crossLink}} properties will update accordingly.</li>
+ <li>To build a complex path, you can combine an unlimited combination of SplineCurves,
  {{#crossLink "CubicBezierCurve"}}CubicBezierCurves{{/crossLink}} and {{#crossLink "QuadraticBezierCurve"}}QuadraticBezierCurves{{/crossLink}}
  into a {{#crossLink "Path"}}{{/crossLink}}.</li>
  </ul>
@@ -21114,7 +21036,7 @@ visibility.destroy();
 
              @property points
              @default []
-             @type Array(Number)
+             @type Float32Array
              */
             points: {
 
@@ -21177,7 +21099,7 @@ visibility.destroy();
             point: {
 
                 get: function () {
-                   return this.getPoint(this._t);
+                    return this.getPoint(this._t);
                 }
             }
         },
@@ -21188,11 +21110,17 @@ visibility.destroy();
          * @param {Number} t Position to get point at.
          * @returns {{Array of Number}}
          */
-        getPoint: function(t) {
+        getPoint: function (t) {
 
             var math = XEO.math;
 
             var points = this.points;
+
+            if (points.length < 3) {
+                this.error("Can't sample point from SplineCurve - not enough points on curve - returning [0,0,0].");
+                return;
+            }
+
             var point = ( points.length - 1 ) * t;
 
             var intPoint = Math.floor(point);
@@ -21214,10 +21142,7 @@ visibility.destroy();
 
         _getJSON: function () {
             return {
-                v0: this._v0,
-                v1: this._v1,
-                v2: this._v2,
-                v3: this._v3,
+                points: points,
                 t: this._t
             };
         }
@@ -21362,7 +21287,7 @@ visibility.destroy();
 
              @property v0
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             v0: {
 
@@ -21374,7 +21299,7 @@ visibility.destroy();
                      * @event v0
                      * @param value The property's new value
                      */
-                    this.fire("v0", this._v0 = value || [0, 0, 0]);
+                    this.fire("v0", this._v0 = value || XEO.math.vec3([0, 0, 0]));
                 },
 
                 get: function () {
@@ -21389,7 +21314,7 @@ visibility.destroy();
 
              @property v1
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             v1: {
 
@@ -21401,7 +21326,7 @@ visibility.destroy();
                      * @event v1
                      * @param value The property's new value
                      */
-                    this.fire("v1", this._v1 = value || [0, 0, 0]);
+                    this.fire("v1", this._v1 = value || XEO.math.vec3([0, 0, 0]));
                 },
 
                 get: function () {
@@ -21416,7 +21341,7 @@ visibility.destroy();
 
              @property v2
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             v2: {
 
@@ -21428,7 +21353,7 @@ visibility.destroy();
                      * @event v2
                      * @param value The property's new value
                      */
-                    this.fire("v2", this._v2 = value || [0, 0, 0]);
+                    this.fire("v2", this._v2 = value || XEO.math.vec3([0, 0, 0]));
                 },
 
                 get: function () {
@@ -21883,7 +21808,7 @@ visibility.destroy();
 
                     var u = 1 - diff / curve.length;
 
-                    return curve._getPointAt(u);
+                    return curve.getPointAt(u);
                 }
                 i++;
             }
@@ -22180,6 +22105,8 @@ visibility.destroy();
                 uv: null,
                 tangents: null,
                 indices: null,
+
+                hash: "",
 
                 // Getters for VBOs that are only created on demand
 
@@ -24773,7 +24700,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
                  */
                 this._attach({
                     name: "path",
-                    type: "XEO.Path",
+                    type: "XEO.Curve",
                     component: value,
                     sceneDefault: false,
                     on: {
@@ -25963,7 +25890,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
              @property points
              @default []
-             @type Array(Number)
+             @type Float32Array
              */
             points: {
 
@@ -26486,7 +26413,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
             var self = this;
 
             this._destroyedSubs[component.id] = component.on("destroyed",
-                function (component) {
+                function () {
                     self._remove(component);
                 });
 
@@ -28462,7 +28389,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
             this._state = {
                 type: "ambient",
-                color: [0.7, 0.7, 0.7],
+                color: XEO.math.vec3([0.7, 0.7, 0.7]),
                 intensity: 1.0
             };
 
@@ -28479,13 +28406,13 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
              @property color
              @default [0.7, 0.7, 0.8]
-             @type Array(Number)
+             @type Float32Array
              */
             color: {
 
                 set: function (value) {
 
-                    this._state.color = value || [ 0.7, 0.7, 0.8 ];
+                    this._state.color.set(value ||  [ 0.7, 0.7, 0.8 ]);
 
                     this._renderer.imageDirty = true;
 
@@ -28607,9 +28534,9 @@ XEO.PathGeometry = XEO.Geometry.extend({
  @param [cfg] {*} The DirLight configuration
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this DirLight.
- @param [cfg.dir=[1.0, 1.0, 1.0]] {Array(Number)} A unit vector indicating the direction that the light is shining,
+ @param [cfg.dir=[1.0, 1.0, 1.0]] {Float32Array} A unit vector indicating the direction that the light is shining,
  given in either World or View space, depending on the value of the **space** parameter.
- @param [cfg.color=[0.7, 0.7, 0.8 ]] {Array(Number)} The color of this DirLight.
+ @param [cfg.color=[0.7, 0.7, 0.8 ]] {Float32Array} The color of this DirLight.
  @param [cfg.intensity=1.0 ] {Number} The intensity of this DirLight.
  @param [cfg.space="view"] {String} The coordinate system the DirLight is defined in - "view" or "space".
 
@@ -28627,8 +28554,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
             this._state = {
                 type: "dir",
-                dir: [0,0,-1],
-                color: [0.7, 0.7, 0.8],
+                dir: XEO.math.vec3([1.0, 1.0, 1.0]),
+                color: XEO.math.vec3([0.7, 0.7, 0.8]),
                 intensity: 1.0,
                 space: "view"
             };
@@ -28648,19 +28575,13 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
              @property dir
              @default [1.0, 1.0, 1.0]
-             @type Array(Number)
+             @type Float32Array
              */
             dir: {
 
                 set: function (value) {
 
-                    value = value || [ 1.0, 1.0, 1.0 ];
-
-                    var dir = this._state.dir;
-
-                    dir[0] = value[0];
-                    dir[1] = value[1];
-                    dir[2] = value[2];
+                    this._state.dir.set(value || [1.0, 1.0, 1.0]);
 
                     this._renderer.imageDirty = true;
 
@@ -28669,7 +28590,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
                      * @event dir
                      * @param value The property's new value
                      */
-                    this.fire("dir", dir);
+                    this.fire("dir", this._state.dir);
                 },
 
                 get: function () {
@@ -28684,19 +28605,13 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
              @property color
              @default [0.7, 0.7, 0.8]
-             @type Array(Number)
+             @type Float32Array
              */
             color: {
 
                 set: function (value) {
 
-                    value = value || [0.7, 0.7, 0.8 ];
-
-                    var color = this._state.color;
-
-                    color[0] = value[0];
-                    color[1] = value[1];
-                    color[2] = value[2];
+                    this._state.color.set(value || [0.7, 0.7, 0.8]);
 
                     this._renderer.imageDirty = true;
 
@@ -28705,7 +28620,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
                      * @event color
                      * @param value The property's new value
                      */
-                    this.fire("color", color);
+                    this.fire("color", this._state.color);
                 },
 
                 get: function () {
@@ -28726,7 +28641,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                 set: function (value) {
 
-                    value = value !== undefined ? value :  1.0;
+                    value = value !== undefined ? value : 1.0;
 
                     this._state.intensity = value;
 
@@ -28859,8 +28774,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
  @param [cfg] {*} The PointLight configuration
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this PointLight.
- @param [cfg.pos=[ 1.0, 1.0, 1.0 ]] {Array(Number)} Position, in either World or View space, depending on the value of the **space** parameter.
- @param [cfg.color=[0.7, 0.7, 0.8 ]] {Array(Number)} Color of this PointLight.
+ @param [cfg.pos=[ 1.0, 1.0, 1.0 ]] {Float32Array} Position, in either World or View space, depending on the value of the **space** parameter.
+ @param [cfg.color=[0.7, 0.7, 0.8 ]] {Float32Array} Color of this PointLight.
  @param [cfg.intensity=1.0] {Number} Intensity of this PointLight.
  @param [cfg.constantAttenuation=0] {Number} Constant attenuation factor.
  @param [cfg.linearAttenuation=0] {Number} Linear attenuation factor.
@@ -28879,9 +28794,9 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
             this._state = {
                 type: "point",
-                pos: [1.0, 1.0, 1.0],
-                color: [0.7, 0.7, 0.8],
-                intensity:   1.0,
+                pos: XEO.math.vec3([1.0, 1.0, 1.0]),
+                color: XEO.math.vec3([0.7, 0.7, 0.8]),
+                intensity: 1.0,
 
                 // Packaging constant, linear and quadratic attenuation terms
                 // into an array for easy insertion into shaders as a vec3
@@ -28915,7 +28830,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                 set: function (value) {
 
-                    this._state.pos = value || [ 1.0, 1.0, 1.0 ];
+                    this._state.pos.set(value || [1.0, 1.0, 1.0]);
 
                     this._renderer.imageDirty = true;
 
@@ -28939,13 +28854,13 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
              @property color
              @default [0.7, 0.7, 0.8]
-             @type Array(Number)
+             @type Float32Array
              */
             color: {
 
                 set: function (value) {
 
-                    this._state.color = value || [ 0.7, 0.7, 0.8 ];
+                    this._state.color.set(value || [0.7, 0.7, 0.8]);
 
                     this._renderer.imageDirty = true;
 
@@ -28975,7 +28890,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                 set: function (value) {
 
-                    value = value !== undefined ? value :  1.0;
+                    value = value !== undefined ? value : 1.0;
 
                     this._state.intensity = value;
 
@@ -29069,7 +28984,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                 set: function (value) {
 
-                    this._state.attenuation[2] =  value || 0.0;
+                    this._state.attenuation[2] = value || 0.0;
 
                     this._renderer.imageDirty = true;
 
@@ -30889,10 +30804,10 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 type: "phongMaterial",
 
-                ambient: [0.7, 0.7, 0.8],
-                diffuse: [1.0, 1.0, 1.0],
-                specular: [1.0, 1.0, 1.0],
-                emissive: [0.0, 0.0, 0.0],
+                ambient: XEO.math.vec3([1.0, 1.0, 1.0]),
+                diffuse: XEO.math.vec3([1.0, 1.0, 1.0]),
+                specular: XEO.math.vec3([1.0, 1.0, 1.0]),
+                emissive: XEO.math.vec3([0.0, 0.0, 0.0]),
 
                 opacity: 1.0,
                 shininess: 30.0,
@@ -30965,13 +30880,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
              @property ambient
              @default [1.0, 1.0, 1.0]
-             @type Array(Number)
+             @type Float32Array
              */
             ambient: {
 
                 set: function (value) {
 
-                    this._state.ambient = value || [1.0, 1.0, 1.0];
+                    this._state.ambient.set(value || [1.0, 1.0, 1.0]);
 
                     this._renderer.imageDirty = true;
 
@@ -30979,7 +30894,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      * Fired whenever this PhongMaterial's {{#crossLink "PhongMaterial/ambient:property"}}{{/crossLink}} property changes.
                      *
                      * @event ambient
-                     * @param value {Array(Number)} The property's new value
+                     * @param value {Float32Array} The property's new value
                      */
                     this.fire("ambient", this._state.ambient);
                 },
@@ -30998,13 +30913,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
              @property diffuse
              @default [1.0, 1.0, 1.0]
-             @type Array(Number)
+             @type Float32Array
              */
             diffuse: {
 
                 set: function (value) {
 
-                    this._state.diffuse = value || [1.0, 1.0, 1.0];
+                    this._state.diffuse.set(value || [1.0, 1.0, 1.0]);
 
                     this._renderer.imageDirty = true;
 
@@ -31012,7 +30927,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      * Fired whenever this PhongMaterial's {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}} property changes.
                      *
                      * @event diffuse
-                     * @param value {Array(Number)} The property's new value
+                     * @param value {Float32Array} The property's new value
                      */
                     this.fire("diffuse", this._state.diffuse);
                 },
@@ -31031,13 +30946,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
              @property specular
              @default [1.0, 1.0, 1.0]
-             @type Array(Number)
+             @type Float32Array
              */
             specular: {
 
                 set: function (value) {
 
-                    this._state.specular = value || [1.0, 1.0, 1.0];
+                    this._state.specular.set(value || [1.0, 1.0, 1.0]);
 
                     this._renderer.imageDirty = true;
 
@@ -31045,7 +30960,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      Fired whenever this PhongMaterial's {{#crossLink "PhongMaterial/specular:property"}}{{/crossLink}} property changes.
 
                      @event specular
-                     @param value {Array(Number)} The property's new value
+                     @param value {Float32Array} The property's new value
                      */
                     this.fire("specular", this._state.specular);
                 },
@@ -31064,13 +30979,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
              @property emissive
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             emissive: {
 
                 set: function (value) {
 
-                    this._state.emissive = value || [0.0, 0.0, 0.0];
+                    this._state.emissive.set(value || [0.0, 0.0, 0.0]);
 
                     this._renderer.imageDirty = true;
 
@@ -31078,7 +30993,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      Fired whenever this PhongMaterial's {{#crossLink "PhongMaterial/emissive:property"}}{{/crossLink}} property changes.
 
                      @event emissive
-                     @param value {Array(Number)} The property's new value
+                     @param value {Float32Array} The property's new value
                      */
                     this.fire("emissive", this._state.emissive);
                 },
@@ -31992,9 +31907,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             // Transformation
 
-            this._translate = [0, 0];
-            this._scale = [1, 1];
-            this._rotate = [0, 0];
+            this._translate = XEO.math.vec2([0, 0]);
+            this._scale = XEO.math.vec2([1, 1]);
+            this._rotate = XEO.math.vec2([0, 0]);
 
             // Dirty flags, processed in _buildTexture()
 
@@ -32464,9 +32379,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    value = value || [0, 0];
-
-                    this._translate = value;
+                    this._translate.set(value || [0, 0]);
                     this._matrixDirty = true;
 
                     this._scheduleUpdate();
@@ -32497,9 +32410,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    value = value || [1, 1];
-
-                    this._scale = value;
+                    this._scale.set(value || [1, 1]);
                     this._matrixDirty = true;
 
                     this._scheduleUpdate();
@@ -32965,8 +32876,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         _init: function (cfg) {
 
             this._state = new XEO.renderer.Fresnel({
-                edgeColor: [0, 0, 0],
-                centerColor: [1, 1, 1],
+                edgeColor: XEO.math.vec3([0, 0, 0]),
+                centerColor: XEO.math.vec3([1, 1, 1]),
                 edgeBias: 0,
                 centerBias: 1,
                 power: 1
@@ -32988,13 +32899,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
              @property edgeColor
              @default [0.0, 0.0, 0.0]
-             @type Array(Number)
+             @type Float32Array
              */
             edgeColor: {
 
                 set: function (value) {
 
-                    this._state.edgeColor = value || [0.0, 0.0, 0.0];
+                    this._state.edgeColor.set(value || [0.0, 0.0, 0.0]);
 
                     this._renderer.imageDirty = true;
 
@@ -33019,13 +32930,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
              @property centerColor
              @default [1.0, 1.0, 1.0]
-             @type Array(Number)
+             @type Float32Array
              */
             centerColor: {
 
                 set: function (value) {
 
-                    this._state.centerColor = value || [1.0, 1.0, 1.0];
+                    this._state.centerColor.set(value || [1.0, 1.0, 1.0]);
 
                     this._renderer.imageDirty = true;
 
@@ -39219,6 +39130,14 @@ myTask2.setFailed();
  @class Rotate
  @module XEO
  @submodule transforms
+ @constructor
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Rotate in the default
+ {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
+ @param [cfg] {*} Configs
+ @param [cfg.id] {String} Optional ID, unique among all components in the parent scene, generated automatically when omitted.
+ @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Rotate.
+ @param [cfg.xyz=[0,1,0]] {Float32Array} Axis of rotation.
+ @param [cfg.angle=0] {Number} Angle of rotation in degrees.
  @extends Transform
  */
 (function () {
@@ -39246,25 +39165,13 @@ myTask2.setFailed();
              *
              * @property xyz
              * @default [0,1,0]
-             * @type {Array of Number}
+             * @type {Float32Array}
              */
             xyz: {
 
                 set: function (value) {
 
-                    value = value || [0, 1, 0];
-
-                    if (this._xyz) {
-                        if (this._xyz[0] === value[0] && this._xyz[1] === value[1] && this._xyz[2] === value[2]) {
-                            return;
-                        } else {
-                            this._xyz[0] = value[0];
-                            this._xyz[1] = value[1];
-                            this._xyz[2] = value[2];
-                        }
-                    } else {
-                        this._xyz = value;
-                    }
+                    (this._xyz = this._xyz || new XEO.math.vec3()).set(value || [0, 1, 0]);
 
                     this._buildMatrix();
 
@@ -39272,7 +39179,7 @@ myTask2.setFailed();
                      Fired whenever this Rotate's {{#crossLink "Rotate/xyz:property"}}{{/crossLink}} property changes.
 
                      @event xyz
-                     @param value {Array of Number} The property's new value
+                     @param value {Float32Array} The property's new value
                      */
                     this.fire("xyz", this._xyz);
                 },
@@ -39303,7 +39210,7 @@ myTask2.setFailed();
                      Fired whenever this Rotate's {{#crossLink "Rotate/angle:property"}}{{/crossLink}} property changes.
 
                      @event angle
-                     @param value {Array of Number} The property's new value
+                     @param value {Number} The property's new value
                      */
                     this.fire("angle", this._angle);
                 },
@@ -39432,6 +39339,7 @@ myTask2.setFailed();
 (function () {
 
     "use strict";
+
     XEO.Quaternion = XEO.Transform.extend({
 
         type: "XEO.Quaternion",
@@ -39453,7 +39361,7 @@ myTask2.setFailed();
 
              @property xyzw
              @default [0,0,0,1]
-             @type {Array of Number}
+             @type {Float32Array}
              */
             xyzw: {
 
@@ -39461,15 +39369,15 @@ myTask2.setFailed();
 
                     var math = XEO.math;
 
-                    this._xyzw = value || math.identityQuaternion();
+                    (this._xyzw = this._xyzw || new math.vec4()).set(value || math.identityQuaternion());
 
-                    this.matrix = math.quaternionToMat4(this._xyzw, math.mat4());
+                    this.matrix = math.quaternionToMat4(this._xyzw, this._matrix || (this._matrix = XEO.math.identityMat4()));
 
                     /**
                      Fired whenever this Quaternion's {{#crossLink "Quaternion/xyzw:property"}}{{/crossLink}} property changes.
 
                      @event xyzw
-                     @param value {Array of Number} The property's new value
+                     @param value {Float32Array} The property's new value
                      */
                     this.fire("xyzw", this._xyzw);
                 },
@@ -39491,7 +39399,6 @@ myTask2.setFailed();
             var math = XEO.math;
             var tempAngleAxis = math.vec4();
             var tempQuat = math.vec4();
-            var tempMat = math.mat4();
 
             return function (angleAxis) {
 
@@ -39598,6 +39505,13 @@ myTask2.setFailed();
  @class Scale
  @module XEO
  @submodule transforms
+ @constructor
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Scale in the default
+ {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
+ @param [cfg] {*} Configs
+ @param [cfg.id] {String} Optional ID, unique among all components in the parent scene, generated automatically when omitted.
+ @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Scale.
+ @param [cfg.xyz=[1,1,1]] {Float32Array} Scale factors.
  @extends Transform
  */
 (function () {
@@ -39622,25 +39536,13 @@ myTask2.setFailed();
              * Fires an {{#crossLink "Scale/xyz:event"}}{{/crossLink}} event on change.
              * @property xyz
              * @default [1,1,1]
-             * @type {Array of Number}
+             * @type {Float32Array}
              */
             xyz: {
 
                 set: function (value) {
 
-                    value = value || [1, 1, 1];
-
-                    if (this._xyz) {
-                        if (this._xyz[0] === value[0] && this._xyz[1] === value[1] && this._xyz[2] === value[2]) {
-                            return;
-                        } else {
-                            this._xyz[0] = value[0];
-                            this._xyz[1] = value[1];
-                            this._xyz[2] = value[2];
-                        }
-                    } else {
-                        this._xyz = value;
-                    }
+                    (this._xyz = this._xyz || new XEO.math.vec3()).set(value || [1, 1, 1]);
 
                     this.matrix = XEO.math.scalingMat4v(this._xyz, this._matrix || (this._matrix = XEO.math.identityMat4()));
 
@@ -39648,7 +39550,7 @@ myTask2.setFailed();
                      Fired whenever this Scale's {{#crossLink "Scale/xyz:property"}}{{/crossLink}} property changes.
 
                      @event xyz
-                     @param value {Array of Number} The property's new value
+                     @param value {Float32Array} The property's new value
                      */
                     this.fire("xyz", this._xyz);
                 },
@@ -39661,7 +39563,7 @@ myTask2.setFailed();
 
         _getJSON: function () {
             return {
-                xyz: this.xyz
+                xyz: this._xyz
             };
         }
     });
@@ -39760,7 +39662,7 @@ myTask2.setFailed();
  @param [cfg] {*} Configs
  @param [cfg.id] {String} Optional ID, unique among all components in the parent scene, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Translate.
- @param [cfg.xyzw=[0,0,0]] {Array(Number)} The translation vector
+ @param [cfg.xyz=[0,0,0]] {Float32Array} The translation vector
  @extends Transform
  */
 (function () {
@@ -39785,32 +39687,20 @@ myTask2.setFailed();
              * Fires an {{#crossLink "Translate/xyz:event"}}{{/crossLink}} event on change.
              * @property xyz
              * @default [0,0,0]
-             * @type {Array of Number}
+             * @type {Float32Array}
              */
             xyz: {
 
                 set: function (value) {
 
-                    value = value || [0, 0, 0];
-
-                    if (this._xyz) {
-                        if (this._xyz[0] === value[0] && this._xyz[1] === value[1] && this._xyz[2] === value[2]) {
-                            return;
-                        } else {
-                            this._xyz[0] = value[0];
-                            this._xyz[1] = value[1];
-                            this._xyz[2] = value[2];
-                        }
-                    } else {
-                        this._xyz = value;
-                    }
+                    (this._xyz = this._xyz || new XEO.math.vec3()).set(value || [0, 0, 0]);
 
                     this.matrix = XEO.math.translationMat4v(this._xyz, this._matrix || (this._matrix = XEO.math.identityMat4()));
 
                     /**
                      Fired whenever this Translate's {{#crossLink "Translate/xyz:property"}}{{/crossLink}} property changes.
                      @event xyz
-                     @param value {Array of Number} The property's new value
+                     @param value {Float32Array} The property's new value
                      */
                     this.fire("xyz", this._xyz);
                 },
@@ -39823,7 +39713,7 @@ myTask2.setFailed();
 
         _getJSON: function () {
             return {
-                xyz: this.xyz
+                xyz: this._xyz
             };
         }
     });
