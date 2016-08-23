@@ -120,31 +120,31 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 					var flags = {
 						type : "flags",
 						flags : {
-							transparent : true
+							transparent : hasTransparency
 						},
 						nodes : [{
 							type: "enable",
 							enabled: enabled,
 							nodes : [{
-								type : "material",
-								baseColor: material,
-								alpha: 1,
-								nodes : [{
-									type: "translate",
-									x: objectBounds[0] + (objectBounds[3] - objectBounds[0]) / 2,
-									y: objectBounds[1] + (objectBounds[4] - objectBounds[1]) / 2,
-									z: objectBounds[2] + (objectBounds[5] - objectBounds[2]) / 2,
-									nodes : [{
-										type: "scale",
-										x: (objectBounds[3] - objectBounds[0]) / 2,
-										y: (objectBounds[4] - objectBounds[1]) / 2,
-										z: (objectBounds[5] - objectBounds[2]) / 2,
-										nodes: [{
-											type: "geometry/box",
-											wire: true
-										}]
-									}]
-								}]
+//								type : "material",
+//								baseColor: material,
+//								alpha: 1,
+//								nodes : [{
+//									type: "translate",
+//									x: objectBounds[0] + (objectBounds[3] - objectBounds[0]) / 2,
+//									y: objectBounds[1] + (objectBounds[4] - objectBounds[1]) / 2,
+//									z: objectBounds[2] + (objectBounds[5] - objectBounds[2]) / 2,
+//									nodes : [{
+//										type: "scale",
+//										x: (objectBounds[3] - objectBounds[0]) / 2,
+//										y: (objectBounds[4] - objectBounds[1]) / 2,
+//										z: (objectBounds[5] - objectBounds[2]) / 2,
+//										nodes: [{
+//											type: "geometry/box",
+//											wire: true
+//										}]
+//									}]
+//								}]
 							}, {
 								type : "material",
 								baseColor: material,
@@ -177,6 +177,10 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var geometryDataOid = data.readLong();
 			var nrParts = data.readInt();
 			//var objectBounds = data.readFloatArray(6);
+			
+			var nrColors = data.readInt();
+			var colors = data.readFloatArray(nrColors);
+			
 			for (var i=0; i<nrParts; i++) {
 				var coreId = data.readLong();
 				coreIds.push(coreId);
@@ -189,8 +193,6 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				var vertices = data.readFloatArray(nrVertices);
 				var nrNormals = data.readInt();
 				var normals = data.readFloatArray(nrNormals);
-				var nrColors = data.readInt();
-				var colors = data.readFloatArray(nrColors);
 				
 				var geometry = {
 					type: "geometry",
@@ -395,7 +397,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 8) {
+		if (version != 9) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
