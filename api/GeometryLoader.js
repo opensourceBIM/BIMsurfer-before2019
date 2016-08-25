@@ -178,9 +178,6 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var nrParts = data.readInt();
 			//var objectBounds = data.readFloatArray(6);
 			
-			var nrColors = data.readInt();
-			var colors = data.readFloatArray(nrColors);
-			
 			for (var i=0; i<nrParts; i++) {
 				var coreId = data.readLong();
 				coreIds.push(coreId);
@@ -193,6 +190,8 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				var vertices = data.readFloatArray(nrVertices);
 				var nrNormals = data.readInt();
 				var normals = data.readFloatArray(nrNormals);
+				var nrColors = data.readInt();
+				var colors = data.readFloatArray(nrColors);
 				
 				var geometry = {
 					type: "geometry",
@@ -397,7 +396,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 9) {
+		if (version != 10) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
