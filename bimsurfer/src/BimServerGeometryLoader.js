@@ -251,27 +251,27 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
         };
 
         this._updateProgress = function () {
-            if (o.state.nrObjectsRead < o.state.nrObjects) {
-                var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
-                if (progress != o.state.lastProgress) {
-                    o.progressListeners.forEach(function (progressListener) {
-                        progressListener(progress, o.state.nrObjectsRead, o.state.nrObjects);
-                    });
-                    // TODO: Add events
-                    // o.viewer.SYSTEM.events.trigger('progressChanged', [progress]);
-                    o.state.lastProgress = progress;
-                }
-            } else {
-                // o.viewer.SYSTEM.events.trigger('progressDone');
-                o.progressListeners.forEach(function (progressListener) {
-                    progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
-                });
-                // o.viewer.events.trigger('sceneLoaded', [o.viewer.scene.scene]);
-
-                var d = {};
-                d[BIMSERVER_VERSION == "1.4" ? "actionId" : "topicId"] = o.topicId;
-                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", d, function () {});
-            }
+//            if (o.state.nrObjectsRead < o.state.nrObjects) {
+//                var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
+//                if (progress != o.state.lastProgress) {
+//                    o.progressListeners.forEach(function (progressListener) {
+//                        progressListener(progress, o.state.nrObjectsRead, o.state.nrObjects);
+//                    });
+//                    // TODO: Add events
+//                    // o.viewer.SYSTEM.events.trigger('progressChanged', [progress]);
+//                    o.state.lastProgress = progress;
+//                }
+//            } else {
+//                // o.viewer.SYSTEM.events.trigger('progressDone');
+//                o.progressListeners.forEach(function (progressListener) {
+//                    progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
+//                });
+//                // o.viewer.events.trigger('sceneLoaded', [o.viewer.scene.scene]);
+//
+//                var d = {};
+//                d[BIMSERVER_VERSION == "1.4" ? "actionId" : "topicId"] = o.topicId;
+//                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", d, function () {});
+//            }
         };
 
         this._readObject = function (stream, geometryType) {
