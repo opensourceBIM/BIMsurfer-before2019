@@ -26,8 +26,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 
                 stream = new DataInputStreamReader(data);
 
-                var channel = stream.readInt();
-                var nrMessages = stream.readInt();
+                var channel = stream.readLong();
                 var messageType = stream.readByte();
 
                 if (messageType == 0) {
@@ -183,7 +182,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 	                return false;
 	            }
             } else {
-	            if (version != 8) {
+	            if (version != 10) {
 	                console.error("Unimplemented version");
 	                return false;
 	            }
@@ -354,12 +353,15 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
     			var matrix = stream.readDoubleArray(16);
     			var geometryDataOid = stream.readLong();
     			var oid = o.infoToOid[geometryInfoOid];
-
-    			o.models[roid].get(oid, function(object){
-					object.gid = geometryInfoOid;
-                    var modelId = roid; // TODO: set to the model ID
-					o._createObject(modelId, roid, oid, oid, [geometryDataOid], object.getType(), matrix);
-    			});
+    			if (oid == null) {
+    				console.error("Not found", o.infoToOid, geometryInfoOid);
+    			} else {
+    				o.models[roid].get(oid, function(object){
+    					object.gid = geometryInfoOid;
+    					var modelId = roid; // TODO: set to the model ID
+    					o._createObject(modelId, roid, oid, oid, [geometryDataOid], object.getType(), matrix);
+    				});
+    			}
             } else {
 
                 //this.warn("Unsupported geometry type: " + geometryType);

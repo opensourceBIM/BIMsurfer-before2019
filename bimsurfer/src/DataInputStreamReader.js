@@ -58,10 +58,9 @@ define(["bimsurfer/lib/StringView.js"], function(StringView) {
         };
 
         this.readLong = function() {
-            // We are throwing away the last 4 bytes here...
-            var value = this.dataView.getInt32(this.pos, true);
-            this.pos += 8;
-            return value;
+        	var value = this.dataView.getUint32(this.pos, true) + 0x100000000 * this.dataView.getUint32(this.pos + 4, true);
+    		this.pos += 8;
+    		return value;
         };
 
         this.readFloatArray2 = function(length) {
