@@ -22,7 +22,8 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	scene: null,
 	sceneLoaded: false,
 	bimServerApi: null,
-	geometryLoaders: [],
+	activeGeometryLoaders: [],
+	waitingGeometryLoaders: [],
 	tick: 0,
 //	selectedObj: 'emtpy Selection',
 //	mouseRotate: 0,
@@ -92,6 +93,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				project.loadScene((BIMSURFER.Util.isset(options.autoStart.revisionOid) ? options.autoStart.revisionOid : null), true);
 			});
 		}
+		setInterval(this.startNewLoaders, 200, this);
 	},
 
 	/**
@@ -383,7 +385,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				
 				this.scene.on("tick", function(){
 					if (_this.tick % 5 == 0) {
-						_this.geometryLoaders.forEach(function(geometryLoader){
+						_this.activeGeometryLoaders.forEach(function(geometryLoader){
 							geometryLoader.process();
 						});
 					}
@@ -416,22 +418,37 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		return null;
 	},
 
+	startNewLoaders: function(o){
+		if (o.waitingGeometryLoaders.length > 0 && o.activeGeometryLoaders.length <= 3) {
+			var geometryLoader = o.waitingGeometryLoaders[0];
+			o.waitingGeometryLoaders = o.waitingGeometryLoaders.slice(1);
+			o.activeGeometryLoaders.push(geometryLoader);
+			geometryLoader.progressListeners.push(function(progress){
+				if (progress == "done") {
+					o.tick = 0;
+					removeA(o.activeGeometryLoaders, geometryLoader);
+				}
+			});
+			geometryLoader.start();
+		}
+	},
+	
 	/**
 	 * Loads and shows the geometry of the revisions that are in the load queue
 	 */
 	loadGeometry: function(geometryLoader) {
 		var o = this;
-		
-		o.geometryLoaders.push(geometryLoader);
-		// TODO limit to something useful
-		if (o.geometryLoaders.length <= 4000) {
+		if (o.activeGeometryLoaders.length <= 3) {
+			o.activeGeometryLoaders.push(geometryLoader);
 			geometryLoader.progressListeners.push(function(progress){
 				if (progress == "done") {
 					o.tick = 0;
-					removeA(o.geometryLoaders, geometryLoader);
+					removeA(o.activeGeometryLoaders, geometryLoader);
 				}
 			});
 			geometryLoader.start();
+		} else {
+			o.waitingGeometryLoaders.push(geometryLoader);
 		}
 	},
 
