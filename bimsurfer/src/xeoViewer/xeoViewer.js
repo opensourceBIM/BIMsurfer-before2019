@@ -174,7 +174,7 @@ define([
                     return;
                 }
 
-                var objectId = entity.meta.objectId;
+                var objectId = entity.meta.objectId || entity.id;
 
                 if (objectId === undefined) {
                     return;
@@ -410,6 +410,8 @@ define([
 
                     self.saveReset();
                 });
+                
+            return model;
         };
 
         /**
