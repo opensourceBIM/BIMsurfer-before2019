@@ -19,7 +19,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
     if (_BimServerApi) {
 		BimServerApi = _BimServerApi;
 	} else {
-        BimServerApi = BimServerClient;
+        BimServerApi = window.BimServerClient;
 	}
     
     function BimSurfer(cfg) {
