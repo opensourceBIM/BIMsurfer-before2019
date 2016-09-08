@@ -72,8 +72,8 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
             } else if (params.api) {
                 return this._loadFromAPI(params);
 
-            } else if (params.gltf) {
-                this._loadFrom_glTF(params);
+            } else if (params.src) {
+                return this._loadFrom_glTF(params);
             }
         };
 
@@ -103,7 +103,32 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
         this._loadFrom_glTF = function (params) {
             if (params.src) {
-                viewer.loadglTF(params.src);
+                return new Promise(function (resolve, reject) {
+                    var m = viewer.loadglTF(params.src);
+                    m.on("loaded", function() {
+                    
+                        var numComponents = 0, componentsLoaded = 0;
+
+                        m.collection.iterate(function (component) {
+                            if (component.isType("XEO.Entity")) {
+                                ++ numComponents;
+                                (function(c) {
+                                    var timesUpdated = 0;
+                                    c.worldBoundary.on("updated", function() {
+                                        if (++timesUpdated == 2) {
+                                            ++ componentsLoaded;
+                                            if (componentsLoaded == numComponents) {
+                                                viewer.viewFit({});
+                                                
+                                                resolve(m);
+                                            }
+                                        }
+                                    });
+                                })(component);
+                            }
+                        });
+                    });
+                });
             }
         };
 
