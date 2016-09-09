@@ -327,7 +327,7 @@ define(function () {
                     var Pt4 = Pt.subarray(12);
                     
                     // TODO: Should be simpler to get the projected Z value
-                    var D = [0,0,-lastHoverDistance,1];
+                    var D = [0,0,-(lastHoverDistance || modelSize),1];
                     var Z = math.dotVec4(D, Pt3) / math.dotVec4(D, Pt4);
                     
                     // Returns in camera space and model space as array of two points
