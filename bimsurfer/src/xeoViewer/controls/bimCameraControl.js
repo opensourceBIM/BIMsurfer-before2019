@@ -57,13 +57,15 @@ define(function () {
 
             this._rotatePos = math.vec3([0, 0, 0]); // World-space pivot point we're currently rotating about
 
-            var mouseDownPos = math.vec2(); // Mouse's last position while down
+            var lastCanvasPos = math.vec2(); // Mouse's position in previous tick
             var rotationDeltas = math.vec2(); // Accumulated angle deltas while rotating with keyboard or mouse
 
             var shiftDown = false; // True while shift key down
             var mouseDown = false; // true while mouse down
 
             var flying = false;
+            
+            var lastHoverDistance = null;
 
             // Rotation point indicator
 
@@ -243,9 +245,6 @@ define(function () {
                     mouseClickPos[0] = canvasPos[0];
                     mouseClickPos[1] = canvasPos[1];
 
-                    mouseDownPos[0] = canvasPos[0];
-                    mouseDownPos[1] = canvasPos[1];
-
                     rotationDeltas[0] = 0;
                     rotationDeltas[1] = 0;
 
@@ -273,10 +272,12 @@ define(function () {
                     p[2] <= (q[2] + worldPickTolerance) &&
                     p[2] <= (q[2] + worldPickTolerance);
             }
+            
+            var tempVecHover = XEO.math.vec3();
 
             input.on("mousemove",
                 function (canvasPos) {
-
+                
                     if (!input.mouseover) {
                         return;
                     }
@@ -291,31 +292,87 @@ define(function () {
                             canvasPos: canvasPos,
                             rayPick: true
                         });
-
+                        
                         if (hit) {
                             setCursor("pointer", true);
+                            if (hit.worldPos) {
+                                // TODO: This should be somehow hit.viewPos.z, but doesn't seem to be
+                                lastHoverDistance = math.lenVec3(math.subVec3(hit.worldPos, scene.camera.view.eye, tempVecHover));
+                            }
                         } else {
                             setCursor("auto", true);
                         }
 
+                        lastCanvasPos[0] = canvasPos[0];
+                        lastCanvasPos[1] = canvasPos[1];
+
                         return;
                     }
 
-                    if (flying) {
-                        return;
-                    }
+                    var bbox = scene.worldBoundary.aabb;
+                    var modelSize = math.lenVec3(math.subVec3(bbox.min, bbox.max, tempVecHover));
+                    
+                    // Use normalized device coords
+                    var canvas = scene.canvas.canvas;
+                    var cw2 = canvas.offsetWidth / 2.;
+                    var ch2 = canvas.offsetHeight / 2.;
 
+                    // TODO: These should be cached somewhere. Prerably using the xeoEngine getter system.
+                    var Pi = math.inverseMat4(scene.project.matrix, math.mat4());
+                    var Vi = math.inverseMat4(scene.camera.view.matrix, math.mat4());
+                    
+                    // Get last two columns of projection matrix
+                    var Pt = math.transposeMat4(scene.project.matrix, math.mat4());
+                    var Pt3 = Pt.subarray(8,12);
+                    var Pt4 = Pt.subarray(12);
+                    
+                    // TODO: Should be simpler to get the projected Z value
+                    var D = [0,0,-lastHoverDistance,1];
+                    var Z = math.dotVec4(D, Pt3) / math.dotVec4(D, Pt4);
+                    
+                    // Returns in camera space and model space as array of two points
+                    var unproject = function(p) {                        
+                        var cp = math.vec4();
+                        cp[0] = (p[0] - cw2) / cw2;
+                        cp[1] = (p[1] - ch2) / ch2;
+                        cp[2] = Z;
+                        cp[3] = 1.;
+                        cp = math.vec4(math.mulMat4v4(Pi, cp));
+                        
+                        // Normalize homogeneous coord
+                        math.mulVec3Scalar(cp, 1. / cp[3]);
+                        cp[3] = 1.;
+                        
+                        // TODO: Why is this reversed?
+                        cp[0] *= -1;
+                        
+                        var cp2 = math.vec4(math.mulMat4v4(Vi, cp));
+                        return [cp, cp2];
+                    }
+                    
+                    var A = unproject(canvasPos);
+                    var B = unproject(lastCanvasPos);                    
+                    
                     var panning = input.keyDown[input.KEY_SHIFT] || input.mouseDownMiddle || (input.mouseDownLeft && input.mouseDownRight);
 
-                    var xDelta = (canvasPos[0] - mouseDownPos[0]) * sensitivityMouseRotate;
-                    var yDelta = (canvasPos[1] - mouseDownPos[1]) * sensitivityMouseRotate;
-
-                    if (!panning) {
-
-                        // Orbiting
-
-                        var math = XEO.math;
-
+                    if (panning) {
+                        // TODO: camera.view.pan is in view space? We have a world coord vector.
+                        
+                        // Subtract model space unproject points
+                        math.subVec3(A[1], B[1], tempVecHover);
+                        scene.camera.view.eye = math.addVec3(scene.camera.view.eye, tempVecHover);
+                        scene.camera.view.look = math.addVec3(scene.camera.view.look, tempVecHover);
+                    } else {
+                        // If not panning, we are orbiting                        
+                        
+                        // Subtract camera space unproject points
+                        math.subVec3(A[0], B[0], tempVecHover);
+                        
+                        // Arbitrary constants because it doesn't factor in distance to orbitCenter
+                        //           v because reversed above
+                        var xDelta = - Math.atan(tempVecHover[0] * 4);
+                        var yDelta = Math.atan(tempVecHover[1] * 4);
+                        
                         rotationDeltas[0] += xDelta;
                         rotationDeltas[1] += yDelta;
 
@@ -325,17 +382,11 @@ define(function () {
                         camera.view.look = rotate(rotateStartLook);
                         camera.view.up = math.subVec3(rotate(rotateStartUp), camera.view.eye, []);
 
-                        mouseDownPos[0] = canvasPos[0];
-                        mouseDownPos[1] = canvasPos[1];
-
                         setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
-
-                    } else {
-
-                        // Panning vertically and horizontally
-
-                        camera.view.pan([xDelta * sensitivityMousePan, yDelta * sensitivityMousePan, 0]);
                     }
+                    
+                    lastCanvasPos[0] = canvasPos[0];
+                    lastCanvasPos[1] = canvasPos[1];
                 });
 
             function rotate(p) {
@@ -595,7 +646,7 @@ define(function () {
                     });
 
                 scene.on("tick",
-                    function () {
+                    function (dt) {
 
                         if (mouseDown) {
                             return;
@@ -604,33 +655,24 @@ define(function () {
                         if (flying) {
                             return;
                         }
-
-                        var f = sensitivityMouseZoom * 10.0;
+                        
+                        var bbox = scene.worldBoundary.aabb;
+                        var modelSize = XEO.math.lenVec3(XEO.math.subVec3(bbox.min, bbox.max, tempVecHover));
+                        var dt = dt.deltaTime / 1000.;
+                        var f = Math.sqrt(modelSize + lastHoverDistance) / 10. * ((delta < 0) ? -1 : 1);
 
                         if (newTarget) {
-                            target = delta * f;
+                            // Zoom for half a second. Target always possitive and incremented with deltaTime.
+                            target = 0.5;
                             progress = 0;
                             newTarget = false;
                             targeting = true;
                         }
-
+                        
                         if (targeting) {
-
-                            if (delta > 0) {
-
-                                progress += 0.2 * f;
-
-                                if (progress > target) {
-                                    targeting = false;
-                                }
-
-                            } else if (delta < 0) {
-
-                                progress -= 0.2 * f;
-
-                                if (progress < target) {
-                                    targeting = false;
-                                }
+                            progress += dt;
+                            if (progress > target) {
+                                targeting = false;
                             }
 
                             if (targeting) {
@@ -640,7 +682,7 @@ define(function () {
                                 var look = view.look;
 
                                 // Get vector from eye to center of rotationDeltas
-                                var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, self._rotatePos, tempVec3a), tempVec3b), delta);
+                                var eyePivotVec = math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, look, tempVec3a), tempVec3b), f);
 
                                 // Move eye and look along the vector
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
