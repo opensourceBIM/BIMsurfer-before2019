@@ -12,6 +12,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
         o.objectAddedListeners = [];
         o.prepareReceived = false;
         o.todo = [];
+		o.geometryIds = {};
 
         this.addProgressListener = function (progressListener) {
             o.progressListeners.push(progressListener);
@@ -285,7 +286,6 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
 //            var oid = objectId;
 
             var geometryId;
-            var geometryIds = [];
             var numGeometries;
             var numParts;
             var objectBounds;
@@ -319,10 +319,14 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                 	colors = stream.readFloatArray(numColors);
                 }
 
+				o.geometryIds[geometryId] = [geometryId];
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
             } else if (geometryType == 2) {
             } else if (geometryType == 3) {
+     			var geometryDataOid = stream.readLong();
                 numParts = stream.readInt();
+				o.geometryIds[geometryDataOid] = [];
+				
                 for (i = 0; i < numParts; i++) {
                     geometryId = stream.readLong();
                     numIndices = stream.readInt();
@@ -343,6 +347,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
                     	colors = stream.readFloatArray(numColors);
                     }
 
+					o.geometryIds[geometryDataOid].push(geometryId);
                     this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
                 }
             } else if (geometryType == 4) {
@@ -352,6 +357,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
     			var objectBounds = stream.readDoubleArray(6);
     			var matrix = stream.readDoubleArray(16);
     			var geometryDataOid = stream.readLong();
+				var geometryDataOids = o.geometryIds[geometryDataOid];
     			var oid = o.infoToOid[geometryInfoOid];
     			if (oid == null) {
     				console.error("Not found", o.infoToOid, geometryInfoOid);
@@ -359,7 +365,7 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
     				o.models[roid].get(oid, function(object){
     					object.gid = geometryInfoOid;
     					var modelId = roid; // TODO: set to the model ID
-    					o._createObject(modelId, roid, oid, oid, [geometryDataOid], object.getType(), matrix);
+    					o._createObject(modelId, roid, oid, oid, geometryDataOids, object.getType(), matrix);
     				});
     			}
             } else {
