@@ -80,7 +80,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this._loadFromServer = function (params) {
 
             var notifier = new Notifier();
-            var bimServerApi = new BimServerApi(ADDRESS, notifier);
+            var bimServerApi = new BimServerApi(params.bimserver, notifier);
 
             return new Promise(function (resolve, reject) {
 
