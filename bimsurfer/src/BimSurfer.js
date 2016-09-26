@@ -194,7 +194,6 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 var loader = new GeometryLoader(model.api, models, viewer);
 
                 loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
-                    console.log("Loading... (" + nrObjectsRead + "/" + totalNrObjects + ")");
 					if (progress == "start") {
 						console.log("Started loading geometries");
 						self.fire("loading-started");
@@ -280,6 +279,15 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          */
         this.setColor = function (params) {
             viewer.setColor(params);
+        };
+		
+		/**
+         * Sets opacity of objects specified by ids or entity type, e.g IfcWall.
+         **
+         * @param params
+         */
+        this.setOpacity = function (params) {
+            viewer.setOpacity(params);
         };
 
         /**
