@@ -195,6 +195,13 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
                 loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
                     console.log("Loading... (" + nrObjectsRead + "/" + totalNrObjects + ")");
+					if (progress == "start") {
+						console.log("Started loading geometries");
+						self.fire("loading-started");
+					} else if (progress == "done") {
+						console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
+						self.fire("loading-finished");
+					}
                 });
 
                 loader.setLoadOids([model.model.roid], oids);
