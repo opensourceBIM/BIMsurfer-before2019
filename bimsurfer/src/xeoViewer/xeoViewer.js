@@ -638,10 +638,11 @@ define([
         };
 
         /**
-         * Sets the color of objects specified by IDs.
+         * Sets the color of objects specified by IDs or IFC types.
          *
          * @param params
          * @param params.ids IDs of objects to update.
+         * @param params.types IFC type of objects to update.
          * @param params.color Color to set.
          */
         this.setColor = function (params) {
@@ -649,11 +650,15 @@ define([
             params = params || {};
 
             var ids = params.ids;
+            var types = params.types;
 
-            if (!ids) {
-                console.error("Param expected: 'ids'");
+            if (!ids && !types) {
+                console.error("Param expected: ids or types");
                 return;
             }
+
+            ids = ids || [];
+            types = types || [];
 
             var color = params.color;
 
@@ -664,6 +669,14 @@ define([
 
             var objectId;
             var object;
+			
+			for (i = 0, len = types.length; i < len; i++) {
+                var typedict = rfcTypes[types[i]] || {};
+                Object.keys(typedict).forEach(function (id) {
+                    var object = typedict[id];
+                    self._setObjectColor(object, color);
+                });
+            }
 
             for (var i = 0, len = ids.length; i < len; i++) {
 

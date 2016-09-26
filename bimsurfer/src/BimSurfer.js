@@ -274,7 +274,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         /**
-         * Sets color of objects specified by ids.
+         * Sets color of objects specified by ids or entity type, e.g IfcWall.
          **
          * @param params
          */
