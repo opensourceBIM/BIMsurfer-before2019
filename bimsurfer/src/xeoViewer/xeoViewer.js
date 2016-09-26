@@ -27,7 +27,8 @@ define([
 
         // Create a Scene
         var scene = new XEO.Scene({ // http://xeoengine.org/docs/classes/Scene.html
-            canvas: canvas
+            canvas: canvas,
+			transparent: true
         });
 
         // Redefine default light sources;
