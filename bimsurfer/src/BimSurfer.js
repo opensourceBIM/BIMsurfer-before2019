@@ -80,7 +80,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this._loadFromServer = function (params) {
 
             var notifier = new Notifier();
-            var bimServerApi = new BimServerApi(ADDRESS, notifier);
+            var bimServerApi = new BimServerApi(params.bimserver, notifier);
 
             return new Promise(function (resolve, reject) {
 
@@ -194,7 +194,13 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 var loader = new GeometryLoader(model.api, models, viewer);
 
                 loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
-                    console.log("Loading... (" + nrObjectsRead + "/" + totalNrObjects + ")");
+					if (progress == "start") {
+						console.log("Started loading geometries");
+						self.fire("loading-started");
+					} else if (progress == "done") {
+						console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
+						self.fire("loading-finished");
+					}
                 });
 
                 loader.setLoadOids([model.model.roid], oids);
@@ -267,12 +273,21 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         /**
-         * Sets color of objects specified by ids.
+         * Sets color of objects specified by ids or entity type, e.g IfcWall.
          **
          * @param params
          */
         this.setColor = function (params) {
             viewer.setColor(params);
+        };
+		
+		/**
+         * Sets opacity of objects specified by ids or entity type, e.g IfcWall.
+         **
+         * @param params
+         */
+        this.setOpacity = function (params) {
+            viewer.setOpacity(params);
         };
 
         /**

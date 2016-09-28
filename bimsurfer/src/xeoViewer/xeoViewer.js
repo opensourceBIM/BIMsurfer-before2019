@@ -27,7 +27,8 @@ define([
 
         // Create a Scene
         var scene = new XEO.Scene({ // http://xeoengine.org/docs/classes/Scene.html
-            canvas: canvas
+            canvas: canvas,
+			transparent: true
         });
 
         // Redefine default light sources;
@@ -638,10 +639,11 @@ define([
         };
 
         /**
-         * Sets the color of objects specified by IDs.
+         * Sets the color of objects specified by IDs or IFC types.
          *
          * @param params
          * @param params.ids IDs of objects to update.
+         * @param params.types IFC type of objects to update.
          * @param params.color Color to set.
          */
         this.setColor = function (params) {
@@ -649,11 +651,15 @@ define([
             params = params || {};
 
             var ids = params.ids;
+            var types = params.types;
 
-            if (!ids) {
-                console.error("Param expected: 'ids'");
+            if (!ids && !types) {
+                console.error("Param expected: ids or types");
                 return;
             }
+
+            ids = ids || [];
+            types = types || [];
 
             var color = params.color;
 
@@ -664,6 +670,14 @@ define([
 
             var objectId;
             var object;
+			
+			for (i = 0, len = types.length; i < len; i++) {
+                var typedict = rfcTypes[types[i]] || {};
+                Object.keys(typedict).forEach(function (id) {
+                    var object = typedict[id];
+                    self._setObjectColor(object, color);
+                });
+            }
 
             for (var i = 0, len = ids.length; i < len; i++) {
 
@@ -686,6 +700,72 @@ define([
             material.diffuse = [color[0], color[1], color[2]];
 
             var opacity = (color.length > 3) ? color[3] : 1;
+            if (opacity !== material.opacity) {
+                material.opacity = opacity;
+                object.modes.transparent = opacity < 1;
+            }
+        };
+		
+		/**
+         * Sets the opacity of objects specified by IDs of IFC types.
+         *
+         * @param params
+         * @param params.ids IDs of objects to update.
+         * @param params.types IFC type of objects to update.
+         * @param params.opacity Opacity to set.
+         */
+        this.setOpacity = function (params) {
+
+            params = params || {};
+
+            var ids = params.ids;
+            var types = params.types;
+
+            if (!ids && !types) {
+                console.error("Param expected: ids or types");
+                return;
+            }
+
+            ids = ids || [];
+            types = types || [];
+
+            var opacity = params.opacity;
+
+            if (!opacity) {
+                console.error("Param expected: 'opacity'");
+                return;
+            }
+
+            var objectId;
+            var object;
+			
+			for (i = 0, len = types.length; i < len; i++) {
+                var typedict = rfcTypes[types[i]] || {};
+                Object.keys(typedict).forEach(function (id) {
+                    var object = typedict[id];
+                    self._setObjectOpacity(object, opacity);
+                });
+            }
+
+            for (var i = 0, len = ids.length; i < len; i++) {
+
+                objectId = ids[i];
+                object = objects[objectId];
+
+                if (!object) {
+                    // No return on purpose to continue changing opacity of
+                    // other potentially valid object identifiers.
+                    console.error("Object not found: '" + objectId + "'");
+                } else {
+                    this._setObjectOpacity(object, opacity);
+                }
+            }
+        };
+		
+		this._setObjectOpacity = function (object, opacity) {
+
+            var material = object.material;
+
             if (opacity !== material.opacity) {
                 material.opacity = opacity;
                 object.modes.transparent = opacity < 1;

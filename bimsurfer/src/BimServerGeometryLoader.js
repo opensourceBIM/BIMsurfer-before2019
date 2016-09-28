@@ -164,10 +164,13 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
         };
 
         this._readEnd = function (data) {
+			o.progressListeners.forEach(function(progressListener){
+				progressListener("done", o.state.nrObjectsRead, o.state.nrObjectsRead);
+			});
+			o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {topicId: o.topicId}, function(){});
         };
 
         this._readStart = function (data) {
-
             var start = data.readUTF8();
 
             if (start != "BGS") {
@@ -204,7 +207,10 @@ define(["bimsurfer/src/DataInputStreamReader.js"], function (DataInputStreamRead
             	o.state.nrObjects = data.readInt();
             }
 
-            o._updateProgress();
+			o.progressListeners.forEach(function(progressListener){
+				progressListener("start", o.state.nrObjectsRead, o.state.nrObjectsRead);
+			});
+            //o._updateProgress();
         };
 
         this._initCamera = function (boundary) {
