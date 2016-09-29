@@ -1,4 +1,4 @@
-require(["bimsurfer/src/BimSurfer.js", "bimsurfer/src/StaticTreeRenderer.js", "bimsurfer/lib/domReady.js!"], function (BimSurfer, StaticTreeRenderer) {
+require(["bimsurfer/src/BimSurfer.js", "bimsurfer/src/StaticTreeRenderer.js", "bimsurfer/src/MetaDataRenderer.js", "bimsurfer/lib/domReady.js!"], function (BimSurfer, StaticTreeRenderer, MetaDataRenderer) {
 
     var bimSurfer = new BimSurfer({
         domNode: "viewerContainer"
@@ -7,43 +7,43 @@ require(["bimsurfer/src/BimSurfer.js", "bimsurfer/src/StaticTreeRenderer.js", "b
     // For console debugging
     window.bimSurfer = bimSurfer;
 
-    // Viewer's local test mode, loads randomly generated objects
-    //
-    //bimSurfer.load({
-    //    test: true
-    //});
-
     bimSurfer.load({
         bimserver: ADDRESS,
         username: USERNAME,
         password: PASSWORD,
-        poid: 4587521,
-        roid: 11534339,
+        poid: 10027009,
+        roid: 25231363,
         schema: "ifc2x3tc1" // < TODO: Deduce automatically
-    })
-        .then(function (model) {
+    }).then(function (model) {
 
-            model.getTree().then(function (tree) {
+        model.getTree().then(function (tree) {
 
-                var domtree = new StaticTreeRenderer({
-                    domNode: 'treeContainer',
-                    tree: tree
+            var domtree = new StaticTreeRenderer({
+                domNode: 'treeContainer'
+            });
+            
+            domtree.addModel({name: tree.name, id:model.model.roid, tree:tree});
+            domtree.build();
+
+            var metadata = new MetaDataRenderer({
+                domNode: 'dataContainer'
+            });
+            
+            metadata.addModel({name: tree.name, id:model.model.roid, model:model});
+
+            domtree.on("click", function (oid) {
+                // Clicking an explorer node fits the view to its object
+                bimSurfer.viewFit({
+                    ids: [oid],
+                    animate: true
                 });
-
-                domtree.build();
-
-                domtree.on("click",
-                    function (oid) {
-
-                        // Clicking an explorer node fits the view to its object
-
-                        bimSurfer.viewFit({
-                            ids: [oid],
-                            animate: true
-                        });
-
-
-                    });
+            });
+                
+            bimSurfer.on("selection-changed", function(selected) {
+                domtree.setSelected(selected, domtree.SELECT_EXCLUSIVE);
+                metadata.setSelected(selected);
             });
         });
+
+    });
 });
