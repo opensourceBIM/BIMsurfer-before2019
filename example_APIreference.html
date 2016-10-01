@@ -85,12 +85,12 @@
                                                 // Clicking an explorer node fits the view to its object
 
                                                 bimSurfer.setColor({
-                                                    ids: id,
+                                                    ids: [id],
                                                     color: [1,0,0,1]
                                                 });
 
                                                 bimSurfer.viewFit({
-                                                    ids: selected,
+                                                    ids: [id],
                                                     animate: true
                                                 });
                                             });
