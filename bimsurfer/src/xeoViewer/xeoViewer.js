@@ -224,13 +224,14 @@ define([
 
             this.clear();
 
-            var geometry = new XEO.BoxGeometry(scene, { // http://xeoengine.org/docs/classes/Geometry.html
-                id: "geometry.myGeometry"
+            var geometry = new XEO.BoxGeometry(scene, {
+                id: "geometry.test"
             });
 
             collection.add(geometry);
 
-            var roid = "foo";
+            var modelId = "test";
+            var roid = "test";
             var oid;
             var type;
             var objectId;
@@ -243,6 +244,8 @@ define([
             var size = params.size || 200;
             var halfSize = size / 2;
 
+            this.createModel(modelId);
+
             for (var i = 0; i < numEntities; i++) {
                 objectId = "object" + i;
                 oid = objectId;
@@ -250,7 +253,7 @@ define([
                 scale = XEO.math.scalingMat4c(Math.random() * 32 + 0.2, Math.random() * 32 + 0.2, Math.random() * 10 + 0.2);
                 matrix = XEO.math.mulMat4(translate, scale);
                 type = types[Math.round(Math.random() * types.length)];
-                this.createObject(roid, oid, objectId, ["myGeometry"], type, matrix);
+                this.createObject(modelId, roid, oid, objectId, ["test"], type, matrix);
             }
 
             this.viewFit();
@@ -1100,15 +1103,17 @@ define([
 
                 var opacity;
                 var colors = {};
+                var opacities = {};
 
                 for (objectId in objects) {
                     if (objects.hasOwnProperty(objectId)) {
                         object = objects[objectId];
-                        opacity = object.modes.transparent ? object.material.opacity : 1.0;
-                        colors[objectId] = object.material.diffuse.slice(0).concat(opacity); // RGBA
+                        colors[objectId] = object.material.diffuse.slice(); // RGB
+                        opacities[objectId] = object.modes.transparent ? object.material.opacity : 1.0;
                     }
                 }
                 bookmark.colors = colors;
+                bookmark.opacities = opacities;
             }
 
             if (getSelected) {
@@ -1144,12 +1149,14 @@ define([
                 var objectId;
                 var object;
                 var colors = bookmark.colors;
+                var opacities = bookmark.opacities;
 
                 for (objectId in colors) {
                     if (colors.hasOwnProperty(objectId)) {
                         object = objects[objectId];
                         if (object) {
                             this._setObjectColor(object, colors[objectId]);
+                            this._setObjectOpacity(object, opacities[objectId]);
                         }
                     }
                 }
