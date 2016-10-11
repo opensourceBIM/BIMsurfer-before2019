@@ -203,7 +203,7 @@ define(function () {
 
                     pickHit = scene.pick({
                         canvasPos: canvasPos,
-                        rayPick: true
+                        pickSurface: true
                     });
 
                     if (pickHit) {
@@ -290,7 +290,7 @@ define(function () {
 
                         var hit = scene.pick({
                             canvasPos: canvasPos,
-                            rayPick: true
+                            pickSurface: true
                         });
                         
                         if (hit) {
@@ -533,7 +533,7 @@ define(function () {
 
                                 camera.view.eye = rotate(rotateStartEye);
                                 camera.view.look = rotate(rotateStartLook);
-                                camera.view.up = math.subVec3(rotate(rotateStartUp), camera.view.eye, tempVec3);
+                                camera.view.up = math.subVec3(rotate(rotateStartUp), camera.view.eye, []);
 
                                 setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
                             }
@@ -659,7 +659,7 @@ define(function () {
                         var bbox = scene.worldBoundary.aabb;
                         var modelSize = XEO.math.lenVec3(XEO.math.subVec3(bbox.min, bbox.max, tempVecHover));
                         var dt = dt.deltaTime / 1000.;
-                        var f = Math.sqrt(modelSize + lastHoverDistance) / 10. * ((delta < 0) ? -1 : 1);
+                        var f = Math.sqrt(modelSize + lastHoverDistance) / 10. * ((delta < 0) ? -.05 :.05);
 
                         if (newTarget) {
                             // Zoom for half a second. Target always possitive and incremented with deltaTime.

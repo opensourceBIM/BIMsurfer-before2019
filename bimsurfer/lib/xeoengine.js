@@ -4,7 +4,7 @@
  * A WebGL-based 3D visualization engine from xeoLabs
  * http://xeoengine.org/
  *
- * Built on 2016-09-19
+ * Built on 2016-10-11
  *
  * MIT License
  * Copyright 2016, Lindsay Kay
@@ -137,7 +137,6 @@
                 bindTexture: 0,
                 bindArray: 0,
                 drawElements: 0,
-                drawChunks: 0,
                 tasksRun: 0,
                 tasksScheduled: 0
             }
@@ -990,7 +989,7 @@ var Canvas2Image = (function () {
             } else {
                 while (true) {
                     item = arguments[0] || {};
-                    var findId = lastUniqueId++;
+                      var findId = lastUniqueId++;
                     if (!this.items[findId]) {
                         this.items[findId] = item;
                         return findId;
@@ -1069,7 +1068,7 @@ var Canvas2Image = (function () {
      * @class math
      * @static
      */
-    XEO.math = {
+    var math = XEO.math = {
 
         /**
          * The number of radiians in a degree (0.0174532925).
@@ -1662,7 +1661,7 @@ var Canvas2Image = (function () {
 
 
         sqLenVec4: function (v) { // TODO
-            return XEO.math.dotVec4(v, v);
+            return math.dotVec4(v, v);
         },
 
         /**
@@ -1673,7 +1672,7 @@ var Canvas2Image = (function () {
          * @return The length
          */
         lenVec4: function (v) {
-            return Math.sqrt(XEO.math.sqLenVec4(v));
+            return Math.sqrt(math.sqLenVec4(v));
         },
 
         /**
@@ -1702,12 +1701,12 @@ var Canvas2Image = (function () {
 
 
         sqLenVec3: function (v) {
-            return XEO.math.dotVec3(v, v);
+            return math.dotVec3(v, v);
         },
 
 
         sqLenVec2: function (v) {
-            return XEO.math.dotVec2(v, v);
+            return math.dotVec2(v, v);
         },
 
         /**
@@ -1718,7 +1717,7 @@ var Canvas2Image = (function () {
          * @return The length
          */
         lenVec3: function (v) {
-            return Math.sqrt(XEO.math.sqLenVec3(v));
+            return Math.sqrt(math.sqLenVec3(v));
         },
 
         /**
@@ -1729,7 +1728,7 @@ var Canvas2Image = (function () {
          * @return The length
          */
         lenVec2: function (v) {
-            return Math.sqrt(XEO.math.sqLenVec2(v));
+            return Math.sqrt(math.sqLenVec2(v));
         },
 
         /**
@@ -1741,7 +1740,7 @@ var Canvas2Image = (function () {
          *
          */
         rcpVec3: function (v, dest) {
-            return XEO.math.divScalarVec3(1.0, v, dest);
+            return math.divScalarVec3(1.0, v, dest);
         },
 
         /**
@@ -1754,8 +1753,8 @@ var Canvas2Image = (function () {
          *
          */
         normalizeVec4: function (v, dest) {
-            var f = 1.0 / XEO.math.lenVec4(v);
-            return XEO.math.mulVec4Scalar(v, f, dest);
+            var f = 1.0 / math.lenVec4(v);
+            return math.mulVec4Scalar(v, f, dest);
         },
 
         /**
@@ -1764,8 +1763,8 @@ var Canvas2Image = (function () {
          * @static
          */
         normalizeVec3: function (v, dest) {
-            var f = 1.0 / XEO.math.lenVec3(v);
-            return XEO.math.mulVec3Scalar(v, f, dest);
+            var f = 1.0 / math.lenVec3(v);
+            return math.mulVec3Scalar(v, f, dest);
         },
 
         /**
@@ -1774,8 +1773,8 @@ var Canvas2Image = (function () {
          * @static
          */
         normalizeVec2: function (v, dest) {
-            var f = 1.0 / XEO.math.lenVec2(v);
-            return XEO.math.mulVec2Scalar(v, f, dest);
+            var f = 1.0 / math.lenVec2(v);
+            return math.mulVec2Scalar(v, f, dest);
         },
 
         /**
@@ -1820,7 +1819,7 @@ var Canvas2Image = (function () {
          * @static
          */
         setMat4ToZeroes: function () {
-            return XEO.math.m4s(0.0);
+            return math.m4s(0.0);
         },
 
         /**
@@ -1829,7 +1828,7 @@ var Canvas2Image = (function () {
          * @static
          */
         setMat4ToOnes: function () {
-            return XEO.math.m4s(1.0);
+            return math.m4s(1.0);
         },
 
         /**
@@ -1852,7 +1851,7 @@ var Canvas2Image = (function () {
          * @static
          */
         diagonalMat4c: function (x, y, z, w) {
-            return XEO.math.diagonalMat4v([x, y, z, w]);
+            return math.diagonalMat4v([x, y, z, w]);
         },
 
         /**
@@ -1861,7 +1860,7 @@ var Canvas2Image = (function () {
          * @static
          */
         diagonalMat4s: function (s) {
-            return XEO.math.diagonalMat4c(s, s, s, s);
+            return math.diagonalMat4c(s, s, s, s);
         },
 
         /**
@@ -2001,7 +2000,7 @@ var Canvas2Image = (function () {
          * @static
          */
         addScalarMat4: function (s, m, dest) {
-            return XEO.math.addMat4Scalar(m, s, dest);
+            return math.addMat4Scalar(m, s, dest);
         },
 
         /**
@@ -2302,7 +2301,7 @@ var Canvas2Image = (function () {
          * @static
          */
         translationMat4v: function (v, dest) {
-            var m = dest || XEO.math.identityMat4();
+            var m = dest || math.identityMat4();
             m[12] = v[0];
             m[13] = v[1];
             m[14] = v[2];
@@ -2315,7 +2314,7 @@ var Canvas2Image = (function () {
          * @static
          */
         translationMat4c: function (x, y, z, dest) {
-            return XEO.math.translationMat4v([x, y, z], dest);
+            return math.translationMat4v([x, y, z], dest);
         },
 
         /**
@@ -2324,7 +2323,7 @@ var Canvas2Image = (function () {
          * @static
          */
         translationMat4s: function (s, dest) {
-            return XEO.math.translationMat4c(s, s, s, dest);
+            return math.translationMat4c(s, s, s, dest);
         },
 
         /**
@@ -2333,7 +2332,7 @@ var Canvas2Image = (function () {
          * @static
          */
         rotationMat4v: function (anglerad, axis, m) {
-            var ax = XEO.math.normalizeVec4([axis[0], axis[1], axis[2], 0.0], []);
+            var ax = math.normalizeVec4([axis[0], axis[1], axis[2], 0.0], []);
             var s = Math.sin(anglerad);
             var c = Math.cos(anglerad);
             var q = 1.0 - c;
@@ -2354,7 +2353,7 @@ var Canvas2Image = (function () {
             ys = y * s;
             zs = z * s;
 
-            m = m || XEO.math.mat4();
+            m = m || math.mat4();
 
             m[0] = (q * x * x) + c;
             m[1] = (q * xy) + zs;
@@ -2385,7 +2384,7 @@ var Canvas2Image = (function () {
          * @static
          */
         rotationMat4c: function (anglerad, x, y, z, mat) {
-            return XEO.math.rotationMat4v(anglerad, [x, y, z], mat);
+            return math.rotationMat4v(anglerad, [x, y, z], mat);
         },
 
         /**
@@ -2394,7 +2393,7 @@ var Canvas2Image = (function () {
          * @static
          */
         scalingMat4v: function (v, m) {
-            m = m || XEO.math.identityMat4();
+            m = m || math.identityMat4();
             m[0] = v[0];
             m[5] = v[1];
             m[10] = v[2];
@@ -2407,7 +2406,7 @@ var Canvas2Image = (function () {
          * @static
          */
         scalingMat4c: function (x, y, z) {
-            return XEO.math.scalingMat4v([x, y, z]);
+            return math.scalingMat4v([x, y, z]);
         },
 
         /**
@@ -2416,7 +2415,7 @@ var Canvas2Image = (function () {
          * @static
          */
         scalingMat4s: function (s) {
-            return XEO.math.scalingMat4c(s, s, s);
+            return math.scalingMat4c(s, s, s);
         },
 
         /**
@@ -2429,7 +2428,7 @@ var Canvas2Image = (function () {
          */
         rotationTranslationMat4: function (q, v, dest) {
 
-            dest = dest || XEO.math.mat4();
+            dest = dest || math.mat4();
 
             var x = q[0];
             var y = q[1];
@@ -2479,9 +2478,9 @@ var Canvas2Image = (function () {
          */
         mat4ToEuler: function (mat, order, dest) {
 
-            dest = dest || XEO.math.vec4();
+            dest = dest || math.vec4();
 
-            var clamp = XEO.math.clamp;
+            var clamp = math.clamp;
 
             // Assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 
@@ -2578,7 +2577,7 @@ var Canvas2Image = (function () {
          */
         lookAtMat4v: function (pos, target, up, dest) {
             if (!dest) {
-                dest = XEO.math.mat4();
+                dest = math.mat4();
             }
 
             var posx = pos[0],
@@ -2592,7 +2591,7 @@ var Canvas2Image = (function () {
                 targetz = target[2];
 
             if (posx === targetx && posy === targety && posz === targetz) {
-                return XEO.math.identityMat4();
+                return math.identityMat4();
             }
 
             var z0, z1, z2, x0, x1, x2, y0, y1, y2, len;
@@ -2667,7 +2666,7 @@ var Canvas2Image = (function () {
          * @static
          */
         lookAtMat4c: function (posx, posy, posz, targetx, targety, targetz, upx, upy, upz) {
-            return XEO.math.lookAtMat4v([posx, posy, posz], [targetx, targety, targetz], [upx, upy, upz], []);
+            return math.lookAtMat4v([posx, posy, posz], [targetx, targety, targetz], [upx, upy, upz], []);
         },
 
         /**
@@ -2677,7 +2676,7 @@ var Canvas2Image = (function () {
          */
         orthoMat4c: function (left, right, bottom, top, near, far, dest) {
             if (!dest) {
-                dest = XEO.math.mat4();
+                dest = math.mat4();
             }
             var rl = (right - left);
             var tb = (top - bottom);
@@ -2714,14 +2713,14 @@ var Canvas2Image = (function () {
         frustumMat4v: function (fmin, fmax, m) {
 
             if (!m) {
-                m = XEO.math.mat4();
+                m = math.mat4();
             }
 
             var fmin4 = [fmin[0], fmin[1], fmin[2], 0.0];
             var fmax4 = [fmax[0], fmax[1], fmax[2], 0.0];
 
-            XEO.math.addVec4(fmax4, fmin4, tempMat1);
-            XEO.math.subVec4(fmax4, fmin4, tempMat2);
+            math.addVec4(fmax4, fmin4, tempMat1);
+            math.subVec4(fmax4, fmin4, tempMat2);
 
             var t = 2.0 * fmin4[2];
 
@@ -2757,7 +2756,7 @@ var Canvas2Image = (function () {
          */
         frustumMat4: function (left, right, bottom, top, near, far, dest) {
             if (!dest) {
-                dest = XEO.math.mat4();
+                dest = math.mat4();
             }
             var rl = (right - left);
             var tb = (top - bottom);
@@ -2799,7 +2798,7 @@ var Canvas2Image = (function () {
             pmax[0] = pmax[1] * aspectratio;
             pmin[0] = -pmax[0];
 
-            return XEO.math.frustumMat4v(pmin, pmax, m);
+            return math.frustumMat4v(pmin, pmax, m);
         },
 
         /**
@@ -2809,7 +2808,7 @@ var Canvas2Image = (function () {
          */
         transformPoint3: function (m, p, dest) {
 
-            dest = dest || XEO.math.vec3();
+            dest = dest || math.vec3();
 
             dest[0] = (m[0] * p[0]) + (m[4] * p[1]) + (m[8] * p[2]) + m[12];
             dest[1] = (m[1] * p[0]) + (m[5] * p[1]) + (m[9] * p[2]) + m[13];
@@ -2825,7 +2824,7 @@ var Canvas2Image = (function () {
          */
         transformPoint4: function (m, v, dest) {
 
-            dest = dest || XEO.math.vec4();
+            dest = dest || math.vec4();
 
             dest[0] = m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12] * v[3];
             dest[1] = m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13] * v[3];
@@ -2898,7 +2897,7 @@ var Canvas2Image = (function () {
          */
         transformVec4: function (m, v, dest) {
             var v0 = v[0], v1 = v[1], v2 = v[2], v3 = v[3];
-            dest = dest || this.vec4();
+            dest = dest || math.vec4();
             dest[0] = m[0] * v0 + m[4] * v1 + m[8] * v2 + m[12] * v3;
             dest[1] = m[1] * v0 + m[5] * v1 + m[9] * v2 + m[13] * v3;
             dest[2] = m[2] * v0 + m[6] * v1 + m[10] * v2 + m[14] * v3;
@@ -3016,7 +3015,7 @@ var Canvas2Image = (function () {
          */
         projectVec4: function (p, q) {
             var f = 1.0 / p[3];
-            q = q || XEO.math.vec2();
+            q = q || math.vec2();
             q[0] = v[0] * f;
             q[1] = v[1] * f;
             return q;
@@ -3028,7 +3027,7 @@ var Canvas2Image = (function () {
          * @static
          */
         lerpVec3: function (t, t1, t2, p1, p2, dest) {
-            var result = dest || this.vec3();
+            var result = dest || math.vec3();
             var f = (t - t1) / (t2 - t1);
             result[0] = p1[0] + (f * (p2[0] - p1[0]));
             result[1] = p1[1] + (f * (p2[1] - p1[1]));
@@ -3042,8 +3041,8 @@ var Canvas2Image = (function () {
          * @static
          */
         getAABBDiag: function (aabb) {
-            this.subVec3(aabb.max, aabb.min, tempVec3c);
-            return Math.abs(this.lenVec3(tempVec3c));
+            math.subVec3(aabb.max, aabb.min, tempVec3c);
+            return Math.abs(math.lenVec3(tempVec3c));
         },
 
         /**
@@ -3054,7 +3053,7 @@ var Canvas2Image = (function () {
          */
         getAABBDiagPoint: function (aabb, p) {
 
-            var diagVec = this.subVec3(aabb.max, aabb.min, tempVec3c);
+            var diagVec = math.subVec3(aabb.max, aabb.min, tempVec3c);
 
             var xneg = p[0] - aabb.min[0];
             var xpos = aabb.max[0] - p[0];
@@ -3067,7 +3066,7 @@ var Canvas2Image = (function () {
             diagVec[1] += (yneg > ypos) ? yneg : ypos;
             diagVec[2] += (zneg > zpos) ? zneg : zpos;
 
-            return Math.abs(this.lenVec3(diagVec));
+            return Math.abs(math.lenVec3(diagVec));
         },
 
         /**
@@ -3076,7 +3075,7 @@ var Canvas2Image = (function () {
          * @static
          */
         getAABBCenter: function (aabb, dest) {
-            var r = dest || this.vec3();
+            var r = dest || math.vec3();
 
             r[0] = (aabb.max[0] + aabb.min[0] ) * 0.5;
             r[1] = (aabb.max[1] + aabb.min[1] ) * 0.5;
@@ -3091,7 +3090,7 @@ var Canvas2Image = (function () {
          * @static
          */
         getAABB2Center: function (aabb, dest) {
-            var r = dest || this.vec2();
+            var r = dest || math.vec2();
 
             r[0] = (aabb.max[0] + aabb.min[0] ) / 2;
             r[1] = (aabb.max[1] + aabb.min[1] ) / 2;
@@ -3110,7 +3109,7 @@ var Canvas2Image = (function () {
          */
         collapseAABB3: function (aabb) {
 
-            aabb = aabb || XEO.math.AABB2();
+            aabb = aabb || math.AABB2();
 
             aabb.min[0] = 10000000;
             aabb.min[1] = 10000000;
@@ -3222,7 +3221,7 @@ var Canvas2Image = (function () {
          */
         positions3ToAABB3: function (positions, aabb) {
 
-            aabb = aabb || XEO.math.AABB3();
+            aabb = aabb || math.AABB3();
 
             var xmin = 100000;
             var ymin = 100000;
@@ -3285,7 +3284,7 @@ var Canvas2Image = (function () {
          */
         points3ToAABB3: function (points, aabb) {
 
-            aabb = aabb || XEO.math.AABB3();
+            aabb = aabb || math.AABB3();
 
             var xmin = 100000;
             var ymin = 100000;
@@ -3424,7 +3423,7 @@ var Canvas2Image = (function () {
          */
         collapseAABB2: function (aabb) {
 
-            aabb = aabb || XEO.math.AABB2();
+            aabb = aabb || math.AABB2();
 
             aabb.min[0] = 10000000;
             aabb.min[1] = 10000000;
@@ -3445,7 +3444,7 @@ var Canvas2Image = (function () {
          */
         points3ToAABB2: function (points, aabb) {
 
-            aabb = aabb || XEO.math.AABB2();
+            aabb = aabb || math.AABB2();
 
             var xmin = 10000000;
             var ymin = 10000000;
@@ -3582,7 +3581,7 @@ var Canvas2Image = (function () {
          */
         triangleNormal: function (a, b, c, normal) {
 
-            normal = normal || XEO.math.vec3();
+            normal = normal || math.vec3();
 
             var p1x = b[0] - a[0];
             var p1y = b[1] - a[1];
@@ -3640,10 +3639,10 @@ var Canvas2Image = (function () {
                 v2 = [positions[j1 * 3 + 0], positions[j1 * 3 + 1], positions[j1 * 3 + 2]];
                 v3 = [positions[j2 * 3 + 0], positions[j2 * 3 + 1], positions[j2 * 3 + 2]];
 
-                v2 = XEO.math.subVec3(v2, v1, [0, 0, 0]);
-                v3 = XEO.math.subVec3(v3, v1, [0, 0, 0]);
+                v2 = math.subVec3(v2, v1, [0, 0, 0]);
+                v3 = math.subVec3(v3, v1, [0, 0, 0]);
 
-                var n = XEO.math.normalizeVec3(XEO.math.cross3Vec3(v2, v3, [0, 0, 0]), [0, 0, 0]);
+                var n = math.normalizeVec3(math.cross3Vec3(v2, v3, [0, 0, 0]), [0, 0, 0]);
 
                 if (!nvecs[j0]) {
                     nvecs[j0] = [];
@@ -3693,8 +3692,6 @@ var Canvas2Image = (function () {
          * @returns {Float32Array} One-dimensional flattened array of tangents.
          */
         buildTangents: function (positions, indices, uv) {
-
-            var math = XEO.math;
 
             var tangents = new Float32Array(positions.length);
 
@@ -3894,32 +3891,32 @@ var Canvas2Image = (function () {
          */
         rayTriangleIntersect: function (origin, dir, a, b, c, isect) {
 
-            isect = isect || XEO.math.vec3();
+            isect = isect || math.vec3();
 
             var EPSILON = 0.000001;
 
-            var edge1 = XEO.math.subVec3(b, a, tempVec3);
-            var edge2 = XEO.math.subVec3(c, a, tempVec3b);
+            var edge1 = math.subVec3(b, a, tempVec3);
+            var edge2 = math.subVec3(c, a, tempVec3b);
 
-            var pvec = XEO.math.cross3Vec3(dir, edge2, tempVec3c);
-            var det = XEO.math.dotVec3(edge1, pvec);
+            var pvec = math.cross3Vec3(dir, edge2, tempVec3c);
+            var det = math.dotVec3(edge1, pvec);
             if (det < EPSILON) {
                 return null;
             }
 
-            var tvec = XEO.math.subVec3(origin, a, tempVec3d);
-            var u = XEO.math.dotVec3(tvec, pvec);
+            var tvec = math.subVec3(origin, a, tempVec3d);
+            var u = math.dotVec3(tvec, pvec);
             if (u < 0 || u > det) {
                 return null;
             }
 
-            var qvec = XEO.math.cross3Vec3(tvec, edge1, tempVec3e);
-            var v = XEO.math.dotVec3(dir, qvec);
+            var qvec = math.cross3Vec3(tvec, edge1, tempVec3e);
+            var v = math.dotVec3(dir, qvec);
             if (v < 0 || u + v > det) {
                 return null;
             }
 
-            var t = XEO.math.dotVec3(edge2, qvec) / det;
+            var t = math.dotVec3(edge2, qvec) / det;
             isect[0] = origin[0] + t * dir[0];
             isect[1] = origin[1] + t * dir[1];
             isect[2] = origin[2] + t * dir[2];
@@ -3941,8 +3938,6 @@ var Canvas2Image = (function () {
          * @returns {Float32Array} The intersection point.
          */
         rayPlaneIntersect: function (origin, dir, a, b, c, isect) {
-
-            var math = XEO.math;
 
             isect = isect || math.vec3();
 
@@ -3980,24 +3975,23 @@ var Canvas2Image = (function () {
          */
         cartesianToBarycentric: function (cartesian, a, b, c, bary) {
 
-            var f1 = XEO.math.subVec3(a, cartesian, tempVec3);
-            var f2 = XEO.math.subVec3(b, cartesian, tempVec3b);
-            var f3 = XEO.math.subVec3(c, cartesian, tempVec3c);
+            var f1 = math.subVec3(a, cartesian, tempVec3);
+            var f2 = math.subVec3(b, cartesian, tempVec3b);
+            var f3 = math.subVec3(c, cartesian, tempVec3c);
 
-            var t1 = XEO.math.subVec3(a, b, tempVec3d);
-            var t2 = XEO.math.subVec3(a, c, tempVec3e);
+            var t1 = math.subVec3(a, b, tempVec3d);
+            var t2 = math.subVec3(a, c, tempVec3e);
 
-            var a0 = XEO.math.lenVec3(XEO.math.cross3Vec3(t1, t2, tempVec3f));
+            var a0 = math.lenVec3(math.cross3Vec3(t1, t2, tempVec3f));
 
-            bary[0] = XEO.math.lenVec3(XEO.math.cross3Vec3(f2, f3, tempVec3f)) / a0;
-            bary[1] = XEO.math.lenVec3(XEO.math.cross3Vec3(f3, f1, tempVec3f)) / a0;
-            bary[2] = XEO.math.lenVec3(XEO.math.cross3Vec3(f1, f2, tempVec3f)) / a0;
+            bary[0] = math.lenVec3(math.cross3Vec3(f2, f3, tempVec3f)) / a0;
+            bary[1] = math.lenVec3(math.cross3Vec3(f3, f1, tempVec3f)) / a0;
+            bary[2] = math.lenVec3(math.cross3Vec3(f1, f2, tempVec3f)) / a0;
 
             return bary;
         },
 
         cartesianToBarycentric2: function (cartesian, a, b, c, dest) {
-            var math = XEO.math;
 
             var v0 = math.subVec3(c, a, tempVec3);
             var v1 = math.subVec3(b, a, tempVec3b);
@@ -4064,7 +4058,7 @@ var Canvas2Image = (function () {
          */
         barycentricToCartesian2: function (bary, a, b, c, cartesian) {
 
-            cartesian = cartesian || XEO.math.vec3();
+            cartesian = cartesian || math.vec3();
 
             var u = bary[0];
             var v = bary[1];
@@ -4079,7 +4073,7 @@ var Canvas2Image = (function () {
 
 
         identityQuaternion: function (dest) {
-            dest = dest || XEO.math.vec4();
+            dest = dest || math.vec4();
             dest[0] = 0.0;
             dest[1] = 0.0;
             dest[2] = 0.0;
@@ -4097,7 +4091,7 @@ var Canvas2Image = (function () {
          */
         eulerToQuaternion: function (euler, order, dest) {
 
-            dest = dest || XEO.math.vec4();
+            dest = dest || math.vec4();
 
             // http://www.mathworks.com/matlabcentral/fileexchange/
             // 	20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
@@ -4158,7 +4152,7 @@ var Canvas2Image = (function () {
 
         mat4ToQuaternion: function (m, dest) {
 
-            dest = dest || XEO.math.vec4();
+            dest = dest || math.vec4();
 
             // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
 
@@ -4219,9 +4213,7 @@ var Canvas2Image = (function () {
 
         vec3PairToQuaternion: function (u, v, dest) {
 
-            dest = dest || XEO.math.vec4();
-
-            var math = XEO.math;
+            dest = dest || math.vec4();
 
             var norm_u_norm_v = Math.sqrt(math.dotVec3(u, u) * math.dotVec3(v, v));
             var real_part = norm_u_norm_v + math.dotVec3(u, v);
@@ -4258,7 +4250,7 @@ var Canvas2Image = (function () {
         },
 
         angleAxisToQuaternion: function (angleAxis, dest) {
-            dest = dest || XEO.math.vec4();
+            dest = dest || math.vec4();
             var halfAngle = angleAxis[3] / 2.0;
             var fsin = Math.sin(halfAngle);
             dest[0] = fsin * angleAxis[0];
@@ -4269,7 +4261,7 @@ var Canvas2Image = (function () {
         },
 
         quaternionToEuler: function (euler, order, dest) {
-            dest = dest || XEO.math.vec4();
+            dest = dest || math.vec4();
             var halfAngle = euler[3] / 2.0;
             var fsin = Math.sin(halfAngle);
             dest[0] = fsin * euler[0];
@@ -4280,7 +4272,7 @@ var Canvas2Image = (function () {
         },
 
         mulQuaternions: function (p, q, dest) {
-            dest = dest || XEO.math.vec4();
+            dest = dest || math.vec4();
             var p0 = p[0], p1 = p[1], p2 = p[2], p3 = p[3];
             var q0 = q[0], q1 = q[1], q2 = q[2], q3 = q[3];
             dest[0] = p3 * q0 + p0 * q3 + p1 * q2 - p2 * q1;
@@ -4292,7 +4284,7 @@ var Canvas2Image = (function () {
 
         vec3ApplyQuaternion: function (q, vec, dest) {
 
-            dest = dest || XEO.math.vec3();
+            dest = dest || math.vec3();
 
             var x = vec[0];
             var y = vec[1];
@@ -4321,7 +4313,7 @@ var Canvas2Image = (function () {
 
         quaternionToMat4: function (q, dest) {
 
-            dest = XEO.math.identityMat4(dest);
+            dest = math.identityMat4(dest);
 
             var q0 = q[0];  //x
             var q1 = q[1];  //y
@@ -4362,7 +4354,7 @@ var Canvas2Image = (function () {
 
         normalizeQuaternion: function (q, dest) {
             dest = dest || q;
-            var len = XEO.math.lenVec4([q[0], q[1], q[2], q[3]]);
+            var len = math.lenVec4([q[0], q[1], q[2], q[3]]);
             dest[0] = q[0] / len;
             dest[1] = q[1] / len;
             dest[2] = q[2] / len;
@@ -4380,12 +4372,12 @@ var Canvas2Image = (function () {
         },
 
         inverseQuaternion: function (q, dest) {
-            return XEO.math.normalizeQuaternion(XEO.math.conjugateQuaternion(q, dest));
+            return math.normalizeQuaternion(math.conjugateQuaternion(q, dest));
         },
 
         quaternionToAngleAxis: function (q, angleAxis) {
-            angleAxis = angleAxis || XEO.math.vec4();
-            q = XEO.math.normalizeQuaternion(q, tempVec4);
+            angleAxis = angleAxis || math.vec4();
+            q = math.normalizeQuaternion(q, tempVec4);
             var q3 = q[3];
             var angle = 2 * Math.acos(q3);
             var s = Math.sqrt(1 - q3 * q3);
@@ -4493,99 +4485,26 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     XEO.renderer = XEO.renderer || {};
 
     /**
-     *  Renderer compiled from a {@link SceneJS.Scene}, providing methods to render and pick.
      *
-     * <p>A Renderer is a container of {@link XEO.renderer.Object}s which are created (or updated) by a depth-first
-     * <b>compilation traversal</b> of a {@link SceneJS.Scene}.</b>
-     *
-     * <h2>Rendering Pipeline</h2>
-     *
-     * <p>Conceptually, a Renderer implements a pipeline with the following stages:</p>
-     *
-     * <ol>
-     * <li>Create or update {@link XEO.renderer.Object}s during scene compilation</li>
-     * <li>Organise the {@link XEO.renderer.Object} into an <b>object list</b></li>
-     * <li>Determine the GL state sort order for the object list</li>
-     * <li>State sort the object list</li>
-     * <li>Create a <b>draw list</b> containing {@link XEO.renderer.Chunk}s belonging to the {@link XEO.renderer.Object}s in the object list</li>
-     * <li>Render the draw list to draw the image</li>
-     * </ol>
-     *
-     * <p>An update to the scene causes the pipeline to be re-executed from one of these stages, and SceneJS is designed
-     * so that the pipeline is always re-executed from the latest stage possible to avoid redoing work.</p>
-     *
-     * <p>For example:</p>
-     *
-     * <ul>
-     * <li>when an object is created or updated, we need to (re)do stages 2, 3, 4, 5 and 6</li>
-     * <li>when an object is made invisible, we need to redo stages 5 and 6</li>
-     * <li>when an object is assigned to a different scene render layer (works like a render bin), we need to redo
-     *   stages 3, 4, 5, and 6</li>
-     *<li>when the colour of an object changes, or maybe when the viewpoint changes, we simplt redo stage 6</li>
-     * </ul>
-     *
-     * <h2>Object Creation</h2>
-     * <p>The object soup (stage 1) is constructed by a depth-first traversal of the scene graph, which we think of as
-     * "compiling" the scene graph into the Renderer. As traversal visits each scene component, the component's state core is
-     * set on the Renderer (such as {@link #flags}, {@link #layer}, {@link #renderer} etc), which we think of as the
-     * cores that are active at that instant during compilation. Each of the scene's leaf components is always
-     * a {@link SceneJS.Geometry}, and when traversal visits one of those it calls {@link #buildObject} to create an
-     * object in the soup. For each of the currently active cores, the object is given a {@link XEO.renderer.Chunk}
-     * containing the WebGL calls for rendering it.</p>
-     *
-     * <p>The object also gets a shader (implemented by {@link XEO.renderer.Program}), taylored to render those state cores.</p>
-     *
-     * <p>Limited re-compilation may also be done on portions of a scene that have been added or sufficiently modified. When
-     * traversal visits a {@link SceneJS.Geometry} for which an object already exists in the display, {@link #buildObject}
-     * may update the {@link XEO.renderer.Chunk}s on the object as required for any changes in the core soup since the
-     * last time the object was built. If differences among the cores require it, then {@link #buildObject} may also replace
-     * the object's {@link XEO.renderer.Program} in order to render the new core soup configuration.</p>
-     *
-     * <p>So in summary, to each {@link XEO.renderer.Object} it builds, {@link #buildObject} creates a list of
-     * {@link XEO.renderer.Chunk}s to render the set of component state cores that are currently set on the {@link XEO.Renderer}.
-     * When {@link #buildObject} is re-building an existing object, it may replace one or more {@link XEO.renderer.Chunk}s
-     * for state cores that have changed from the last time the object was built or re-built.</p>
-
-     * <h2>Object Destruction</h2>
-     * <p>Destruction of a scene graph branch simply involves a call to {@link #removeObject} for each {@link SceneJS.Geometry}
-     * in the branch.</p>
-     *
-     * <h2>Draw List</h2>
-     * <p>The draw list is actually comprised of two lists of state chunks: a "pick" list to render a pick buffer
-     * for colour-indexed GPU picking, along with a "draw" list for normal image rendering. The chunks in these lists
-     * are held in the state-sorted order of their objects in #_objectList, with runs of duplicate states removed.</p>
-     *
-     * <p>After a scene update, we set a flag on the display to indicate the stage we will need to redo from. The pipeline is
-     * then lazy-redone on the next call to #render or #pick.</p>
      */
-    XEO.renderer.Renderer = function (stats, cfg) {
+    XEO.renderer.Renderer = function (stats, canvas, gl, options) {
 
-        // Collects runtime statistics
+        options = options || {};
+
         this.stats = stats || {};
 
-        // Renderer is bound to the lifetime of an HTML5 canvas
-        this._canvas = cfg.canvas;
+        this.gl = gl;
+        this.canvas = canvas;
 
-        // Factory which creates and recycles XEO.renderer.Program instances
-        this._programFactory = new XEO.renderer.ProgramFactory(this.stats, {
-            canvas: cfg.canvas
-        });
-
-        // Factory which creates and recycles XEO.renderer.Object instances
+        this._programFactory = new XEO.renderer.ProgramFactory(this.stats, gl);
         this._objectFactory = new XEO.renderer.ObjectFactory();
-
-        // Factory which creates and recycles XEO.renderer.Chunk instances
         this._chunkFactory = new XEO.renderer.ChunkFactory();
-
-        // State chunks that are dynamically inserted by the renderer
-        this._extraChunks = [];
-        this._numExtraChunks = 0;
 
         /**
          * Indicates if the canvas is transparent
          * @type {boolean}
          */
-        this.transparent = cfg.transparent === true;
+        this.transparent = options.transparent === true;
 
         /**
          * Optional callback to fire when renderer wants to
@@ -4615,40 +4534,25 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          */
         this.unbindOutputFramebuffer = null;
 
-        // The objects in the render
+        // Objects mapped to their IDs
         this.objects = {};
 
-        // Ambient color
+        // The current ambient color, if available
         this._ambient = null;
 
-        // The object list, containing all elements of #objects, kept in GL state-sorted order
+        // Objects in a list, ordered by state
         this._objectList = [];
         this._objectListLen = 0;
 
-        // The "draw list", comprised collectively of three lists of state chunks belong to visible objects
-        // within #_objectList: a "pick" list to render a pick buffer for colour-indexed GPU picking, along with an
-        // "draw" list for normal image rendering.  The chunks in these lists are held in the state-sorted order of
-        // their objects in #_objectList, with runs of duplicate states removed.
-
+        // List of objects that were rendered in the last picking pass,
+        // for indexing when using color-index picking
         this._objectPickList = [];
         this._objectPickListLen = 0;
-
-        this._drawChunkList = [];      // State chunk list to render all objects
-        this._drawChunkListLen = 0;
-
-        this._pickObjectChunkList = [];  // State chunk list to render scene to pick buffer
-        this._pickObjectChunkListLen = 0;
-
-        // Tracks the index of the first chunk in the transparency pass. The first run of chunks
-        // in the list are for opaque objects, while the remainder are for transparent objects.
-        // This supports a mode in which we only render the opaque chunks.
-        this._drawChunkListTransparentIndex = -1;
 
         // The frame context holds state shared across a single render of the
         // draw list, along with any results of the render, such as pick hits
         this._frameCtx = {
-            pickObjects: [], // Pick names of objects hit during pick render
-            canvas: this._canvas,
+            canvas: this.canvas,
             renderTarget: null,
             renderBuf: null,
             depthbufEnabled: null,
@@ -4657,7 +4561,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             blendEnabled: false,
             backfaces: true,
             frontface: true, // true = "ccw" else "cw"
-            pickIndex: 0, // Indexes this._pickObjects
             textureUnit: 0,
             transparent: false, // True while rendering transparency bin
             ambientColor: null,
@@ -4666,7 +4569,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             bindTexture: 0,
             bindArray: null,
             pass: null,
-            bindOutputFramebuffer: null
+            bindOutputFramebuffer: null,
+            pickIndex: 0
         };
 
         //----------------- Render states --------------------------------------
@@ -4798,13 +4702,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this.clips = null;
 
         /**
-         Morph targets render state.
-         @property morphTargets
-         @type {renderer.MorphTargets}
-         */
-        this.morphTargets = null;
-
-        /**
          Custom shader render state.
          @property shader
          @type {renderer.Shader}
@@ -4832,53 +4729,25 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          */
         this.viewport = null;
 
-
         //----------------- Renderer dirty flags -------------------------------
 
         /**
-         * Flags the object list as needing to be rebuilt from renderer objects
-         * on the next call to {@link #render} or {@link #pick}. Setting this
-         * will cause the rendering pipeline to be executed from stage #2
-         * (see class comment), causing object list rebuild, state order
-         * determination, state sort, draw list construction and image render.
-         * @type Boolean
+         * Flags the object list as needing to be rebuilt from the object map.
          */
         this.objectListDirty = true;
 
         /**
-         * Flags the object list as needing state orders to be (re)computed on the
-         * next call to {@link #render} or {@link #pick}. Setting this will cause
-         * the rendering pipeline to be executed from stage #3 (see class comment),
-         * causing state order determination, state sort, draw list construction
-         * and image render.
-         * @type Boolean
+         * Flags the object list as needing state orders to be recomputed.
          */
         this.stateOrderDirty = true;
 
         /**
-         * Flags the object list as needing to be state-sorted on the next call
-         * to {@link #render} or {@link #pick}.Setting this will cause the
-         * rendering pipeline to be executed from stage #4 (see class comment),
-         * causing state sort, draw list construction and image render.
-         * @type Boolean
+         * Flags the object list as needing to be state-sorted.
          */
         this.stateSortDirty = true;
 
         /**
-         * Flags the draw list as needing to be rebuilt from the object list on
-         * the next call to {@link #render} or {@link #pick}.  Setting this will
-         * cause the rendering pipeline to be executed from stage #5
-         * (see class comment), causing draw list construction and image render.
-         * @type Boolean
-         */
-        this.drawListDirty = true;
-
-        /**
-         * Flags the image as needing to be redrawn from the draw list on the
-         * next call to {@link #render} or {@link #pick}. Setting this will
-         * cause the rendering pipeline to be executed from stage #6
-         * (see class comment), causing the image render.
-         * @type Boolean
+         * Flags the image as needing to be redrawn from the object list.
          */
         this.imageDirty = true;
     };
@@ -4886,15 +4755,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Reallocates WebGL resources for objects within this renderer.
      */
-    XEO.renderer.Renderer.prototype.webglRestored = function () {
+    XEO.renderer.Renderer.prototype.webglRestored = function (gl) {
+
+        this.gl = gl;
 
         // Re-allocate programs
-        this._programFactory.webglRestored();
+        this._programFactory.webglRestored(gl);
 
         // Re-bind chunks to the programs
         this._chunkFactory.webglRestored();
-
-        var gl = this._canvas.gl;
 
         // Rebuild pick buffer
 
@@ -4922,6 +4791,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         if (!object) {
             object = this._objectFactory.get(objectId);
+            object.hash = "";
         }
 
         // Attach to the object any states that we need to get off it later.
@@ -4954,52 +4824,48 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             this.shader.hash,
             this.clips.hash,
             this.material.hash,
-            //this.reflect.hash,
             this.lights.hash,
             this.billboard.hash,
             this.stationary.hash
 
         ]).join(";");
 
-        if (!object.program || hash !== object.hash) {
+        var newProgram = false;
 
-            // Get new program for object if needed
+        if (hash !== object.hash) {
+
+            // Get new program for object
 
             if (object.program) {
                 this._programFactory.put(object.program);
             }
 
             object.program = this._programFactory.get(hash, this);
-
             object.hash = hash;
-        }
 
-        var programState = object.program;
+            newProgram = true;
 
-        if (programState) {
+            // Handle shader error
 
-            var program = programState.program;
-
-            if (!program.allocated || !program.compiled || !program.validated || !program.linked) {
-
-                if (this.objects[objectId]) {
-
-                    // Don't keep faulty objects in the renderer
-                    this.removeObject(objectId);
-                }
-
-                return {
-                    error: true,
-                    errorLog: program.errorLog
+            var programState = object.program;
+            if (programState) {
+                var program = programState.program;
+                if (!program.allocated || !program.compiled || !program.validated || !program.linked) {
+                    if (this.objects[objectId]) {
+                        this.removeObject(objectId); // Don't keep faulty objects in the renderer
+                    }
+                    return {
+                        error: true,
+                        errorLog: program.errorLog
+                    }
                 }
             }
         }
 
-
-        // Build sequence of draw chunks on the object
+        // Build list of draw chunks on the object
 
         // The order of some of these is important because some chunks will set
-        // state on this._frameCtx to be consumed by other chunks downstream.
+        // state on this._frameCtx to be consumed by other chunks downstream
 
         this._setChunk(object, 0, "program", object.program); // Must be first
         this._setChunk(object, 1, "modelTransform", this.modelTransform);
@@ -5017,16 +4883,19 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this._setChunk(object, 13, "geometry", this.geometry);
         this._setChunk(object, 14, "draw", this.geometry, true); // Must be last
 
+        // Ambient light is global across everything in display, and
+        // can never be disabled, so grab it now because we want to
+        // feed it to gl.clearColor before each display list render
+
+        this._setAmbient(this.lights);
+
         if (!this.objects[objectId]) {
-
             this.objects[objectId] = object;
-
             this.objectListDirty = true;
 
         } else {
 
             // At the very least, the object sort order will need be recomputed
-
             this.stateOrderDirty = true;
         }
 
@@ -5066,14 +4935,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         // Attach new chunk
 
         object.chunks[order] = this._chunkFactory.getChunk(id, type, object.program.program, state);
-
-        // Ambient light is global across everything in display, and
-        // can never be disabled, so grab it now because we want to
-        // feed it to gl.clearColor before each display list render
-
-        if (type === "lights") {
-            this._setAmbient(state);
-        }
     };
 
     // Sets the singular ambient light.
@@ -5137,41 +4998,29 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         params = params || {};
 
         if (this.objectListDirty) {
-            this._buildObjectList();        // Build the scene object list
+            this._buildObjectList(); // Build the scene object list
             this.objectListDirty = false;
-            this.stateOrderDirty = true;    // Now needs state ordering
+            this.stateOrderDirty = true; // Now needs state ordering
         }
 
         if (this.stateOrderDirty) {
-            this._makeStateSortKeys();      // Determine the state sort order
+            this._makeStateSortKeys(); // Determine the state sort order
             this.stateOrderDirty = false;
-            this.stateSortDirty = true;     // Now needs state sorting
+            this.stateSortDirty = true; // Now needs state sorting
         }
 
         if (this.stateSortDirty) {
-            this._stateSort();              // State sort the scene object list
+            this._stateSort(); // State sort the scene object list
             this.stateSortDirty = false;
-            this.drawListDirty = true;      // Now need to build object draw list
-        }
-
-        if (this.drawListDirty) {           // Build draw list from object list
-            this._buildDrawList();
-            this.imageDirty = true;         // Now need to render the draw list
+            this.imageDirty = true; // Now need to build object draw list
         }
 
         if (this.imageDirty || params.force) {
-            //this._renderObjectList({                  // Render the draw list
-            //    clear: (params.clear !== false), // Clear buffers by default
-            //    opaqueOnly: params.opaqueOnly,
-            //    pass: params.pass
-            //});
-
-            this._doDrawList({                  // Render the draw list
+            this._renderObjectList({ // Render the draw list
                 clear: (params.clear !== false), // Clear buffers by default
                 opaqueOnly: params.opaqueOnly,
                 pass: params.pass
             });
-
             this.stats.frame.frameCount++;
             this.imageDirty = false;
         }
@@ -5220,47 +5069,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         });
     };
 
-    /**
-     * Logs the object list
-     */
-    XEO.renderer.Renderer.prototype._logObjectList = function () {
-        console.log("--------------------------------------------------------------------------------------------------");
-        console.log(this._objectListLen + " objects");
-        for (var i = 0, len = this._objectListLen; i < len; i++) {
-            var object = this._objectList[i];
-            console.log("XEO.Renderer : object[" + i + "] sortKey = " + object.sortKey);
-        }
-        console.log("--------------------------------------------------------------------------------------------------");
-    };
-
     XEO.renderer.Renderer.prototype._renderObjectList = function (params) {
 
-        var startTime = Date.now();
-
-        var lastChunkId = this._lastChunkId = this._lastChunkId || new Int32Array(30);
-        for (i = 0; i < 20; i++) {
-            lastChunkId[i] = -9999999999999;
-        }
-
-        var gl = this._canvas.gl;
-        var i;
-        var len;
-        var j;
-        var lenj;
-        var chunks;
-        var chunk;
-        var object;
-        var id;
+        var gl = this.gl;
 
         // The extensions needs to be re-queried in case the context was lost and has been recreated.
         if (XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]) {
             gl.getExtension("OES_element_index_uint");
-        }
-
-        var outputFramebuffer = this.bindOutputFramebuffer && this.unbindOutputFramebuffer && !params.pickObject && !params.pickSurface;
-
-        if (outputFramebuffer) {
-            this.bindOutputFramebuffer(params.pass);
         }
 
         var ambient = this._ambient;
@@ -5274,6 +5089,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         }
 
         var frameCtx = this._frameCtx;
+
         frameCtx.renderTarget = null;
         frameCtx.renderBuf = null;
         frameCtx.depthbufEnabled = null;
@@ -5282,7 +5098,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         frameCtx.blendEnabled = false;
         frameCtx.backfaces = true;
         frameCtx.frontface = true; // true == "ccw" else "cw"
-        frameCtx.pickIndex = 0; // Indexes this._pickObjects
         frameCtx.textureUnit = 0;
         frameCtx.transparent = false; // True while rendering transparency bin
         frameCtx.ambientColor = ambientColor;
@@ -5292,6 +5107,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         frameCtx.bindArray = 0;
         frameCtx.pass = params.pass;
         frameCtx.bindOutputFramebuffer = this.bindOutputFramebuffer;
+        frameCtx.pickViewMatrix = params.pickViewMatrix;
+        frameCtx.pickProjMatrix = params.pickProjMatrix;
+        frameCtx.pickIndex = 0;
+
+        // The extensions needs to be re-queried in case the context was lost and has been recreated.
+        if (XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]) {
+            gl.getExtension("OES_element_index_uint");
+        }
 
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
@@ -5306,375 +5129,174 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             gl.clearColor(ambientColor[0], ambientColor[1], ambientColor[2], 1.0);
         }
 
-        if (params.clear) {
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        }
 
         gl.enable(gl.DEPTH_TEST);
         gl.frontFace(gl.CCW);
         gl.disable(gl.CULL_FACE);
         gl.disable(gl.BLEND);
 
-        for (i = 0, len = this._objectListLen; i < len; i++) {
-
-            object = this._objectList[i];
-
-            if (!object.compiled) {
-                continue;
-            }
-
-            if (object.cull.culled === true) {
-                continue;
-            }
-
-            if (object.visibility.visible === false) {
-                continue;
-            }
-
-            chunks = object.chunks;
-
-            for (j = 0, lenj = chunks.length; j < lenj; j++) {
-
-                chunk = chunks[j];
-
-                if (chunk) {
-
-                    // As we apply the state chunk lists we track the ID of most types
-                    // of chunk in order to cull redundant re-applications of runs
-                    // of the same chunk - except for those chunks with a 'unique' flag,
-                    // because we don't want to collapse runs of draw chunks because
-                    // they contain the GL drawElements calls which render the objects.
-
-                    if (chunk.draw && (chunk.unique || lastChunkId[j] !== chunk.id)) {
-                        chunk.draw(frameCtx);
-                        lastChunkId[j] = chunk.id;
-                    }
-                }
-            }
-        }
-
-        var endTime = Date.now();
-
-        var frameStats = this.stats.frame;
-        frameStats.renderTime = (endTime - startTime) / 1000.0;
-        frameStats.drawElements = frameCtx.drawElements;
-        frameStats.useProgram = frameCtx.useProgram;
-        frameStats.bindTexture = frameCtx.bindTexture;
-        frameStats.bindArray = frameCtx.bindArray;
-    };
-
-
-    /**
-     * Builds the draw list, which is the list of draw state-chunks to apply to WebGL
-     * to render the visible objects in the object list for the next frame.
-     * Preserves the state sort order of the object list among the draw chunks.
-     */
-    XEO.renderer.Renderer.prototype._buildDrawList = function () {
-
-        this._clearExtraChunks();
-
-        this._lastDrawChunkId = this._lastDrawChunkId || [];
-        this._lastPickObjectChunkId = this._lastPickObjectChunkId || [];
-
         var i;
         var len;
-
-        for (i = 0; i < 20; i++) {
-            this._lastDrawChunkId[i] = null;
-            this._lastPickObjectChunkId[i] = null;
-        }
-
-        this._drawChunkListLen = 0;
-        this._pickObjectChunkListLen = 0;
-
-        // For each render target, a list of objects to render to that target
-        var targetObjectLists = {};
-
-        // A list of all the render target object lists
-        var targetListList = [];
-
-        // List of all targets
-        var targetList = [];
-
-        var object;
-        var colorRenderBuf;
-        var depthRenderBuf;
-        var target;
-        var targetChunk;
-        var list;
-        var id;
-
-        this._objectDrawList = this._objectDrawList || [];
-        this._objectDrawListLen = 0;
-        this._objectPickListLen = 0;
-
-        for (i = 0, len = this._objectListLen; i < len; i++) {
-
-            object = this._objectList[i];
-
-            // Skip culled objects
-
-            if (object.cull.culled === true) {
-                continue;
-            }
-
-            // Skip invisible objects
-
-            if (object.visibility.visible === false) {
-                continue;
-            }
-
-            // Put objects with render targets into a bin for each target
-
-            colorRenderBuf = object.colorTarget ? object.colorTarget.renderBuf : null;
-            depthRenderBuf = object.depthTarget ? object.depthTarget.renderBuf : null;
-
-            if (colorRenderBuf) {
-
-                target = object.colorTarget;
-
-                list = targetObjectLists[target.id];
-
-                if (!list) {
-
-                    list = [];
-
-                    targetObjectLists[target.id] = list;
-
-                    targetListList.push(list);
-
-                    id = -this._numExtraChunks;
-
-                    targetChunk = this._chunkFactory.getChunk(id, "renderTarget", object.program.program, target);
-
-                    this._extraChunks[this._numExtraChunks++] = targetChunk;
-
-                    targetList.push(targetChunk);
-                }
-
-                list.push(object);
-
-            } else if (depthRenderBuf) {
-
-                target = object.depthTarget;
-
-                list = targetObjectLists[target.id];
-
-                if (!list) {
-
-                    list = [];
-
-                    targetObjectLists[target.id] = list;
-
-                    targetListList.push(list);
-
-                    id = -this._numExtraChunks;
-
-                    targetChunk = this._chunkFactory.getChunk(id, "renderTarget", object.program.program, target);
-
-                    this._extraChunks[this._numExtraChunks++] = targetChunk;
-
-                    targetList.push(targetChunk);
-                }
-
-                list.push(object);
-
-            } else {
-
-                // Put objects without render targets into their own list
-
-                this._objectDrawList[this._objectDrawListLen++] = object;
-            }
-        }
-
-        // Append chunks for objects within render targets first
-
-        var pickable;
-        var renderTargetBound = false;
-
-        for (i = 0, len = targetListList.length; i < len; i++) {
-
-            targetChunk = targetList[i];
-            list = targetListList[i];
-
-            this._appendRenderTargetChunk(targetChunk);
-
-            for (var j = 0, lenj = list.length; j < lenj; j++) {
-
-                object = list[j];
-
-                pickable = object.stage && object.stage.pickable; // We'll only pick objects in pickable stages
-
-                this._appendObjectToDrawChunkLists(object, pickable);
-
-                renderTargetBound = true;
-            }
-        }
-
-        if (renderTargetBound) {
-
-            // Unbinds any render target bound previously
-
-            id = this._numExtraChunks * -1000.0;
-
-            this._appendRenderTargetChunk(this._chunkFactory.getChunk(id, "renderTarget", object.program.program, {}));
-
-            this._extraChunks[this._numExtraChunks++] = targetChunk;
-        }
-
-        // Append chunks for objects not in render targets
-
-        for (i = 0, len = this._objectDrawListLen; i < len; i++) {
-
-            object = this._objectDrawList[i];
-
-            pickable = !object.stage || (object.stage && object.stage.pickable); // Don't pick unpickable stages, ie. FX passes
-
-            this._appendObjectToDrawChunkLists(object, pickable);
-        }
-
-        // Draw list is now up to date.
-
-        this.drawListDirty = false;
-    };
-
-    XEO.renderer.Renderer.prototype._clearExtraChunks = function () {
-        for (var i = 0, len = this._numExtraChunks; i < len; i++) {
-            this._chunkFactory.putChunk(this._extraChunks[i]);
-        }
-        this._numExtraChunks = 0;
-    };
-
-    XEO.renderer.Renderer.prototype._appendRenderTargetChunk = function (chunk) {
-        this._drawChunkList[this._drawChunkListLen++] = chunk;
-    };
-
-    /**
-     * Appends an object to the draw and pick lists.
-     * @param object
-     * @param pickable
-     * @private
-     */
-    XEO.renderer.Renderer.prototype._appendObjectToDrawChunkLists = function (object, pickable) {
-
-        pickable = pickable && object.modes.pickable;
-
-        var chunks = object.chunks;
+        var j;
+        var lenj;
+        var chunks;
         var chunk;
 
-        for (var i = 0, len = chunks.length; i < len; i++) {
+        var lastChunkId = this._lastChunkId = this._lastChunkId || new Int32Array(30);
+        for (i = 0; i < 20; i++) {
+            lastChunkId[i] = -9999999999999;
+        }
 
-            chunk = chunks[i];
+        if (params.pickObject) {
 
-            if (chunk) {
+            // Pick an object
 
-                // As we apply the state chunk lists we track the ID of most types
-                // of chunk in order to cull redundant re-applications of runs
-                // of the same chunk - except for those chunks with a 'unique' flag,
-                // because we don't want to collapse runs of draw chunks because
-                // they contain the GL drawElements calls which render the objects.
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-                if (chunk.draw) {
+            this._objectPickListLen = 0;
 
-                    // Draw pass
+            var object;
 
-                    if (chunk.unique || this._lastDrawChunkId[i] !== chunk.id) {
+            for (i = 0, len = this._objectListLen; i < len; i++) {
 
-                        // Don't reapply repeated chunks
+                object = this._objectList[i];
 
-                        this._drawChunkList[this._drawChunkListLen] = chunk;
-                        this._lastDrawChunkId[i] = chunk.id;
-
-                        if (chunk.state && chunk.state.transparent && this._drawChunkListTransparentIndex < 0) {
-                            this._drawChunkListTransparentIndex = this._drawChunkListLen;
-                        }
-
-                        this._drawChunkListLen++
-                    }
+                if (!object.compiled) {
+                    continue;
                 }
 
-                if (chunk.pickObject) {
+                if (object.cull.culled === true) {
+                    continue;
+                }
 
-                    // Object-picking pass
+                if (object.visibility.visible === false) {
+                    continue;
+                }
 
-                    if (pickable) {
+                if (object.modes.pickable === false) {
+                    continue;
+                }
 
-                        // Don't pick unpickable objects
+                this._objectPickList[this._objectPickListLen++] = object;
 
-                        if (chunk.unique || this._lastPickObjectChunkId[i] !== chunk.id) {
+                chunks = object.chunks;
 
-                            // Don't reapply repeated chunks
+                for (j = 0, lenj = chunks.length; j < lenj; j++) {
 
-                            this._pickObjectChunkList[this._pickObjectChunkListLen++] = chunk;
-                            this._lastPickObjectChunkId[i] = chunk.id;
+                    chunk = chunks[j];
+
+                    if (chunk) {
+
+                        // As we apply the state chunk lists we track the ID of most types
+                        // of chunk in order to cull redundant re-applications of runs
+                        // of the same chunk - except for those chunks with a 'unique' flag,
+                        // because we don't want to collapse runs of draw chunks because
+                        // they contain the GL drawElements calls which render the objects.
+
+                        if (chunk.pickObject && (chunk.unique || lastChunkId[j] !== chunk.id)) {
+                            chunk.pickObject(frameCtx);
+                            lastChunkId[j] = chunk.id;
                         }
                     }
                 }
             }
-        }
 
-        if (pickable) {
-            this._objectPickList[this._objectPickListLen++] = object;
-        }
-    };
+        } else if (params.pickSurface) {
 
-    /**
-     * Logs the contents of the draw list to the console.
-     *
-     * @private
-     */
-    XEO.renderer.Renderer.prototype._logDrawList = function () {
+            // Pick a triangle on an object
 
-        console.log("--------------------------------------------------------------------------------------------------");
-        console.log(this._drawChunkListLen + " draw list chunks");
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        for (var i = 0, len = this._drawChunkListLen; i < len; i++) {
+            if (params.object) {
 
-            var chunk = this._drawChunkList[i];
+                chunks = params.object.chunks;
 
-            console.log("[chunk " + i + "] type = " + chunk.type);
+                for (i = 0, len = chunks.length; i < len; i++) {
+                    chunk = chunks[i];
+                    if (chunk.pickPrimitive) {
+                        chunk.pickPrimitive(frameCtx);
+                    }
+                }
+            }
 
-            switch (chunk.type) {
-                case "draw":
-                    console.log("\n");
-                    break;
+        } else {
 
-                case "renderTarget":
-                    console.log(" type = renderTarget");
-                    break;
+            // Render all objects
+
+            var startTime = (new Date()).getTime();
+
+            if (this.bindOutputFramebuffer) {
+                this.bindOutputFramebuffer(params.pass);
+            }
+
+            if (params.clear) {
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            }
+
+            for (i = 0, len = this._objectListLen; i < len; i++) {
+
+                object = this._objectList[i];
+
+                if (!object.compiled) {
+                    continue;
+                }
+
+                if (object.cull.culled === true) {
+                    continue;
+                }
+
+                if (object.visibility.visible === false) {
+                    continue;
+                }
+
+                chunks = object.chunks;
+
+                for (j = 0, lenj = chunks.length; j < lenj; j++) {
+
+                    chunk = chunks[j];
+
+                    if (chunk) {
+
+                        // As we apply the state chunk lists we track the ID of most types
+                        // of chunk in order to cull redundant re-applications of runs
+                        // of the same chunk - except for those chunks with a 'unique' flag,
+                        // because we don't want to collapse runs of draw chunks because
+                        // they contain the GL drawElements calls which render the objects.
+
+                        if (chunk.draw && (chunk.unique || lastChunkId[j] !== chunk.id)) {
+                            chunk.draw(frameCtx);
+                            lastChunkId[j] = chunk.id;
+                        }
+                    }
+                }
+            }
+
+            var endTime = Date.now();
+
+            var frameStats = this.stats.frame;
+
+            frameStats.renderTime = (endTime - startTime) / 1000.0;
+            frameStats.drawElements = frameCtx.drawElements;
+            frameStats.useProgram = frameCtx.useProgram;
+            frameStats.bindTexture = frameCtx.bindTexture;
+            frameStats.bindArray = frameCtx.bindArray;
+
+            if (frameCtx.renderBuf) {
+                frameCtx.renderBuf.unbind();
+            }
+
+            var numTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+
+            for (var ii = 0; ii < numTextureUnits; ++ii) {
+                gl.activeTexture(gl.TEXTURE0 + ii);
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                gl.bindTexture(gl.TEXTURE_2D, null);
+            }
+
+            if (this.unbindOutputFramebuffer) {
+                this.unbindOutputFramebuffer(params.pass);
             }
         }
-
-        console.log("--------------------------------------------------------------------------------------------------");
-    };
-
-    /**
-     * Logs the contents of the pick list to the console.
-     *
-     * @private
-     */
-    XEO.renderer.Renderer.prototype._logPickList = function () {
-
-        console.log("--------------------------------------------------------------------------------------------------");
-        console.log(this._pickObjectChunkListLen + " pick list chunks");
-
-        for (var i = 0, len = this._pickObjectChunkListLen; i < len; i++) {
-
-            var chunk = this._pickObjectChunkList[i];
-
-            console.log("[chunk " + i + "] type = " + chunk.type);
-
-            switch (chunk.type) {
-                case "draw":
-                    console.log("\n");
-                    break;
-                case "renderTarget":
-                    console.log(" type = renderTarget");
-                    break;
-            }
-        }
-
-        console.log("--------------------------------------------------------------------------------------------------");
     };
 
     /**
@@ -5694,15 +5316,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         return function (params) {
 
-            var gl = this._canvas.gl;
             var hit = null;
             var pickBuf = this.pickBuf;
 
             if (!pickBuf) {  // Lazy-create the pick buffer
-                pickBuf = new XEO.renderer.webgl.RenderBuffer({
-                    gl: this._canvas.gl,
-                    canvas: this._canvas.canvas
-                });
+                pickBuf = new XEO.renderer.webgl.RenderBuffer(this.canvas, this.gl);
                 this.pickBuf = pickBuf;
             }
 
@@ -5712,7 +5330,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             pickBuf.bind();
             pickBuf.clear();
 
-            var canvas = this._canvas.canvas;
+
             var pickBufX;
             var pickBufY;
             var origin;
@@ -5732,8 +5350,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 pickViewMatrix = math.lookAtMat4v(origin, look, up, tempMat4a);
                 pickProjMatrix = pickFrustumMatrix;
 
-                pickBufX = canvas.clientWidth * 0.5;
-                pickBufY = canvas.clientHeight * 0.5;
+                pickBufX = this.canvas.clientWidth * 0.5;
+                pickBufY = this.canvas.clientHeight * 0.5;
 
             } else {
 
@@ -5742,12 +5360,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     pickBufY = params.canvasPos[1];
 
                 } else {
-                    pickBufX = canvas.clientWidth * 0.5;
-                    pickBufY = canvas.clientHeight * 0.5;
+                    pickBufX = this.canvas.clientWidth * 0.5;
+                    pickBufY = this.canvas.clientHeight * 0.5;
                 }
             }
 
-            this._doDrawList({
+            this._renderObjectList({
                 pickObject: true,
                 clear: true,
                 pickViewMatrix: pickViewMatrix,
@@ -5778,7 +5396,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     pickBuf.clear();
 
-                    this._doDrawList({
+                    this._renderObjectList({
                         pickSurface: true,
                         object: object,
                         pickViewMatrix: pickViewMatrix,
@@ -5786,7 +5404,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         clear: true
                     });
 
-                    gl.finish();
+                    this.gl.finish();
 
                     // Convert picked pixel color to primitive index
 
@@ -5809,163 +5427,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         };
     })();
 
-    /** Renders either the draw or pick list.
-     *
-     * @param {*} params
-     * @param {Boolean} params.clear Set true to clear the color, depth and stencil buffers first
-     * @param {Boolean} params.pickObject
-     * @param {Boolean} params.pickSurface
-     * @param {Boolean} params.object
-     * @param {Boolean} params.opaqueOnly
-     * @param {Boolean} params.pickViewMatrix
-     * @private
-     */
-    XEO.renderer.Renderer.prototype._doDrawList = function (params) {
-
-        var gl = this._canvas.gl;
-        var i;
-        var len;
-
-        var outputFramebuffer = this.bindOutputFramebuffer && this.unbindOutputFramebuffer && !params.pickObject && !params.pickSurface;
-
-        if (outputFramebuffer) {
-            this.bindOutputFramebuffer(params.pass);
-        }
-
-        var ambient = this._ambient;
-        var ambientColor;
-        if (ambient) {
-            var color = ambient.color;
-            var intensity = ambient.intensity;
-            ambientColor = [color[0] * intensity, color[1] * intensity, color[2] * intensity, 1.0];
-        } else {
-            ambientColor = [0, 0, 0];
-        }
-
-        var frameCtx = this._frameCtx;
-
-        frameCtx.renderTarget = null;
-        frameCtx.renderBuf = null;
-        frameCtx.depthbufEnabled = null;
-        frameCtx.clearDepth = null;
-        frameCtx.depthFunc = gl.LESS;
-        frameCtx.blendEnabled = false;
-        frameCtx.backfaces = true;
-        frameCtx.frontface = true; // true == "ccw" else "cw"
-        frameCtx.pickIndex = 0; // Indexes this._pickObjects
-        frameCtx.textureUnit = 0;
-        frameCtx.transparent = false; // True while rendering transparency bin
-        frameCtx.ambientColor = ambientColor;
-        frameCtx.drawElements = 0;
-        frameCtx.useProgram = 0;
-        frameCtx.bindTexture = 0;
-        frameCtx.bindArray = 0;
-        frameCtx.pass = params.pass;
-        frameCtx.bindOutputFramebuffer = this.bindOutputFramebuffer;
-        frameCtx.pickViewMatrix = params.pickViewMatrix;
-        frameCtx.pickProjMatrix = params.pickProjMatrix;
-
-        // The extensions needs to be re-queried in case the context was lost and has been recreated.
-        if (XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]) {
-            gl.getExtension("OES_element_index_uint");
-        }
-
-        var frameStats = this.stats.frame;
-
-        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-
-        gl.enable(gl.DEPTH_TEST);
-        gl.frontFace(gl.CCW);
-        gl.disable(gl.CULL_FACE);
-        gl.disable(gl.BLEND);
-
-        if (this.transparent || params.pickObject || params.pickSurface) {
-
-            // Canvas is transparent - set clear color with zero alpha
-            // to allow background to show through
-
-            gl.clearColor(0, 0, 0, 0);
-
-        } else {
-
-            // Canvas is opaque - set clear color to the current ambient
-            // color, which can be provided by an ambient light source
-
-            gl.clearColor(ambientColor[0], ambientColor[1], ambientColor[2], 1.0);
-        }
-
-        if (params.clear) {
-            //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        }
-
-        if (params.pickObject) {
-
-            // Pick an object
-
-            for (i = 0, len = this._pickObjectChunkListLen; i < len; i++) {
-                this._pickObjectChunkList[i].pickObject(frameCtx);
-            }
-
-        } else if (params.pickSurface) {
-
-            // Pick a primitive of an object
-
-            if (params.object) {
-
-                var chunks = params.object.chunks;
-                var chunk;
-
-                for (i = 0, len = chunks.length; i < len; i++) {
-                    chunk = chunks[i];
-                    if (chunk.pickPrimitive) {
-                        chunk.pickPrimitive(frameCtx);
-                    }
-                }
-            }
-
-        } else {
-
-            // Render all visible objects
-
-            var startTime = (new Date()).getTime();
-
-            // Option to only render opaque objects
-            len = (params.opaqueOnly && this._drawChunkListTransparentIndex >= 0 ? this._drawChunkListTransparentIndex : this._drawChunkListLen);
-
-            for (i = 0; i < len; i++) {
-                this._drawChunkList[i].draw(frameCtx);
-            }
-
-            var endTime = (new Date()).getTime();
-
-            frameStats.renderTime = (endTime - startTime) / 1000.0;
-            frameStats.drawElements = frameCtx.drawElements;
-            frameStats.useProgram = frameCtx.useProgram;
-            frameStats.bindTexture = frameCtx.bindTexture;
-            frameStats.bindArray = frameCtx.bindArray;
-        }
-
-        //  gl.finish();
-
-        if (frameCtx.renderBuf) {
-            frameCtx.renderBuf.unbind();
-        }
-
-        var numTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
-        for (var ii = 0; ii < numTextureUnits; ++ii) {
-            gl.activeTexture(gl.TEXTURE0 + ii);
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
-            gl.bindTexture(gl.TEXTURE_2D, null);
-        }
-
-        if (outputFramebuffer) {
-            this.unbindOutputFramebuffer(params.pass);
-        }
-
-        frameStats.drawChunks = this._drawChunkListLen;
-    };
-
     /**
      * Reads the colors of some pixels in the last rendered frame.
      *
@@ -5977,10 +5438,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     XEO.renderer.Renderer.prototype.readPixels = function (pixels, colors, len, opaqueOnly) {
 
         if (!this._readPixelBuf) {
-            this._readPixelBuf = new XEO.renderer.webgl.RenderBuffer({
-                gl: this._canvas.gl,
-                canvas: this._canvas.canvas
-            });
+            this._readPixelBuf = new XEO.renderer.webgl.RenderBuffer(this.canvas, this.gl);
         }
 
         this._readPixelBuf.bind();
@@ -6496,15 +5954,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         return this.attributes[name];
     };
 
-    //XEO.renderer.webgl.Program.prototype.bindFloatArrayBuffer = function (name, buffer) {
-    //
-    //    if (!this.allocated) {
-    //        return;
-    //    }
-    //
-    //    return this.attributes[name];
-    //};
-
     XEO.renderer.webgl.Program.prototype.bindTexture = function (name, texture, unit) {
 
         if (!this.allocated) {
@@ -6544,7 +5993,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.webgl.RenderBuffer = function (cfg) {
+    XEO.renderer.webgl.RenderBuffer = function (canvas, gl, options) {
+
+        options = options || {};
 
         /**
          * True as soon as this buffer is allocated and ready to go
@@ -6554,12 +6005,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         /**
          * The HTMLCanvasElement
          */
-        this.canvas = cfg.canvas;
+        this.canvas = canvas;
 
         /**
          * WebGL context
          */
-        this.gl = cfg.gl;
+        this.gl = gl;
 
         /**
          * Buffer resources, set up in #_touch
@@ -6574,7 +6025,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         /**
          * Optional explicit buffer size - when omitted, buffer defaults to canvas size
          */
-        this.size = cfg.size;
+        this.size = options.size;
     };
 
     /**
@@ -7307,7 +6758,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.State
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      */
@@ -7341,7 +6792,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Visibility
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @param cfg.visible {Boolean} Flag which controls visibility of the associated render objects.
@@ -7373,7 +6824,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Mode
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @param cfg.pickable {Boolean} Flag which controls pickability of the associated render objects.
@@ -7392,7 +6843,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Layer
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @param cfg.priority {Number} Layer render priority.
@@ -7408,7 +6859,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Stage
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @param cfg.priority {Number} Stage render priority.
@@ -7424,7 +6875,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.DepthBuf
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @param cfg.clearDepth {Number} Clear depth
@@ -7441,7 +6892,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.ColorBuf
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @param cfg.blendEnabled {Boolean} Indicates if blending is enebled for
@@ -7458,7 +6909,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Lights
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @param cfg.colorMask {Array of Object} The light sources
@@ -7474,7 +6925,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.PhongMaterial
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7489,7 +6940,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Reflect
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7504,7 +6955,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Transform
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7519,7 +6970,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Billboard
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7550,7 +7001,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.RenderTarget
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7568,7 +7019,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Clips
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7583,7 +7034,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.MorphTargets
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7598,7 +7049,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Shader
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7613,7 +7064,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.ShaderParams
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7628,7 +7079,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Texture
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7644,7 +7095,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Fresnel
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7660,7 +7111,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.Geometry
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7675,7 +7126,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      renderer.ProgramState
      @module XEO
-
+     
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
@@ -7986,13 +7437,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      *  Manages {@link XEO.renderer.ProgramState} instances.
      * @param stats Collects runtime statistics
-     * @param cfg Configs
+     * @param gl WebGL context
      */
-    XEO.renderer.ProgramFactory = function (stats, cfg) {
+    XEO.renderer.ProgramFactory = function (stats, gl) {
 
         this.stats = stats;
 
-        this._canvas = cfg.canvas;
+        this._gl = gl;
 
         this._programStates = {};
     };
@@ -8014,11 +7465,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             var source = XEO.renderer.ProgramSourceFactory.getSource(hash, states);
 
-            var program = new XEO.renderer.Program(this.stats, hash, source, this._canvas.gl);
+            var program = new XEO.renderer.Program(this.stats, hash, source, this._gl);
 
             programState = new XEO.renderer.ProgramState({
                 program: program,
-                useCount: 1
+                useCount: 0
             });
 
             this._programStates[hash] = programState;
@@ -8036,9 +7487,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      */
     XEO.renderer.ProgramFactory.prototype.put = function (programState) {
 
-        var program = programState.program;
+        if (--programState.useCount <= 0) {
 
-        if (--program.useCount <= 0) {
+            var program = programState.program;
 
             program.draw.destroy();
             program.pickObject.destroy();
@@ -8055,9 +7506,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Rebuild all programs in the pool after WebGL context was lost and restored.
      */
-    XEO.renderer.ProgramFactory.prototype.webglRestored = function () {
+    XEO.renderer.ProgramFactory.prototype.webglRestored = function (gl) {
 
-        var gl = this._canvas.gl;
+        this._gl = gl;
 
         for (var id in this._programStates) {
             if (this._programStates.hasOwnProperty(id)) {
@@ -8160,12 +7611,16 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         var normals; // True when rendering state contains normals
         var normalMapping; // True when rendering state contains tangents
         var reflection; // True when rendering state contains reflections
-
         var diffuseFresnel;
         var specularFresnel;
         var opacityFresnel;
         var reflectivityFresnel;
         var emissiveFresnel;
+
+        var vertexPickObjectSrc;
+        var fragmentPickObjectSrc;
+        var vertexPickPrimSrc;
+        var fragmentPickPrimSrc;
 
         /**
          * Get source code for a program to render the given states.
@@ -8186,7 +7641,6 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             normals = hasNormals();
             normalMapping = hasNormalMap();
             reflection = hasReflection();
-
             diffuseFresnel = states.material.diffuseFresnel;
             specularFresnel = states.material.specularFresnel;
             opacityFresnel = states.material.opacityFresnel;
@@ -8257,6 +7711,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         // composed from state, in the same manner as the draw shaders.
 
         function vertexPickObject() {
+            if (vertexPickObjectSrc) {
+                return vertexPickObjectSrc;
+            }
             begin();
             add("// Object picking vertex shader");
             add("attribute vec3 xeo_aPosition;");
@@ -8272,21 +7729,27 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             add("   xeo_vViewPosition = xeo_uViewMatrix * xeo_vWorldPosition;");
             add("   gl_Position = xeo_uProjMatrix * xeo_vViewPosition;");
             add("}");
-            return end();
+            return vertexPickObjectSrc = end();
         }
 
         function fragmentPickObject() {
+            if (fragmentPickObjectSrc) {
+                return fragmentPickObjectSrc;
+            }
             begin();
             add("// Object picking fragment shader");
-            add("precision " + getFSFloatPrecision(states._canvas.gl) + " float;");
+            add("precision " + getFSFloatPrecision(states.gl) + " float;");
             add("uniform vec4 xeo_uPickColor;");
             add("void main(void) {");
             add("   gl_FragColor = xeo_uPickColor; ");
             add("}");
-            return end();
+            return fragmentPickObjectSrc = end();
         }
 
         function vertexPickPrimitive() {
+            if (vertexPickPrimSrc) {
+                return vertexPickPrimSrc;
+            }
             begin();
             add("// Triangle picking vertex shader");
             add("attribute vec3 xeo_aPosition;");
@@ -8305,18 +7768,21 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             add("   xeo_vColor = xeo_aColor;");
             add("   gl_Position = xeo_uProjMatrix * viewPosition;");
             add("}");
-            return end();
+            return vertexPickPrimSrc = end();
         }
 
         function fragmentPickPrimitive() {
+            if (fragmentPickPrimSrc) {
+                return fragmentPickPrimSrc;
+            }
             begin();
             add("// Triangle picking fragment shader");
-            add("precision " + getFSFloatPrecision(states._canvas.gl) + " float;");
+            add("precision " + getFSFloatPrecision(states.gl) + " float;");
             add("varying vec4 xeo_vColor;");
             add("void main(void) {");
             add("   gl_FragColor = xeo_vColor;");
             add("}");
-            return end();
+            return fragmentPickPrimSrc = end();
         }
 
         function vertexDraw() {
@@ -8631,7 +8097,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             add("// Drawing fragment shader");
 
-            add("precision " + getFSFloatPrecision(states._canvas.gl) + " float;");
+            add("precision " + getFSFloatPrecision(states.gl) + " float;");
             add();
 
             if (normals) {
@@ -9269,7 +8735,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Restores the chunks in this factory after a WebGL context recovery.
      */
-    XEO.renderer.ChunkFactory.prototype.webglRestored = function () {
+    XEO.renderer.ChunkFactory.prototype.webglRestored = function (gl) {
 
         var types = this.types;
         var chunkType;
@@ -9561,15 +9027,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             if (this._uPickColorObject) {
 
-                frameCtx.pickObjects[frameCtx.pickIndex++] = this.object;
+                frameCtx.pickIndex++;
 
                 var b = frameCtx.pickIndex >> 16 & 0xFF;
                 var g = frameCtx.pickIndex >> 8 & 0xFF;
                 var r = frameCtx.pickIndex & 0xFF;
 
                 this._uPickColorObject.setValue([r / 255, g / 255, b / 255, 1]);
-
-                //frameCtx.pickIndex++
             }
 
             if (state.indices) {
@@ -10221,7 +9685,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 if (this._uSpecularFresnelPower) {
                     this._uSpecularFresnelPower.setValue(state.specularFresnel.power);
-                }
+            }
             }
 
             if (state.opacityFresnel) {
@@ -10826,20 +10290,22 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             this.destroyed = false;
 
             /// Attached components with names.
-            this._attached = {};
+            this._attached = {}; // Protected
 
             // Attached components keyed to IDs
-            this._attachments = {};
+            this._attachments = null; // Lazy-instantiated map
 
-            // Events
-            this._handleMap = new XEO.utils.Map(); // Subscription handle pool
-            this._handleEvents = {}; // Subscription handles mapped to event names
-            this._eventSubs = {}; // Event names mapped to subscribers
-            this._events = {}; // Maps names to events
+            // Event support - lazy creating these properties because
+            // they are expensive to have around if not using them
+            this._events = null;
+            this._handleMap = null; // Subscription handle pool
+            this._handleEvents = null; // Subscription handles mapped to event names
+            this._eventSubs = null; // Event names mapped to subscribers
+            this._events = null; // Maps names to events
             this._eventCallDepth = 0; // Helps us catch stack overflows from recursive events
 
             // Components created with #create
-            this._sharedComponents = {};
+            this._sharedComponents = null; // Lazy-instantiated map
 
             if (this.scene && this.type !== "XEO.Scene") { // HACK: Don't add scene to itself
 
@@ -10969,6 +10435,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          */
         fire: function (event, value, forget) {
 
+            if (!this._events) {
+                this._events = {};
+            }
+
+            if (!this._eventSubs) {
+                this._eventSubs = {};
+            }
+
             if (forget !== true) {
                 this._events[event] = value; // Save notification
             }
@@ -11009,6 +10483,19 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * @return {String} Handle to the subscription, which may be used to unsubscribe with {@link #off}.
          */
         on: function (event, callback, scope) {
+
+            if (!this._events) {
+                this._events = {};
+            }
+            if (!this._handleMap) {
+                this._handleMap = new XEO.utils.Map(); // Subscription handle pool
+            }
+            if (!this._handleEvents) {
+                this._handleEvents = {};
+            }
+            if (!this._eventSubs) {
+                this._eventSubs = {};
+            }
             var subs = this._eventSubs[event];
             if (!subs) {
                 subs = {};
@@ -11036,6 +10523,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          */
         off: function (handle) {
             if (handle === undefined || handle === null) {
+                return;
+            }
+            if (!this._handleEvents) {
                 return;
             }
             var event = this._handleEvents[handle];
@@ -11250,6 +10740,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 }
             }
 
+            if (!this._attachments) {
+                this._attachments = {};
+            }
+
             var oldComponent = this._attached[name];
             var subs;
             var i;
@@ -11421,6 +10915,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 // Register component on this component so that we can
                 // automatically destroy it when we destroy this component
 
+                if (!this._sharedComponents) {
+                    this._sharedComponents = {};
+                }
+
                 if (!this._sharedComponents[component.id]) {
                     this._sharedComponents[component.id] = component;
                 }
@@ -11569,32 +11067,36 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var i;
             var len;
 
-            for (id in this._attachments) {
-                if (this._attachments.hasOwnProperty(id)) {
+            if (!this._attachments) {
+                for (id in this._attachments) {
+                    if (this._attachments.hasOwnProperty(id)) {
 
-                    attachment = this._attachments[id];
-                    component = attachment.component;
+                        attachment = this._attachments[id];
+                        component = attachment.component;
 
-                    // Unsubscribe from properties on the child
+                        // Unsubscribe from properties on the child
 
-                    subs = attachment.subs;
+                        subs = attachment.subs;
 
-                    for (i = 0, len = subs.length; i < len; i++) {
-                        component.off(subs[i]);
+                        for (i = 0, len = subs.length; i < len; i++) {
+                            component.off(subs[i]);
+                        }
                     }
                 }
             }
 
             // Release components created with #create
 
-            for (id in this._sharedComponents) {
-                if (this._sharedComponents.hasOwnProperty(id)) {
+            if (this._sharedComponents) {
+                for (id in this._sharedComponents) {
+                    if (this._sharedComponents.hasOwnProperty(id)) {
 
-                    component = this._sharedComponents[id];
+                        component = this._sharedComponents[id];
 
-                    delete this._sharedComponents[id];
+                        delete this._sharedComponents[id];
 
-                    this.scene._putSharedComponent(component);
+                        this.scene._putSharedComponent(component);
+                    }
                 }
             }
 
@@ -11621,8 +11123,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         _destroy: function () {
         }
     });
-})
-();
+})();
 ;/**
  A **Scene** models a 3D scene as a fully-editable and serializable <a href="http://gameprogrammingpatterns.com/component.html" target="_other">component-entity</a> graph.
 
@@ -11940,8 +11441,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     alert("xeoEngine failed to find WebGL!");
                 });
 
-            this._renderer = new XEO.renderer.Renderer(XEO.stats, {
-                canvas: this.canvas,
+            this._renderer = new XEO.renderer.Renderer(XEO.stats, this.canvas.canvas, this.canvas.gl, {
                 transparent: cfg.transparent
             });
 
@@ -12252,7 +11752,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._passes = value;
 
-                    this._renderer.drawListDirty = true;
+                    this._renderer.imageDirty = true;
 
                     /**
                      Fired whenever this Scene's {{#crossLink "Scene/passes:property"}}{{/crossLink}} property changes.
@@ -12288,7 +11788,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._clearEachPass = value;
 
-                    this._renderer.drawListDirty = true;
+                    this._renderer.imageDirty = true;
 
                     /**
                      Fired whenever this Scene's {{#crossLink "Scene/clearEachPass:property"}}{{/crossLink}} property changes.
@@ -13266,7 +12766,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 }
 
                                 math.normalizeVec3(localRayDir);
-                                math.rayTriangleIntersect(localRayOrigin, localRayDir, a, b, c, position);
+                                math.rayPlaneIntersect(localRayOrigin, localRayDir, a, b, c, position);
 
                                 // Get Local-space cartesian coordinates of the ray-triangle intersection
 
@@ -14751,13 +14251,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @type {{}|*}
              */
             this.contextAttr = cfg.contextAttr || {};
-
             this.contextAttr.alpha = this.transparent;
-            this.contextAttr.depth = true; // Need depth buffer
-            this.contextAttr.preMultipliedAlpha = true;
-            this.contextAttr.preserveDrawingbuffer = false;
-            this.contextAttr.antialias = true;  // TODO
-            //this.contextAttr.stencil = true; // Request stencil buffer
 
             if (!cfg.canvas) {
 
@@ -15223,7 +14717,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  // Decrement the count; count now zero,
  // so spinner becomes invisible
  spinner.process--;
- ````
+````
 
  By default, a Spinner shows while resources are loading for components like
  {{#crossLink "Texture"}}{{/crossLink}}. We can disable that like this:
@@ -15309,7 +14803,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     value = value !== false;
 
                     this._textures = value;
-
+                    
                     /**
                      * Fired whenever this Spinner's  {{#crossLink "Spinner/textures:property"}}{{/crossLink}} property changes.
                      *
@@ -19234,7 +18728,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._state.culled = value;
 
-                    this._renderer.drawListDirty = true;
+                    this._renderer.imageDirty = true;
 
                     /**
                      Fired whenever this Cull's {{#crossLink "Cull/culled:property"}}{{/crossLink}} property changes.
@@ -19287,35 +18781,35 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  two {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
  ````javascript
- var visibility = new XEO.Visibility({
+var visibility = new XEO.Visibility({
     visible: true
 });
 
- // Create two Entities whose visibility will be controlled by our Visibility
+// Create two Entities whose visibility will be controlled by our Visibility
 
- var entity1 = new XEO.Entity({
+var entity1 = new XEO.Entity({
     visibility: visibility
 });
 
- var entity2 = new XEO.Entity({
+var entity2 = new XEO.Entity({
     visibility: visibility
 });
 
- // Subscribe to change on the Visibility's "visible" property
- var handle = visibility.on("visible", function(value) {
+// Subscribe to change on the Visibility's "visible" property
+var handle = visibility.on("visible", function(value) {
     //...
 });
 
- // Hide our Entities by flipping the Visibility's "visible" property,
- // which will also call our handler
- visibility.visible = false;
+// Hide our Entities by flipping the Visibility's "visible" property,
+// which will also call our handler
+visibility.visible = false;
 
- // Unsubscribe from the Visibility again
- visibility.off(handle);
+// Unsubscribe from the Visibility again
+visibility.off(handle);
 
- // When we destroy our Visibility, the Entities will fall back
- // on the Scene's default Visibility instance
- visibility.destroy();
+// When we destroy our Visibility, the Entities will fall back
+// on the Scene's default Visibility instance
+visibility.destroy();
  ````
  @class Visibility
  @module XEO
@@ -19363,7 +18857,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._state.visible =  value !== false;
 
-                    this._renderer.drawListDirty = true;
+                    this._renderer.imageDirty = true;
 
                     /**
                      Fired whenever this Visibility's {{#crossLink "Visibility/visible:property"}}{{/crossLink}} property changes.
@@ -21309,7 +20803,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  @param [cfg.tube=0.3] {Number} The tube radius of the TorusGeometry.
  @param [cfg.radialSegments=32] {Number} The number of radial segments that make up the TorusGeometry.
  @param [cfg.tubeSegments=24] {Number} The number of tubular segments that make up the TorusGeometry.
- @param [cfg.arc=Math.PI / 2.0] {Number} The length of the TorusGeometry's arc in degrees, where 360 is closed torus.
+ @param [cfg.arc=Math.PI / 2.0] {Number} The length of the TorusGeometry's arc in in radians, where Math.PI*2 is a closed torus.
  @param [cfg.lod=1] {Number} Level-of-detail, in range [0..1].
  @extends Geometry
  */
@@ -21645,7 +21139,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             },
 
             /**
-             * The length of the TorusGeometry's arc in degrees, where 360 is closed torus.
+             * The length of the TorusGeometry's arc in radians, where Math.PI*2 is a closed torus.
              *
              * Fires a {{#crossLink "TorusGeometry/arc:event"}}{{/crossLink}} event on change.
              *
@@ -23358,8 +22852,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
             }
 
             this.positions = positions;
-            //   this.normals = positions;
-            //  this.uv = positions;
+         //   this.normals = positions;
+          //  this.uv = positions;
             this.indices = indices;
         },
 
@@ -23640,8 +23134,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
  var collection2 = new XEO.Collection();
 
  collection2.add([  // Add two components
- geometry,
- "XEO.Entity",
+    geometry,
+    "XEO.Entity",
  ]);
  ````
 
@@ -27866,6 +27360,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
      <li>[Model with entity explorer UI](../../examples/#demos_ui_explorer)</li>
      <li>[Fly camera to model entities](../../examples/#boundaries_flyToBoundary)</li>
      <li>[Ensuring individual materials on Model entities](../../examples/#importing_gltf_techniques_uniqueMaterials)</li>
+     <li>[Baking transform hierarchies](../../examples/#importing_gltf_techniques_bakeTransforms)</li>
      <li>[Attaching transforms to Models, via constructor](../../examples/#importing_gltf_techniques_configTransform)</li>
      <li>[Attaching transforms to Models, via property](../../examples/#importing_gltf_techniques_attachTransform)</li>
      </ul>
@@ -27900,7 +27395,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             // Dummy transform to make it easy to graft user-supplied
             // transforms above loaded entities
 
-            this._dummyRootTransform = this.create(XEO.Translate, {
+            this._dummyRootTransform = this.create(XEO.Transform, {
                 meta: "dummy"
             });
 
@@ -30716,7 +30211,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
         _update: function () {
 
-            //   var gl = this.scene.canvas.gl;
+         //   var gl = this.scene.canvas.gl;
 
             var state = this._state;
 
@@ -30878,7 +30373,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  * @module XEO
  * @submodule entities
  */;/**
- A **Entity** is an object within a xeoEngine {{#crossLink "Scene"}}Scene{{/crossLink}}.
+ An **Entity** is an object within a xeoEngine {{#crossLink "Scene"}}Scene{{/crossLink}}.
 
  ## Overview
 
@@ -32320,7 +31815,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
         },
 
-        __compile: function () {
+        _compile: function () {
 
             var self = this;
 
@@ -32350,7 +31845,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             }
         },
 
-        _compile: function () {
+        __compile: function () {
 
             var attached = this._attached;
 
@@ -32760,9 +32255,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     if (this._state.active === value) {
                         return;
                     }
-
+                    
                     this._state.active = value;
-
+                    
                     /**
                      * Fired whenever this DepthBuf's {{#crossLink "DepthBuf/active:property"}}{{/crossLink}} property changes.
                      * @event active
@@ -33512,7 +33007,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                     this._state.pickable = value;
 
-                    this._renderer.drawListDirty = true;
+                    // No need to trigger a render;
+                    // state is only used when picking
 
                     /**
                      * Fired whenever this Modes' {{#crossLink "Modes/pickable:property"}}{{/crossLink}} property changes.
@@ -34112,9 +33608,16 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    this._state.pickable = value !== false;
+                    value = value !== false;
 
-                    this._renderer.drawListDirty = true;
+                    if (this._state.pickable === value) {
+                        return;
+                    }
+
+                    this._state.pickable = value;
+
+                    // No need to trigger a render;
+                    // state is only used when picking
 
                     /**
                      * Fired whenever this Stage's
@@ -35805,6 +35308,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  You only need to supply an ID if you need to be able to find the Transform by ID within the {{#crossLink "Scene"}}Scene{{/crossLink}}.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Transform.
  @param [cfg.parent] {String|Transform} ID or instance of a parent Transform within the same {{#crossLink "Scene"}}Scene{{/crossLink}}.
+ @param [cfg.postMultiply=true] {Boolean} Flag that indicates whether this Transform is post-multiplied (default) or
+ pre-multiplied by its {{#crossLink "Transform/parent:property"}}{{/crossLink}} Transform.
  @param [cfg.matrix=[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]] {Float32Array} One-dimensional, sixteen element array of elements for the Transform, an identity matrix by default.
  @extends Component
  */
@@ -35852,6 +35357,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             this.parent = cfg.parent;
             this.matrix = cfg.matrix;
+            this.postMultiply = cfg.postMultiply;
         },
 
         _parentUpdated: function () {
@@ -35897,7 +35403,11 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 // Multiply parent's leaf matrix by this matrix,
                 // store result in this leaf matrix
 
-                XEO.math.mulMat4(this._parent.leafMatrix, this._matrix, this._leafMatrix);
+                if (this._postMultiply) {
+                    XEO.math.mulMat4(this._parent.leafMatrix, this._matrix, this._leafMatrix);
+                } else {
+                    XEO.math.mulMat4(this._matrix, this._parent.leafMatrix, this._leafMatrix);
+                }
             }
 
             this._renderer.imageDirty = true;
@@ -35979,6 +35489,47 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             },
 
             /**
+             * Flag that indicates whether this Transform is post-multiplied (default) or pre-multiplied by
+             * its {{#crossLink "Transform/parent:property"}}{{/crossLink}} Transform.
+             *
+             * Fires an {{#crossLink "Transform/postMultiply:event"}}{{/crossLink}} event on change.
+             *
+             * @property postMultiply
+             * @default true
+             * @type Boolean
+             */
+            postMultiply: {
+
+                set: function (value) {
+
+                    value = value !== false;
+
+                    if (this._postMultiply === value) {
+                        return;
+                    }
+
+                    this._postMultiply = value;
+
+                    this._leafMatrixDirty = true;
+
+                    this._renderer.imageDirty = true;
+
+                    this.fire("updated", true);
+
+                    /**
+                     * Fired whenever this Transform's {{#crossLink "Transform/postMultiply:property"}}{{/crossLink}} property changes.
+                     * @event postMultiply
+                     * @param value The property's new value
+                     */
+                    this.fire('postMultiply', this._postMultiply);
+                },
+
+                get: function () {
+                    return this._postMultiply;
+                }
+            },
+
+            /**
              * The Transform's local matrix.
              *
              * Fires a {{#crossLink "Transform/matrix:event"}}{{/crossLink}} event on change.
@@ -36045,7 +35596,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
         _getJSON: function () {
             var json = {
-                matrix: Array.prototype.slice.call(this._matrix)
+                matrix: Array.prototype.slice.call(this._matrix),
+                postMultiply: this._postMultiply
             };
             if (this._parent) {
                 json.parent = this._parent.id;
@@ -36817,7 +36369,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  scene.camera.view.zoom(120);
 
  scene.on("tick",
- function () {
+     function () {
 
           var view = scene.camera.view;
 
