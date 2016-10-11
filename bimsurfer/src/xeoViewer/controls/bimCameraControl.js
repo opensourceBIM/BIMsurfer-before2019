@@ -19,18 +19,13 @@ define(function () {
 
             // Configs
 
-            var sensitivityKeyboardPan = cfg.sensitivityKeyboardPan || 0.5;
             var sensitivityKeyboardRotate = cfg.sensitivityKeyboardRotate || 0.5;
-            var sensitivityKeyboardZoom = cfg.sensitivityKeyboardZoom || 0.5;
 
             var orthoScaleRate = 0.02; // Rate at which orthographic scale changes with zoom
 
             var canvasPickTolerance = 4;
             var worldPickTolerance = 3;
 
-            var tempVec3a = math.vec3();
-            var tempVec3b = math.vec3();
-            var tempVec3c = math.vec3();
             var pitchMat = math.mat4();
 
             var camera = cfg.camera;
@@ -54,7 +49,7 @@ define(function () {
             var firstPickWorldPos = math.vec2(); // World position of first pick
             var firstPickTime; // Time of first pick
 
-            this._rotatePos = math.vec3([0, 0, 0]); // World-space pivot point we're currently rotating about
+            var rotatePos = this._rotatePos = math.vec3([0, 0, 0]); // World-space pivot point we're currently rotating about
 
             var lastCanvasPos = math.vec2(); // Mouse's position in previous tick
             var rotationDeltas = math.vec2(); // Accumulated angle deltas while rotating with keyboard or mouse
@@ -67,13 +62,13 @@ define(function () {
             var lastHoverDistance = null;
 
             // Returns the inverse of the camera's current view transform matrix
-            var getInverseViewMat = (function() {
+            var getInverseViewMat = (function () {
                 var viewMatDirty = true;
-                camera.on("viewMatrix", function() {
+                camera.on("viewMatrix", function () {
                     viewMatDirty = true;
                 });
                 var inverseViewMat = math.mat4();
-                return function() {
+                return function () {
                     if (viewMatDirty) {
                         math.inverseMat4(view.matrix, inverseViewMat);
                     }
@@ -82,13 +77,13 @@ define(function () {
             })();
 
             // Returns the inverse of the camera's current projection transform matrix
-            var getInverseProjectMat = (function() {
+            var getInverseProjectMat = (function () {
                 var projMatDirty = true;
-                camera.on("projectMatrix", function() {
+                camera.on("projectMatrix", function () {
                     projMatDirty = true;
                 });
                 var inverseProjectMat = math.mat4();
-                return function() {
+                return function () {
                     if (projMatDirty) {
                         math.inverseMat4(project.matrix, inverseProjectMat);
                     }
@@ -97,13 +92,13 @@ define(function () {
             })();
 
             // Returns the transposed copy the camera's current projection transform matrix
-            var getTransposedProjectMat = (function() {
+            var getTransposedProjectMat = (function () {
                 var projMatDirty = true;
-                camera.on("projectMatrix", function() {
+                camera.on("projectMatrix", function () {
                     projMatDirty = true;
                 });
                 var transposedProjectMat = math.mat4();
-                return function() {
+                return function () {
                     if (projMatDirty) {
                         math.transposeMat4(project.matrix, transposedProjectMat);
                     }
@@ -123,6 +118,19 @@ define(function () {
                         diag = math.getAABBDiag(scene.worldBoundary.aabb);
                     }
                     return diag;
+                };
+            })();
+
+            var rotate = (function () {
+                var tempVec3a = math.vec3();
+                var tempVec3b = math.vec3();
+                var tempVec3c = math.vec3();
+                return function (p) {
+                    console.log("rotate(): rotatePos = " + rotatePos);
+                    var p1 = math.subVec3(p, rotatePos, tempVec3a);
+                    var p2 = math.transformVec3(pitchMat, p1, tempVec3b);
+                    var p3 = math.addVec3(p2, rotatePos, tempVec3c);
+                    return math.rotateVec3Z(p3, rotatePos, -rotationDeltas[0] * math.DEGTORAD, math.vec3());
                 };
             })();
 
@@ -214,7 +222,7 @@ define(function () {
             }
 
             function setOrbitPitchAxis() {
-                math.cross3Vec3(math.normalizeVec3(math.subVec3(view.eye, view.look, [])), view.up, orbitPitchAxis);
+                math.cross3Vec3(math.normalizeVec3(math.subVec3(view.eye, view.look, math.vec3())), view.up, orbitPitchAxis);
             }
 
             var setCursor = (function () {
@@ -265,7 +273,7 @@ define(function () {
                         pickSurface: true
                     });
 
-                    if (pickHit) {
+                    if (pickHit && pickHit.worldPos) {
 
                         var pickWorldPos = pickHit.worldPos.slice();
                         var pickCanvasPos = canvasPos;
@@ -280,7 +288,7 @@ define(function () {
 
                                 // Double-clicked
 
-                                self._rotatePos = pickWorldPos;
+                                rotatePos.set(pickWorldPos);
 
                                 showRotationPoint(pickWorldPos);
                             }
@@ -380,15 +388,15 @@ define(function () {
 
                     // Get last two columns of projection matrix
                     var transposedProjectMat = getTransposedProjectMat();
-                    var Pt3 = transposedProjectMat.subarray(8,12);
+                    var Pt3 = transposedProjectMat.subarray(8, 12);
                     var Pt4 = transposedProjectMat.subarray(12);
 
                     // TODO: Should be simpler to get the projected Z value
-                    var D = [0,0,-(lastHoverDistance || sceneSize),1];
+                    var D = [0, 0, -(lastHoverDistance || sceneSize), 1];
                     var Z = math.dotVec4(D, Pt3) / math.dotVec4(D, Pt4);
 
                     // Returns in camera space and model space as array of two points
-                    var unproject = function(p) {
+                    var unproject = function (p) {
                         var cp = math.vec4();
                         cp[0] = (p[0] - cw2) / cw2;
                         cp[1] = (p[1] - ch2) / ch2;
@@ -427,7 +435,7 @@ define(function () {
 
                         // Arbitrary constants because it doesn't factor in distance to orbitCenter
                         //           v because reversed above
-                        var xDelta = - Math.atan(tempVecHover[0] * 4);
+                        var xDelta = -Math.atan(tempVecHover[0] * 4);
                         var yDelta = Math.atan(tempVecHover[1] * 4);
 
                         rotationDeltas[0] += xDelta;
@@ -437,7 +445,7 @@ define(function () {
 
                         view.eye = rotate(rotateStartEye);
                         view.look = rotate(rotateStartLook);
-                        view.up = math.subVec3(rotate(rotateStartUp), view.eye, []);
+                        view.up = math.subVec3(rotate(rotateStartUp), view.eye, math.vec3());
 
                         setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
                     }
@@ -445,13 +453,6 @@ define(function () {
                     lastCanvasPos[0] = canvasPos[0];
                     lastCanvasPos[1] = canvasPos[1];
                 });
-
-            function rotate(p) {
-                var p1 = math.subVec3(p, self._rotatePos, tempVec3a);
-                var p2 = math.transformVec3(pitchMat, p1, tempVec3b);
-                var p3 = math.addVec3(p2, self._rotatePos, tempVec3c);
-                return math.rotateVec3Z(p3, self._rotatePos, -rotationDeltas[0] * math.DEGTORAD, math.vec3());
-            }
 
             input.on("keydown",
                 function (keyCode) {
@@ -525,76 +526,71 @@ define(function () {
             // Keyboard rotate camera
             //---------------------------------------------------------------------------------------------------------
 
-            (function () {
 
-                var tempVec3 = math.vec3();
+            scene.on("tick",
+                function (params) {
 
-                scene.on("tick",
-                    function (params) {
+                    if (!input.mouseover) {
+                        return;
+                    }
 
-                        if (!input.mouseover) {
-                            return;
-                        }
+                    if (mouseDown) {
+                        return;
+                    }
 
-                        if (mouseDown) {
-                            return;
-                        }
+                    if (flying) {
+                        return;
+                    }
 
-                        if (flying) {
-                            return;
-                        }
+                    if (!input.ctrlDown && !input.altDown) {
 
-                        var elapsed = params.deltaTime;
+                        var left = input.keyDown[input.KEY_LEFT_ARROW];
+                        var right = input.keyDown[input.KEY_RIGHT_ARROW];
+                        var up = input.keyDown[input.KEY_UP_ARROW];
+                        var down = input.keyDown[input.KEY_DOWN_ARROW];
 
-                        var yawRate = sensitivityKeyboardRotate * 0.3;
-                        var pitchRate = sensitivityKeyboardRotate * 0.3;
+                        if (left || right || up || down) {
 
-                        if (!input.ctrlDown && !input.altDown) {
+                            var elapsed = params.deltaTime;
+                            var yawRate = sensitivityKeyboardRotate * 0.3;
+                            var pitchRate = sensitivityKeyboardRotate * 0.3;
+                            var yaw = 0;
+                            var pitch = 0;
 
-                            var left = input.keyDown[input.KEY_LEFT_ARROW];
-                            var right = input.keyDown[input.KEY_RIGHT_ARROW];
-                            var up = input.keyDown[input.KEY_UP_ARROW];
-                            var down = input.keyDown[input.KEY_DOWN_ARROW];
+                            if (right) {
+                                yaw = -elapsed * yawRate;
 
-                            if (left || right || up || down) {
-
-                                var yaw = 0;
-                                var pitch = 0;
-
-                                if (right) {
-                                    yaw = -elapsed * yawRate;
-
-                                } else if (left) {
-                                    yaw = elapsed * yawRate;
-                                }
-
-                                if (down) {
-                                    pitch = elapsed * pitchRate;
-
-                                } else if (up) {
-                                    pitch = -elapsed * pitchRate;
-                                }
-
-                                if (Math.abs(yaw) > Math.abs(pitch)) {
-                                    pitch = 0;
-                                } else {
-                                    yaw = 0;
-                                }
-
-                                rotationDeltas[0] -= yaw;
-                                rotationDeltas[1] += pitch;
-
-                                math.rotationMat4v(rotationDeltas[1] * math.DEGTORAD, orbitPitchAxis, pitchMat);
-
-                                view.eye = rotate(rotateStartEye);
-                                view.look = rotate(rotateStartLook);
-                                view.up = math.subVec3(rotate(rotateStartUp), view.eye, []);
-
-                                setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
+                            } else if (left) {
+                                yaw = elapsed * yawRate;
                             }
+
+                            if (down) {
+                                pitch = elapsed * pitchRate;
+
+                            } else if (up) {
+                                pitch = -elapsed * pitchRate;
+                            }
+
+                            if (Math.abs(yaw) > Math.abs(pitch)) {
+                                pitch = 0;
+                            } else {
+                                yaw = 0;
+                            }
+
+                            rotationDeltas[0] -= yaw;
+                            rotationDeltas[1] += pitch;
+
+                            math.rotationMat4v(rotationDeltas[1] * math.DEGTORAD, orbitPitchAxis, pitchMat);
+
+                            view.eye = rotate(rotateStartEye);
+                            view.look = rotate(rotateStartLook);
+                            view.up = math.subVec3(rotate(rotateStartUp), view.eye, math.vec3());
+
+                            setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
                         }
-                    });
-            })();
+                    }
+                });
+
 
             //---------------------------------------------------------------------------------------------------------
             // Keyboard zoom camera
@@ -631,19 +627,22 @@ define(function () {
 
                             if (wkey || skey) {
 
+                                var sceneSize = getSceneDiagSize();
+                                var rate = sceneSize / 5000.0;
+
                                 var delta = 0;
 
                                 if (skey) {
-                                    delta = elapsed * 0.1 * sensitivityKeyboardZoom; // Want sensitivity configs in [0..1] range
+                                    delta = elapsed * rate; // Want sensitivity configs in [0..1] range
                                 } else if (wkey) {
-                                    delta = -elapsed * 0.1 * sensitivityKeyboardZoom;
+                                    delta = -elapsed * rate;
                                 }
 
                                 var eye = view.eye;
                                 var look = view.look;
 
                                 // Get vector from eye to center of rotation
-                                math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, self._rotatePos, tempVec3a), tempVec3b), delta, eyePivotVec);
+                                math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), delta, eyePivotVec);
 
                                 // Move eye and look along the vector
                                 view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
@@ -676,8 +675,8 @@ define(function () {
 
                 var tempVec3a = math.vec3();
                 var tempVec3b = math.vec3();
-                var tempVec3c = math.vec3();
-                var tempVec3d = math.vec3();
+                var newEye = math.vec3();
+                var newLook = math.vec3();
                 var eyePivotVec = math.vec3();
 
 
@@ -703,7 +702,11 @@ define(function () {
                     });
 
                 scene.on("tick",
-                    function (dt) {
+                    function (e) {
+
+                        if (!targeting && !newTarget) {
+                            return;
+                        }
 
                         if (mouseDown) {
                             return;
@@ -713,21 +716,25 @@ define(function () {
                             return;
                         }
 
-                        var rate = 0.5;
                         var sceneSize = getSceneDiagSize();
-                        var dt = dt.deltaTime / 1000.;
-                        var f = Math.sqrt(sceneSize + lastHoverDistance) / 1. * ((delta < 0) ? -rate :rate);
+                        var rate = sceneSize / 5000.0;
+
+                        var tickDeltaSecs = e.deltaTime / 1000.0;
+                        var f = Math.sqrt(sceneSize + lastHoverDistance) / 1. * ((delta < 0) ? -rate : rate);
 
                         if (newTarget) {
-                            // Zoom for half a second. Target always positive and incremented with deltaTime.
-                            target = 0.5;
+
+                            target = sceneSize / 10000.0;
+
                             progress = 0;
                             newTarget = false;
                             targeting = true;
                         }
 
                         if (targeting) {
-                            progress += dt;
+
+                            progress += tickDeltaSecs;
+
                             if (progress > target) {
                                 targeting = false;
                             }
@@ -738,14 +745,23 @@ define(function () {
                                 var look = view.look;
 
                                 // Get vector from eye to center of rotation
-                                math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, self._rotatePos, tempVec3a), tempVec3b), f, eyePivotVec);
+                                math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), f, eyePivotVec);
 
-                                // Move eye and look along the vector
-                                view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
-                                view.look = math.addVec3(look, eyePivotVec, tempVec3d);
+                                math.addVec3(eye, eyePivotVec, newEye);
+                                math.addVec3(look, eyePivotVec, newLook);
 
-                                if (project.isType("XEO.Ortho")) {
-                                    project.scale += delta * orthoScaleRate;
+                                var lenEyePivotVec = Math.abs(math.lenVec3(eyePivotVec));
+                                var currentLookPivotDist = Math.abs(math.lenVec3(math.subVec3(look, rotatePos, math.vec3())));
+
+                                if (lenEyePivotVec < currentLookPivotDist) {
+
+                                    // Move eye and look along the vector
+                                    view.eye = newEye;
+                                    view.look = newLook;
+
+                                    if (project.isType("XEO.Ortho")) {
+                                        project.scale += delta * orthoScaleRate;
+                                    }
                                 }
 
                                 setCursor("crosshair");
@@ -769,6 +785,8 @@ define(function () {
                 });
 
                 function fly(eye, look, up) {
+
+                    rotatePos.set(look);
 
                     flying = true;
 
@@ -802,14 +820,21 @@ define(function () {
                             return;
                         }
 
+                        if (keyCode !== input.KEY_NUM_1
+                            && keyCode !== input.KEY_NUM_2
+                            && keyCode !== input.KEY_NUM_3
+                            && keyCode !== input.KEY_NUM_4
+                            && keyCode !== input.KEY_NUM_5
+                            && keyCode !== input.KEY_NUM_6) {
+                            return;
+                        }
+
                         var boundary = scene.worldBoundary;
                         var aabb = boundary.aabb;
                         var center = boundary.center;
                         var diag = math.getAABBDiag(aabb);
                         var stopFOV = 55;
                         var dist = Math.abs((diag) / Math.tan(stopFOV / 2));
-
-                        self._rotatePos.set(center);
 
                         switch (keyCode) {
 
@@ -848,76 +873,75 @@ define(function () {
             // Press W,S,A or D to pan the camera 
             //---------------------------------------------------------------------------------------------------------
 
-            (function () {
+            scene.on("tick", (function () {
 
                 var tempVec3 = math.vec3();
 
-                scene.on("tick",
-                    function (params) {
+                return function (params) {
 
-                        if (mouseDown) {
-                            return;
-                        }
+                    if (mouseDown) {
+                        return;
+                    }
 
-                        if (!input.mouseover) {
-                            return;
-                        }
+                    if (!input.mouseover) {
+                        return;
+                    }
 
-                        if (flying) {
-                            return;
-                        }
+                    if (flying) {
+                        return;
+                    }
 
-                        var elapsed = params.deltaTime;
+                    var elapsed = params.deltaTime;
 
-                        if (!input.ctrlDown && !input.altDown) {
+                    if (!input.ctrlDown && !input.altDown) {
 
-                            var wkey = input.keyDown[input.KEY_W];
-                            var skey = input.keyDown[input.KEY_S];
-                            var akey = input.keyDown[input.KEY_A];
-                            var dkey = input.keyDown[input.KEY_D];
-                            var zkey = input.keyDown[input.KEY_Z];
-                            var xkey = input.keyDown[input.KEY_X];
+                        var wkey = input.keyDown[input.KEY_W];
+                        var skey = input.keyDown[input.KEY_S];
+                        var akey = input.keyDown[input.KEY_A];
+                        var dkey = input.keyDown[input.KEY_D];
+                        var zkey = input.keyDown[input.KEY_Z];
+                        var xkey = input.keyDown[input.KEY_X];
 
-                            if (wkey || skey || akey || dkey || xkey || zkey) {
+                        if (wkey || skey || akey || dkey || xkey || zkey) {
 
-                                var x = 0;
-                                var y = 0;
-                                var z = 0;
+                            var x = 0;
+                            var y = 0;
+                            var z = 0;
 
-                                var sceneSize = getSceneDiagSize();
-                                var sensitivity = sceneSize / 4000.0;
+                            var sceneSize = getSceneDiagSize();
+                            var sensitivity = sceneSize / 4000.0;
 
-                                if (skey) {
-                                    y = elapsed * sensitivity;
-                                } else if (wkey) {
-                                    y = -elapsed * sensitivity;
-                                }
-
-                                if (dkey) {
-                                    x = elapsed * sensitivity;
-                                } else if (akey) {
-                                    x = -elapsed * sensitivity;
-                                }
-
-                                if (xkey) {
-                                    z = elapsed * sensitivity;
-                                } else if (zkey) {
-                                    z = -elapsed * sensitivity;
-                                }
-
-                                tempVec3[0] = x;
-                                tempVec3[1] = y;
-                                tempVec3[2] = z;
-
-                                view.pan(tempVec3);
-
-                                resetRotate();
-
-                                setCursor("e-resize");
+                            if (skey) {
+                                y = elapsed * sensitivity;
+                            } else if (wkey) {
+                                y = -elapsed * sensitivity;
                             }
+
+                            if (dkey) {
+                                x = elapsed * sensitivity;
+                            } else if (akey) {
+                                x = -elapsed * sensitivity;
+                            }
+
+                            if (xkey) {
+                                z = elapsed * sensitivity;
+                            } else if (zkey) {
+                                z = -elapsed * sensitivity;
+                            }
+
+                            tempVec3[0] = x;
+                            tempVec3[1] = y;
+                            tempVec3[2] = z;
+
+                            view.pan(tempVec3);
+
+                            resetRotate();
+
+                            setCursor("e-resize");
                         }
-                    });
-            })();
+                    }
+                };
+            })());
         },
 
         _props: {
