@@ -19,11 +19,8 @@ define(function () {
 
             // Configs
 
-            var sensitivityMouseRotate = cfg.sensitivityMouseRotate || 1.0;
-            var sensitivityMousePan = cfg.sensitivityMousePan || 0.5;
             var sensitivityKeyboardPan = cfg.sensitivityKeyboardPan || 0.5;
             var sensitivityKeyboardRotate = cfg.sensitivityKeyboardRotate || 0.5;
-            var sensitivityMouseZoom = cfg.sensitivityMouseZoom || 0.5;
             var sensitivityKeyboardZoom = cfg.sensitivityKeyboardZoom || 0.5;
 
             var orthoScaleRate = 0.02; // Rate at which orthographic scale changes with zoom
@@ -336,7 +333,7 @@ define(function () {
                     p[2] <= (q[2] + worldPickTolerance);
             }
 
-            var tempVecHover = XEO.math.vec3();
+            var tempVecHover = math.vec3();
 
             input.on("mousemove",
                 function (canvasPos) {
@@ -586,8 +583,6 @@ define(function () {
                                     yaw = 0;
                                 }
 
-                                var math = XEO.math;
-
                                 rotationDeltas[0] -= yaw;
                                 rotationDeltas[1] += pitch;
 
@@ -609,10 +604,10 @@ define(function () {
 
             (function () {
 
-                var tempVec3a = XEO.math.vec3();
-                var tempVec3b = XEO.math.vec3();
-                var tempVec3c = XEO.math.vec3();
-                var eyePivotVec = XEO.math.vec3();
+                var tempVec3a = math.vec3();
+                var tempVec3b = math.vec3();
+                var tempVec3c = math.vec3();
+                var eyePivotVec = math.vec3();
 
                 scene.on("tick",
                     function (params) {
@@ -681,11 +676,11 @@ define(function () {
                 var targeting = false;
                 var progress = 0;
 
-                var tempVec3a = XEO.math.vec3();
-                var tempVec3b = XEO.math.vec3();
-                var tempVec3c = XEO.math.vec3();
-                var tempVec3d = XEO.math.vec3();
-                var eyePivotVec = XEO.math.vec3();
+                var tempVec3a = math.vec3();
+                var tempVec3b = math.vec3();
+                var tempVec3c = math.vec3();
+                var tempVec3d = math.vec3();
+                var eyePivotVec = math.vec3();
 
 
                 input.on("mousewheel",
@@ -812,7 +807,7 @@ define(function () {
                         var boundary = scene.worldBoundary;
                         var aabb = boundary.aabb;
                         var center = boundary.center;
-                        var diag = XEO.math.getAABBDiag(aabb);
+                        var diag = math.getAABBDiag(aabb);
                         var stopFOV = 55;
                         var dist = Math.abs((diag) / Math.tan(stopFOV / 2));
 
