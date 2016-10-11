@@ -118,7 +118,6 @@ define(function () {
                 scene.worldBoundary.on("updated", function () {
                     sceneSizeDirty = true;
                 });
-
                 return function () {
                     if (sceneSizeDirty) {
                         diag = math.getAABBDiag(scene.worldBoundary.aabb);
@@ -369,8 +368,7 @@ define(function () {
                         return;
                     }
 
-                    var bbox = scene.worldBoundary.aabb;
-                    var modelSize = math.lenVec3(math.subVec3(bbox.min, bbox.max, tempVecHover));
+                    var sceneSize = getSceneDiagSize();
 
                     // Use normalized device coords
                     var canvas = scene.canvas.canvas;
@@ -386,7 +384,7 @@ define(function () {
                     var Pt4 = transposedProjectMat.subarray(12);
 
                     // TODO: Should be simpler to get the projected Z value
-                    var D = [0,0,-(lastHoverDistance || modelSize),1];
+                    var D = [0,0,-(lastHoverDistance || sceneSize),1];
                     var Z = math.dotVec4(D, Pt3) / math.dotVec4(D, Pt4);
 
                     // Returns in camera space and model space as array of two points
@@ -716,9 +714,9 @@ define(function () {
                         }
 
                         var rate = 0.5;
-                        var modelSize = getSceneDiagSize();
+                        var sceneSize = getSceneDiagSize();
                         var dt = dt.deltaTime / 1000.;
-                        var f = Math.sqrt(modelSize + lastHoverDistance) / 1. * ((delta < 0) ? -rate :rate);
+                        var f = Math.sqrt(sceneSize + lastHoverDistance) / 1. * ((delta < 0) ? -rate :rate);
 
                         if (newTarget) {
                             // Zoom for half a second. Target always positive and incremented with deltaTime.
@@ -886,7 +884,8 @@ define(function () {
                                 var y = 0;
                                 var z = 0;
 
-                                var sensitivity = sensitivityKeyboardPan * 0.1;
+                                var sceneSize = getSceneDiagSize();
+                                var sensitivity = sceneSize / 4000.0;
 
                                 if (skey) {
                                     y = elapsed * sensitivity;
