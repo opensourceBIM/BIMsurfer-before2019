@@ -261,10 +261,18 @@ define([
                     (Math.random() * size - halfSize) + centerY,
                     (Math.random() * size - halfSize) + centerZ);
                 scale = XEO.math.scalingMat4c(Math.random() * 32 + 0.2, Math.random() * 32 + 0.2, Math.random() * 10 + 0.2);
-                matrix = XEO.math.mulMat4(translate, scale);
+                matrix = XEO.math.mulMat4(translate, scale, XEO.math.mat4());
                 type = types[Math.round(Math.random() * types.length)];
                 this.createObject(modelId, roid, oid, objectId, ["test"], type, matrix);
             }
+
+            // Set camera just to establish the up vector as +Z; the following
+            // call to viewFit() will arrange the eye and target positions properly.
+            this.setCamera({
+                eye: [0,0,0],
+                target: [centerX, centerY, centerZ],
+                up: [0,0,1]
+            });
 
             this.viewFit();
 
