@@ -60,7 +60,10 @@ define([
         camera.project.far = FAR_CLIP;
 
         // Flies cameras to objects
-        var cameraFlight = new XEO.CameraFlight(scene); // http://xeoengine.org/docs/classes/CameraFlight.html
+        var cameraFlight = new XEO.CameraFlight(scene, { // http://xeoengine.org/docs/classes/CameraFlight.html
+            stopFOV: 45,
+            duration: 1
+        });
 
         // Registers loaded xeoEngine components for easy destruction
         var collection = new XEO.Collection(scene); // http://xeoengine.org/docs/classes/Collection.html
@@ -807,7 +810,9 @@ define([
                 cameraFlight.flyTo({
                     eye: params.eye,
                     look: params.target,
-                    up: params.up
+                    up: params.up,
+                    stopFOV: params.stopFOV,
+                    duration: params.duration
                 });
 
             } else {
@@ -899,14 +904,18 @@ define([
             if (params.animate) {
 
                 // Show the boundary we are flying to
-                //boundaryHelper.geometry.aabb = aabb;
-                //boundaryHelper.visibility.visible = true;
+                boundaryHelper.geometry.aabb = aabb;
+                boundaryHelper.visibility.visible = true;
 
-                cameraFlight.flyTo({aabb: aabb, stopFOV: 20},
+                cameraFlight.flyTo({
+                        aabb: aabb,
+                        stopFOV: params.stopFOV,
+                        duration: params.duration
+                    },
                     function () {
 
                         // Hide the boundary again
-                        //boundaryHelper.visibility.visible = false;
+                        boundaryHelper.visibility.visible = false;
 
                         if (ok) {
                             ok();
@@ -918,7 +927,10 @@ define([
 
             } else {
 
-                cameraFlight.jumpTo({aabb: aabb, stopFOV: 20});
+                cameraFlight.jumpTo({
+                    aabb: aabb,
+                    stopFOV: params.stopFOV
+                });
             }
         };
 
@@ -1182,12 +1194,14 @@ define([
         };
 
         /**
-         * Set general configurations
+         * Sets general configurations.
          *
          * @param params
          * @param {Boolean} [params.mouseRayPick=true] When true, camera flies to orbit each clicked point, otherwise
          * it flies to the boundary of the object that was clicked on.
-         * @param {Number} [params.mouseRayPick=true] When true, camera flies to orbit each clicked point, otherwise
+         * @param [params.viewFitStopFOV=45] {Number} How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
+         * fill the canvas when calling {{#crossLink "CameraFlight/flyTo:method"}}{{/crossLink}} or {{#crossLink "CameraFlight/jumpTo:method"}}{{/crossLink}}.
+         * @param [params.viewFitDuration=1] {Number} Flight duration, in seconds, when calling {{#crossLink "CameraFlight/flyTo:method"}}{{/crossLink}}.
          */
         this.setConfigs = function (params) {
 
@@ -1195,6 +1209,14 @@ define([
 
             if (params.mouseRayPick != undefined) {
                 cameraControl.mousePickEntity.rayPick = params.mouseRayPick;
+            }
+
+            if (params.viewFitStopFOV != undefined) {
+                cameraFlight.stopFOV = params.viewFitStopFOV;
+            }
+
+            if (params.viewFitDuration != undefined) {
+                cameraFlight.duration = params.viewFitDuration;
             }
         };
 
