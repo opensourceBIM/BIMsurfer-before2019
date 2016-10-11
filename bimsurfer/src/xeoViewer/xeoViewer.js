@@ -220,6 +220,7 @@ define([
          * @param {*} params Parameters
          * @param {Number} [params.numEntities=200] Number of entities to create.
          * @param {Number} [params.size=200] Size of model on every axis.
+         * @param {Float32Array} [params.center] Center point of model.
          */
         this.loadRandom = function (params) {
 
@@ -246,13 +247,19 @@ define([
             var numEntities = params.numEntities || 200;
             var size = params.size || 200;
             var halfSize = size / 2;
+            var centerX = params.center ? params.center[0] : 0;
+            var centerY = params.center ? params.center[1] : 0;
+            var centerZ = params.center ? params.center[2] : 0;
 
             this.createModel(modelId);
 
             for (var i = 0; i < numEntities; i++) {
                 objectId = "object" + i;
                 oid = objectId;
-                translate = XEO.math.translationMat4c(Math.random() * size - halfSize, Math.random() * size - halfSize, Math.random() * size - halfSize);
+                translate = XEO.math.translationMat4c(
+                    (Math.random() * size - halfSize) + centerX,
+                    (Math.random() * size - halfSize) + centerY,
+                    (Math.random() * size - halfSize) + centerZ);
                 scale = XEO.math.scalingMat4c(Math.random() * 32 + 0.2, Math.random() * 32 + 0.2, Math.random() * 10 + 0.2);
                 matrix = XEO.math.mulMat4(translate, scale);
                 type = types[Math.round(Math.random() * types.length)];

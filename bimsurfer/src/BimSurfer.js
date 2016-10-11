@@ -63,7 +63,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.load = function (params) {
 
             if (params.test) {
-                viewer.loadRandom();
+                viewer.loadRandom(params);
                 return null;
 
             } else if (params.bimserver) {
