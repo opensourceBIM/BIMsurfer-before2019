@@ -20,7 +20,7 @@ define(function () {
                     ambient: [0, 0, 0],
                     specular: [0, 0, 0],
                     emissive: [1.0, 1.0, 0.6], // Glowing
-                    lineWidth: 4
+                    lineWidth: 3
                 }),
 
                 visibility: this.create(XEO.Visibility, {
@@ -29,6 +29,17 @@ define(function () {
 
                 modes: this.create(XEO.Modes, {
                     collidable: false // This helper has no collision boundary of its own
+                }),
+
+                // Causes this entity to render after all other entities
+                stage: this.create(XEO.Stage, {
+                    priority: 3
+                }),
+
+                // Disables depth-testing so that this entity
+                // appears to "float" over other entities
+                depthBuf: this.create(XEO.DepthBuf, {
+                    active: false
                 })
 
             }, cfg));

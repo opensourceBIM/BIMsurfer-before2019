@@ -592,6 +592,8 @@ define([
             if (params.clear) {
                 for (objectId in selectedObjects) {
                     if (selectedObjects.hasOwnProperty(objectId)) {
+                        object = selectedObjects[objectId];
+                        object.highlighted = false;
                         delete selectedObjects[objectId];
                         changed = true;
                     }
@@ -957,6 +959,18 @@ define([
 
             } else if (params.ids) {
                 boundaryHelper.geometry.aabb = getObjectsAABB(params.ids);
+
+                var ids = params.ids;
+                var objectId;
+                var object;
+
+                for (var i = 0, len = ids.length; i < len; i++) {
+                    objectId = ids[i];
+                    object = objects[objectId];
+                    if (object) {
+                        object.highlighted = true;
+                    }
+                }
             }
 
             boundaryHelper.visibility.visible = !!params.show;

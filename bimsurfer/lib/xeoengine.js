@@ -4,7 +4,7 @@
  * A WebGL-based 3D visualization engine from xeoLabs
  * http://xeoengine.org/
  *
- * Built on 2016-10-11
+ * Built on 2016-10-12
  *
  * MIT License
  * Copyright 2016, Lindsay Kay
@@ -8960,7 +8960,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             if (frameCtx.depthbufEnabled !== active) {
 
-                if (!active) {
+                if (active) {
                     gl.enable(gl.DEPTH_TEST);
 
                 } else {
@@ -12042,7 +12042,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         new XEO.DepthBuf(this, {
                             id: "default.depthBuf",
                             isDefault: true,
-                            active: false
+                            active: true
                         });
                 }
             },
@@ -32205,7 +32205,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             this._state = new XEO.renderer.DepthBuf({
                 clearDepth: null,
                 depthFunc: null,
-                active: null
+                active: true
             });
 
             this.clearDepth = cfg.clearDepth;
@@ -32307,16 +32307,21 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              *
              * @property active
              * @type Boolean
+             * @default true
              */
             active: {
 
                 set: function (value) {
+
+                    value = value !== false;
 
                     if (this._state.active === value) {
                         return;
                     }
                     
                     this._state.active = value;
+
+                    this._renderer.imageDirty = true;
                     
                     /**
                      * Fired whenever this DepthBuf's {{#crossLink "DepthBuf/active:property"}}{{/crossLink}} property changes.
@@ -35625,6 +35630,27 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     }
 
                     return this._matrix;
+                }
+            },
+
+            /**
+             * The inverse of the Transform's local matrix.
+             *
+             * @property matrix
+             * @type {Float32Array}
+             * @final
+             */
+            inverseMatrix: {
+
+                get: function () {
+
+                    if (this._updateScheduled) {
+                        this._doUpdate();
+                    } else {
+
+                    }
+
+                    return this._inverseMatrix;
                 }
             },
 

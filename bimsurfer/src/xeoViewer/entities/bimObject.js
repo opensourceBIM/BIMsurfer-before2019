@@ -51,6 +51,7 @@ define(function () {
 
             // Material component
             this.material = this.create(XEO.PhongMaterial, { // http://xeoengine.org/docs/classes/Material.html
+                emissive: [0, 0, 0],
                 diffuse: [Math.random(), Math.random(), Math.random()], // Random color until we set for type
                 opacity: 1.0
             });
@@ -59,6 +60,17 @@ define(function () {
             this.modes = this.create(XEO.Modes, { // http://xeoengine.org/docs/classes/Modes.html
                 transparent: false,
                 backfaces: false
+            });
+
+            // When highlighting, causes this object to render after non-highlighted objects
+            this.stage = this.create(XEO.Stage, {
+                priority: 0
+            });
+
+            // When highlighting, we use this component to disable depth-testing so that this object
+            // appears to "float" over non-highlighted objects
+            this.depthBuf = this.create(XEO.DepthBuf, {
+                active: true
             });
 
             // Create a XEO.Entity for each XEO.Geometry
@@ -79,7 +91,9 @@ define(function () {
                     transform: this.transform,
                     visibility: this.visibility,
                     material: this.material,
-                    modes: this.modes
+                    modes: this.modes,
+                    stage: this.stage,
+                    depthBuf: this.depthBuf
                 });
 
                 this.entities.push(entity);
@@ -108,6 +122,15 @@ define(function () {
             canvasBoundary: {
                 get: function () {
                     return this.entities[0].viewBoundary
+                }
+            },
+
+            // Whether or not this object is highlighted
+            highlighted: {
+                set: function (highlight) {
+                    this.depthBuf.active = !highlight;
+                    this.stage.priority = highlight ? 2 : 0;
+                    this.material.emissive = highlight ? [0.5, 0.5, 0.5] : [0, 0, 0];
                 }
             }
         }
