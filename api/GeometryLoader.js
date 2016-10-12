@@ -576,7 +576,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 					}
 				};
 				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin2", function(serializer){
-					o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
+					o.bimServerApi.call("ServiceInterface", "download", {
 						roids: o.options.roids,
 						serializerOid : serializer.oid,
 						sync : false,
