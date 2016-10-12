@@ -126,7 +126,6 @@ define(function () {
                 var tempVec3b = math.vec3();
                 var tempVec3c = math.vec3();
                 return function (p) {
-                    console.log("rotate(): rotatePos = " + rotatePos);
                     var p1 = math.subVec3(p, rotatePos, tempVec3a);
                     var p2 = math.transformVec3(pitchMat, p1, tempVec3b);
                     var p3 = math.addVec3(p2, rotatePos, tempVec3c);
@@ -744,16 +743,15 @@ define(function () {
                                 var eye = view.eye;
                                 var look = view.look;
 
-                                // Get vector from eye to center of rotation
                                 math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), f, eyePivotVec);
 
                                 math.addVec3(eye, eyePivotVec, newEye);
                                 math.addVec3(look, eyePivotVec, newLook);
 
                                 var lenEyePivotVec = Math.abs(math.lenVec3(eyePivotVec));
-                                var currentLookPivotDist = Math.abs(math.lenVec3(math.subVec3(look, rotatePos, math.vec3())));
+                                var currentEyePivotDist = Math.abs(math.lenVec3(math.subVec3(eye, rotatePos, math.vec3())));
 
-                                if (lenEyePivotVec < currentLookPivotDist) {
+                                if (lenEyePivotVec < currentEyePivotDist - 10) {
 
                                     // Move eye and look along the vector
                                     view.eye = newEye;
