@@ -4,7 +4,8 @@ define([
     "bimsurfer/src/xeoViewer/controls/bimCameraControl.js",
     "bimsurfer/src/xeoViewer/entities/bimModel.js",
     "bimsurfer/src/xeoViewer/entities/bimObject.js",
-    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper.js"
+    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper.js",
+    "bimsurfer/src/xeoViewer/effects/highlightEffect.js"
 ], function (DefaultMaterials, EventHandler) {
 
     "use strict";
@@ -70,6 +71,8 @@ define([
 
         // Shows a wireframe box at the given boundary
         var boundaryHelper = new XEO.BIMBoundaryHelper(scene);
+
+        var highlightEffect = new XEO.HighlightEffect(scene);
 
         // Models mapped to their IDs
         var models = {};
@@ -593,7 +596,7 @@ define([
                 for (objectId in selectedObjects) {
                     if (selectedObjects.hasOwnProperty(objectId)) {
                         object = selectedObjects[objectId];
-                        object.highlighted = false;
+                      //  object.highlighted = false;
                         delete selectedObjects[objectId];
                         changed = true;
                     }
@@ -960,6 +963,8 @@ define([
             } else if (params.ids) {
                 boundaryHelper.geometry.aabb = getObjectsAABB(params.ids);
 
+                highlightEffect.clear();
+
                 var ids = params.ids;
                 var objectId;
                 var object;
@@ -968,7 +973,9 @@ define([
                     objectId = ids[i];
                     object = objects[objectId];
                     if (object) {
-                        object.highlighted = true;
+
+                        highlightEffect.add(object);
+                        //object.highlighted = true;
                     }
                 }
             }

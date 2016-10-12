@@ -19,8 +19,8 @@ define(function () {
                     diffuse: [0, 0, 0],
                     ambient: [0, 0, 0],
                     specular: [0, 0, 0],
-                    emissive: [1.0, 1.0, 0.6], // Glowing
-                    lineWidth: 3
+                    //emissive: [1.0, 1.0, 0.6], // Glowing
+                    lineWidth: 2
                 }),
 
                 visibility: this.create(XEO.Visibility, {
