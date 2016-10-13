@@ -432,10 +432,9 @@ define(function () {
                         // Subtract camera space unproject points
                         math.subVec3(A[0], B[0], tempVecHover);
 
-                        // Arbitrary constants because it doesn't factor in distance to orbitCenter
                         //           v because reversed above
-                        var xDelta = -Math.atan(tempVecHover[0] * 4);
-                        var yDelta = Math.atan(tempVecHover[1] * 4);
+                        var xDelta = - tempVecHover[0] * Math.PI;
+                        var yDelta = tempVecHover[1] * Math.PI;
 
                         rotationDeltas[0] += xDelta;
                         rotationDeltas[1] += yDelta;
@@ -715,14 +714,15 @@ define(function () {
                             return;
                         }
 
+                        var zoomTimeInSeconds = 0.2;
                         var sceneSize = getSceneDiagSize();
 
                         var tickDeltaSecs = e.deltaTime / 1000.0;
-                        var f = Math.sqrt(sceneSize + lastHoverDistance) * ((delta < 0) ? -0.1 : 0.1);
+                        var f = (sceneSize + lastHoverDistance) / 2. * ((delta < 0) ? -1 : 1) / zoomTimeInSeconds / 100.;
 
                         if (newTarget) {
 
-                            target = 0.5;
+                            target = zoomTimeInSeconds;
 
                             progress = 0;
                             newTarget = false;
@@ -741,16 +741,15 @@ define(function () {
 
                                 var eye = view.eye;
                                 var look = view.look;
-
-                                math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), f, eyePivotVec);
-
+                                
+                                math.mulVec3Scalar(XEO.math.transposeMat4(view.matrix).slice(8), f, eyePivotVec);
                                 math.addVec3(eye, eyePivotVec, newEye);
                                 math.addVec3(look, eyePivotVec, newLook);
 
                                 var lenEyePivotVec = Math.abs(math.lenVec3(eyePivotVec));
                                 var currentEyePivotDist = Math.abs(math.lenVec3(math.subVec3(eye, rotatePos, math.vec3())));
 
-                                if (lenEyePivotVec < currentEyePivotDist - 10) {
+                                // if (lenEyePivotVec < currentEyePivotDist - 10) {
 
                                     // Move eye and look along the vector
                                     view.eye = newEye;
@@ -759,7 +758,7 @@ define(function () {
                                     if (project.isType("XEO.Ortho")) {
                                         project.scale += delta * orthoScaleRate;
                                     }
-                                }
+                                // }
 
                                 setCursor("crosshair");
 
