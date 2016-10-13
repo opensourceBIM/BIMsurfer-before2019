@@ -3,7 +3,12 @@
 <head>
     <meta charset="utf-8"/>
     <title>Example</title>
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css' />
+    
+    <link rel="stylesheet" href="css/demo.css"/>
+    <link rel="stylesheet" href="../css/tree.css"/>
+    <link rel="stylesheet" href="../css/metadata.css"/>
+    
     <script>
     // http://stackoverflow.com/questions/979975/how-to-get-the-value-from-the-get-parameters
     var QueryString = function () {
@@ -64,63 +69,62 @@
         // Loads a model from BIMServer, builds an explorer tree UI.
         // Clicking on a tree node fits the view to its scene object.
 
-        require([
-                    "bimsurfer/src/BimSurfer",
-                    "bimsurfer/src/StaticTreeRenderer",
-                    "bimsurfer/lib/domReady!"
-                ],
-                function (BimSurfer, StaticTreeRenderer) {
+        require(["bimsurfer/src/BimSurfer","bimsurfer/src/StaticTreeRenderer","bimsurfer/src/MetaDataRenderer","bimsurfer/lib/domReady!"],
+        function (BimSurfer, StaticTreeRenderer, MetaDataRenderer) {
 
-                    var bimSurfer = new BimSurfer({
-                        domNode: "viewerContainer"
+            var bimSurfer = new BimSurfer({
+                domNode: "viewerContainer"
+            });
+
+            // Load a model from BIMServer
+            bimSurfer.load({
+                bimserver: ADDRESS,
+                username: USERNAME,
+                password: PASSWORD,
+                poid: QueryString.poid,
+                roid: QueryString.roid,
+                schema: "ifc2x3tc1" // < TODO: Deduce automatically
+            }).then(function (model) {
+                model.getTree().then(function (tree) {
+                
+                    // Build a tree view of the elements in the model. The fact that it
+                    // is 'static' refers to the fact that all branches are loaded and
+                    // rendered immediately.
+                    var domtree = new StaticTreeRenderer({
+                        domNode: 'treeContainer'
                     });
-
-                    // Load a model from BIMServer
-
-                    bimSurfer.load({
-                        bimserver: ADDRESS,
-                        username: USERNAME,
-                        password: PASSWORD,
-                        poid: QueryString.poid,
-                        roid: QueryString.roid,
-                        schema: "ifc2x3tc1" // < TODO: Deduce automatically
-                    })
-                            .then(function (model) {
-
-                                var oids = [];
-
-                                model.getTree().then(function (tree) {
-
-                                    // Build explorer UI
-
-                                    var domtree = new StaticTreeRenderer({
-                                        domNode: 'treeContainer',
-                                        tree: tree
-                                    });
-
-                                    domtree.build();
-
-                                    domtree.on("click",
-                                            function (oid) {
-
-                                                // Clicking an explorer node fits the view to its object
-
-                                                bimSurfer.setColor({
-                                                    ids: [oid],
-                                                    color: [1,0,0,1]
-                                                });
-
-                                                bimSurfer.viewFit({
-                                                    ids: [oid],
-                                                    animate: true
-                                                });
-                                            });
-                                });
-                            });
-
-                    // Lets us play with the Surfer in the console
-                    window.bimSurfer = bimSurfer;
+                    domtree.addModel({name: "", id:QueryString.roid, tree:tree});
+                    domtree.build();
+                    
+                    // Add a widget that displays metadata (IfcPropertySet and instance
+                    // attributes) of the selected element.
+                    var metadata = new MetaDataRenderer({
+                        domNode: 'dataContainer'
+                    });
+                    metadata.addModel({name: "", id:QueryString.roid, model:model});
+                    
+                    bimSurfer.on("selection-changed", function(selected) {
+                        domtree.setSelected(selected, domtree.SELECT_EXCLUSIVE);
+                        metadata.setSelected(selected);
+                    });
+                    
+                    domtree.on("click", function (oid) {
+                        // Clicking an explorer node fits the view to its object
+                        bimSurfer.setColor({
+                            ids: [oid],
+                            color: [1,0,0,1]
+                        });
+                        bimSurfer.viewFit({
+                            ids: [oid],
+                            animate: true
+                        });
+                    });
                 });
+            });
+
+            // Lets us play with the Surfer in the console
+            window.bimSurfer = bimSurfer;
+        });
     </script>
 
 </head>
@@ -130,19 +134,22 @@
     <div id="topsection"><h1>BIMSurfer example</h1></div>
 
     <div id="contentwrapper">
-        <div class="inner">
-            <div id="viewerContainer">
-
+        <div id="colmid">
+            <div id="colright">
+                <div id="col1wrap">
+                    <div id="col1pad">
+                        <div id="viewerContainer">
+                        </div>
+                    </div>
+                </div>
+                <div id="treeContainer" class="bimsurfer-static-tree">
+                </div>
+                <div id="dataContainer" class="bimsurfer-metadata">
+                </div>
             </div>
         </div>
     </div>
-
-    <div id="leftcolumn">
-        <div class="inner">
-            <div id="treeContainer"></div>
-
-        </div>
-    </div>
+    
 </div>
 
 </body>
