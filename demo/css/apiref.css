@@ -1,12 +1,11 @@
 textarea, pre {
     padding: 20px;
     border: solid 1px #ddd;
-    background: #eee;
-    margin: 0 10px;
+    background: #f4f4f4;
     height: 12px;
     line-height: 12px;
     font-size: 12px;
-    width: 1000px;
+    width: 1200px;
     display: block;
 }
 
@@ -19,4 +18,9 @@ pre {
 button {
     margin: 10px 10px;
     width: 100px;
+}
+
+#apirefContainer {  
+    padding: 30px 10px;
+    clear: both;
 }
