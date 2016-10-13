@@ -716,14 +716,13 @@ define(function () {
                         }
 
                         var sceneSize = getSceneDiagSize();
-                        var rate = sceneSize / 5000.0;
 
                         var tickDeltaSecs = e.deltaTime / 1000.0;
-                        var f = Math.sqrt(sceneSize + lastHoverDistance) / 1. * ((delta < 0) ? -rate : rate);
+                        var f = Math.sqrt(sceneSize + lastHoverDistance) * ((delta < 0) ? -0.1 : 0.1);
 
                         if (newTarget) {
 
-                            target = sceneSize / 10000.0;
+                            target = 0.5;
 
                             progress = 0;
                             newTarget = false;
