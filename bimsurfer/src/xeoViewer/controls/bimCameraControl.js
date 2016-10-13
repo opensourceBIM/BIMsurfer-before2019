@@ -709,10 +709,13 @@ define(function () {
                         }
 
                         var zoomTimeInSeconds = 0.2;
-                        var sceneSize = getSceneDiagSize();
+                        var viewDistance = getSceneDiagSize();
+                        if (lastHoverDistance) {
+                            viewDistance = viewDistance * 0.1 + 0.9 * lastHoverDistance;
+                        }
 
                         var tickDeltaSecs = e.deltaTime / 1000.0;
-                        var f = (sceneSize + lastHoverDistance) / 2. * ((delta < 0) ? -1 : 1) / zoomTimeInSeconds / 100.;
+                        var f = viewDistance * ((delta < 0) ? -1 : 1) / zoomTimeInSeconds / 100.;
 
                         if (newTarget) {
 
