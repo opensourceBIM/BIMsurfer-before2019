@@ -14,10 +14,10 @@
 <div id="bimserverdiv">
 </div>
 <h3>glTF</h3>
-<a href="example_glTF.html">glTF</a>
+<a href="demo/example_glTF.html">glTF</a>
 <h3>Other</h3>
-<a href="example_APIreference.html">API Reference</a>
-<a href="example_testModel.html">Test Model</a>
+<a href="demo/example_APIreference.html">API Reference</a>
+<a href="demo/example_testModel.html">Test Model</a>
 <script>
 document.addEventListener("DOMContentLoaded", function(event) {
 	function loadFromBimserver(address, username, password) {
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 							var a = document.createElement("a");
 							li.appendChild(a);
 							a.textContent = project.name;
-							a.setAttribute("href", "example_BIMServer.html?poid=" + project.oid + "&roid=" + project.lastRevisionId);
+							a.setAttribute("href", "demo/example_BIMServer.html?poid=" + project.oid + "&roid=" + project.lastRevisionId);
 							ul.appendChild(li);
 						}
 					});

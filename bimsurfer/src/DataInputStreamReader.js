@@ -1,4 +1,4 @@
-define(["bimsurfer/lib/StringView.js"], function(StringView) {
+define(["bimsurfer/lib/StringView"], function(StringView) {
     
     function DataInputStreamReader(arrayBuffer) {
         

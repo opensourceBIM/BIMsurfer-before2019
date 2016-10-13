@@ -1,4 +1,4 @@
-define(["bimsurfer/lib/text.js"], function(text) {
+define(["bimsurfer/lib/text"], function(text) {
 
     /*
     var getElementName = function(elem) {

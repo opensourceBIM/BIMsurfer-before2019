@@ -1,11 +1,11 @@
 define([
-    "bimsurfer/src/DefaultMaterials.js",
-    "bimsurfer/src/EventHandler.js",
-    "bimsurfer/src/xeoViewer/controls/bimCameraControl.js",
-    "bimsurfer/src/xeoViewer/entities/bimModel.js",
-    "bimsurfer/src/xeoViewer/entities/bimObject.js",
-    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper.js",
-    "bimsurfer/src/xeoViewer/effects/highlightEffect.js"
+    "bimsurfer/src/DefaultMaterials",
+    "bimsurfer/src/EventHandler",
+    "bimsurfer/src/xeoViewer/controls/bimCameraControl",
+    "bimsurfer/src/xeoViewer/entities/bimModel",
+    "bimsurfer/src/xeoViewer/entities/bimObject",
+    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper",
+    "bimsurfer/src/xeoViewer/effects/highlightEffect"
 ], function (DefaultMaterials, EventHandler) {
 
     "use strict";

@@ -1,5 +1,5 @@
 // Backwards compatibility
-var deps = ["bimsurfer/src/Notifier.js", "bimsurfer/src/BimServerModel.js", "bimsurfer/src/PreloadQuery.js", "bimsurfer/src/BimServerGeometryLoader.js", "bimsurfer/src/xeoViewer/xeoViewer.js", "bimsurfer/src/EventHandler.js"];
+var deps = ["bimsurfer/src/Notifier", "bimsurfer/src/BimServerModel", "bimsurfer/src/PreloadQuery", "bimsurfer/src/BimServerGeometryLoader", "bimsurfer/src/xeoViewer/xeoViewer", "bimsurfer/src/EventHandler"];
 
 /*
 if (typeof(BimServerClient) == 'undefined') {

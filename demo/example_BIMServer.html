@@ -37,7 +37,7 @@
         // BIMserver modules to find themselves, but it destroys any option
         // for further modularization in the client and ability to use data-main.
         var require = {
-            baseUrl: ADDRESS + "/js",
+            baseUrl: "../",
             urlArgs: "bust=" + VERSION
         };
 
@@ -48,7 +48,7 @@
         }
     </script>
 
-    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="../css/style.css"/>
 
 	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapiwebsocket.js"></script>
 	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverclient.js"></script>
@@ -57,17 +57,17 @@
 	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc4.js"></script>
 	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/model.js"></script>
 	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/translations_en.js"></script>
-    <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
-    <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
+    <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
+    <script type="text/javascript" src="../bimsurfer/lib/xeoengine.js"></script>
     <script type="text/javascript">
 
         // Loads a model from BIMServer, builds an explorer tree UI.
         // Clicking on a tree node fits the view to its scene object.
 
         require([
-                    "bimsurfer/src/BimSurfer.js",
-                    "bimsurfer/src/StaticTreeRenderer.js",
-                    "bimsurfer/lib/domReady.js!"
+                    "bimsurfer/src/BimSurfer",
+                    "bimsurfer/src/StaticTreeRenderer",
+                    "bimsurfer/lib/domReady!"
                 ],
                 function (BimSurfer, StaticTreeRenderer) {
 
