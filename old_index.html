@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Example</title>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
+        <script>
+
+            var ADDRESS = "https://thisisanexperimentalserver.com";
+            var USERNAME = "bimsurfer@logic-labs.nl";
+            var PASSWORD = "bimsurfer";
+            var VERSION = "2.0";
+
+            // This is a bit awkard. This seems to be necessary in order for the
+            // BIMserver modules to find themselves, but it destroys any option
+            // for further modularization in the client and ability to use data-main.
+            var require = {
+                baseUrl: ADDRESS + "/js",
+                urlArgs: "bust=" + VERSION
+            };
+
+            // Where does this come frome? The API crashes on the absence of this
+            // member function?
+            String.prototype.firstUpper = function() {
+                return this.charAt(0).toUpperCase() + this.slice(1);
+            }
+        </script>
+
+        <link rel="stylesheet" href="css/style.css" />
+        <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
+        <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
+        <script type="text/javascript">
+            require(["bimsurfer/src/app.js"], function() {});
+        </script>
+    </head>
+    <body>
+        <div id="maincontainer">
+
+        <div id="topsection"><h1>BIMSurfer example</h1></div>
+
+        <div id="contentwrapper">
+            <div id="colmid">
+                <div id="colright">
+                    <div id="col1wrap">
+                        <div id="col1pad">
+                            <div id="viewerContainer">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="treeContainer">
+                    </div>
+                    <div id="dataContainer">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </body>
+</html>

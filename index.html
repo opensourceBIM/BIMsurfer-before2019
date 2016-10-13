@@ -1,66 +1,47 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>Example</title>
-        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
-        <script>
-
-            var ADDRESS = "https://thisisanexperimentalserver.com";
-            var USERNAME = "bimsurfer@logic-labs.nl";
-            var PASSWORD = "bimsurfer";
-            var VERSION = "2.0";
-
-            // This is a bit awkard. This seems to be necessary in order for the
-            // BIMserver modules to find themselves, but it destroys any option
-            // for further modularization in the client and ability to use data-main.
-            var require = {
-                baseUrl: ADDRESS + "/js",
-                urlArgs: "bust=" + VERSION
-            };
-
-            // Where does this come frome? The API crashes on the absence of this
-            // member function?
-            String.prototype.firstUpper = function() {
-                return this.charAt(0).toUpperCase() + this.slice(1);
-            }
-        </script>
-
-        <link rel="stylesheet" href="css/style.css" />
-        <script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapiwebsocket.js"></script>
-        <script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverclient.js"></script>
-        <script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapipromise.js"></script>
-        <script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc2x3tc1.js"></script>
-        <script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc4.js"></script>
-        <script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/model.js"></script>
-        <script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/translations_en.js"></script>
-        <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
-        <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
-        <script type="text/javascript">
-            require(["bimsurfer/src/app.js"], function() {});
-        </script>
-    </head>
-    <body>
-        <div id="maincontainer">
-
-        <div id="topsection"><h1>BIMSurfer example</h1></div>
-
-        <div id="contentwrapper">
-            <div id="colmid">
-                <div id="colright">
-                    <div id="col1wrap">
-                        <div id="col1pad">
-                            <div id="viewerContainer">
-                            </div>
-                        </div>
-                    </div>
-                    <div id="treeContainer">
-                    </div>
-                    <div id="dataContainer">
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-    </body>
+<!DOCTYPE html>
+<html>
+<title>BIMsurfer V2 - Demo index</title>
+<head>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapiwebsocket.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverclient.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapipromise.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc2x3tc1.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc4.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/model.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/translations_en.js"></script>
+</head>
+<body>
+<div id="status"></div>
+<ul id="projects">
+</ul>
+<script>
+document.addEventListener("DOMContentLoaded", function(event) { 
+	var client = new BimServerClient("https://thisisanexperimentalserver.com");
+	var status = document.getElementById("status");
+	status.innerHTML = "Initializing BIMserver API...";
+	client.init(function(){
+		status.textContent = "Logging in...";
+		client.login("bimsurfer@logic-labs.nl", "bimsurfer", function(){
+			status.textContent = "Getting all projects...";
+			client.call("ServiceInterface", "getAllProjects", {
+				onlyTopLevel: true,
+				onlyActive: true
+			}, function(projects){
+				projects.forEach(function(project){
+					if (project.lastRevisionId != -1) {
+						var li = document.createElement("li");
+						var a = document.createElement("a");
+						li.appendChild(a);
+						a.textContent = project.name;
+						a.setAttribute("href", "example_BIMServer.html?poid=" + project.oid + "&roid=" + project.lastRevisionId);
+						document.getElementById("projects").appendChild(li);
+					}
+				});
+				status.textContent = "All projects loaded";
+			});
+		});
+	});
+});
+</script>
+</body>
 </html>

@@ -5,10 +5,32 @@
     <title>Example</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
     <script>
-
-        var ADDRESS = "http://localhost:8082";
-        var USERNAME = "admin@admin.admin";
-        var PASSWORD = "admin";
+    // http://stackoverflow.com/questions/979975/how-to-get-the-value-from-the-get-parameters
+    var QueryString = function () {
+    	  // This function is anonymous, is executed immediately and 
+    	  // the return value is assigned to QueryString!
+    	  var query_string = {};
+    	  var query = window.location.search.substring(1);
+    	  var vars = query.split("&");
+    	  for (var i=0;i<vars.length;i++) {
+    	    var pair = vars[i].split("=");
+    	        // If first entry with this name
+    	    if (typeof query_string[pair[0]] === "undefined") {
+    	      query_string[pair[0]] = decodeURIComponent(pair[1]);
+    	        // If second entry with this name
+    	    } else if (typeof query_string[pair[0]] === "string") {
+    	      var arr = [ query_string[pair[0]],decodeURIComponent(pair[1]) ];
+    	      query_string[pair[0]] = arr;
+    	        // If third or later entry with this name
+    	    } else {
+    	      query_string[pair[0]].push(decodeURIComponent(pair[1]));
+    	    }
+    	  } 
+    	  return query_string;
+    	}();
+        var ADDRESS = "https://thisisanexperimentalserver.com";
+        var USERNAME = "bimsurfer@logic-labs.nl";
+        var PASSWORD = "bimsurfer";
         var VERSION = "2.0";
 
         // This is a bit awkard. This seems to be necessary in order for the
@@ -28,6 +50,13 @@
 
     <link rel="stylesheet" href="css/style.css"/>
 
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapiwebsocket.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverclient.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapipromise.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc2x3tc1.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc4.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/model.js"></script>
+	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/translations_en.js"></script>
     <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
     <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
     <script type="text/javascript">
@@ -52,8 +81,8 @@
                         bimserver: ADDRESS,
                         username: USERNAME,
                         password: PASSWORD,
-                        poid: 131073,
-                        roid: 65539,
+                        poid: QueryString.poid,
+                        roid: QueryString.roid,
                         schema: "ifc2x3tc1" // < TODO: Deduce automatically
                     })
                             .then(function (model) {
