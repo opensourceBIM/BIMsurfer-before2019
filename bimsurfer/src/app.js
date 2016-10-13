@@ -11,8 +11,8 @@ require(["bimsurfer/src/BimSurfer.js", "bimsurfer/src/StaticTreeRenderer.js", "b
         bimserver: ADDRESS,
         username: USERNAME,
         password: PASSWORD,
-        poid: 10027009,
-        roid: 25231363,
+        poid: 5439489,
+        roid: 11468803,
         schema: "ifc2x3tc1" // < TODO: Deduce automatically
     }).then(function (model) {
 
