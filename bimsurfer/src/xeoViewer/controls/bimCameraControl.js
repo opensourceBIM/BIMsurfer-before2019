@@ -444,8 +444,6 @@ define(function () {
                         view.eye = rotate(rotateStartEye);
                         view.look = rotate(rotateStartLook);
                         view.up = math.subVec3(rotate(rotateStartUp), view.eye, math.vec3());
-
-                        setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
                     }
 
                     lastCanvasPos[0] = canvasPos[0];
@@ -583,8 +581,6 @@ define(function () {
                             view.eye = rotate(rotateStartEye);
                             view.look = rotate(rotateStartLook);
                             view.up = math.subVec3(rotate(rotateStartUp), view.eye, math.vec3());
-
-                            setCursor("url(bimsurfer/src/xeoViewer/controls/cursors/rotate.png), auto");
                         }
                     }
                 });
@@ -649,8 +645,6 @@ define(function () {
                                 if (project.isType("XEO.Ortho")) {
                                     project.scale += delta * orthoScaleRate;
                                 }
-
-                                setCursor("crosshair");
 
                                 resetRotate();
                             }
@@ -760,8 +754,6 @@ define(function () {
                                     }
                                 // }
 
-                                setCursor("crosshair");
-
                                 resetRotate();
                             }
                         }
@@ -786,8 +778,6 @@ define(function () {
 
                     flying = true;
 
-                    setCursor("wait", true);
-
                     flight.cancel();
 
                     flight.flyTo({
@@ -796,9 +786,6 @@ define(function () {
                             up: up
                         },
                         function () {
-
-                            setCursor("auto");
-
                             resetRotate();
 
                             flying = false;
@@ -932,8 +919,6 @@ define(function () {
                             view.pan(tempVec3);
 
                             resetRotate();
-
-                            setCursor("e-resize");
                         }
                     }
                 };
