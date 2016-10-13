@@ -14,29 +14,6 @@ h1, h2 {
     margin: 0;
 }
 
-textarea, pre {
-    padding: 20px;
-    border: solid 1px #ddd;
-    background: #eee;
-    margin: 0 10px;
-    height: 12px;
-    line-height: 12px;
-    font-size: 12px;
-    width: 1000px;
-    display: block;
-}
-
-pre {
-    background: white;
-    overflow: hidden;
-    white-space: pre-wrap;
-}
-
-button {
-    margin: 10px 10px;
-    width: 100px;
-}
-
 /* From: http://matthewjamestaylor.com/blog/holy-grail-no-quirks-mode.css */
 #contentwrapper{
     position:relative;
@@ -102,42 +79,6 @@ button {
     height: 600px;
 }
 
-#treeContainer, #treeContainer * {
-    user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    z-index: 1;
-}
-
-#treeContainer div.item {
-    border-top: solid 1px #eee;
-}
-
-#treeContainer > div.item {
-    border: none;
-}
-
-#treeContainer div.label {
-    margin-left: -100px;
-    padding-left: 100px;
-    width: 1000px;
-    cursor: pointer;
-}
-
-#treeContainer div.children {
-    padding-left: 10px;
-}
-
-#treeContainer div.selected {
-    background: #6ae;
-    color: white;
-}
-
-#treeContainer div.label:before {
-  content: "\21b3  ";
-}
-
 canvas {
     display: block;
     width: 100%;
@@ -145,20 +86,3 @@ canvas {
     cursor: default;
 }
 
-#dataContainer h3 {
-    font-weight: bold;
-    margin: 0;
-    padding: 10px 0 0 0;
-    width: 1000px;
-}
-
-#dataContainer h3:before {
-    content: "\25b8  ";
-}
-
-#dataContainer th,
-#dataContainer td {
-    width: 50%;
-    border-bottom: solid 1px #eee;
-    text-align: left;
-}

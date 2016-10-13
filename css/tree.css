@@ -1,0 +1,35 @@
+.bimsurfer-static-tree, .bimsurfer-static-tree * {
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    z-index: 1;
+}
+
+.bimsurfer-static-tree div.item {
+    border-top: solid 1px #eee;
+}
+
+.bimsurfer-static-tree > div.item {
+    border: none;
+}
+
+.bimsurfer-static-tree div.label {
+    margin-left: -100px;
+    padding-left: 100px;
+    width: 1000px;
+    cursor: pointer;
+}
+
+.bimsurfer-static-tree div.children {
+    padding-left: 10px;
+}
+
+.bimsurfer-static-tree div.selected {
+    background: #6ae;
+    color: white;
+}
+
+.bimsurfer-static-tree div.label:before {
+  content: "\21b3  ";
+}

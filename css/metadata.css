@@ -1,0 +1,17 @@
+.bimsurfer-metadata h3 {
+    font-weight: bold;
+    margin: 0;
+    padding: 10px 0 0 0;
+    width: 1000px;
+}
+
+.bimsurfer-metadata h3:before {
+    content: "\25b8  ";
+}
+
+.bimsurfer-metadata th,
+.bimsurfer-metadata td {
+    width: 50%;
+    border-bottom: solid 1px #eee;
+    text-align: left;
+}

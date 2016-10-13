@@ -1,0 +1,22 @@
+textarea, pre {
+    padding: 20px;
+    border: solid 1px #ddd;
+    background: #eee;
+    margin: 0 10px;
+    height: 12px;
+    line-height: 12px;
+    font-size: 12px;
+    width: 1000px;
+    display: block;
+}
+
+pre {
+    background: white;
+    overflow: hidden;
+    white-space: pre-wrap;
+}
+
+button {
+    margin: 10px 10px;
+    width: 100px;
+}
