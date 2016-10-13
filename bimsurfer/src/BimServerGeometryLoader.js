@@ -107,7 +107,7 @@ define(["bimsurfer/src/DataInputStreamReader"], function (DataInputStreamReader)
                     }
                 };
                 o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin2", function (serializer) {
-                    o.bimServerApi.call("ServiceInterface", "downloadByNewJsonQuery", {
+                    o.bimServerApi.call("ServiceInterface", "download", {
                         roids: o.options.roids,
                         query: JSON.stringify(query),
                         serializerOid : serializer.oid,
