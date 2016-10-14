@@ -16,11 +16,14 @@
     <script>
         var address = QueryString.address;
         var token = QueryString.token;
-        var version = "2.0";
+        
+        /* Generating a new version based on the current time, this way resources are never cached
+         When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
+         To facilitate proper caching
+        */
+        var version = new Date().getTime();
 
-        // This is a bit awkard. This seems to be necessary in order for the
-        // BIMserver modules to find themselves, but it destroys any option
-        // for further modularization in the client and ability to use data-main.
+        // Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
         var require = {
             baseUrl: "../",
             urlArgs: "bust=" + version
