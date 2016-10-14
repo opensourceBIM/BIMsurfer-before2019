@@ -86,3 +86,9 @@ canvas {
     cursor: default;
 }
 
+#status {
+	color: blue;
+	position: absolute;
+	top: 15px;
+	left: 300px;
+}

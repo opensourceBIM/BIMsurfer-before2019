@@ -23,6 +23,11 @@
         */
         var version = new Date().getTime();
 
+        // This has been moved to bimserverapi, can be removed in a day
+        String.prototype.firstUpper = function () {
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        }
+        
         // Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
         var require = {
             baseUrl: "../",
@@ -51,6 +56,13 @@
 	
 	                var bimSurfer = new BimSurfer({
 	                    domNode: "viewerContainer"
+	                });
+	                
+	                bimSurfer.on("loading-finished", function(){
+	                	document.getElementById("status").innerHTML = "Loading finished";
+	                });
+	                bimSurfer.on("loading-started", function(){
+	                	document.getElementById("status").innerHTML = "Loading...";
 	                });
 	                
 	                // Lets us play with the Surfer in the console
@@ -175,8 +187,7 @@
 </head>
 <body>
 <div id="maincontainer">
-    <div id="topsection"><h1>BIMsurfer demo</h1></div>
-	<div id="status"></div>
+    <div id="topsection"><h1>BIMsurfer demo</h1><div id="status"></div></div>
     <div id="contentwrapper">
         <div id="colmid">
             <div id="colright">
