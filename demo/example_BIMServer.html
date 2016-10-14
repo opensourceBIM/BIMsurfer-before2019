@@ -10,32 +10,10 @@
     <link rel="stylesheet" href="../css/tree.css"/>
     <link rel="stylesheet" href="../css/metadata.css"/>
     
+    <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     
     <script>
-    // http://stackoverflow.com/questions/979975/how-to-get-the-value-from-the-get-parameters
-    var QueryString = function () {
-    	  // This function is anonymous, is executed immediately and 
-    	  // the return value is assigned to QueryString!
-    	  var query_string = {};
-    	  var query = window.location.search.substring(1);
-    	  var vars = query.split("&");
-    	  for (var i=0;i<vars.length;i++) {
-    	    var pair = vars[i].split("=");
-    	        // If first entry with this name
-    	    if (typeof query_string[pair[0]] === "undefined") {
-    	      query_string[pair[0]] = decodeURIComponent(pair[1]);
-    	        // If second entry with this name
-    	    } else if (typeof query_string[pair[0]] === "string") {
-    	      var arr = [ query_string[pair[0]],decodeURIComponent(pair[1]) ];
-    	      query_string[pair[0]] = arr;
-    	        // If third or later entry with this name
-    	    } else {
-    	      query_string[pair[0]].push(decodeURIComponent(pair[1]));
-    	    }
-    	  } 
-    	  return query_string;
-    	}();
         var address = QueryString.address;
         var token = QueryString.token;
         var version = "2.0";
@@ -47,21 +25,8 @@
             baseUrl: "../",
             urlArgs: "bust=" + version
         };
-
-        // Where does this come frome? The API crashes on the absence of this
-        // member function?
-        String.prototype.firstUpper = function () {
-            return this.charAt(0).toUpperCase() + this.slice(1);
-        }
     </script>
 
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapiwebsocket.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverclient.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapipromise.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc2x3tc1.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc4.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/model.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/translations_en.js"></script>
     <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
     <script type="text/javascript" src="../bimsurfer/lib/xeoengine.js"></script>
     <script type="text/javascript">
@@ -69,138 +34,146 @@
         // Loads a model from BIMServer, builds an explorer tree UI.
         // Clicking on a tree node fits the view to its scene object.
 
-        require(["bimsurfer/src/BimSurfer","bimsurfer/src/StaticTreeRenderer","bimsurfer/src/MetaDataRenderer","bimsurfer/lib/domReady!"],
-        function (BimSurfer, StaticTreeRenderer, MetaDataRenderer) {
-
-            var bimSurfer = new BimSurfer({
-                domNode: "viewerContainer"
-            });
-            
-            // Lets us play with the Surfer in the console
-            window.bimSurfer = bimSurfer;
-
-            // Load a model from BIMServer
-            bimSurfer.load({
-                bimserver: address,
-                token: token,
-                poid: QueryString.poid,
-                roid: QueryString.roid,
-                schema: "ifc2x3tc1" // < TODO: Deduce automatically
-            }).then(function (model) {
-                model.getTree().then(function (tree) {
-                
-                    // Build a tree view of the elements in the model. The fact that it
-                    // is 'static' refers to the fact that all branches are loaded and
-                    // rendered immediately.
-                    var domtree = new StaticTreeRenderer({
-                        domNode: 'treeContainer'
-                    });
-                    domtree.addModel({name: "", id:QueryString.roid, tree:tree});
-                    domtree.build();
-                    
-                    // Add a widget that displays metadata (IfcPropertySet and instance
-                    // attributes) of the selected element.
-                    var metadata = new MetaDataRenderer({
-                        domNode: 'dataContainer'
-                    });
-                    metadata.addModel({name: "", id:QueryString.roid, model:model});
-                    
-                    bimSurfer.on("selection-changed", function(selected) {
-                        domtree.setSelected(selected, domtree.SELECT_EXCLUSIVE);
-                        metadata.setSelected(selected);
-                    });
-                    
-                    domtree.on("click", function (oid) {
-                        // Clicking an explorer node fits the view to its object
-                        bimSurfer.setColor({
-                            ids: [oid],
-                            color: [1,0,0,1]
-                        });
-                        bimSurfer.viewFit({
-                            ids: [oid],
-                            animate: true
-                        });
-                    });
-
-                    
-                    // Write API ref
-                            
-                    var flatten = function(n) {
-                        var li = []
-                        var f = function(n) {
-                            li.push(n.id);
-                            (n.children || []).forEach(f);
-                        }
-                        f(n);
-                        return li;
-                    };
-                    
-                    var oids = flatten(tree);
-                    _.shuffle(oids);
-                    oids.splice(10);
-                    var guids = bimSurfer.toGuid(oids);
-                    
-                    oids = "["+oids.join(", ")+"]";
-                    guids = "["+guids.map(function(s) {return '"'+s+'"';}).join(", ")+"]";
-                    
-                    var METHODS = [
-                        {name:'setVisibility',     args:[{name: "ids", value: oids}, {name: "visible", value:false}]},
-                        {name:'setVisibility',     args:[{name: "types", value: '["IfcWallStandardCase"]'}, {name: "visible", value:false}]},
-                        {name:'setSelectionState', args:[{name: "ids", value: oids}, {name: "selected", value:true}]},
-                        {name:'getSelected', args:[], hasResult: true},
-                        {name:'toId', args:[guids], hasResult: true},
-                        {name:'toGuid', args:[oids], hasResult: true},
-                        {name:'setColor', args:[{name: "ids", value: oids}, {name: "color", value:"{r:1, g:0, b:0, a:1}"}]},
-                        {name:'viewFit', args:[{name: "ids", value: oids}, {name: "animate", value:500}]},
-                        {name:'setCamera', args:[{name: "type", value: "'ortho'"}]},
-                        {name:'getCamera', args:[], hasResult: true},
-                        {name:'reset', args:[{name: "cameraPosition", value: true}]},
-                    ];
-
-                    var n = document.getElementById('apirefContainer');
-
-                    METHODS.forEach(function(m, i) {
-                        n.innerHTML += "<h2>"+m.name+"()</h2>";
-                        
-                        var hasNamedArgs = false;
-                        var args = m.args.map(function(a) {
-                            if (a.name) {
-                                hasNamedArgs = true;
-                                return a.name + ":" + a.value;
-                            } else {
-                                return a;
-                            }
-                        }).join(", ");
-                        
-                        if (hasNamedArgs) {
-                            args = "{"+args+"}";
-                        }
-                        
-                        var cmd = "bimSurfer."+m.name+"("+args+");";
-                        n.innerHTML += "<textarea rows=3 id='code"+i+"' spellcheck=false>"+cmd+"\n</textarea>";
-                        exec_statement = "eval(document.getElementById(\"code"+i+"\").value)"
-                        if (m.hasResult) {
-                            exec_statement = "document.getElementById(\"result"+i+"\").innerHTML = JSON.stringify(" + exec_statement + ").replace(/,/g, \", \")";
-                        } else {
-                            exec_statement += "; window.scrollTo(0,0)"
-                        }
-                        n.innerHTML += "<button onclick='"+exec_statement+"'>run</button>";
-                        if (m.hasResult) {
-                            n.innerHTML += "<pre id='result"+i+"' />";
-                        }
-                    });
-                });
-            });
-            
+        loadScripts(address + "/apps/bimserverjavascriptapi/js/", [
+             "bimserverclient.js",
+             "model.js",
+             "bimserverapiwebsocket.js",
+             "bimserverapipromise.js",
+             "ifc2x3tc1.js",
+             "ifc4.js",
+             "translations_en.js",
+        ], function(){
+            require(["bimsurfer/src/BimSurfer","bimsurfer/src/StaticTreeRenderer","bimsurfer/src/MetaDataRenderer","bimsurfer/lib/domReady!"],
+	            function (BimSurfer, StaticTreeRenderer, MetaDataRenderer) {
+	
+	                var bimSurfer = new BimSurfer({
+	                    domNode: "viewerContainer"
+	                });
+	                
+	                // Lets us play with the Surfer in the console
+	                window.bimSurfer = bimSurfer;
+	
+	                // Load a model from BIMServer
+	                bimSurfer.load({
+	                    bimserver: address,
+	                    token: token,
+	                    poid: QueryString.poid,
+	                    roid: QueryString.roid,
+	                    schema: "ifc2x3tc1" // < TODO: Deduce automatically
+	                }).then(function (model) {
+	                    model.getTree().then(function (tree) {
+	                    
+	                        // Build a tree view of the elements in the model. The fact that it
+	                        // is 'static' refers to the fact that all branches are loaded and
+	                        // rendered immediately.
+	                        var domtree = new StaticTreeRenderer({
+	                            domNode: 'treeContainer'
+	                        });
+	                        domtree.addModel({name: "", id:QueryString.roid, tree:tree});
+	                        domtree.build();
+	                        
+	                        // Add a widget that displays metadata (IfcPropertySet and instance
+	                        // attributes) of the selected element.
+	                        var metadata = new MetaDataRenderer({
+	                            domNode: 'dataContainer'
+	                        });
+	                        metadata.addModel({name: "", id:QueryString.roid, model:model});
+	                        
+	                        bimSurfer.on("selection-changed", function(selected) {
+	                            domtree.setSelected(selected, domtree.SELECT_EXCLUSIVE);
+	                            metadata.setSelected(selected);
+	                        });
+	                        
+	                        domtree.on("click", function (oid) {
+	                            // Clicking an explorer node fits the view to its object
+	                            bimSurfer.setColor({
+	                                ids: [oid],
+	                                color: [1,0,0,1]
+	                            });
+	                            bimSurfer.viewFit({
+	                                ids: [oid],
+	                                animate: true
+	                            });
+	                        });
+	
+	                        
+	                        // Write API ref
+	                                
+	                        var flatten = function(n) {
+	                            var li = []
+	                            var f = function(n) {
+	                                li.push(n.id);
+	                                (n.children || []).forEach(f);
+	                            }
+	                            f(n);
+	                            return li;
+	                        };
+	                        
+	                        var oids = flatten(tree);
+	                        _.shuffle(oids);
+	                        oids.splice(10);
+	                        var guids = bimSurfer.toGuid(oids);
+	                        
+	                        oids = "["+oids.join(", ")+"]";
+	                        guids = "["+guids.map(function(s) {return '"'+s+'"';}).join(", ")+"]";
+	                        
+	                        var METHODS = [
+	                            {name:'setVisibility',     args:[{name: "ids", value: oids}, {name: "visible", value:false}]},
+	                            {name:'setVisibility',     args:[{name: "types", value: '["IfcWallStandardCase"]'}, {name: "visible", value:false}]},
+	                            {name:'setSelectionState', args:[{name: "ids", value: oids}, {name: "selected", value:true}]},
+	                            {name:'getSelected', args:[], hasResult: true},
+	                            {name:'toId', args:[guids], hasResult: true},
+	                            {name:'toGuid', args:[oids], hasResult: true},
+	                            {name:'setColor', args:[{name: "ids", value: oids}, {name: "color", value:"{r:1, g:0, b:0, a:1}"}]},
+	                            {name:'viewFit', args:[{name: "ids", value: oids}, {name: "animate", value:500}]},
+	                            {name:'setCamera', args:[{name: "type", value: "'ortho'"}]},
+	                            {name:'getCamera', args:[], hasResult: true},
+	                            {name:'reset', args:[{name: "cameraPosition", value: true}]},
+	                        ];
+	
+	                        var n = document.getElementById('apirefContainer');
+	
+	                        METHODS.forEach(function(m, i) {
+	                            n.innerHTML += "<h2>"+m.name+"()</h2>";
+	                            
+	                            var hasNamedArgs = false;
+	                            var args = m.args.map(function(a) {
+	                                if (a.name) {
+	                                    hasNamedArgs = true;
+	                                    return a.name + ":" + a.value;
+	                                } else {
+	                                    return a;
+	                                }
+	                            }).join(", ");
+	                            
+	                            if (hasNamedArgs) {
+	                                args = "{"+args+"}";
+	                            }
+	                            
+	                            var cmd = "bimSurfer."+m.name+"("+args+");";
+	                            n.innerHTML += "<textarea rows=3 id='code"+i+"' spellcheck=false>"+cmd+"\n</textarea>";
+	                            exec_statement = "eval(document.getElementById(\"code"+i+"\").value)"
+	                            if (m.hasResult) {
+	                                exec_statement = "document.getElementById(\"result"+i+"\").innerHTML = JSON.stringify(" + exec_statement + ").replace(/,/g, \", \")";
+	                            } else {
+	                                exec_statement += "; window.scrollTo(0,0)"
+	                            }
+	                            n.innerHTML += "<button onclick='"+exec_statement+"'>run</button>";
+	                            if (m.hasResult) {
+	                                n.innerHTML += "<pre id='result"+i+"' />";
+	                            }
+	                        });
+	                    });
+	                });
+	                
+	            });
         });
     </script>
-
 </head>
 <body>
 <div id="maincontainer">
-
     <div id="topsection"><h1>BIMsurfer demo</h1></div>
-
+	<div id="status"></div>
     <div id="contentwrapper">
         <div id="colmid">
             <div id="colright">

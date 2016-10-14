@@ -61,8 +61,9 @@ define(["bimsurfer/lib/text"], function(text) {
 							            "IsDecomposedByDefine",
 							            "ContainsElementsDefine",
 							            "Representation"
-							        ]}
-								},
+							        ]
+								}
+							},
 							IsDecomposedByDefine: {
 				            	type: "IfcObjectDefinition",
 				            	field:"IsDecomposedBy",
@@ -82,35 +83,35 @@ define(["bimsurfer/lib/text"], function(text) {
        		            	includes:[
 								"IsDecomposedByDefine",
 								"ContainsElementsDefine"
-							]} , {
-    		            		type:"IfcRepresentation",
-    		            		includeAllSubtypes:true
-    		            	},{
-   		            			type:"IfcProductRepresentation"
-   		            		},{
-		            			type:"IfcPresentationLayerWithStyle"
-		            		},{
-	            				type:"IfcProduct",
-    		            		includeAllSubtypes:true
-    		            	}, {
-    		            		type:"IfcProductDefinitionShape"
-    		            	}, {
-    		            		type:"IfcPresentationLayerAssignment"
-    		            	}, {
-    		            		type:"IfcRelAssociatesClassification",
-    		            		includes:[{
-    		            			type:"IfcRelAssociatesClassification",
-                                    field:"RelatedObjects"
-                                }, {
- 		            				type:"IfcRelAssociatesClassification",
- 		            				field:"RelatingClassification"
-    		            		}]
-    		            	}, {
-    		            		type:"IfcSIUnit"
-    		            	}, {
-    		            		type:"IfcPresentationLayerAssignment"
-    		            	}
-    		            ]
+							]
+						}, {
+		            		type:"IfcRepresentation",
+		            		includeAllSubtypes: true
+		            	},{
+	            			type:"IfcProductRepresentation"
+	            		},{
+	            			type:"IfcPresentationLayerWithStyle"
+	            		},{
+            				type:"IfcProduct",
+		            		includeAllSubtypes: true
+		            	}, {
+		            		type:"IfcProductDefinitionShape"
+		            	}, {
+		            		type:"IfcPresentationLayerAssignment"
+		            	}, {
+		            		type:"IfcRelAssociatesClassification",
+		            		includes:[{
+		            			type:"IfcRelAssociatesClassification",
+                                field:"RelatedObjects"
+                            }, {
+	            				type:"IfcRelAssociatesClassification",
+	            				field:"RelatingClassification"
+		            		}]
+		            	}, {
+		            		type:"IfcSIUnit"
+		            	}, {
+		            		type:"IfcPresentationLayerAssignment"
+		            	}]
 					};
 				
                 // Perform the download
@@ -171,10 +172,6 @@ define(["bimsurfer/lib/text"], function(text) {
 								var p = instance_by_id[ps[i]];
 								var c = instance_by_id[cs[j]];
 
-								if (c._t == "IfcSpace" || c._t == "IfcOpeningElement") {
-									continue;
-								}
-								
 								// parent, id, hasChildren are significant attributes in a dojo store
 								c.parent = p.id = p._i;
 								c.id = c._i;

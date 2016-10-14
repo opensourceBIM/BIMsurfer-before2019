@@ -342,7 +342,11 @@ define([
          * @private
          */
         this.createObject = function (modelId, roid, oid, objectId, geometryIds, type, matrix) {
-
+        	// No clue if this is the best place to do this, probably not...
+        	if (type == "IfcOpeningElement" || type == "IfcSpace") {
+        		return;
+        	}
+        	
             if (modelId) {
                 var model = models[modelId];
                 if (!model) {
