@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 							var a = document.createElement("a");
 							li.appendChild(a);
 							a.textContent = project.name;
-							a.setAttribute("href", "demo/example_BIMServer.html?poid=" + project.oid + "&roid=" + project.lastRevisionId);
+							a.setAttribute("href", "demo/example_BIMServer.html?address=" + encodeURIComponent(address) + "&token=" + client.token + "&poid=" + project.oid + "&roid=" + project.lastRevisionId);
 							ul.appendChild(li);
 							totalFound++;
 						}

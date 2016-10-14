@@ -36,17 +36,16 @@
     	  } 
     	  return query_string;
     	}();
-        var ADDRESS = "https://thisisanexperimentalserver.com";
-        var USERNAME = "bimsurfer@logic-labs.nl";
-        var PASSWORD = "bimsurfer";
-        var VERSION = "2.0";
+        var address = QueryString.address;
+        var token = QueryString.token;
+        var version = "2.0";
 
         // This is a bit awkard. This seems to be necessary in order for the
         // BIMserver modules to find themselves, but it destroys any option
         // for further modularization in the client and ability to use data-main.
         var require = {
             baseUrl: "../",
-            urlArgs: "bust=" + VERSION
+            urlArgs: "bust=" + version
         };
 
         // Where does this come frome? The API crashes on the absence of this
@@ -82,9 +81,8 @@
 
             // Load a model from BIMServer
             bimSurfer.load({
-                bimserver: ADDRESS,
-                username: USERNAME,
-                password: PASSWORD,
+                bimserver: address,
+                token: token,
                 poid: QueryString.poid,
                 roid: QueryString.roid,
                 schema: "ifc2x3tc1" // < TODO: Deduce automatically

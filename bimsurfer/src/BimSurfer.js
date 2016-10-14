@@ -85,18 +85,26 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
             return new Promise(function (resolve, reject) {
 
                 bimServerApi.init(function () {
+                	if (params.token != null) {
+                		bimServerApi.setToken(params.token, function(){
+                            params.api = bimServerApi; // TODO: Make copy of params
 
-                    bimServerApi.login(params.username, params.password, function () {
-
-                        params.api = bimServerApi; // TODO: Make copy of params
-
-                        self._loadFromAPI(params).then(function (m) {
-                            resolve(m);
-                        });
-
-                    }, function () {
-                        reject(arguments);
-                    });
+                            self._loadFromAPI(params).then(function (m) {
+                                resolve(m);
+                            });
+                		});
+                	} else {
+                		bimServerApi.login(params.username, params.password, function () {
+                			params.api = bimServerApi; // TODO: Make copy of params
+                			
+                			self._loadFromAPI(params).then(function (m) {
+                				resolve(m);
+                			});
+                			
+                		}, function () {
+                			reject(arguments);
+                		});
+                	}
                 });
             });
         };
