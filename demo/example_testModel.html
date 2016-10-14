@@ -5,37 +5,29 @@
     <title>Example</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
     <script>
-
-        var ADDRESS = "http://localhost:8082";
-        var USERNAME = "admin@admin.admin";
-        var PASSWORD = "admin";
-        var VERSION = "2.0";
-
-        // This is a bit awkard. This seems to be necessary in order for the
-        // BIMserver modules to find themselves, but it destroys any option
-        // for further modularization in the client and ability to use data-main.
+	    /* Generating a new version based on the current time, this way resources are never cached
+	    When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
+	    To facilitate proper caching
+	   	*/
+		var version = new Date().getTime();
+    
+    	// Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
         var require = {
-            baseUrl: ADDRESS + "/js",
-            urlArgs: "bust=" + VERSION
+            baseUrl: "../",
+            urlArgs: "bust=" + version
         };
-
-        // Where does this come frome? The API crashes on the absence of this
-        // member function?
-        String.prototype.firstUpper = function () {
-            return this.charAt(0).toUpperCase() + this.slice(1);
-        }
     </script>
 
-    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="css/demo.css"/>
 
-    <script type="text/javascript" src="bimsurfer/lib/require.js"></script>
-    <script type="text/javascript" src="bimsurfer/lib/xeoengine.js"></script>
+    <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
+    <script type="text/javascript" src="../bimsurfer/lib/xeoengine.js"></script>
     <script type="text/javascript">
 
         require([
-                    "bimsurfer/src/BimSurfer.js",
-                    "bimsurfer/src/StaticTreeRenderer.js",
-                    "bimsurfer/lib/domReady.js!"
+                    "bimsurfer/src/BimSurfer",
+                    "bimsurfer/src/StaticTreeRenderer",
+                    "bimsurfer/lib/domReady"
                 ],
                 function (BimSurfer, StaticTreeRenderer) {
 
