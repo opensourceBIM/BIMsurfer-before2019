@@ -81,33 +81,57 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
             var notifier = new Notifier();
             var bimServerApi = new BimServerApi(params.bimserver, notifier);
+			
+			params.api = bimServerApi; // TODO: Make copy of params
 
-            return new Promise(function (resolve, reject) {
-
-                bimServerApi.init(function () {
-                	if (params.token != null) {
-                		bimServerApi.setToken(params.token, function(){
-                            params.api = bimServerApi; // TODO: Make copy of params
-
-                            self._loadFromAPI(params).then(function (m) {
-                                resolve(m);
-                            });
-                		});
-                	} else {
-                		bimServerApi.login(params.username, params.password, function () {
-                			params.api = bimServerApi; // TODO: Make copy of params
-                			
-                			self._loadFromAPI(params).then(function (m) {
-                				resolve(m);
-                			});
-                			
-                		}, function () {
-                			reject(arguments);
-                		});
-                	}
-                });
-            });
+            return self._initApi(params)
+				.then(self._loginToServer)
+				.then(self._getRevisionFromServer)
+				.then(self._loadFromAPI);
         };
+		
+		this._initApi = function(params) {
+			return new Promise(function(resolve, reject) {
+				params.api.init(function () {
+					resolve(params);
+				});
+			});
+		};
+		
+		this._loginToServer = function (params) {
+			return new Promise(function(resolve, reject) {
+				if (params.token) {
+					params.api.setToken(params.token, function() {
+						resolve(params)
+					}, reject);
+				} else {
+					params.api.login(params.username, params.password, function() {
+						resolve(params)
+					}, reject);
+				}
+			});
+		};
+		
+		this._getRevisionFromServer = function (params) {
+			return new Promise(function(resolve, reject) {
+				if (params.roid) {
+					resolve(params);
+				} else {
+					params.api.call("ServiceInterface", "getAllRelatedProjects", {poid: params.poid}, function(data) {
+						if (data.length > 0) {
+							var projectData = data[0];
+							params.roid = projectData.lastRevisionId;
+							params.schema = projectData.schema;
+							self.models = [projectData];
+							
+							resolve(params);
+						} else {
+							reject();
+						}
+					}, reject);
+				}
+			});
+		};
 
         this._loadFrom_glTF = function (params) {
             if (params.src) {
