@@ -89,6 +89,9 @@ define([
         // Lazy-generated array of visible object IDs, for return by #getVisibility()
         var visibleObjectList = null;
 
+        // Array of objects RFC types hidden by default
+        var hiddenTypes = ["IfcOpeningElement", "IfcSpace"];
+
         // Objects that are currently selected, mapped to IDs
         var selectedObjects = {};
 
@@ -342,10 +345,6 @@ define([
          * @private
          */
         this.createObject = function (modelId, roid, oid, objectId, geometryIds, type, matrix) {
-        	// No clue if this is the best place to do this, probably not...
-        	if (type == "IfcOpeningElement" || type == "IfcSpace") {
-        		return;
-        	}
         	
             if (modelId) {
                 var model = models[modelId];
@@ -374,6 +373,11 @@ define([
             if (model) {
                 model.collection.add(object);
             }
+			
+        	// Hide objects of certain types by default
+        	if (hiddenTypes.indexOf(type) !== -1) {
+        		object.visibility.visible = false;
+        	}
 
             return object;
         };
@@ -495,7 +499,8 @@ define([
         };
 
         /**
-         * Sets the visibility of objects specified by ID or IFC type.
+         * Sets the visibility of objects specified by IDs or IFC types.
+         * If IFC types are specified, this will affect existing objects as well as subsequently loaded objects of these types
          *
          * @param params
          * @param params.ids IDs of objects or IFC types to update.
@@ -536,13 +541,22 @@ define([
             }
 
             for (i = 0, len = types.length; i < len; i++) {
-                var typedict = rfcTypes[types[i]] || {};
-                debugger;
+				var type = types[i];
+				var typedict = rfcTypes[type] || {};
+
                 Object.keys(typedict).forEach(function (id) {
                     var object = typedict[id];
                     object.visibility.visible = visible;
                     changed = true;
                 });
+				
+				var index = hiddenTypes.indexOf(type);
+				
+				if (index !== -1 && visible) {
+					hiddenTypes.splice(index, 1);	// remove type from array
+				} else if (index === -1 && !visible) {
+					hiddenTypes.push(type);			// add type to array
+				}
             }
 
             for (i = 0, len = ids.length; i < len; i++) {
