@@ -33,20 +33,25 @@ define([
         });
 
         // Redefine default light sources;
-        scene.lights.lights = [
-
-            new XEO.AmbientLight(scene, {
-                color: [0.65, 0.65, 0.75],
-                intensity: 1.0
-            }),
-
-            new XEO.DirLight(scene, {
-                dir: [0.0, 0.0, -1.0],
-                color: [1.0, 1.0, 1.0],
-                intensity: 1.0,
-                space: "view"
-            })
-        ];
+		var lights = [
+			{
+				type: "ambient",
+				params: {
+					color: [0.65, 0.65, 0.75],
+					intensity: 1
+				}
+			},
+			{
+				type: "dir",
+				params: {
+					dir: [0.0, 0.0, -1.0],
+					color: [1.0, 1.0, 1.0],
+					intensity: 1.0,
+					space: "view"
+				}
+			}
+		];
+		scene.lights.lights = buildLights(lights);
 
         // Attached to all objects to fit the model inside the view volume
         var scale = new XEO.Scale(scene, {
@@ -917,6 +922,44 @@ define([
 
             return json;
         };
+		
+		
+        /**
+         * Redefines light sources.
+         * 
+         * @param params Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
+		 * See http://xeoengine.org/docs/classes/Lights.html for possible params for each light type
+         */
+		this.setLights = function (params) {
+			lights = params;
+			
+			scene.lights.lights = buildLights(lights);
+		};
+		
+		
+        /**
+         * Returns light sources.
+         * 
+         * @returns Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
+         */
+		this.getLights = function () {
+			return lights;
+		};
+		
+		function buildLights(lights) {
+			return lights.map(function(light) {
+				if (light.type == "ambient") {
+					return new XEO.AmbientLight(scene, light.params);
+				} else if (light.type == "dir") {
+					return new XEO.DirLight(scene, light.params);
+				} else if (light.type == "point") {
+					return new XEO.PointLight(scene, light.params);
+				} else {
+					console.log("Unknown light type: " + type);
+				}
+			});
+		}
+		
 
         /**
          *

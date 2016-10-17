@@ -348,6 +348,26 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.setCamera = function (params) {
             viewer.setCamera(params);
         };
+		
+		/**
+         * Redefines light sources.
+         * 
+         * @param params Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
+		 * See http://xeoengine.org/docs/classes/Lights.html for possible params for each light type
+         */
+		this.setLights = function (params) {
+			viewer.setLights(params);
+		};
+		
+		
+        /**
+         * Returns light sources.
+         * 
+         * @returns Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
+         */
+		this.getLights = function () {
+			return viewer.getLights;
+		};
 
         /**
          *
