@@ -933,6 +933,10 @@ define([
 		this.setLights = function (params) {
 			lights = params;
 			
+			for (var i = 0, len = scene.lights.lights.length; i < len; i++) {
+				scene.lights.lights[i].destroy();
+			}
+
 			scene.lights.lights = buildLights(lights);
 		};
 		
