@@ -33,20 +33,25 @@ define([
         });
 
         // Redefine default light sources;
-        scene.lights.lights = [
-
-            new XEO.AmbientLight(scene, {
-                color: [0.65, 0.65, 0.75],
-                intensity: 1.0
-            }),
-
-            new XEO.DirLight(scene, {
-                dir: [0.0, 0.0, -1.0],
-                color: [1.0, 1.0, 1.0],
-                intensity: 1.0,
-                space: "view"
-            })
-        ];
+		var lights = [
+			{
+				type: "ambient",
+				params: {
+					color: [0.65, 0.65, 0.75],
+					intensity: 1
+				}
+			},
+			{
+				type: "dir",
+				params: {
+					dir: [0.0, 0.0, -1.0],
+					color: [1.0, 1.0, 1.0],
+					intensity: 1.0,
+					space: "view"
+				}
+			}
+		];
+		scene.lights.lights = buildLights(lights);
 
         // Attached to all objects to fit the model inside the view volume
         var scale = new XEO.Scale(scene, {
@@ -88,6 +93,9 @@ define([
 
         // Lazy-generated array of visible object IDs, for return by #getVisibility()
         var visibleObjectList = null;
+
+        // Array of objects RFC types hidden by default
+        var hiddenTypes = ["IfcOpeningElement", "IfcSpace"];
 
         // Objects that are currently selected, mapped to IDs
         var selectedObjects = {};
@@ -342,10 +350,6 @@ define([
          * @private
          */
         this.createObject = function (modelId, roid, oid, objectId, geometryIds, type, matrix) {
-        	// No clue if this is the best place to do this, probably not...
-        	if (type == "IfcOpeningElement" || type == "IfcSpace") {
-        		return;
-        	}
         	
             if (modelId) {
                 var model = models[modelId];
@@ -374,6 +378,11 @@ define([
             if (model) {
                 model.collection.add(object);
             }
+			
+        	// Hide objects of certain types by default
+        	if (hiddenTypes.indexOf(type) !== -1) {
+        		object.visibility.visible = false;
+        	}
 
             return object;
         };
@@ -495,7 +504,8 @@ define([
         };
 
         /**
-         * Sets the visibility of objects specified by ID or IFC type.
+         * Sets the visibility of objects specified by IDs or IFC types.
+         * If IFC types are specified, this will affect existing objects as well as subsequently loaded objects of these types
          *
          * @param params
          * @param params.ids IDs of objects or IFC types to update.
@@ -536,13 +546,22 @@ define([
             }
 
             for (i = 0, len = types.length; i < len; i++) {
-                var typedict = rfcTypes[types[i]] || {};
-                debugger;
+				var type = types[i];
+				var typedict = rfcTypes[type] || {};
+
                 Object.keys(typedict).forEach(function (id) {
                     var object = typedict[id];
                     object.visibility.visible = visible;
                     changed = true;
                 });
+				
+				var index = hiddenTypes.indexOf(type);
+				
+				if (index !== -1 && visible) {
+					hiddenTypes.splice(index, 1);	// remove type from array
+				} else if (index === -1 && !visible) {
+					hiddenTypes.push(type);			// add type to array
+				}
             }
 
             for (i = 0, len = ids.length; i < len; i++) {
@@ -903,6 +922,48 @@ define([
 
             return json;
         };
+		
+		
+        /**
+         * Redefines light sources.
+         * 
+         * @param params Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
+		 * See http://xeoengine.org/docs/classes/Lights.html for possible params for each light type
+         */
+		this.setLights = function (params) {
+			lights = params;
+			
+			for (var i = scene.lights.lights.length - 1; i >= 0; i--) {
+				scene.lights.lights[i].destroy();
+			}
+
+			scene.lights.lights = buildLights(lights);
+		};
+		
+		
+        /**
+         * Returns light sources.
+         * 
+         * @returns Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
+         */
+		this.getLights = function () {
+			return lights;
+		};
+		
+		function buildLights(lights) {
+			return lights.map(function(light) {
+				if (light.type == "ambient") {
+					return new XEO.AmbientLight(scene, light.params);
+				} else if (light.type == "dir") {
+					return new XEO.DirLight(scene, light.params);
+				} else if (light.type == "point") {
+					return new XEO.PointLight(scene, light.params);
+				} else {
+					console.log("Unknown light type: " + type);
+				}
+			});
+		}
+		
 
         /**
          *
