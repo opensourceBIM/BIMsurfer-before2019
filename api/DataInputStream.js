@@ -80,9 +80,13 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 	},
 	
 	readFloatArray: function(length) {
-		var result = new Float32Array(this.arrayBuffer, this.pos, length);
-		this.pos += length * 4;
-		return result;
+		try {
+			var result = new Float32Array(this.arrayBuffer, this.pos, length);
+			this.pos += length * 4;
+			return result;
+		} catch (e) {
+			console.error(e, this.arrayBuffer.byteLength, this.pos, length);
+		}
 	},
 
 	readDoubleArray: function(length) {
@@ -105,5 +109,15 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 		var result = new Int32Array(this.arrayBuffer, this.pos, length);
 		this.pos += length * 4;
 		return result;
+	},
+	
+	readShortArray: function(length) {
+		try {
+			var result = new Int16Array(this.arrayBuffer, this.pos, length);
+			this.pos += length * 2;
+			return result;
+		} catch (e) {
+			console.error(e, this.pos, length);
+		}
 	}
 });

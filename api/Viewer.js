@@ -22,7 +22,8 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	scene: null,
 	sceneLoaded: false,
 	bimServerApi: null,
-	geometryLoaders: [],
+	activeGeometryLoaders: [],
+	waitingGeometryLoaders: [],
 	tick: 0,
 //	selectedObj: 'emtpy Selection',
 //	mouseRotate: 0,
@@ -92,6 +93,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				project.loadScene((BIMSURFER.Util.isset(options.autoStart.revisionOid) ? options.autoStart.revisionOid : null), true);
 			});
 		}
+		setInterval(this.startNewLoaders, 200, this);
 	},
 
 	/**
@@ -310,44 +312,44 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 									nodes: [{
 										type: 'lights',
 										id: 'my-lights',
-										nodes: [
-											{
-											    type:"material",
-											    color:{ r:1, g:0, b:0 },
-											    nodes:[
-											        {
-											            type:"geometry/box",
-											            xSize: 100000,
-											            ySize: 1000,
-											            zSize: 1000
-											        }
-											    ]
-											},
-											{
-											    type:"material",
-											    color:{ r:0, g:1, b:0 },
-											    nodes:[
-											        {
-											            type:"geometry/box",
-											            xSize: 1000,
-											            ySize: 100000,
-											            zSize: 1000
-											        }
-											    ]
-											},
-											{
-											    type:"material",
-											    color:{ r:0, g:0, b:1 },
-											    nodes:[
-											        {
-											            type:"geometry/box",
-											            xSize: 1000,
-											            ySize: 1000,
-											            zSize: 100000
-											        }
-											    ]
-											}
-										],
+//										nodes: [
+//											{
+//											    type:"material",
+//											    color:{ r:1, g:0, b:0 },
+//											    nodes:[
+//											        {
+//											            type:"geometry/box",
+//											            xSize: 100000,
+//											            ySize: 1000,
+//											            zSize: 1000
+//											        }
+//											    ]
+//											},
+//											{
+//											    type:"material",
+//											    color:{ r:0, g:1, b:0 },
+//											    nodes:[
+//											        {
+//											            type:"geometry/box",
+//											            xSize: 1000,
+//											            ySize: 100000,
+//											            zSize: 1000
+//											        }
+//											    ]
+//											},
+//											{
+//											    type:"material",
+//											    color:{ r:0, g:0, b:1 },
+//											    nodes:[
+//											        {
+//											            type:"geometry/box",
+//											            xSize: 1000,
+//											            ySize: 1000,
+//											            zSize: 100000
+//											        }
+//											    ]
+//											}
+//										],
 										lights: []
 									}]
 								}]
@@ -382,8 +384,8 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				}
 				
 				this.scene.on("tick", function(){
-					if (_this.tick % 30 == 0) {
-						_this.geometryLoaders.forEach(function(geometryLoader){
+					if (_this.tick % 5 == 0) {
+						_this.activeGeometryLoaders.forEach(function(geometryLoader){
 							geometryLoader.process();
 						});
 					}
@@ -398,7 +400,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 				this.addControl(clickSelect);
 				
 				if(this.scene != null) {
-					this.scene.set('tagMask', '^()$');
+//					this.scene.set('tagMask', '^()$');
 
 					this.initEvents();
 					this.sceneLoaded = true;
@@ -416,22 +418,37 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 		return null;
 	},
 
+	startNewLoaders: function(o){
+		if (o.waitingGeometryLoaders.length > 0 && o.activeGeometryLoaders.length <= 3) {
+			var geometryLoader = o.waitingGeometryLoaders[0];
+			o.waitingGeometryLoaders = o.waitingGeometryLoaders.slice(1);
+			o.activeGeometryLoaders.push(geometryLoader);
+			geometryLoader.progressListeners.push(function(progress){
+				if (progress == "done") {
+					o.tick = 0;
+					removeA(o.activeGeometryLoaders, geometryLoader);
+				}
+			});
+			geometryLoader.start();
+		}
+	},
+	
 	/**
 	 * Loads and shows the geometry of the revisions that are in the load queue
 	 */
 	loadGeometry: function(geometryLoader) {
 		var o = this;
-		
-		o.geometryLoaders.push(geometryLoader);
-		// TODO limit to something useful
-		if (o.geometryLoaders.length <= 20) {
+		if (o.activeGeometryLoaders.length <= 3) {
+			o.activeGeometryLoaders.push(geometryLoader);
 			geometryLoader.progressListeners.push(function(progress){
 				if (progress == "done") {
 					o.tick = 0;
-					removeA(o.geometryLoaders, geometryLoader);
+					removeA(o.activeGeometryLoaders, geometryLoader);
 				}
 			});
 			geometryLoader.start();
+		} else {
+			o.waitingGeometryLoaders.push(geometryLoader);
 		}
 	},
 

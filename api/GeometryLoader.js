@@ -1,4 +1,4 @@
-function GeometryLoader(bimServerApi, models, viewer) {
+function GeometryLoader(bimServerApi, models, viewer, type) {
 	var o = this;
 	o.models = models;
 	o.bimServerApi = bimServerApi;
@@ -8,6 +8,16 @@ function GeometryLoader(bimServerApi, models, viewer) {
 	o.objectAddedListeners = [];
 	o.prepareReceived = false;
 	o.todo = [];
+	o.type = type;
+	
+	if (o.type == null) {
+		o.type = "triangles";
+	}
+	
+	o.stats = {
+		nrPrimitives: 0,
+		nrVertices: 0
+	};
 	
 	// GeometryInfo.oid -> GeometryData.oid
 	o.infoToData = {};
@@ -116,6 +126,26 @@ function GeometryLoader(bimServerApi, models, viewer) {
 							type: "enable",
 							enabled: enabled,
 							nodes : [{
+//								type : "material",
+//								baseColor: material,
+//								alpha: 1,
+//								nodes : [{
+//									type: "translate",
+//									x: objectBounds[0] + (objectBounds[3] - objectBounds[0]) / 2,
+//									y: objectBounds[1] + (objectBounds[4] - objectBounds[1]) / 2,
+//									z: objectBounds[2] + (objectBounds[5] - objectBounds[2]) / 2,
+//									nodes : [{
+//										type: "scale",
+//										x: (objectBounds[3] - objectBounds[0]) / 2,
+//										y: (objectBounds[4] - objectBounds[1]) / 2,
+//										z: (objectBounds[5] - objectBounds[2]) / 2,
+//										nodes: [{
+//											type: "geometry/box",
+//											wire: true
+//										}]
+//									}]
+//								}]
+							}, {
 								type : "material",
 								baseColor: material,
 								alpha: material.a,
@@ -147,12 +177,16 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			var geometryDataOid = data.readLong();
 			var nrParts = data.readInt();
 			//var objectBounds = data.readFloatArray(6);
+			
 			for (var i=0; i<nrParts; i++) {
 				var coreId = data.readLong();
 				coreIds.push(coreId);
 				var nrIndices = data.readInt();
-				var indices = data.readIntArray(nrIndices);
+				o.stats.nrPrimitives += nrIndices / 3;
+				var indices = data.readShortArray(nrIndices);
+				data.align4();
 				var nrVertices = data.readInt();
+				o.stats.nrVertices += nrVertices;
 				var vertices = data.readFloatArray(nrVertices);
 				var nrNormals = data.readInt();
 				var normals = data.readFloatArray(nrNormals);
@@ -161,11 +195,16 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				
 				var geometry = {
 					type: "geometry",
-					primitive: "triangles"
+					primitive: o.type
 				};
 				
 				geometry.coreId = coreId;
-				geometry.indices = indices;
+				
+				if (o.type == "lines") {
+					geometry.indices = o.convertToLines(indices);
+				} else {
+					geometry.indices = indices;
+				}
 				geometry.positions = vertices;
 				geometry.normals = normals;
 				
@@ -191,9 +230,12 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		} else if (geometryType == 1) {
 			var geometryDataOid = data.readLong();
 			var nrIndices = data.readInt();
-			var indices = data.readIntArray(nrIndices);
+			var indices = data.readShortArray(nrIndices);
+			o.stats.nrPrimitives += nrIndices / 3;
+			data.align4();
 			var nrVertices = data.readInt();
 			var vertices = data.readFloatArray(nrVertices);
+			o.stats.nrVertices += nrVertices;
 			var nrNormals = data.readInt();
 			var normals = data.readFloatArray(nrNormals);
 			var nrColors = data.readInt();
@@ -201,11 +243,15 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			
 			var geometry = {
 				type: "geometry",
-				primitive: "triangles"
+				primitive: o.type
 			};
 			
 			geometry.coreId = geometryDataOid;
-			geometry.indices = indices;
+			if (o.type == "lines") {
+				geometry.indices = o.convertToLines(indices);
+			} else {
+				geometry.indices = indices;
+			}
 			geometry.positions = vertices;
 			geometry.normals = normals;
 			
@@ -232,7 +278,25 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		o.updateProgress();
 	};
 	
+	this.convertToLines = function(indices) {
+		var lineIndices = [];
+		for (var i=0; i<indices.length; i+=3) {
+			var i1 = indices[i];
+			var i2 = indices[i+1];
+			var i3 = indices[i+2];
+			
+			lineIndices.push(i1, i2);
+			lineIndices.push(i2, i3);
+			lineIndices.push(i3, i1);
+		}
+		return lineIndices;
+	}
+	
 	this.updateProgress = function() {
+		o.progressListeners.forEach(function(progressListener){
+			progressListener("Loading", -1);
+		});
+
 //		if (o.state.nrObjectsRead < o.state.nrObjects) {
 //			var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
 //			if (progress != o.state.lastProgress) {
@@ -259,10 +323,10 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			nrObjectsRead: 0,
 			nrObjects: 0
 		};
-		o.viewer.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
-		o.viewer.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Continuous);
+//		o.viewer.SYSTEM.events.trigger('progressStarted', ['Loading Geometry']);
+//		o.viewer.SYSTEM.events.trigger('progressBarStyleChanged', BIMSURFER.Constants.ProgressBarStyle.Continuous);
 		
-		o.viewer.refreshMask();
+//		o.viewer.refreshMask();
 
 		o.library = o.viewer.scene.findNode("library-" + o.groupId);
 		if (o.library == null) {
@@ -315,11 +379,12 @@ function GeometryLoader(bimServerApi, models, viewer) {
 //			fovy: 37.8493
 //		});
 		
+		console.log(o.stats);
+		
 		o.viewer.SYSTEM.events.trigger('progressDone');
 		o.progressListeners.forEach(function(progressListener){
 			progressListener("done", o.state.nrObjectsRead, o.state.nrObjectsRead);
 		});
-		o.viewer.events.trigger('sceneLoaded', [o.viewer.scene]);
 		o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {topicId: o.topicId}, function(){
 		});
 	}
@@ -331,7 +396,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 4 && version != 5 && version != 6 && version != 7) {
+		if (version != 10) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
@@ -399,6 +464,8 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				aspect: jQuery(o.viewer.canvas).width() / jQuery(o.viewer.canvas).height(),
 				fovy: 37.8493
 			});
+			
+			o.viewer.events.trigger('sceneLoaded', [o.viewer.scene]);
 		}
 		o.state.mode = 1;
 //o.state.nrObjects = data.readInt();
@@ -410,17 +477,14 @@ function GeometryLoader(bimServerApi, models, viewer) {
 		var data = o.todo.shift();
 		while (data != null) {
 			inputStream = new BIMSURFER.DataInputStreamReader(null, data);
-			var channel = inputStream.readInt();
-			var nrMessages = inputStream.readInt();
-			for (var i=0; i<nrMessages; i++) {
-				var messageType = inputStream.readByte();
-				if (messageType == 0) {
-					o.readStart(inputStream);
-				} else if (messageType == 6) {
-					o.readEnd(inputStream);
-				} else {
-					o.readObject(inputStream, messageType);
-				}
+			var topicId = inputStream.readLong(); // Which we don't use here
+			var messageType = inputStream.readByte();
+			if (messageType == 0) {
+				o.readStart(inputStream);
+			} else if (messageType == 6) {
+				o.readEnd(inputStream);
+			} else {
+				o.readObject(inputStream, messageType);
 			}
 			data = o.todo.shift();
 		}
@@ -461,7 +525,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				o.groupId = o.options.roid;
 				o.types = o.options.types;
 				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
-					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByTypes", {
+					o.bimServerApi.call("ServiceInterface", "downloadByTypes", {
 						roids: [o.options.roid],
 						schema: o.options.schema,
 						classNames : types,
@@ -479,7 +543,7 @@ function GeometryLoader(bimServerApi, models, viewer) {
 				o.groupId = o.options.roid;
 				o.types = o.options.types;
 				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
-					o.bimServerApi.call("Bimsie1ServiceInterface", "download", {
+					o.bimServerApi.call("ServiceInterface", "download", {
 						roid: o.options.roid,
 						serializerOid : serializer.oid,
 						sync : false,
@@ -511,8 +575,8 @@ function GeometryLoader(bimServerApi, models, viewer) {
 						field: "data"
 					}
 				};
-				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin", function(serializer){
-					o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByNewJsonQuery", {
+				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin2", function(serializer){
+					o.bimServerApi.call("ServiceInterface", "download", {
 						roids: o.options.roids,
 						serializerOid : serializer.oid,
 						sync : false,
