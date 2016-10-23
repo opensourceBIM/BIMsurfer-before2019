@@ -13,6 +13,19 @@ define(["bimsurfer/src/EventHandler"], function(EventHandler) {
         var domNodes = {};
         var selectionState = {};
         
+        this.getOffset = function(elem) {
+            var reference = document.getElementById(args['domNode']);
+            var y = 0;
+            while (true) {
+                y += elem.offsetTop;
+                if (elem == reference) {
+                    break;
+                }
+                elem = elem.offsetParent;
+            }
+            return y;
+        };
+        
         this.setSelected = function(ids, mode) {
             if (mode == SELECT_EXCLUSIVE) {
                 self.setSelected(self.getSelected(true), DESELECT);
@@ -28,13 +41,37 @@ define(["bimsurfer/src/EventHandler"], function(EventHandler) {
                     s = selectionState[id] = false;
                 }
                 
-                domNodes[id].className = s ? "label selected" : "label";                
+                domNodes[id].className = s ? "label selected" : "label";
             });
+            
+            var desiredViewRange = self.getSelected().map(function(id) {
+                return self.getOffset(domNodes[id]);
+            });
+            
+            if (desiredViewRange.length) {
+                desiredViewRange.sort()
+                desiredViewRange = [desiredViewRange[0], desiredViewRange[desiredViewRange.length-1]];
+            
+                var domNode = document.getElementById(args['domNode']);
+                var currentViewRange = [domNode.scrollTop, domNode.scrollTop + domNode.offsetHeight];
+                
+                if (!(desiredViewRange[0] >= currentViewRange[0] && desiredViewRange[1] <= currentViewRange[1])) {
+                    if ( (desiredViewRange[1] - desiredViewRange[0]) > (currentViewRange[1] - currentViewRange[0]) ) {
+                        domNode.scrollTop = desiredViewRange[0];
+                    } else {
+                        var l = parseInt((desiredViewRange[1] + desiredViewRange[0]) / 2. - (currentViewRange[1] - currentViewRange[0]) / 2., 10);
+                        l = Math.max(l, 0);
+                        l = Math.min(l, domNode.scrollHeight - domNode.offsetHeight);
+                        domNode.scrollTop = l;
+                    }
+                }
+            }
             
             this.fire("selection-changed", [self.getSelected(true)])
         };
         
         this.getSelected = function(b) {
+            b = typeof(b) === 'undefined' ? true: !!b;
             var l = [];
             Object.keys(selectionState).forEach(function (k) {
                 if (!!selectionState[k] === b) {
