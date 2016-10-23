@@ -13,7 +13,8 @@
 <body>
 <h1>BIMservers</h1>
 <div id="expserver"></div>
-<div id="localhost"></div>
+<div id="localhost8080"></div>
+<div id="localhost8082"></div>
 <h3>Other BIMserver</h3>
 <a id="loadFromOtherBimServer" style="cursor: pointer">Load from other server</a>
 <div id="other" style="display: none">
@@ -77,7 +78,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	}
 	
 	loadFromBimserver("https://thisisanexperimentalserver.com", "bimsurfer@logic-labs.nl", "bimsurfer", document.getElementById("expserver"));
-	loadFromBimserver("http://localhost:8080", "admin@bimserver.org", "admin", document.getElementById("localhost"));
+	loadFromBimserver("http://localhost:8080", "admin@bimserver.org", "admin", document.getElementById("localhost8080"));
+	loadFromBimserver("http://localhost:8082", "admin@bimserver.org", "admin", document.getElementById("localhost8082"));
 	
 	var loadLink = document.getElementById("loadFromOtherBimServer");
 	loadLink.onclick = function(){
