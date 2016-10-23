@@ -28,9 +28,10 @@ define(["bimsurfer/src/EventHandler"], function(EventHandler) {
                     s = selectionState[id] = false;
                 }
                 
-                console.log(id, s);
                 domNodes[id].className = s ? "label selected" : "label";                
             });
+            
+            this.fire("selection-changed", [self.getSelected(true)])
         };
         
         this.getSelected = function(b) {

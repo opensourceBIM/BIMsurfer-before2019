@@ -99,16 +99,17 @@
 	                            metadata.setSelected(selected);
 	                        });
 	                        
-	                        domtree.on("click", function (oid) {
-	                            // Clicking an explorer node fits the view to its object
-	                            bimSurfer.setColor({
-	                                ids: [oid],
-	                                color: [1,0,0,1]
-	                            });
+	                        domtree.on("click", function (oid, selected) {
+	                            // Clicking an explorer node fits the view to its object and selects
 	                            bimSurfer.viewFit({
-	                                ids: [oid],
+	                                ids: selected,
 	                                animate: true
 	                            });
+                                bimSurfer.setSelection({
+                                    ids:selected,
+                                    clear:true,
+                                    selected:true
+                                });
 	                        });
 	
 	                        
