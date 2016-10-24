@@ -16,9 +16,13 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 	
 	o.stats = {
 		nrPrimitives: 0,
+<<<<<<< HEAD
 		nrVertices: 0,
 		nrNormals: 0,
 		nrColors: 0
+=======
+		nrVertices: 0
+>>>>>>> branch 'V1' of https://github.com/opensourceBIM/BIMsurfer.git
 	};
 	
 	// GeometryInfo.oid -> GeometryData.oid
@@ -385,6 +389,8 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 //			fovy: 37.8493
 //		});
 		
+		console.log(o.stats);
+		
 		o.viewer.SYSTEM.events.trigger('progressDone');
 		o.progressListeners.forEach(function(progressListener){
 			progressListener("done", o.state.nrObjectsRead, o.state.nrObjectsRead);
@@ -526,6 +532,27 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				o.groupId = o.options.roid;
 				o.types = o.options.types;
 				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
+<<<<<<< HEAD
+=======
+					o.bimServerApi.call("ServiceInterface", "downloadByTypes", {
+						roids: [o.options.roid],
+						schema: o.options.schema,
+						classNames : types,
+						serializerOid : serializer.oid,
+						includeAllSubtypes : false,
+						useObjectIDM : false,
+						sync : false,
+						deep: false
+					}, function(topicId){
+						o.topicId = topicId;
+						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
+					});
+				});
+			} else if (o.options.type == "revision") {
+				o.groupId = o.options.roid;
+				o.types = o.options.types;
+				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
+>>>>>>> branch 'V1' of https://github.com/opensourceBIM/BIMsurfer.git
 					o.bimServerApi.call("ServiceInterface", "download", {
 						roid: o.options.roid,
 						serializerOid : serializer.oid,
