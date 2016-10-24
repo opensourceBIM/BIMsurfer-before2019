@@ -115,7 +115,7 @@ define(["bimsurfer/lib/text"], function(text) {
 					};
 				
                 // Perform the download
-				model.queryNew(query, function(o) {}).done(function(){		
+				model.query(query, function(o) {}).done(function(){		
 					
 					// A list of entities that define parent-child relationships
 					var entities = {
