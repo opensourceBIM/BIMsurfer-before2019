@@ -281,7 +281,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 		}
 
 		o.state.nrObjectsRead++;
-		o.updateProgress();
+//		o.updateProgress();
 	};
 	
 	this.convertToLines = function(indices) {
@@ -475,7 +475,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 		}
 		o.state.mode = 1;
 //o.state.nrObjects = data.readInt();
-		o.updateProgress();
+//		o.updateProgress();
 //		console.log("Nr Objects", o.state.nrObjects);
 	};
 	
@@ -507,71 +507,49 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			if (state.state == "FINISHED") {
 				o.bimServerApi.unregisterProgressHandler(o.topicId, o.progressHandler);
 			}
+			o.progressListeners.forEach(function(progressListener){
+				progressListener("Loading...", state.progress);
+			});
 		}
 	};
 
-	this.setLoadRevision = function(roid) {
-		o.options = {type: "revision", roid: roid};
-	};
-	
-	this.setLoadTypes = function(roid, schema, types) {
-		o.options = {type: "types", schema: schema, roid: roid, types: types};
-	};
-	
 	this.setLoadOids = function(roids, oids) {
 		o.options = {type: "oids", roids: roids, oids: oids};
 	}
 
 	this.start = function(){
 		if (o.options != null) {
-			if (o.options.type == "revision") {
-				o.groupId = o.options.roid;
-				o.types = o.options.types;
-				o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function(serializer){
-					o.bimServerApi.call("ServiceInterface", "download", {
-						roid: o.options.roid,
-						serializerOid : serializer.oid,
-						sync : false,
-						showOwn: true
-					}, function(topicId){
-						o.topicId = topicId;
-						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
-					});
-				});
-			} else if (o.options.type == "oids") {
-				o.groupId = o.options.roids[0];
-				
-				o.infoToOid = o.options.oids;
-				
-				var oids = [];
-				for (var k in o.infoToOid) {
-				    if (o.infoToOid.hasOwnProperty(k)) {
-				    	if (k != null && k != "undefined") {
-				    		oids.push(parseInt(k, 10));
-				    	}
-				    }
+			o.groupId = o.options.roids[0];
+			
+			o.infoToOid = {};
+			
+			var oids = [];
+			o.options.oids.forEach(function(object){
+				if (object.gid != null) {
+					o.infoToOid[object.gid] = object.oid;
+					oids.push(object.gid);
 				}
-				
-				var query = {
+			});
+
+			var query = {
+				type: "GeometryInfo",
+				oids: oids,
+				include: {
 					type: "GeometryInfo",
-					oids: oids,
-					include: {
-						type: "GeometryInfo",
-						field: "data"
-					}
-				};
-				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin2", function(serializer){
-					o.bimServerApi.call("ServiceInterface", "download", {
-						roids: o.options.roids,
-						serializerOid : serializer.oid,
-						sync : false,
-						query: JSON.stringify(query)
-					}, function(topicId){
-						o.topicId = topicId;
-						o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
-					});
+					field: "data"
+				}
+			};
+			o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin3", function(serializer){
+				o.bimServerApi.call("ServiceInterface", "download", {
+					roids: o.options.roids,
+					serializerOid : serializer.oid,
+					sync : false,
+					query: JSON.stringify(query)
+				}, function(topicId){
+					o.topicId = topicId;
+					o.bimServerApi.registerProgressHandler(o.topicId, o.progressHandler);
 				});
-			}
+			});
 		}
 	};
 }
