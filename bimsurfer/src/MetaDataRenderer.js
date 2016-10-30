@@ -90,9 +90,12 @@ define(["bimsurfer/src/EventHandler"], function(EventHandler) {
         };
         
         this.setSelected = function(oid) {
-            domNode.innerHTML = "";
+            if (oid.length !== 1) {
+                domNode.innerHTML = "&nbsp;<br>Select a single element in order to see object properties."
+                return;
+            };
             
-            if (oid.length === 0) return;
+            domNode.innerHTML = "";
             
             oid = oid[0].split(':');
             var o = models[oid[0]].model.objects[oid[1]];
@@ -108,7 +111,9 @@ define(["bimsurfer/src/EventHandler"], function(EventHandler) {
                     });
                 }
             });
-        };        
+        };
+        
+        self.setSelected([]);
     };
     
     MetaDataRenderer.prototype = Object.create(EventHandler.prototype);
