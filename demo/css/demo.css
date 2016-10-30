@@ -87,8 +87,35 @@ canvas {
 }
 
 #status {
-	color: blue;
-	position: absolute;
-	top: 15px;
-	left: 300px;
+    border-bottom: solid 1px #ddd;
+    padding: 5px 15px;
+    clear: both;
+}
+
+#typeSelector {
+    border-top: solid 1px #ddd;
+    padding: 2px 12px;
+}
+
+#typeSelector  div {
+    margin: 0 5px 0 0;
+    padding: 3px;
+    border: solid 1px #fff;
+    border-radius: 3px;
+    cursor: pointer;
+    display: inline-block;
+    height: 20px;
+    line-height: 20px;
+}
+
+#typeSelector  div.inactive:before {
+    color: #ddd;
+}
+
+#typeSelector  div:hover {
+    border-color: #ddd;
+}
+
+#typeSelector  div:before {
+    margin-right: 5px;
 }

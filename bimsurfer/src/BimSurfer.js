@@ -376,6 +376,16 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.reset = function (params) {
             viewer.reset(params);
         }
+        
+         /**
+          * Returns a list of loaded IFC entity types in the model.
+          * 
+          * @method getTypes
+          * @returns {Array} List of loaded IFC entity types, with visibility flag
+          */
+        this.getTypes = function() {
+            return viewer.getTypes();
+        };
     }
 
     BimSurfer.prototype = Object.create(EventHandler.prototype);

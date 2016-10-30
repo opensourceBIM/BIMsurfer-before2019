@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="../css/tree.css"/>
     <link rel="stylesheet" href="../css/metadata.css"/>
     
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    
     <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     
@@ -60,6 +62,24 @@
 	                
 	                bimSurfer.on("loading-finished", function(){
 	                	document.getElementById("status").innerHTML = "Loading finished";
+                        var domNode = document.getElementById("typeSelector");
+                        domNode.innerHTML = "";
+                        bimSurfer.getTypes().forEach(function(ifc_type) {
+                            var on = ifc_type.visible;
+                            var d = document.createElement("div");
+                            var t = document.createTextNode(ifc_type.name);
+                            var setClass = function() {
+                                d.className = "fa fa-eye " + ["inactive", "active"][on*1];
+                            };
+                            setClass();
+                            d.appendChild(t);
+                            domNode.appendChild(d);
+                            d.onclick = function() {
+                                on = !on;
+                                setClass();
+                                bimSurfer.setVisibility({types:[ifc_type.name], visible:on});
+                            };
+                        });
 	                });
 	                bimSurfer.on("loading-started", function(){
 	                	document.getElementById("status").innerHTML = "Loading...";
@@ -190,7 +210,12 @@
 </head>
 <body>
 <div id="maincontainer">
-    <div id="topsection"><h1>BIMsurfer demo</h1><div id="status"></div></div>
+    <div id="topsection">
+        <h1>BIMsurfer demo</h1>
+        <div id="typeSelector">
+            <div>&nbsp;</div>
+        </div>
+    </div>
     <div id="contentwrapper">
         <div id="colmid">
             <div id="colright">
@@ -209,6 +234,7 @@
     </div>
     
 </div>
+<div id="status"></div>
 
 <div id='apirefContainer'>
     <h1>API Reference</h1>

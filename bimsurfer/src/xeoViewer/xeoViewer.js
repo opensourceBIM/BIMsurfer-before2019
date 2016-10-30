@@ -1343,6 +1343,18 @@ define([
         this.getSnapshot = function (params) {
             return scene.canvas.getSnapshot(params);
         };
+        
+        /**
+         Returns a list of loaded IFC entity types in the model.
+
+         @method getTypes
+         @returns {Array} List of loaded IFC entity types, with visibility flag
+         */
+        this.getTypes = function() {
+            return Object.keys(rfcTypes).map(function(n) {
+                return {name: n, visible: hiddenTypes.indexOf(n) === -1};
+            });
+        };
     }
 
     xeoViewer.prototype = Object.create(EventHandler.prototype);
