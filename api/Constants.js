@@ -79,6 +79,7 @@ BIMSURFER.Constants.materials = {
 	IfcDistributionFlowElement: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcDuctFitting: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcPlate: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 0.5},
+	IfcPile: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcAirTerminal: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcMember: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},
 	IfcCovering: {r: 0.8470588235, g: 0.427450980392, b: 0, a: 1.0},

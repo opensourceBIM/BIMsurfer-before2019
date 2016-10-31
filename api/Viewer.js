@@ -419,7 +419,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	},
 
 	startNewLoaders: function(o){
-		if (o.waitingGeometryLoaders.length > 0 && o.activeGeometryLoaders.length <= 3) {
+		if (o.waitingGeometryLoaders.length > 0 && o.activeGeometryLoaders.length < 3) {
 			var geometryLoader = o.waitingGeometryLoaders[0];
 			o.waitingGeometryLoaders = o.waitingGeometryLoaders.slice(1);
 			o.activeGeometryLoaders.push(geometryLoader);
@@ -438,7 +438,7 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 */
 	loadGeometry: function(geometryLoader) {
 		var o = this;
-		if (o.activeGeometryLoaders.length <= 3) {
+		if (o.activeGeometryLoaders.length < 3) {
 			o.activeGeometryLoaders.push(geometryLoader);
 			geometryLoader.progressListeners.push(function(progress){
 				if (progress == "done") {
