@@ -22,7 +22,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 	};
 	
 	// GeometryInfo.oid -> GeometryData.oid
-	o.infoToData = {};
+//	o.infoToData = {};
 	
 	// GeometryData.oid -> [GeometryInfo.oid]
 	o.dataToInfo = {};
@@ -65,12 +65,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var transformationMatrix = data.readDoubleArray(16);
 			var geometryDataOid = data.readLong();
 			var coreIds = [geometryDataOid];
-			o.infoToData[geometryInfoOid] = geometryDataOid;
-			if (o.dataToInfo[geometryDataOid] == null) {
-				o.dataToInfo[geometryDataOid] = [geometryInfoOid];
-			} else {
-				o.dataToInfo[geometryDataOid].push(geometryInfoOid);
-			}
+//			o.infoToData[geometryInfoOid] = geometryDataOid;
 			
 			if (o.state.mode == 0) {
 				console.log("Mode is still 0, should be 1");
@@ -117,6 +112,12 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 								coreId: geometryDataOid
 							}];
 						}
+					} else {
+						if (o.dataToInfo[geometryDataOid] == null) {
+							o.dataToInfo[geometryDataOid] = [geometryInfoOid];
+						} else {
+							o.dataToInfo[geometryDataOid].push(geometryInfoOid);
+						}
 					}
 
 					var flags = {
@@ -128,9 +129,10 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 							type: "enable",
 							enabled: enabled,
 							nodes : [{
-//								type : "material",
-//								baseColor: material,
-//								alpha: 1,
+								type : "material",
+								baseColor: material,
+								alpha: 1,
+//								nodes : [{}]
 //								nodes : [{
 //									type: "translate",
 //									x: objectBounds[0] + (objectBounds[3] - objectBounds[0]) / 2,
@@ -230,6 +232,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 						});
 					}
 				});
+				delete o.dataToInfo[geometryDataOid];
 			}
 		} else if (geometryType == 1) {
 			var geometryDataOid = data.readLong();
@@ -277,6 +280,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 						});
 					}
 				});
+				delete o.dataToInfo[geometryDataOid];
 			}
 		}
 
@@ -355,6 +359,13 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 	};
 	
 	this.readEnd = function(data){
+		if (Object.keys(o.dataToInfo).length > 0) {
+			console.error("Unsolved links");
+			for (var key in o.dataToInfo) {
+				console.log(key, o.dataToInfo[key]);
+			}
+		}
+		
 //		o.boundsTranslate = o.viewer.scene.findNode("bounds_translate");
 //
 //		var center = {
