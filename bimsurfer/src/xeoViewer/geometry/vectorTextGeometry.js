@@ -26,9 +26,9 @@
 
     var letters;
 
-    XEO.VectorTextGeometry = XEO.Geometry.extend({
+    xeogl.VectorTextGeometry = xeogl.Geometry.extend({
 
-        type: "XEO.VectorTextGeometry",
+        type: "xeogl.VectorTextGeometry",
 
         _init: function (cfg) {
 

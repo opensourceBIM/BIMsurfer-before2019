@@ -142,7 +142,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                         var numComponents = 0, componentsLoaded = 0;
 
                         m.collection.iterate(function (component) {
-                            if (component.isType("XEO.Entity")) {
+                            if (component.isType("xeogl.Entity")) {
                                 ++ numComponents;
                                 (function(c) {
                                     var timesUpdated = 0;

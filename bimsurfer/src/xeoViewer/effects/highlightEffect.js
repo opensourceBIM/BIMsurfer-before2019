@@ -2,22 +2,25 @@
 
     "use strict";
 
-    XEO.HighlightEffect = XEO.Component.extend({
+    xeogl.HighlightEffect = xeogl.Component.extend({
 
-        type: "XEO.HighlightEffect",
+        type: "xeogl.HighlightEffect",
 
         _init: function (cfg) {
 
-            this._modes = this.create(XEO.Modes, {
+            this._modes = this.create({
+                type: "xeogl.Modes",
                 transparent: true,
                 collidable: false // Has no collision boundary of its own
             });
 
-            this._stage = this.create(XEO.Stage, {
+            this._stage = this.create({
+                type: "xeogl.Stage",
                 priority: 2
             });
 
-            this._depthBuf = this.create(XEO.DepthBuf, {
+            this._depthBuf = this.create({
+                type: "xeogl.DepthBuf",
                 active: false
             });
 
@@ -37,10 +40,12 @@
         _createHelper: function (entity) {
             var helper = this._freeHelpers.pop();
             if (!helper) {
-                helper = this.create(XEO.Entity, {
+                helper = this.create({
+                    type: "xeogl.Entity",
                     geometry: entity.geometry,
                     transform: entity.transform,
-                    material:    this.create(XEO.PhongMaterial, {
+                    material:    this.create({
+                        type: "xeogl.PhongMaterial",
                         emissive: [1.0, 1.0, 0.0],
                         diffuse: [0,0,0],
                         ambient: [0,0,0],
@@ -51,7 +56,8 @@
                     modes: this._modes,
                     stage: this._stage,
                     depthBuf: this._depthBuf,
-                    visibility: this.create(XEO.Visibility, {
+                    visibility: this.create({
+                        type: "xeogl.Visibility",
                         visible: true
                     }),
                     meta: {

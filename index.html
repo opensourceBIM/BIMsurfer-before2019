@@ -76,11 +76,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			});
 		});
 	}
-	
-	loadFromBimserver("https://thisisanexperimentalserver.com", "bimsurfer@logic-labs.nl", "bimsurfer", document.getElementById("expserver"));
-	loadFromBimserver("http://localhost:8080", "admin@bimserver.org", "admin", document.getElementById("localhost8080"));
-	loadFromBimserver("http://localhost:8082", "admin@bimserver.org", "admin", document.getElementById("localhost8082"));
-	
+
 	var loadLink = document.getElementById("loadFromOtherBimServer");
 	loadLink.onclick = function(){
 		document.getElementById("other").style.display = "block";

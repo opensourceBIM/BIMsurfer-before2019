@@ -1,10 +1,10 @@
 /*
- * xeoEngine V0.1.0
+ * xeogl V1.0.0
  *
  * A WebGL-based 3D visualization engine from xeoLabs
- * http://xeoengine.org/
+ * http://xeogl.org/
  *
- * Built on 2016-10-12
+ * Built on 2016-11-23
  *
  * MIT License
  * Copyright 2016, Lindsay Kay
@@ -13,10 +13,10 @@
  */
 
 /**
- The xeoEngine namespace.
+ The xeogl namespace.
 
- @class XEO
- @main XEO
+ @class xeogl
+ @main xeogl
  @static
  @author xeolabs / http://xeolabs.com/
  */
@@ -24,13 +24,13 @@
 
     "use strict";
 
-    var XEO = function () {
+    var xeogl = function () {
 
         /**
          * Semantic version number. The value for this is set by an expression that's concatenated to
-         * the end of the built binary by the xeoEngine build script.
+         * the end of the built binary by the xeogl build script.
          * @property version
-         * @namespace XEO
+         * @namespace xeogl
          * @type {String}
          */
         this.version = null;
@@ -91,7 +91,7 @@
         })();
 
         /**
-         * Tracks statistics within xeoEngine, such as numbers of
+         * Tracks statistics within xeogl, such as numbers of
          * scenes, textures, geometries etc.
          * @final
          * @property stats
@@ -99,7 +99,7 @@
          */
         this.stats = {
             build: {
-                version: XEO.version
+                version: xeogl.version
             },
             client: {
                 browser: (navigator && navigator.userAgent) ? navigator.userAgent : "n/a"
@@ -117,7 +117,7 @@
             memory: {
 
                 // Note that these counts will include any positions, colors,
-                // normals and indices that xeoEngine internally creates on-demand
+                // normals and indices that xeogl internally creates on-demand
                 // to support color-index triangle picking.
 
                 meshes: 0,
@@ -153,13 +153,20 @@
         /**
          * Existing {{#crossLink "Scene"}}Scene{{/crossLink}}s , mapped to their IDs
          * @property scenes
-         * @namespace XEO
-         * @type {{String:XEO.Scene}}
+         * @namespace xeogl
+         * @type {{String:xeogl.Scene}}
          */
         this.scenes = {};
 
+        /**
+         * For each component type, a list of its supertypes, ordered upwards in the hierarchy.
+         * @type {{}}
+         * @private
+         */
+        this._superTypes = {};
+
         // Task queue, which is pumped on each frame;
-        // tasks are pushed to it with calls to XEO.schedule
+        // tasks are pushed to it with calls to xeogl.schedule
 
         this._taskQueue = [];
 
@@ -287,9 +294,9 @@
         })();
     };
 
-    XEO.prototype = {
+    xeogl.prototype = {
 
-        constructor: XEO,
+        constructor: xeogl,
 
         /**
          The default {{#crossLink "Scene"}}Scene{{/crossLink}}.
@@ -297,28 +304,28 @@
          Components created without an explicit parent {{#crossLink "Scene"}}Scene{{/crossLink}} will be created within this
          {{#crossLink "Scene"}}Scene{{/crossLink}} by default.
 
-         xeoEngine creates the default {{#crossLink "Scene"}}Scene{{/crossLink}} as soon as you either
+         xeogl creates the default {{#crossLink "Scene"}}Scene{{/crossLink}} as soon as you either
          reference this property for the first time, or create your first {{#crossLink "Entity"}}Entity{{/crossLink}} without
          a specified {{#crossLink "Scene"}}Scene{{/crossLink}}.
 
          @property scene
-         @namespace XEO
+         @namespace xeogl
          @final
          @type Scene
          */
         get scene() {
 
-            // XEO.Scene constructor will call this._addScene
-            // to register itself on XEO
+            // xeogl.Scene constructor will call this._addScene
+            // to register itself on xeogl
 
-            return this._scene || (this._scene = new window.XEO.Scene({
+            return this._scene || (this._scene = new window.xeogl.Scene({
                     id: "default.scene"
                 }));
         },
 
         /**
-         * Registers a scene on xeoEngine.
-         * This is called within the XEO.Scene constructor.
+         * Registers a scene on xeogl.
+         * This is called within the xeogl.Scene constructor.
          *
          * @method _addScene
          * @param {Scene} scene The scene
@@ -326,14 +333,14 @@
          */
         _addScene: function (scene) {
 
-            this._sceneIDMap = this._sceneIDMap || new window.XEO.utils.Map();
+            this._sceneIDMap = this._sceneIDMap || new window.xeogl.utils.Map();
 
             if (scene.id) {
 
                 // User-supplied ID
 
                 if (this.scenes[scene.id]) {
-                    console.error("[ERROR] Scene " + XEO._inQuotes(scene.id) + " already exists");
+                    console.error("[ERROR] Scene " + xeogl._inQuotes(scene.id) + " already exists");
                     return;
                 }
 
@@ -364,9 +371,9 @@
         },
 
         /**
-         * Schedule a task for xeoEngine to run at the next frame.
+         * Schedule a task for xeogl to run at the next frame.
          *
-         * Internally, this pushes the task to a FIFO queue. Within each frame interval, xeoEngine processes the queue
+         * Internally, this pushes the task to a FIFO queue. Within each frame interval, xeogl processes the queue
          * for a certain period of time, popping tasks and running them. After each frame interval, tasks that did not
          * get a chance to run during the task are left in the queue to be run next time.
          *
@@ -459,7 +466,6 @@
             return (typeof value === 'string' || value instanceof String);
         },
 
-
         /**
          * Tests if the given value is a number
          * @param value
@@ -477,7 +483,7 @@
          * @private
          */
         _isID: function (value) {
-            return XEO._isString(value) || XEO._isNumeric(value);
+            return xeogl._isString(value) || xeogl._isNumeric(value);
         },
 
         /**
@@ -493,8 +499,8 @@
                 return false;
             }
 
-            var id1 = (XEO.prototype._isNumeric(c1) || XEO.prototype._isString(c1)) ? "" + c1 : c1.id;
-            var id2 = (XEO.prototype._isNumeric(c2) || XEO.prototype._isString(c2)) ? "" + c2 : c2.id;
+            var id1 = (xeogl.prototype._isNumeric(c1) || xeogl.prototype._isString(c1)) ? "" + c1 : c1.id;
+            var id2 = (xeogl.prototype._isNumeric(c2) || xeogl.prototype._isString(c2)) ? "" + c2 : c2.id;
 
             return id1 === id2;
         },
@@ -507,6 +513,49 @@
          */
         _isFunction: function (value) {
             return (typeof value === "function");
+        },
+
+        /**
+         * Tests if the given value is a JavaScript JSON object, eg, ````{ foo: "bar" }````.
+         * @param value
+         * @returns {boolean}
+         * @private
+         */
+        _isObject: (function () {
+            var objectConstructor = {}.constructor;
+            return function (value) {
+                return (!!value && value.constructor === objectConstructor);
+            };
+        })(),
+
+        /**
+         * Tests if the given component type is a subtype of another component supertype.
+         * @param {String} type
+         * @param {String} [superType="xeogl.Component"]
+         * @returns {boolean}
+         * @private
+         */
+        _isComponentType: function (type, superType) {
+
+            superType = superType || "xeogl.Component";
+
+            if (type === superType) {
+                return true;
+            }
+
+            var superTypes = this._superTypes[type];
+
+            if (!superTypes) {
+                return false;
+            }
+
+            for (var i = superTypes.length - 1; i >= 0; i--) {
+                if (superTypes[i] === superType) {
+                    return true;
+                }
+            }
+
+            return false;
         },
 
         /** Returns a shallow copy
@@ -585,10 +634,10 @@
         }
     };
 
-    // Have a lower-case XEO namespace as well,
+    // Have a lower-case xeogl namespace as well,
     // just because it's easier to type when live-coding
 
-    window.XEO = window.XEO = new XEO();
+    window.xeogl = window.xeogl = new xeogl();
 
 })
 ();
@@ -887,13 +936,15 @@ var Canvas2Image = (function () {
                 })(name, prop[name]) : prop[name];
         }
 
-        if (!prop.type) {
-            prop.type = _super.type + "_" + createUUID();
-        }
-
         // Create array of type names to indicate inheritance chain,
         // to support "isType" queries on components
         prototype.superTypes = _super.superTypes ? _super.superTypes.concat(_super.type) : [];
+
+        if (!prop.type) {
+            prop.type = _super.type + "_" + createUUID();
+        } else {
+            xeogl._superTypes[prop.type] = prototype.superTypes;
+        }
 
         // The dummy class constructor
         function Class() {
@@ -911,6 +962,8 @@ var Canvas2Image = (function () {
 
         // And make this class extendable
         Class.extend = arguments.callee;
+
+        window[prop.type] = Class;
 
         return Class;
     };
@@ -950,13 +1003,13 @@ var Canvas2Image = (function () {
 
     "use strict";
 
-    XEO.utils = XEO.utils || {};
+    xeogl.utils = xeogl.utils || {};
 
     /**
      * Generic map of IDs to items - can generate own IDs or accept given IDs. IDs should be strings in order to not
      * clash with internally generated IDs, which are numbers.
      */
-    XEO.utils.Map = function (items, baseId) {
+    xeogl.utils.Map = function (items, baseId) {
 
         /**
          * Items in this map
@@ -1012,7 +1065,7 @@ var Canvas2Image = (function () {
 ;/**
  * Math utilities.
  *
- * @module XEO
+ * @module xeogl
  * @submodule math
  */;(function () {
 
@@ -1022,58 +1075,23 @@ var Canvas2Image = (function () {
 
     var tempMat1 = new Float32Array(16);
     var tempMat2 = new Float32Array(16);
-    var tempVec3 = new Float32Array(3);
-    var tempVec3b = new Float32Array(3);
-    var tempVec3c = new Float32Array(3);
-    var tempVec3d = new Float32Array(3);
-    var tempVec3e = new Float32Array(3);
-    var tempVec3f = new Float32Array(3);
-    var tempVec3g = new Float32Array(3);
 
     var tempVec4 = new Float32Array(4);
 
-    /*
-     * Optimizations made based on glMatrix by Brandon Jones
-     */
-
-    /*
-     * Copyright (c) 2010 Brandon Jones
-     *
-     * This software is provided 'as-is', without any express or implied
-     * warranty. In no event will the authors be held liable for any damages
-     * arising from the use of this software.
-     *
-     * Permission is granted to anyone to use this software for any purpose,
-     * including commercial applications, and to alter it and redistribute it
-     * freely, subject to the following restrictions:
-     *
-     *    1. The origin of this software must not be misrepresented; you must not
-     *    claim that you wrote the original software. If you use this software
-     *    in a product, an acknowledgment in the product documentation would be
-     *    appreciated but is not required.
-     *
-     *    2. Altered source versions must be plainly marked as such, and must not
-     *    be misrepresented as being the original software.
-     *
-     *    3. This notice may not be removed or altered from any source
-     *    distribution.
-     */
-
-
     /**
-     * This utility object provides math functions that are used within xeoEngine. These functions are also part xeoEngine's
+     * This utility object provides math functions that are used within xeogl. These functions are also part of xeogl's
      * public API and are therefore available for you to use within your application code.
-     * @module XEO
+     * @module xeogl
      * @submodule math
      * @class math
      * @static
      */
-    var math = XEO.math = {
+    var math = xeogl.math = {
 
         /**
          * The number of radiians in a degree (0.0174532925).
          * @property DEGTORAD
-         * @namespace XEO.math
+         * @namespace xeogl.math
          * @type {Number}
          */
         DEGTORAD: 0.0174532925,
@@ -1123,6 +1141,18 @@ var Canvas2Image = (function () {
         },
 
         /**
+         * Converts a 3x3 matrix to 4x4
+         * @method mat3ToMat4
+         * @param mat3 3x3 matrix.
+         * @param mat4 4x4 matrix
+         * @static
+         * @returns {Float32Array}
+         */
+        mat3ToMat4: function (mat3, mat4) { // TODO
+            //return new Float32Array(values || 9);
+        },
+
+        /**
          * Returns a new, uninitialized 4x4 matrix.
          * @method mat4
          * @param [values] Initial values.
@@ -1134,29 +1164,15 @@ var Canvas2Image = (function () {
         },
 
         /**
-         * Returns a new, uninitialized 3D axis-aligned bounding box.
-         * @method AABB3
+         * Converts a 4x4 matrix to 3x3
+         * @method mat4ToMat3
+         * @param mat4 4x4 matrix.
+         * @param mat3 3x3 matrix
          * @static
-         * @returns {*} The bounding box.
+         * @returns {Float32Array}
          */
-        AABB3: function () {
-            return {
-                min: new Float32Array(3),
-                max: new Float32Array(3)
-            }
-        },
-
-        /**
-         * Returns a new, uninitialized 2D axis-aligned bounding box.
-         * @method AABB2
-         * @static
-         * @returns {*} The bounding box.
-         */
-        AABB2: function () {
-            return {
-                min: new Float32Array(2),
-                max: new Float32Array(2)
-            }
+        mat4ToMat3: function (mat4, mat3) { // TODO
+            //return new Float32Array(values || 9);
         },
 
         /**
@@ -1198,7 +1214,6 @@ var Canvas2Image = (function () {
          */
         clamp: function (value, min, max) {
             return Math.max(min, Math.min(max, value));
-
         },
 
         /**
@@ -1211,7 +1226,7 @@ var Canvas2Image = (function () {
          */
         fmod: function (a, b) {
             if (a < b) {
-                console.error("XEO.math.fmod : Attempting to find modulus within negative range - would be infinite loop - ignoring");
+                console.error("xeogl.math.fmod : Attempting to find modulus within negative range - would be infinite loop - ignoring");
                 return a;
             }
             while (b <= a) {
@@ -1778,6 +1793,39 @@ var Canvas2Image = (function () {
         },
 
         /**
+         * Creates a three-element vector from the rotation part of a sixteen-element matrix.
+         * @param m
+         * @param dest
+         */
+        vec3FromMat4Scale: (function () {
+
+            var tempVec3 = new Float32Array(3);
+
+            return function (m, dest) {
+
+                tempVec3[0] = m[0];
+                tempVec3[1] = m[1];
+                tempVec3[2] = m[2];
+
+                dest[0] = math.lenVec3(tempVec3);
+
+                tempVec3[0] = m[4];
+                tempVec3[1] = m[5];
+                tempVec3[2] = m[6];
+
+                dest[1] = math.lenVec3(tempVec3);
+
+                tempVec3[0] = m[8];
+                tempVec3[1] = m[9];
+                tempVec3[2] = m[10];
+
+                dest[2] = math.lenVec3(tempVec3);
+
+                return dest;
+            };
+        })(),
+
+        /**
          * Duplicates a 4x4 identity matrix.
          * @method dupMat4
          * @static
@@ -2313,9 +2361,15 @@ var Canvas2Image = (function () {
          * @method translationMat4c
          * @static
          */
-        translationMat4c: function (x, y, z, dest) {
-            return math.translationMat4v([x, y, z], dest);
-        },
+        translationMat4c: (function () {
+            var xyz = new Float32Array(3);
+            return function (x, y, z, dest) {
+                xyz[0] = x;
+                xyz[1] = y;
+                xyz[2] = z;
+                return math.translationMat4v(xyz, dest);
+            };
+        })(),
 
         /**
          * Returns 4x4 translation matrix.
@@ -2326,6 +2380,71 @@ var Canvas2Image = (function () {
             return math.translationMat4c(s, s, s, dest);
         },
 
+        /**
+         * Efficiently post-concatenates a translation to the given matrix.
+         * @param v
+         * @param m
+         */
+        translateMat4v: function (xyz, m) {
+            return math.translateMat4c(xyz[0], xyz[1], xyz[2], m);
+        },
+
+        /**
+         * Efficiently post-concatenates a translation to the given matrix.
+         * @param x
+         * @param y
+         * @param z
+         * @param m
+         */
+        OLDtranslateMat4c: function (x, y, z, m) {
+
+            var m12 = m[12];
+            m[0] += m12 * x;
+            m[4] += m12 * y;
+            m[8] += m12 * z;
+
+            var m13 = m[13];
+            m[1] += m13 * x;
+            m[5] += m13 * y;
+            m[9] += m13 * z;
+
+            var m14 = m[14];
+            m[2] += m14 * x;
+            m[6] += m14 * y;
+            m[10] += m14 * z;
+
+            var m15 = m[15];
+            m[3] += m15 * x;
+            m[7] += m15 * y;
+            m[11] += m15 * z;
+
+            return m;
+        },
+
+        translateMat4c: function (x, y, z, m) {
+
+            var m3 = m[3];
+            m[0] += m3 * x;
+            m[1] += m3 * y;
+            m[2] += m3 * z;
+
+            var m7 = m[7];
+            m[4] += m7 * x;
+            m[5] += m7 * y;
+            m[6] += m7 * z;
+
+            var m11 = m[11];
+            m[8] += m11 * x;
+            m[9] += m11 * y;
+            m[10] += m11 * z;
+
+            var m15 = m[15];
+            m[12] += m15 * x;
+            m[13] += m15 * y;
+            m[14] += m15 * z;
+
+            return m;
+        },
         /**
          * Returns 4x4 rotation matrix.
          * @method rotationMat4v
@@ -2405,8 +2524,70 @@ var Canvas2Image = (function () {
          * @method scalingMat4c
          * @static
          */
-        scalingMat4c: function (x, y, z) {
-            return math.scalingMat4v([x, y, z]);
+        scalingMat4c: (function () {
+            var xyz = new Float32Array(3);
+            return function (x, y, z, dest) {
+                xyz[0] = x;
+                xyz[1] = y;
+                xyz[2] = z;
+                return math.scalingMat4v(xyz, dest);
+            };
+        })(),
+
+        /**
+         * Efficiently post-concatenates a scaling to the given matrix.
+         * @method scaleMat4c
+         * @param x
+         * @param y
+         * @param z
+         * @param m
+         */
+        scaleMat4c:  function (x, y, z, m) {
+            
+            m[0] *= x;
+            m[4] *= y;
+            m[8] *= z;
+            
+            m[1] *= x;
+            m[5] *= y;
+            m[9] *= z;
+            
+            m[2] *= x;
+            m[6] *= y;
+            m[10] *= z;
+            
+            m[3] *= x;
+            m[7] *= y;
+            m[11] *= z;
+            return m;
+        },
+
+        /**
+         * Efficiently post-concatenates a scaling to the given matrix.
+         * @method scaleMat4c
+         * @param xyz
+         * @param m
+         */
+        scaleMat4v: function (xyz, m) {
+
+            var x = xyz[0];
+            var y = xyz[1];
+            var z = xyz[2];
+
+            m[0] *= x;
+            m[4] *= y;
+            m[8] *= z;
+            m[1] *= x;
+            m[5] *= y;
+            m[9] *= z;
+            m[2] *= x;
+            m[6] *= y;
+            m[10] *= z;
+            m[3] *= x;
+            m[7] *= y;
+            m[11] *= z;
+
+            return m;
         },
 
         /**
@@ -2877,6 +3058,54 @@ var Canvas2Image = (function () {
         },
 
         /**
+         * Transforms an array of positions by a 4x4 matrix.
+         * @method transformPositions3
+         * @static
+         */
+        transformPositions3: function (m, p, p2) {
+
+            p2 = p2 || p;
+
+            var i;
+            var len = p.length;
+
+            var x;
+            var y;
+            var z;
+
+            var m0 = m[0];
+            var m1 = m[1];
+            var m2 = m[2];
+            var m3 = m[3];
+            var m4 = m[4];
+            var m5 = m[5];
+            var m6 = m[6];
+            var m7 = m[7];
+            var m8 = m[8];
+            var m9 = m[9];
+            var m10 = m[10];
+            var m11 = m[11];
+            var m12 = m[12];
+            var m13 = m[13];
+            var m14 = m[14];
+            var m15 = m[15];
+
+            for (i = 0; i < len; i += 3) {
+
+                x = p[i + 0];
+                y = p[i + 1];
+                z = p[i + 2];
+
+                p2[i + 0] = (m0 * x) + (m4 * y) + (m8 * z) + m12;
+                p2[i + 1] = (m1 * x) + (m5 * y) + (m9 * z) + m13;
+                p2[i + 2] = (m2 * x) + (m6 * y) + (m10 * z) + m14;
+                p2[i + 3] = (m3 * x) + (m7 * y) + (m11 * z) + m15;
+            }
+
+            return p2;
+        },
+
+        /**
          * Transforms a three-element vector by a 4x4 matrix.
          * @method transformVec3
          * @static
@@ -3035,718 +3264,6 @@ var Canvas2Image = (function () {
             return result;
         },
 
-        /**
-         * Gets the diagonal size of a boundary given as minima and maxima.
-         * @method getAABBDiag
-         * @static
-         */
-        getAABBDiag: function (aabb) {
-            math.subVec3(aabb.max, aabb.min, tempVec3c);
-            return Math.abs(math.lenVec3(tempVec3c));
-        },
-
-        /**
-         * Get a diagonal boundary size that is symmetrical about the given point.
-         *
-         * @method getAABBDiagPoint
-         * @static
-         */
-        getAABBDiagPoint: function (aabb, p) {
-
-            var diagVec = math.subVec3(aabb.max, aabb.min, tempVec3c);
-
-            var xneg = p[0] - aabb.min[0];
-            var xpos = aabb.max[0] - p[0];
-            var yneg = p[1] - aabb.min[1];
-            var ypos = aabb.max[1] - p[1];
-            var zneg = p[2] - aabb.min[2];
-            var zpos = aabb.max[2] - p[2];
-
-            diagVec[0] += (xneg > xpos) ? xneg : xpos;
-            diagVec[1] += (yneg > ypos) ? yneg : ypos;
-            diagVec[2] += (zneg > zpos) ? zneg : zpos;
-
-            return Math.abs(math.lenVec3(diagVec));
-        },
-
-        /**
-         * Gets the center of an AABB.
-         * @method getAABBCenter
-         * @static
-         */
-        getAABBCenter: function (aabb, dest) {
-            var r = dest || math.vec3();
-
-            r[0] = (aabb.max[0] + aabb.min[0] ) * 0.5;
-            r[1] = (aabb.max[1] + aabb.min[1] ) * 0.5;
-            r[2] = (aabb.max[2] + aabb.min[2] ) * 0.5;
-
-            return r;
-        },
-
-        /**
-         * Gets the center of a 2D AABB.
-         * @method getAABB2Center
-         * @static
-         */
-        getAABB2Center: function (aabb, dest) {
-            var r = dest || math.vec2();
-
-            r[0] = (aabb.max[0] + aabb.min[0] ) / 2;
-            r[1] = (aabb.max[1] + aabb.min[1] ) / 2;
-
-            return r;
-        },
-
-        /**
-         * Collapses a 3D axis-aligned boundary, ready to expand to fit 3D points.
-         * Creates new AABB if none supplied.
-         *
-         * @method collapseAABB3
-         * @static
-         * @param {*} [aabb] 3D axis-aligned bounding box.
-         * @returns {*} 3D axis-aligned bounding box.
-         */
-        collapseAABB3: function (aabb) {
-
-            aabb = aabb || math.AABB2();
-
-            aabb.min[0] = 10000000;
-            aabb.min[1] = 10000000;
-            aabb.min[2] = 10000000;
-            aabb.max[0] = -10000000;
-            aabb.max[1] = -10000000;
-            aabb.max[2] = -10000000;
-
-            return aabb;
-        },
-
-        /**
-         * Converts an axis-aligned 3D boundary into an oriented boundary consisting of
-         * an array of eight 3D positions, one for each corner of the boundary.
-         *
-         * @method AABB3ToOBB3
-         * @static
-         * @param {*} aabb Axis-aligned boundary.
-         * @param {Array} [obb] Oriented bounding box.
-         * @returns {*} Oriented bounding box.
-         */
-        AABB3ToOBB3: function (aabb, obb) {
-
-            obb = obb || [];
-
-            if (!obb[0]) {
-                obb[0] = [];
-            }
-
-            obb[0][0] = aabb.min[0];
-            obb[0][1] = aabb.min[1];
-            obb[0][2] = aabb.min[2];
-            obb[0][3] = 1;
-
-            if (!obb[1]) {
-                obb[1] = [];
-            }
-
-            obb[1][0] = aabb.max[0];
-            obb[1][1] = aabb.min[1];
-            obb[1][2] = aabb.min[2];
-            obb[1][3] = 1;
-
-            if (!obb[2]) {
-                obb[2] = [];
-            }
-
-            obb[2][0] = aabb.max[0];
-            obb[2][1] = aabb.max[1];
-            obb[2][2] = aabb.min[2];
-            obb[2][3] = 1;
-
-            if (!obb[3]) {
-                obb[3] = [];
-            }
-
-            obb[3][0] = aabb.min[0];
-            obb[3][1] = aabb.max[1];
-            obb[3][2] = aabb.min[2];
-            obb[3][3] = 1;
-
-            if (!obb[4]) {
-                obb[4] = [];
-            }
-
-            obb[4][0] = aabb.min[0];
-            obb[4][1] = aabb.min[1];
-            obb[4][2] = aabb.max[2];
-            obb[4][3] = 1;
-
-            if (!obb[5]) {
-                obb[5] = [];
-            }
-
-            obb[5][0] = aabb.max[0];
-            obb[5][1] = aabb.min[1];
-            obb[5][2] = aabb.max[2];
-            obb[5][3] = 1;
-
-            if (!obb[6]) {
-                obb[6] = [];
-            }
-
-            obb[6][0] = aabb.max[0];
-            obb[6][1] = aabb.max[1];
-            obb[6][2] = aabb.max[2];
-            obb[6][3] = 1;
-
-            if (!obb[7]) {
-                obb[7] = [];
-            }
-
-            obb[7][0] = aabb.min[0];
-            obb[7][1] = aabb.max[1];
-            obb[7][2] = aabb.max[2];
-            obb[7][3] = 1;
-
-            return obb;
-        },
-
-        /**
-         * Finds the minimum axis-aligned 3D boundary enclosing the 3D points given in a flattened,  1-dimensional array.
-         *
-         * @method positions3ToAABB3
-         * @static
-         * @param {Array} positions Flattened 3D positions array
-         * @param {*} [aabb] Axis-aligned bounding box.
-         * @returns {*} Axis-aligned bounding box.
-         */
-        positions3ToAABB3: function (positions, aabb) {
-
-            aabb = aabb || math.AABB3();
-
-            var xmin = 100000;
-            var ymin = 100000;
-            var zmin = 100000;
-            var xmax = -100000;
-            var ymax = -100000;
-            var zmax = -100000;
-
-            var x, y, z;
-
-            for (var i = 0, len = positions.length - 2; i < len; i += 3) {
-
-                x = positions[i + 0];
-                y = positions[i + 1];
-                z = positions[i + 2];
-
-                if (x < xmin) {
-                    xmin = x;
-                }
-
-                if (y < ymin) {
-                    ymin = y;
-                }
-
-                if (z < zmin) {
-                    zmin = z;
-                }
-
-                if (x > xmax) {
-                    xmax = x;
-                }
-
-                if (y > ymax) {
-                    ymax = y;
-                }
-
-                if (z > zmax) {
-                    zmax = z;
-                }
-            }
-
-            aabb.min[0] = xmin;
-            aabb.min[1] = ymin;
-            aabb.min[2] = zmin;
-            aabb.max[0] = xmax;
-            aabb.max[1] = ymax;
-            aabb.max[2] = zmax;
-
-            return aabb;
-        },
-
-        /**
-         * Finds the minimum axis-aligned 3D boundary enclosing the given 3D points.
-         *
-         * @method points3ToAABB3
-         * @static
-         * @param {Array} points Oriented bounding box.
-         * @param {*} [aabb] Axis-aligned bounding box.
-         * @returns {*} Axis-aligned bounding box.
-         */
-        points3ToAABB3: function (points, aabb) {
-
-            aabb = aabb || math.AABB3();
-
-            var xmin = 100000;
-            var ymin = 100000;
-            var zmin = 100000;
-            var xmax = -100000;
-            var ymax = -100000;
-            var zmax = -100000;
-
-            var x, y, z;
-
-            for (var i = 0, len = points.length; i < len; i++) {
-
-                x = points[i][0];
-                y = points[i][1];
-                z = points[i][2];
-
-                if (x < xmin) {
-                    xmin = x;
-                }
-
-                if (y < ymin) {
-                    ymin = y;
-                }
-
-                if (z < zmin) {
-                    zmin = z;
-                }
-
-                if (x > xmax) {
-                    xmax = x;
-                }
-
-                if (y > ymax) {
-                    ymax = y;
-                }
-
-                if (z > zmax) {
-                    zmax = z;
-                }
-            }
-
-            aabb.min[0] = xmin;
-            aabb.min[1] = ymin;
-            aabb.min[2] = zmin;
-            aabb.max[0] = xmax;
-            aabb.max[1] = ymax;
-            aabb.max[2] = zmax;
-
-            return aabb;
-        },
-
-        /**
-         * Expands the first axis-aligned 3D boundary to enclose the second, if required.
-         *
-         * @method expandAABB3
-         * @static
-         * @param {*} aabb1 First AABB
-         * @param {*} aabb2 Second AABB
-         * @returns {*} The second AABB
-         */
-        expandAABB3: function (aabb1, aabb2) {
-
-            if (aabb1.min[0] > aabb2.min[0]) {
-                aabb1.min[0] = aabb2.min[0];
-            }
-
-            if (aabb1.min[1] > aabb2.min[1]) {
-                aabb1.min[1] = aabb2.min[1];
-            }
-
-            if (aabb1.min[2] > aabb2.min[2]) {
-                aabb1.min[2] = aabb2.min[2];
-            }
-
-            if (aabb1.max[0] < aabb2.max[0]) {
-                aabb1.max[0] = aabb2.max[0];
-            }
-
-            if (aabb1.max[1] < aabb2.max[1]) {
-                aabb1.max[1] = aabb2.max[1];
-            }
-
-            if (aabb1.max[2] < aabb2.max[2]) {
-                aabb1.max[2] = aabb2.max[2];
-            }
-
-            return aabb2;
-        },
-
-        /**
-         * Expands an axis-aligned 3D boundary to enclose the given point, if needed.
-         *
-         * @method expandAABB3Point3
-         * @static
-         * @param {*} aabb AABB
-         * @param {*} p Point
-         * @returns {*} The AABB
-         */
-        expandAABB3Point3: function (aabb, p) {
-
-            if (aabb.min[0] < p[0]) {
-                aabb.min[0] = p[0];
-            }
-
-            if (aabb.min[1] < p[1]) {
-                aabb.min[1] = p[1];
-            }
-
-            if (aabb.min[2] < p[2]) {
-                aabb.min[2] = p[2];
-            }
-
-            if (aabb.max[0] > p[0]) {
-                aabb.max[0] = p[0];
-            }
-
-            if (aabb.max[1] > p[1]) {
-                aabb.max[1] = p[1];
-            }
-
-            if (aabb.max[2] > p[2]) {
-                aabb.max[2] = p[2];
-            }
-
-            return aabb;
-        },
-
-        /**
-         * Collapses a 2D axis-aligned boundary, ready to expand to fit 2D points.
-         * Creates new AABB if none supplied.
-         *
-         * @method collapseAABB2
-         * @static
-         * @param {*} [aabb] 2D axis-aligned bounding box.
-         * @returns {*} 2D axis-aligned bounding box.
-         */
-        collapseAABB2: function (aabb) {
-
-            aabb = aabb || math.AABB2();
-
-            aabb.min[0] = 10000000;
-            aabb.min[1] = 10000000;
-            aabb.max[0] = -10000000;
-            aabb.max[1] = -10000000;
-
-            return aabb;
-        },
-
-        /**
-         * Finds the minimum 2D projected axis-aligned boundary enclosing the given 3D points.
-         *
-         * @method points3ToAABB2
-         * @static
-         * @param {Array} points 3D Points.
-         * @param {*} [aabb] 2D axis-aligned bounding box.
-         * @returns {*} 2D axis-aligned bounding box.
-         */
-        points3ToAABB2: function (points, aabb) {
-
-            aabb = aabb || math.AABB2();
-
-            var xmin = 10000000;
-            var ymin = 10000000;
-            var xmax = -10000000;
-            var ymax = -10000000;
-
-            var x;
-            var y;
-            var w;
-            var f;
-
-            for (var i = 0, len = points.length; i < len; i++) {
-
-                x = points[i][0];
-                y = points[i][1];
-                w = points[i][3] || 1.0;
-
-                f = 1.0 / w;
-
-                x *= f;
-                y *= f;
-
-                if (x < xmin) {
-                    xmin = x;
-                }
-
-                if (y < ymin) {
-                    ymin = y;
-                }
-
-                if (x > xmax) {
-                    xmax = x;
-                }
-
-                if (y > ymax) {
-                    ymax = y;
-                }
-            }
-
-            aabb.min[0] = xmin;
-            aabb.min[1] = ymin;
-            aabb.max[0] = xmax;
-            aabb.max[1] = ymax;
-
-            return aabb;
-        },
-
-        /**
-         * Expands the first axis-aligned 2D boundary to enclose the second, if required.
-         *
-         * @method expandAABB3
-         * @static
-         * @param {*} aabb1 First AABB
-         * @param {*} aabb2 Second AABB
-         * @returns {*} The second AABB
-         */
-        expandAABB2: function (aabb1, aabb2) {
-
-            if (aabb1.min[0] > aabb2.min[0]) {
-                aabb1.min[0] = aabb2.min[0];
-            }
-
-            if (aabb1.min[1] > aabb2.min[1]) {
-                aabb1.min[1] = aabb2.min[1];
-            }
-
-            if (aabb1.max[0] < aabb2.max[0]) {
-                aabb1.max[0] = aabb2.max[0];
-            }
-
-            if (aabb1.max[1] < aabb2.max[1]) {
-                aabb1.max[1] = aabb2.max[1];
-            }
-
-            return aabb2;
-        },
-
-        /**
-         * Expands an axis-aligned 2D boundary to enclose the given point, if required.
-         *
-         * @method expandAABB2Point2
-         * @static
-         * @param {*} aabb AABB
-         * @param {*} p Point
-         * @returns {*} The AABB
-         */
-        expandAABB2Point2: function (aabb, p) {
-
-            if (aabb.min[0] > p[0]) {
-                aabb.min[0] = p[0];
-            }
-
-            if (aabb.min[1] > p[1]) {
-                aabb.min[1] = p[1];
-            }
-
-            if (aabb.max[0] < p[0]) {
-                aabb.max[0] = p[0];
-            }
-
-            if (aabb.max[1] < p[1]) {
-                aabb.max[1] = p[1];
-            }
-
-            return aabb;
-        },
-
-        AABB2ToCanvas: function (aabb, canvasWidth, canvasHeight, aabb2) {
-
-            aabb2 = aabb2 || aabb;
-
-            var xmin = (aabb.min[0] + 1.0) * 0.5;
-            var ymin = (aabb.min[1] + 1.0) * 0.5;
-            var xmax = (aabb.max[0] + 1.0) * 0.5;
-            var ymax = (aabb.max[1] + 1.0) * 0.5;
-
-            aabb2.min[0] = Math.floor(xmin * canvasWidth);
-            aabb2.min[1] = canvasHeight - Math.floor(ymax * canvasHeight);
-            aabb2.max[0] = Math.floor(xmax * canvasWidth);
-            aabb2.max[1] = canvasHeight - Math.floor(ymin * canvasHeight);
-
-            return aabb;
-        },
-
-        /**
-         * Calculates the normal vector of a triangle
-         *
-         * @method triangleNormal
-         * @param a
-         * @param b
-         * @param c
-         * @param normal
-         * @returns {*}
-         */
-        triangleNormal: function (a, b, c, normal) {
-
-            normal = normal || math.vec3();
-
-            var p1x = b[0] - a[0];
-            var p1y = b[1] - a[1];
-            var p1z = b[2] - a[2];
-
-            var p2x = c[0] - a[0];
-            var p2y = c[1] - a[1];
-            var p2z = c[2] - a[2];
-
-            var p3x = p1y * p2z - p1z * p2y;
-            var p3y = p1z * p2x - p1x * p2z;
-            var p3z = p1x * p2y - p1y * p2x;
-
-            var mag = Math.sqrt(p3x * p3x + p3y * p3y + p3z * p3z);
-            if (mag === 0) {
-                normal[0] = 0;
-                normal[1] = 0;
-                normal[2] = 0;
-            } else {
-                normal[0] = p3x / mag;
-                normal[1] = p3y / mag;
-                normal[2] = p3z / mag;
-            }
-
-            return normal
-        },
-
-        /**
-         * Builds normal vectors from positions and indices.
-         *
-         * @method buildNormals
-         * @static
-         * @param {Float32Array} positions One-dimensional flattened array of positions.
-         * @param {Float32Array} indices One-dimensional flattened array of indices.*
-         * @returns {Float32Array} One-dimensional flattened array of normal vectors.
-         */
-        buildNormals: function (positions, indices) {
-
-            var i;
-            var len;
-            var nvecs = new Array(positions.length / 3);
-            var j0;
-            var j1;
-            var j2;
-            var v1;
-            var v2;
-            var v3;
-
-            for (i = 0, len = indices.length; i < len; i += 3) {
-                j0 = indices[i + 0];
-                j1 = indices[i + 1];
-                j2 = indices[i + 2];
-
-                v1 = [positions[j0 * 3 + 0], positions[j0 * 3 + 1], positions[j0 * 3 + 2]];
-                v2 = [positions[j1 * 3 + 0], positions[j1 * 3 + 1], positions[j1 * 3 + 2]];
-                v3 = [positions[j2 * 3 + 0], positions[j2 * 3 + 1], positions[j2 * 3 + 2]];
-
-                v2 = math.subVec3(v2, v1, [0, 0, 0]);
-                v3 = math.subVec3(v3, v1, [0, 0, 0]);
-
-                var n = math.normalizeVec3(math.cross3Vec3(v2, v3, [0, 0, 0]), [0, 0, 0]);
-
-                if (!nvecs[j0]) {
-                    nvecs[j0] = [];
-                }
-                if (!nvecs[j1]) {
-                    nvecs[j1] = [];
-                }
-                if (!nvecs[j2]) {
-                    nvecs[j2] = [];
-                }
-
-                nvecs[j0].push(n);
-                nvecs[j1].push(n);
-                nvecs[j2].push(n);
-            }
-
-            var normals = new Float32Array(positions.length);
-
-            // now go through and average out everything
-            for (i = 0, len = nvecs.length; i < len; i++) {
-                var count = nvecs[i].length;
-                var x = 0;
-                var y = 0;
-                var z = 0;
-                for (var j = 0; j < count; j++) {
-                    x += nvecs[i][j][0];
-                    y += nvecs[i][j][1];
-                    z += nvecs[i][j][2];
-                }
-                normals[i * 3 + 0] = (x / count);
-                normals[i * 3 + 1] = (y / count);
-                normals[i * 3 + 2] = (z / count);
-            }
-
-            return normals;
-        },
-
-
-        /**
-         * Builds vertex tangent vectors from positions, UVs and indices
-         *
-         * @method buildTangents
-         * @static
-         * @param {Float32Array} positions One-dimensional flattened array of positions.
-         * @param {Float32Array} indices One-dimensional flattened array of indices.
-         * @param {Float32Array} uv One-dimensional flattened array of UV coordinates.
-         * @returns {Float32Array} One-dimensional flattened array of tangents.
-         */
-        buildTangents: function (positions, indices, uv) {
-
-            var tangents = new Float32Array(positions.length);
-
-            // The vertex arrays needs to be calculated
-            // before the calculation of the tangents
-
-            for (var location = 0; location < indices.length; location += 3) {
-
-                // Recontructing each vertex and UV coordinate into the respective vectors
-
-                var index = indices[location];
-
-                var v0 = positions.subarray(index * 3, index * 3 + 3);
-                var uv0 = uv.subarray(index * 2, index * 2 + 2);
-
-                index = indices[location + 1];
-
-                var v1 = positions.subarray(index * 3, index * 3 + 3);
-                var uv1 = uv.subarray(index * 2, index * 2 + 2);
-
-                index = indices[location + 2];
-
-                var v2 = positions.subarray(index * 3, index * 3 + 3);
-                var uv2 = uv.subarray(index * 2, index * 2 + 2);
-
-                var deltaPos1 = math.subVec3(v1, v0, tempVec3);
-                var deltaPos2 = math.subVec3(v2, v0, tempVec3b);
-
-                var deltaUV1 = math.subVec2(uv1, uv0, tempVec3c);
-                var deltaUV2 = math.subVec2(uv2, uv0, tempVec3d);
-
-                var r = 1 / ((deltaUV1[0] * deltaUV2[1]) - (deltaUV1[1] * deltaUV2[0]));
-
-                var tangent = math.mulVec3Scalar(
-                    math.subVec3(
-                        math.mulVec3Scalar(deltaPos1, deltaUV2[1], tempVec3e),
-                        math.mulVec3Scalar(deltaPos2, deltaUV1[1], tempVec3f),
-                        tempVec3g
-                    ),
-                    r,
-                    tempVec3f
-                );
-
-                // Average the value of the vectors outs
-                for (var v = 0; v < 3; v++) {
-                    var addTo = indices[location + v] * 3;
-
-                    tangents[addTo] += tangent[0];
-                    tangents[addTo + 1] += tangent[1];
-                    tangents[addTo + 2] += tangent[2];
-                }
-            }
-
-            return tangents;
-        },
 
         /**
          * Flattens a two-dimensional array into a one-dimensional array.
@@ -3774,301 +3291,6 @@ var Canvas2Image = (function () {
             }
 
             return result;
-        },
-
-        /**
-         * Builds vertex and index arrays needed by color-indexed triangle picking.
-         *
-         * @method getPickPrimitives
-         * @static
-         * @param {Float32Array} positions One-dimensional flattened array of positions.
-         * @param {Float32Array} indices One-dimensional flattened array of indices.
-         * @returns {*} Object containing the arrays, created by this method or reused from 'pickTris' parameter.
-         */
-        getPickPrimitives: function (positions, indices) {
-
-            var numIndices = indices.length;
-
-            var pickPositions = new Float32Array(numIndices * 30); // FIXME: Why do we need to extend size like this to make large meshes pickable?
-            var pickColors = new Float32Array(numIndices * 40);
-
-            var primIndex = 0;
-
-            // Positions array index
-            var vi;
-
-            // Picking positions array index
-            var pvi;
-
-            // Picking color array index
-            var pci;
-
-            // Triangle indices
-
-            var i;
-            var r;
-            var g;
-            var b;
-            var a;
-
-            for (var location = 0; location < numIndices; location += 3) {
-
-                pvi = location * 3;
-                pci = location * 4;
-
-                // Primitive-indexed triangle pick color
-
-                a = (primIndex >> 24 & 0xFF) / 255.0;
-                b = (primIndex >> 16 & 0xFF) / 255.0;
-                g = (primIndex >> 8 & 0xFF) / 255.0;
-                r = (primIndex & 0xFF) / 255.0;
-
-                // A
-
-                i = indices[location];
-                vi = i * 3;
-
-                pickPositions[pvi] = positions[vi];
-                pickPositions[pvi + 1] = positions[vi + 1];
-                pickPositions[pvi + 2] = positions[vi + 2];
-
-                pickColors[pci] = r;
-                pickColors[pci + 1] = g;
-                pickColors[pci + 2] = b;
-                pickColors[pci + 3] = a;
-
-
-                // B
-
-                i = indices[location + 1];
-                vi = i * 3;
-
-                pickPositions[pvi + 3] = positions[vi];
-                pickPositions[pvi + 4] = positions[vi + 1];
-                pickPositions[pvi + 5] = positions[vi + 2];
-
-                pickColors[pci + 4] = r;
-                pickColors[pci + 5] = g;
-                pickColors[pci + 6] = b;
-                pickColors[pci + 7] = a;
-
-
-                // C
-
-                i = indices[location + 2];
-                vi = i * 3;
-
-                pickPositions[pvi + 6] = positions[vi];
-                pickPositions[pvi + 7] = positions[vi + 1];
-                pickPositions[pvi + 8] = positions[vi + 2];
-
-                pickColors[pci + 8] = r;
-                pickColors[pci + 9] = g;
-                pickColors[pci + 10] = b;
-                pickColors[pci + 11] = a;
-
-                primIndex++;
-            }
-
-            return {
-                positions: pickPositions,
-                colors: pickColors
-            };
-        },
-
-        /**
-         * Finds the intersection of a 3D ray with a 3D triangle.
-         *
-         * @method rayTriangleIntersect
-         * @static
-         * @param {Float32Array} origin Ray origin.
-         * @param {Float32Array} dir Ray direction.
-         * @param {Float32Array} a First triangle vertex.
-         * @param {Float32Array} b Second triangle vertex.
-         * @param {Float32Array} c Third triangle vertex.
-         * @param {Float32Array} [isect] Intersection point.
-         * @returns {Float32Array} The intersection point, or null if no intersection found.
-         */
-        rayTriangleIntersect: function (origin, dir, a, b, c, isect) {
-
-            isect = isect || math.vec3();
-
-            var EPSILON = 0.000001;
-
-            var edge1 = math.subVec3(b, a, tempVec3);
-            var edge2 = math.subVec3(c, a, tempVec3b);
-
-            var pvec = math.cross3Vec3(dir, edge2, tempVec3c);
-            var det = math.dotVec3(edge1, pvec);
-            if (det < EPSILON) {
-                return null;
-            }
-
-            var tvec = math.subVec3(origin, a, tempVec3d);
-            var u = math.dotVec3(tvec, pvec);
-            if (u < 0 || u > det) {
-                return null;
-            }
-
-            var qvec = math.cross3Vec3(tvec, edge1, tempVec3e);
-            var v = math.dotVec3(dir, qvec);
-            if (v < 0 || u + v > det) {
-                return null;
-            }
-
-            var t = math.dotVec3(edge2, qvec) / det;
-            isect[0] = origin[0] + t * dir[0];
-            isect[1] = origin[1] + t * dir[1];
-            isect[2] = origin[2] + t * dir[2];
-
-            return isect;
-        },
-
-        /**
-         * Finds the intersection of a 3D ray with a plane defined by 3 points.
-         *
-         * @method rayPlaneIntersect
-         * @static
-         * @param {Float32Array} origin Ray origin.
-         * @param {Float32Array} dir Ray direction.
-         * @param {Float32Array} a First point on plane.
-         * @param {Float32Array} b Second point on plane.
-         * @param {Float32Array} c Third point on plane.
-         * @param {Float32Array} [isect] Intersection point.
-         * @returns {Float32Array} The intersection point.
-         */
-        rayPlaneIntersect: function (origin, dir, a, b, c, isect) {
-
-            isect = isect || math.vec3();
-
-            dir = math.normalizeVec3(dir, tempVec3);
-
-            var edge1 = math.subVec3(b, a, tempVec3b);
-            var edge2 = math.subVec3(c, a, tempVec3c);
-
-            var n = math.cross3Vec3(edge1, edge2, tempVec3d);
-            math.normalizeVec3(n, n);
-
-            var d = -math.dotVec3(a, n);
-
-            var t = -(math.dotVec3(origin, n) + d) / math.dotVec3(dir, n);
-
-            isect[0] = origin[0] + t * dir[0];
-            isect[1] = origin[1] + t * dir[1];
-            isect[2] = origin[2] + t * dir[2];
-
-            return isect;
-        },
-
-        /**
-         * Gets barycentric coordinates from cartesian coordinates within a triangle.
-         *
-         * @method cartesianToBaryCentric
-         * @static
-         * @param {Float32Array} cartesian Cartesian coordinates.
-         * @param {Float32Array} a First triangle vertex.
-         * @param {Float32Array} b Second triangle vertex.
-         * @param {Float32Array} c Third triangle vertex.
-         * @param {Float32Array} [bary] The barycentric coordinates.
-         * @returns {Float32Array} The barycentric coordinates, or null if the triangle was invalid.
-         * @returns {*}
-         */
-        cartesianToBarycentric: function (cartesian, a, b, c, bary) {
-
-            var f1 = math.subVec3(a, cartesian, tempVec3);
-            var f2 = math.subVec3(b, cartesian, tempVec3b);
-            var f3 = math.subVec3(c, cartesian, tempVec3c);
-
-            var t1 = math.subVec3(a, b, tempVec3d);
-            var t2 = math.subVec3(a, c, tempVec3e);
-
-            var a0 = math.lenVec3(math.cross3Vec3(t1, t2, tempVec3f));
-
-            bary[0] = math.lenVec3(math.cross3Vec3(f2, f3, tempVec3f)) / a0;
-            bary[1] = math.lenVec3(math.cross3Vec3(f3, f1, tempVec3f)) / a0;
-            bary[2] = math.lenVec3(math.cross3Vec3(f1, f2, tempVec3f)) / a0;
-
-            return bary;
-        },
-
-        cartesianToBarycentric2: function (cartesian, a, b, c, dest) {
-
-            var v0 = math.subVec3(c, a, tempVec3);
-            var v1 = math.subVec3(b, a, tempVec3b);
-            var v2 = math.subVec3(cartesian, a, tempVec3c);
-
-            var dot00 = math.dotVec3(v0, v0);
-            var dot01 = math.dotVec3(v0, v1);
-            var dot02 = math.dotVec3(v0, v2);
-            var dot11 = math.dotVec3(v1, v1);
-            var dot12 = math.dotVec3(v1, v2);
-
-            var denom = ( dot00 * dot11 - dot01 * dot01 );
-
-            // Colinear or singular triangle
-
-            if (denom === 0) {
-
-                // Arbitrary location outside of triangle
-
-                return null;
-            }
-
-            var invDenom = 1 / denom;
-
-            var u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
-            var v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
-
-            dest[0] = 1 - u - v;
-            dest[1] = v;
-            dest[2] = u;
-
-            return dest;
-        },
-
-        /**
-         * Returns true if the given barycentric coordinates are within their triangle.
-         *
-         * @method barycentricInsideTriangle
-         * @static
-         * @param {Float32Array} bary Barycentric coordinates.
-         * @returns {Boolean} True if the barycentric coordinates are inside their triangle.
-         * @returns {*}
-         */
-        barycentricInsideTriangle: function (bary) {
-
-            var v = bary[1];
-            var u = bary[2];
-
-            return (u >= 0) && (v >= 0) && (u + v < 1);
-        },
-
-        /**
-         * Gets cartesian coordinates from barycentric coordinates within a triangle.
-         *
-         * @method barycentricToCartesian
-         * @static
-         * @param {Float32Array} bary The barycentric coordinate.
-         * @param {Float32Array} a First triangle vertex.
-         * @param {Float32Array} b Second triangle vertex.
-         * @param {Float32Array} c Third triangle vertex.
-         * @param {Float32Array} [cartesian] Cartesian coordinates.
-         * @returns {Float32Array} The cartesian coordinates, or null if the triangle was invalid.
-         * @returns {*}
-         */
-        barycentricToCartesian2: function (bary, a, b, c, cartesian) {
-
-            cartesian = cartesian || math.vec3();
-
-            var u = bary[0];
-            var v = bary[1];
-            var w = bary[2];
-
-            cartesian[0] = a[0] * u + b[0] * v + c[0] * w;
-            cartesian[1] = a[1] * u + b[1] * v + c[1] * w;
-            cartesian[2] = a[2] * u + b[2] * v + c[2] * w;
-
-            return cartesian;
         },
 
 
@@ -4352,6 +3574,44 @@ var Canvas2Image = (function () {
             return dest;
         },
 
+        quaternionToRotationMat4: function (q, m) {
+
+            var x = q[0];
+            var y = q[1];
+            var z = q[2];
+            var w = q[3];
+
+            var x2 = x + x, y2 = y + y, z2 = z + z;
+            var xx = x * x2, xy = x * y2, xz = x * z2;
+            var yy = y * y2, yz = y * z2, zz = z * z2;
+            var wx = w * x2, wy = w * y2, wz = w * z2;
+
+            m[0] = 1 - ( yy + zz );
+            m[4] = xy - wz;
+            m[8] = xz + wy;
+
+            m[1] = xy + wz;
+            m[5] = 1 - ( xx + zz );
+            m[9] = yz - wx;
+
+            m[2] = xz - wy;
+            m[6] = yz + wx;
+            m[10] = 1 - ( xx + yy );
+
+            // last column
+            m[3] = 0;
+            m[7] = 0;
+            m[11] = 0;
+
+            // bottom row
+            m[12] = 0;
+            m[13] = 0;
+            m[14] = 0;
+            m[15] = 1;
+
+            return m;
+        },
+
         normalizeQuaternion: function (q, dest) {
             dest = dest || q;
             var len = math.lenVec4([q[0], q[1], q[2], q[3]]);
@@ -4395,99 +3655,1324 @@ var Canvas2Image = (function () {
         }
     };
 
-})();;XEO.math.tangentQuadraticBezier = function (t, p0, p1, p2) {
-    return 2 * ( 1 - t ) * ( p1 - p0 ) + 2 * t * ( p2 - p1 );
-
-};
-
-XEO.math.tangentQuadraticBezier = function (t, p0, p1, p2, p3) {
-    return -3 * p0 * (1 - t) * (1 - t) +
-        3 * p1 * (1 - t) * (1 - t) - 6 * t * p1 * (1 - t) +
-        6 * t * p2 * (1 - t) - 3 * t * t * p2 +
-        3 * t * t * p3;
-
-};
-
-XEO.math.tangentSpline = function (t, p0, p1, p2, p3) {
-
-    var h00 = 6 * t * t - 6 * t;
-    var h10 = 3 * t * t - 4 * t + 1;
-    var h01 = -6 * t * t + 6 * t;
-    var h11 = 3 * t * t - 2 * t;
-
-    return h00 + h10 + h01 + h11;
-
-};
-
-// Catmull-Rom
-
-XEO.math.catmullRomInterpolate = function (p0, p1, p2, p3, t) {
-    var v0 = ( p2 - p0 ) * 0.5;
-    var v1 = ( p3 - p1 ) * 0.5;
-    var t2 = t * t;
-    var t3 = t * t2;
-    return ( 2 * p1 - 2 * p2 + v0 + v1 ) * t3 + ( -3 * p1 + 3 * p2 - 2 * v0 - v1 ) * t2 + v0 * t + p1;
-
-};
-
-// Bezier Curves formulas obtained from
-// http://en.wikipedia.org/wiki/B%C3%A9zier_curve
-
-// Quad Bezier Functions
-
-XEO.math.b2p0 = function (t, p) {
-    var k = 1 - t;
-    return k * k * p;
-
-};
-
-XEO.math.b2p1 = function (t, p) {
-    return 2 * ( 1 - t ) * t * p;
-};
-
-XEO.math.b2p2 = function (t, p) {
-    return t * t * p;
-};
-
-XEO.math.b2 = function (t, p0, p1, p2) {
-    return this.b2p0(t, p0) + this.b2p1(t, p1) + this.b2p2(t, p2);
-};
-
-// Cubic Bezier Functions
-
-XEO.math.b3p0 = function (t, p) {
-    var k = 1 - t;
-    return k * k * k * p;
-};
-
-XEO.math.b3p1 = function (t, p) {
-    var k = 1 - t;
-    return 3 * k * k * t * p;
-};
-
-XEO.math.b3p2 = function (t, p) {
-    var k = 1 - t;
-    return 3 * k * t * t * p;
-};
-
-XEO.math.b3p3 = function (t, p) {
-    return t * t * t * p;
-};
-
-XEO.math.b3 = function (t, p0, p1, p2, p3) {
-    return this.b3p0(t, p0) + this.b3p1(t, p1) + this.b3p2(t, p2) + this.b3p3(t, p3);
-};
-
-;(function () {
+})();;/**
+ * Boundary math functions.
+ */
+(function () {
 
     "use strict";
 
-    XEO.renderer = XEO.renderer || {};
+    var math = xeogl.math;
+
+    /**
+     * Returns a new, uninitialized 3D axis-aligned bounding box.
+     *
+     * @private
+     */
+    math.AABB3 = function (values) {
+        return new Float32Array(values || 6);
+    };
+
+    /**
+     * Returns a new, uninitialized 2D axis-aligned bounding box.
+     *
+     * @private
+     */
+    math.AABB2 = function (values) {
+        return new Float32Array(values || 4);
+    };
+
+    /**
+     * Returns a new, uninitialized 3D oriented bounding box (OBB).
+     *
+     * @private
+     */
+    math.OBB3 = function (values) {
+        return new Float32Array(values || 32);
+    };
+
+    /**
+     * Returns a new, uninitialized 2D oriented bounding box (OBB).
+     *
+     * @private
+     */
+    math.OBB2 = function (values) {
+        return new Float32Array(values || 16);
+    };
+
+
+    /**
+     * Transforms an OBB3 by a 4x4 matrix.
+     *
+     * @private
+     */
+    math.transformOBB3 = function (m, p, p2) {
+
+        p2 = p2 || p;
+
+        var i;
+        var len = p.length;
+
+        var x;
+        var y;
+        var z;
+
+        var m0 = m[0];
+        var m1 = m[1];
+        var m2 = m[2];
+        var m3 = m[3];
+        var m4 = m[4];
+        var m5 = m[5];
+        var m6 = m[6];
+        var m7 = m[7];
+        var m8 = m[8];
+        var m9 = m[9];
+        var m10 = m[10];
+        var m11 = m[11];
+        var m12 = m[12];
+        var m13 = m[13];
+        var m14 = m[14];
+        var m15 = m[15];
+
+        for (i = 0; i < len; i += 4) {
+
+            x = p[i + 0];
+            y = p[i + 1];
+            z = p[i + 2];
+
+            p2[i + 0] = (m0 * x) + (m4 * y) + (m8 * z) + m12;
+            p2[i + 1] = (m1 * x) + (m5 * y) + (m9 * z) + m13;
+            p2[i + 2] = (m2 * x) + (m6 * y) + (m10 * z) + m14;
+            p2[i + 3] = (m3 * x) + (m7 * y) + (m11 * z) + m15;
+        }
+
+        return p2;
+    };
+
+    /**
+     * Gets the diagonal size of an AABB3 given as minima and maxima.
+     *
+     * @private
+     */
+    math.getAABB3Diag = (function () {
+
+        var min = new Float32Array(3);
+        var max = new Float32Array(3);
+        var tempVec3 = new Float32Array(3);
+
+        return function (aabb) {
+
+            min[0] = aabb[0];
+            min[1] = aabb[1];
+            min[2] = aabb[2];
+
+            max[0] = aabb[3];
+            max[1] = aabb[4];
+            max[2] = aabb[5];
+
+            math.subVec3(max, min, tempVec3);
+
+            return Math.abs(math.lenVec3(tempVec3));
+        };
+    })();
+
+    /**
+     * Get a diagonal boundary size that is symmetrical about the given point.
+     *
+     * @private
+     */
+    math.getAABB3DiagPoint = (function () {
+
+        var min = new Float32Array(3);
+        var max = new Float32Array(3);
+        var tempVec3 = new Float32Array(3);
+
+        return function (aabb, p) {
+
+            min[0] = aabb[0];
+            min[1] = aabb[1];
+            min[2] = aabb[2];
+
+            max[0] = aabb[3];
+            max[1] = aabb[4];
+            max[2] = aabb[5];
+
+            var diagVec = math.subVec3(max, min, tempVec3);
+
+            var xneg = p[0] - aabb[0];
+            var xpos = aabb[3] - p[0];
+            var yneg = p[1] - aabb[1];
+            var ypos = aabb[4] - p[1];
+            var zneg = p[2] - aabb[2];
+            var zpos = aabb[5] - p[2];
+
+            diagVec[0] += (xneg > xpos) ? xneg : xpos;
+            diagVec[1] += (yneg > ypos) ? yneg : ypos;
+            diagVec[2] += (zneg > zpos) ? zneg : zpos;
+
+            return Math.abs(math.lenVec3(diagVec));
+        };
+    })();
+
+    /**
+     * Gets the center of an AABB.
+     *
+     * @private
+     */
+    math.getAABB3Center = function (aabb, dest) {
+        var r = dest || math.vec3();
+
+        r[0] = (aabb[3] + aabb[0] ) * 0.5;
+        r[1] = (aabb[4] + aabb[1] ) * 0.5;
+        r[2] = (aabb[5] + aabb[2] ) * 0.5;
+
+        return r;
+    };
+
+    /**
+     * Gets the center of a 2D AABB.
+     *
+     * @private
+     */
+    math.getAABB2Center = function (aabb, dest) {
+        var r = dest || math.vec2();
+
+        r[0] = (aabb[2] + aabb[0] ) / 2;
+        r[1] = (aabb[3] + aabb[1] ) / 2;
+
+        return r;
+    };
+
+    /**
+     * Collapses a 3D axis-aligned boundary, ready to expand to fit 3D points.
+     * Creates new AABB if none supplied.
+     *
+     * @private
+     */
+    math.collapseAABB3 = function (aabb) {
+
+        aabb = aabb || math.AABB3();
+
+        aabb[0] = 10000000;
+        aabb[1] = 10000000;
+        aabb[2] = 10000000;
+        aabb[3] = -10000000;
+        aabb[4] = -10000000;
+        aabb[5] = -10000000;
+
+        return aabb;
+    };
+
+    /**
+     * Converts an axis-aligned 3D boundary into an oriented boundary consisting of
+     * an array of eight 3D positions, one for each corner of the boundary.
+     *
+     * @private
+     */
+    math.AABB3ToOBB3 = function (aabb, obb) {
+
+        obb = obb || math.OBB3();
+
+        obb[0] = aabb[0];
+        obb[1] = aabb[1];
+        obb[2] = aabb[2];
+        obb[3] = 1;
+
+        obb[4] = aabb[3];
+        obb[5] = aabb[1];
+        obb[6] = aabb[2];
+        obb[7] = 1;
+
+        obb[8] = aabb[3];
+        obb[9] = aabb[4];
+        obb[10] = aabb[2];
+        obb[11] = 1;
+
+        obb[12] = aabb[0];
+        obb[13] = aabb[4];
+        obb[14] = aabb[2];
+        obb[15] = 1;
+
+        obb[16] = aabb[0];
+        obb[17] = aabb[1];
+        obb[18] = aabb[5];
+        obb[19] = 1;
+
+        obb[20] = aabb[3];
+        obb[21] = aabb[1];
+        obb[22] = aabb[5];
+        obb[23] = 1;
+
+        obb[24] = aabb[3];
+        obb[25] = aabb[4];
+        obb[26] = aabb[5];
+        obb[27] = 1;
+
+        obb[28] = aabb[0];
+        obb[29] = aabb[4];
+        obb[30] = aabb[5];
+        obb[31] = 1;
+
+        return obb;
+    };
+
+    /**
+     * Finds the minimum axis-aligned 3D boundary enclosing the homogeneous 3D points (x,y,z,w) given in a flattened array.
+     *
+     * @private
+     */
+    math.positions3ToAABB3 = function (positions, aabb) {
+
+        aabb = aabb || math.AABB3();
+
+        var xmin = 100000;
+        var ymin = 100000;
+        var zmin = 100000;
+        var xmax = -100000;
+        var ymax = -100000;
+        var zmax = -100000;
+
+        var x, y, z;
+
+        for (var i = 0, len = positions.length; i < len; i += 3) {
+
+            x = positions[i + 0];
+            y = positions[i + 1];
+            z = positions[i + 2];
+
+            if (x < xmin) {
+                xmin = x;
+            }
+
+            if (y < ymin) {
+                ymin = y;
+            }
+
+            if (z < zmin) {
+                zmin = z;
+            }
+
+            if (x > xmax) {
+                xmax = x;
+            }
+
+            if (y > ymax) {
+                ymax = y;
+            }
+
+            if (z > zmax) {
+                zmax = z;
+            }
+        }
+
+        aabb[0] = xmin;
+        aabb[1] = ymin;
+        aabb[2] = zmin;
+        aabb[3] = xmax;
+        aabb[4] = ymax;
+        aabb[5] = zmax;
+
+        return aabb;
+    };
+
+    /**
+     * Finds the minimum axis-aligned 3D boundary enclosing the homogeneous 3D points (x,y,z,w) given in a flattened array.
+     *
+     * @private
+     */
+    math.OBB3ToAABB3 = function (obb, aabb) {
+
+        aabb = aabb || math.AABB3();
+
+        var xmin = 100000;
+        var ymin = 100000;
+        var zmin = 100000;
+        var xmax = -100000;
+        var ymax = -100000;
+        var zmax = -100000;
+
+        var x, y, z;
+
+        for (var i = 0, len = obb.length; i < len; i += 4) {
+
+            x = obb[i + 0];
+            y = obb[i + 1];
+            z = obb[i + 2];
+
+            if (x < xmin) {
+                xmin = x;
+            }
+
+            if (y < ymin) {
+                ymin = y;
+            }
+
+            if (z < zmin) {
+                zmin = z;
+            }
+
+            if (x > xmax) {
+                xmax = x;
+            }
+
+            if (y > ymax) {
+                ymax = y;
+            }
+
+            if (z > zmax) {
+                zmax = z;
+            }
+        }
+
+        aabb[0] = xmin;
+        aabb[1] = ymin;
+        aabb[2] = zmin;
+        aabb[3] = xmax;
+        aabb[4] = ymax;
+        aabb[5] = zmax;
+
+        return aabb;
+    };
+
+    /**
+     * Finds the minimum axis-aligned 3D boundary enclosing the given 3D points.
+     *
+     * @private
+     */
+    math.points3ToAABB3 = function (points, aabb) {
+
+        aabb = aabb || math.AABB3();
+
+        var xmin = 100000;
+        var ymin = 100000;
+        var zmin = 100000;
+        var xmax = -100000;
+        var ymax = -100000;
+        var zmax = -100000;
+
+        var x, y, z;
+
+        for (var i = 0, len = points.length; i < len; i++) {
+
+            x = points[i][0];
+            y = points[i][1];
+            z = points[i][2];
+
+            if (x < xmin) {
+                xmin = x;
+            }
+
+            if (y < ymin) {
+                ymin = y;
+            }
+
+            if (z < zmin) {
+                zmin = z;
+            }
+
+            if (x > xmax) {
+                xmax = x;
+            }
+
+            if (y > ymax) {
+                ymax = y;
+            }
+
+            if (z > zmax) {
+                zmax = z;
+            }
+        }
+
+        aabb[0] = xmin;
+        aabb[1] = ymin;
+        aabb[2] = zmin;
+        aabb[3] = xmax;
+        aabb[4] = ymax;
+        aabb[5] = zmax;
+
+        return aabb;
+    };
+
+    /**
+     * Finds the minimum boundary sphere enclosing the given 3D points.
+     *
+     * @private
+     */
+    math.points3ToSphere3 = (function () {
+
+        var tempVec3 = new Float32Array(3);
+
+        return function (points, sphere) {
+
+            sphere = sphere || math.vec4();
+
+            var x = 0;
+            var y = 0;
+            var z = 0;
+
+            var i;
+            var numPoints = points.length;
+
+            for (i = 0; i < numPoints; i++) {
+                x += points[i][0];
+                y += points[i][1];
+                z += points[i][2];
+            }
+
+            sphere[0] = x / numPoints;
+            sphere[1] = y / numPoints;
+            sphere[2] = z / numPoints;
+
+            var radius = 0;
+            var dist;
+
+            for (i = 0; i < numPoints; i++) {
+
+                dist = Math.abs(math.lenVec3(math.subVec3(points[i], sphere, tempVec3)));
+
+                if (dist > radius) {
+                    radius = dist;
+                }
+            }
+
+            sphere[3] = radius;
+
+            return sphere;
+        };
+    })();
+
+    /**
+     * Finds the minimum boundary sphere enclosing the given 3D points.
+     *
+     * @private
+     */
+    math.OBB3ToSphere3 = (function () {
+
+        var point = new Float32Array(3);
+        var tempVec3 = new Float32Array(3);
+
+        return function (points, sphere) {
+
+            sphere = sphere || math.vec4();
+
+            var x = 0;
+            var y = 0;
+            var z = 0;
+
+            var i;
+            var lenPoints = points.length;
+            var numPoints = lenPoints / 4;
+
+            for (i = 0; i < lenPoints; i += 4) {
+                x += points[i + 0];
+                y += points[i + 1];
+                z += points[i + 2];
+            }
+
+            sphere[0] = x / numPoints;
+            sphere[1] = y / numPoints;
+            sphere[2] = z / numPoints;
+
+            var radius = 0;
+            var dist;
+
+            for (i = 0; i < lenPoints; i += 4) {
+
+                point[0] = points[i + 0];
+                point[1] = points[i + 1];
+                point[2] = points[i + 2];
+
+                dist = Math.abs(math.lenVec3(math.subVec3(point, sphere, tempVec3)));
+
+                if (dist > radius) {
+                    radius = dist;
+                }
+            }
+
+            sphere[3] = radius;
+
+            return sphere;
+        };
+    })();
+
+    /**
+     * Gets the center of a bounding sphere.
+     *
+     * @private
+     */
+    math.getSphere3Center = function (sphere, dest) {
+        dest = dest || math.vec3();
+
+        dest[0] = sphere[0];
+        dest[1] = sphere[1];
+        dest[2] = sphere[2];
+
+        return dest;
+    };
+
+    /**
+     * Expands the first axis-aligned 3D boundary to enclose the second, if required.
+     *
+     * @private
+     */
+    math.expandAABB3 = function (aabb1, aabb2) {
+
+        if (aabb1[0] > aabb2[0]) {
+            aabb1[0] = aabb2[0];
+        }
+
+        if (aabb1[1] > aabb2[1]) {
+            aabb1[1] = aabb2[1];
+        }
+
+        if (aabb1[2] > aabb2[2]) {
+            aabb1[2] = aabb2[2];
+        }
+
+        if (aabb1[3] < aabb2[3]) {
+            aabb1[3] = aabb2[3];
+        }
+
+        if (aabb1[4] < aabb2[4]) {
+            aabb1[4] = aabb2[4];
+        }
+
+        if (aabb1[5] < aabb2[5]) {
+            aabb1[5] = aabb2[5];
+        }
+
+        return aabb1;
+    };
+
+    /**
+     * Expands an axis-aligned 3D boundary to enclose the given point, if needed.
+     *
+     * @private
+     */
+    math.expandAABB3Point3 = function (aabb, p) {
+
+        if (aabb[0] < p[0]) {
+            aabb[0] = p[0];
+        }
+
+        if (aabb[1] < p[1]) {
+            aabb[1] = p[1];
+        }
+
+        if (aabb[2] < p[2]) {
+            aabb[2] = p[2];
+        }
+
+        if (aabb[3] > p[0]) {
+            aabb[3] = p[0];
+        }
+
+        if (aabb[4] > p[1]) {
+            aabb[4] = p[1];
+        }
+
+        if (aabb[5] > p[2]) {
+            aabb[5] = p[2];
+        }
+
+        return aabb;
+    };
+
+    /**
+     * Collapses a 2D axis-aligned boundary, ready to expand to fit 2D points.
+     * Creates new AABB if none supplied.
+     *
+     * @private
+     */
+    math.collapseAABB2 = function (aabb) {
+
+        aabb = aabb || math.AABB2();
+
+        aabb[0] = 10000000;
+        aabb[1] = 10000000;
+        aabb[2] = -10000000;
+        aabb[3] = -10000000;
+
+        return aabb;
+    };
+
+    /**
+     * Finds the minimum 2D projected axis-aligned boundary enclosing the given 3D points.
+     *
+     * @private
+     */
+    math.OBB3ToAABB2 = function (points, aabb) {
+
+        aabb = aabb || math.AABB2();
+
+        var xmin = 10000000;
+        var ymin = 10000000;
+        var xmax = -10000000;
+        var ymax = -10000000;
+
+        var x;
+        var y;
+        var w;
+        var f;
+
+        for (var i = 0, len = points.length; i < len; i += 4) {
+
+            x = points[i + 0];
+            y = points[i + 1];
+            w = points[i + 3] || 1.0;
+
+            f = 1.0 / w;
+
+            x *= f;
+            y *= f;
+
+            if (x < xmin) {
+                xmin = x;
+            }
+
+            if (y < ymin) {
+                ymin = y;
+            }
+
+            if (x > xmax) {
+                xmax = x;
+            }
+
+            if (y > ymax) {
+                ymax = y;
+            }
+        }
+
+        aabb[0] = xmin;
+        aabb[1] = ymin;
+        aabb[2] = xmax;
+        aabb[3] = ymax;
+
+        return aabb;
+    };
+
+    /**
+     * Expands the first axis-aligned 2D boundary to enclose the second, if required.
+     *
+     * @private
+     */
+    math.expandAABB2 = function (aabb1, aabb2) {
+
+        if (aabb1[0] > aabb2[0]) {
+            aabb1[0] = aabb2[0];
+        }
+
+        if (aabb1[1] > aabb2[1]) {
+            aabb1[1] = aabb2[1];
+        }
+
+        if (aabb1[2] < aabb2[2]) {
+            aabb1[2] = aabb2[2];
+        }
+
+        if (aabb1[3] < aabb2[3]) {
+            aabb1[3] = aabb2[3];
+        }
+
+        return aabb1;
+    };
+
+    /**
+     * Expands an axis-aligned 2D boundary to enclose the given point, if required.
+     *
+     * @private
+     */
+    math.expandAABB2Point2 = function (aabb, p) {
+
+        if (aabb[0] > p[0]) {
+            aabb[0] = p[0];
+        }
+
+        if (aabb[1] > p[1]) {
+            aabb[1] = p[1];
+        }
+
+        if (aabb[2] < p[0]) {
+            aabb[2] = p[0];
+        }
+
+        if (aabb[3] < p[1]) {
+            aabb[3] = p[1];
+        }
+
+        return aabb;
+    };
+
+    math.AABB2ToCanvas = function (aabb, canvasWidth, canvasHeight, aabb2) {
+
+        aabb2 = aabb2 || aabb;
+
+        var xmin = (aabb[0] + 1.0) * 0.5;
+        var ymin = (aabb[1] + 1.0) * 0.5;
+        var xmax = (aabb[2] + 1.0) * 0.5;
+        var ymax = (aabb[3] + 1.0) * 0.5;
+
+        aabb2[0] = Math.floor(xmin * canvasWidth);
+        aabb2[1] = canvasHeight - Math.floor(ymax * canvasHeight);
+        aabb2[2] = Math.floor(xmax * canvasWidth);
+        aabb2[3] = canvasHeight - Math.floor(ymin * canvasHeight);
+
+        return aabb2;
+    };
+
+})();;/**
+ * Boundary math functions.
+ */
+(function () {
+
+    "use strict";
+
+    var math = xeogl.math;
+
+    /**
+     * Calculates the normal vector of a trianglel.
+     *
+     * @private
+     */
+    math.triangleNormal = function (a, b, c, normal) {
+
+        normal = normal || math.vec3();
+
+        var p1x = b[0] - a[0];
+        var p1y = b[1] - a[1];
+        var p1z = b[2] - a[2];
+
+        var p2x = c[0] - a[0];
+        var p2y = c[1] - a[1];
+        var p2z = c[2] - a[2];
+
+        var p3x = p1y * p2z - p1z * p2y;
+        var p3y = p1z * p2x - p1x * p2z;
+        var p3z = p1x * p2y - p1y * p2x;
+
+        var mag = Math.sqrt(p3x * p3x + p3y * p3y + p3z * p3z);
+        if (mag === 0) {
+            normal[0] = 0;
+            normal[1] = 0;
+            normal[2] = 0;
+        } else {
+            normal[0] = p3x / mag;
+            normal[1] = p3y / mag;
+            normal[2] = p3z / mag;
+        }
+
+        return normal
+    };
+
+    /**
+     * Finds the intersection of a 3D ray with a 3D triangle.
+     *
+     * @private
+     */
+    math.rayTriangleIntersect = (function() {
+
+        var tempVec3 = new Float32Array(3);
+        var tempVec3b = new Float32Array(3);
+        var tempVec3c = new Float32Array(3);
+        var tempVec3d = new Float32Array(3);
+        var tempVec3e = new Float32Array(3);
+
+        return function (origin, dir, a, b, c, isect) {
+
+            isect = isect || math.vec3();
+
+            var EPSILON = 0.000001;
+
+            var edge1 = math.subVec3(b, a, tempVec3);
+            var edge2 = math.subVec3(c, a, tempVec3b);
+
+            var pvec = math.cross3Vec3(dir, edge2, tempVec3c);
+            var det = math.dotVec3(edge1, pvec);
+            if (det < EPSILON) {
+                return null;
+            }
+
+            var tvec = math.subVec3(origin, a, tempVec3d);
+            var u = math.dotVec3(tvec, pvec);
+            if (u < 0 || u > det) {
+                return null;
+            }
+
+            var qvec = math.cross3Vec3(tvec, edge1, tempVec3e);
+            var v = math.dotVec3(dir, qvec);
+            if (v < 0 || u + v > det) {
+                return null;
+            }
+
+            var t = math.dotVec3(edge2, qvec) / det;
+            isect[0] = origin[0] + t * dir[0];
+            isect[1] = origin[1] + t * dir[1];
+            isect[2] = origin[2] + t * dir[2];
+
+            return isect;
+        };
+    })();
+
+    /**
+     * Finds the intersection of a 3D ray with a plane defined by 3 points.
+     *
+     * @private
+     */
+    math.rayPlaneIntersect = (function() {
+
+        var tempVec3 = new Float32Array(3);
+        var tempVec3b = new Float32Array(3);
+        var tempVec3c = new Float32Array(3);
+        var tempVec3d = new Float32Array(3);
+
+        return function (origin, dir, a, b, c, isect) {
+
+            isect = isect || math.vec3();
+
+            dir = math.normalizeVec3(dir, tempVec3);
+
+            var edge1 = math.subVec3(b, a, tempVec3b);
+            var edge2 = math.subVec3(c, a, tempVec3c);
+
+            var n = math.cross3Vec3(edge1, edge2, tempVec3d);
+            math.normalizeVec3(n, n);
+
+            var d = -math.dotVec3(a, n);
+
+            var t = -(math.dotVec3(origin, n) + d) / math.dotVec3(dir, n);
+
+            isect[0] = origin[0] + t * dir[0];
+            isect[1] = origin[1] + t * dir[1];
+            isect[2] = origin[2] + t * dir[2];
+
+            return isect;
+        };
+    })();
+
+    /**
+     * Gets barycentric coordinates from cartesian coordinates within a triangle.
+     *
+     * @private
+     */
+    math.cartesianToBarycentric = (function() {
+
+        var tempVec3 = new Float32Array(3);
+        var tempVec3b = new Float32Array(3);
+        var tempVec3c = new Float32Array(3);
+
+        return function (cartesian, a, b, c, dest) {
+
+            var v0 = math.subVec3(c, a, tempVec3);
+            var v1 = math.subVec3(b, a, tempVec3b);
+            var v2 = math.subVec3(cartesian, a, tempVec3c);
+
+            var dot00 = math.dotVec3(v0, v0);
+            var dot01 = math.dotVec3(v0, v1);
+            var dot02 = math.dotVec3(v0, v2);
+            var dot11 = math.dotVec3(v1, v1);
+            var dot12 = math.dotVec3(v1, v2);
+
+            var denom = ( dot00 * dot11 - dot01 * dot01 );
+
+            // Colinear or singular triangle
+
+            if (denom === 0) {
+
+                // Arbitrary location outside of triangle
+
+                return null;
+            }
+
+            var invDenom = 1 / denom;
+
+            var u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
+            var v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
+
+            dest[0] = 1 - u - v;
+            dest[1] = v;
+            dest[2] = u;
+
+            return dest;
+        };
+    })();
+
+    /**
+     * Returns true if the given barycentric coordinates are within their triangle.
+     *
+     * @private
+     */
+    math.barycentricInsideTriangle = function (bary) {
+
+        var v = bary[1];
+        var u = bary[2];
+
+        return (u >= 0) && (v >= 0) && (u + v < 1);
+    };
+
+    /**
+     * Gets cartesian coordinates from barycentric coordinates within a triangle.
+     *
+     * @private
+     */
+    math.barycentricToCartesian = function (bary, a, b, c, cartesian) {
+
+        cartesian = cartesian || math.vec3();
+
+        var u = bary[0];
+        var v = bary[1];
+        var w = bary[2];
+
+        cartesian[0] = a[0] * u + b[0] * v + c[0] * w;
+        cartesian[1] = a[1] * u + b[1] * v + c[1] * w;
+        cartesian[2] = a[2] * u + b[2] * v + c[2] * w;
+
+        return cartesian;
+    };
+
+})();;/**
+ * Boundary math functions.
+ */
+(function () {
+
+    "use strict";
+
+    var math = xeogl.math;
+
+    /**
+     * Builds normal vectors from positions and indices.
+     *
+     * @private
+     */
+    math.buildNormals = (function () {
+
+        var a = math.vec3();
+        var b = math.vec3();
+        var c = math.vec3();
+        var ab = math.vec3();
+        var ac = math.vec3();
+        var crossVec = math.vec3();
+        var normVec = math.vec3();
+
+        return function (positions, indices) {
+
+            var i;
+            var len;
+            var nvecs = new Array(positions.length / 3);
+            var j0;
+            var j1;
+            var j2;
+
+            for (i = 0, len = indices.length; i < len; i += 3) {
+
+                j0 = indices[i];
+                j1 = indices[i + 1];
+                j2 = indices[i + 2];
+
+                a[0] = positions[j0 * 3];
+                a[1] = positions[j0 * 3 + 1];
+                a[2] = positions[j0 * 3 + 2];
+
+                b[0] = positions[j1 * 3];
+                b[1] = positions[j1 * 3 + 1];
+                b[2] = positions[j1 * 3 + 2];
+
+                c[0] = positions[j2 * 3];
+                c[1] = positions[j2 * 3 + 1];
+                c[2] = positions[j2 * 3 + 2];
+
+                math.subVec3(b, a, ab);
+                math.subVec3(c, a, ac);
+
+                math.normalizeVec3(math.cross3Vec3(ab, ac, crossVec), normVec);
+
+                if (!nvecs[j0]) {
+                    nvecs[j0] = [];
+                }
+                if (!nvecs[j1]) {
+                    nvecs[j1] = [];
+                }
+                if (!nvecs[j2]) {
+                    nvecs[j2] = [];
+                }
+
+                nvecs[j0].push(normVec);
+                nvecs[j1].push(normVec);
+                nvecs[j2].push(normVec);
+            }
+
+            var normals = new Float32Array(positions.length);
+
+            // now go through and average out everything
+            for (i = 0, len = nvecs.length; i < len; i++) {
+                var count = nvecs[i].length;
+                var x = 0;
+                var y = 0;
+                var z = 0;
+                for (var j = 0; j < count; j++) {
+                    x += nvecs[i][j][0];
+                    y += nvecs[i][j][1];
+                    z += nvecs[i][j][2];
+                }
+                normals[i * 3] = (x / count);
+                normals[i * 3 + 1] = (y / count);
+                normals[i * 3 + 2] = (z / count);
+            }
+
+            return normals;
+        };
+    })();
+
+    /**
+     * Builds vertex tangent vectors from positions, UVs and indices.
+     *
+     * @private
+     */
+    math.buildTangents = (function () {
+
+        var tempVec3 = new Float32Array(3);
+        var tempVec3b = new Float32Array(3);
+        var tempVec3c = new Float32Array(3);
+        var tempVec3d = new Float32Array(3);
+        var tempVec3e = new Float32Array(3);
+        var tempVec3f = new Float32Array(3);
+        var tempVec3g = new Float32Array(3);
+
+        return function (positions, indices, uv) {
+
+            var tangents = new Float32Array(positions.length);
+
+            // The vertex arrays needs to be calculated
+            // before the calculation of the tangents
+
+            for (var location = 0; location < indices.length; location += 3) {
+
+                // Recontructing each vertex and UV coordinate into the respective vectors
+
+                var index = indices[location];
+
+                var v0 = positions.subarray(index * 3, index * 3 + 3);
+                var uv0 = uv.subarray(index * 2, index * 2 + 2);
+
+                index = indices[location + 1];
+
+                var v1 = positions.subarray(index * 3, index * 3 + 3);
+                var uv1 = uv.subarray(index * 2, index * 2 + 2);
+
+                index = indices[location + 2];
+
+                var v2 = positions.subarray(index * 3, index * 3 + 3);
+                var uv2 = uv.subarray(index * 2, index * 2 + 2);
+
+                var deltaPos1 = math.subVec3(v1, v0, tempVec3);
+                var deltaPos2 = math.subVec3(v2, v0, tempVec3b);
+
+                var deltaUV1 = math.subVec2(uv1, uv0, tempVec3c);
+                var deltaUV2 = math.subVec2(uv2, uv0, tempVec3d);
+
+                var r = 1 / ((deltaUV1[0] * deltaUV2[1]) - (deltaUV1[1] * deltaUV2[0]));
+
+                var tangent = math.mulVec3Scalar(
+                    math.subVec3(
+                        math.mulVec3Scalar(deltaPos1, deltaUV2[1], tempVec3e),
+                        math.mulVec3Scalar(deltaPos2, deltaUV1[1], tempVec3f),
+                        tempVec3g
+                    ),
+                    r,
+                    tempVec3f
+                );
+
+                // Average the value of the vectors
+
+                var addTo;
+
+                for (var v = 0; v < 3; v++) {
+                    addTo = indices[location + v] * 3;
+                    tangents[addTo] += tangent[0];
+                    tangents[addTo + 1] += tangent[1];
+                    tangents[addTo + 2] += tangent[2];
+                }
+            }
+
+            return tangents;
+        };
+    })();
+
+    /**
+     * Builds vertex and index arrays needed by color-indexed triangle picking.
+     *
+     * @private
+     */
+    math.buildPickTriangles = function (positions, indices) {
+
+        var numIndices = indices.length;
+        var pickPositions = new Float32Array(numIndices * 30); // FIXME: Why do we need to extend size like this to make large meshes pickable?
+        var pickColors = new Float32Array(numIndices * 40);
+        var primIndex = 0;
+        var vi;// Positions array index
+        var pvi;// Picking positions array index
+        var pci; // Picking color array index
+
+        // Triangle indices
+        var i;
+        var r;
+        var g;
+        var b;
+        var a;
+
+        for (var location = 0; location < numIndices; location += 3) {
+
+            pvi = location * 3;
+            pci = location * 4;
+
+            // Primitive-indexed triangle pick color
+
+            a = (primIndex >> 24 & 0xFF) / 255.0;
+            b = (primIndex >> 16 & 0xFF) / 255.0;
+            g = (primIndex >> 8 & 0xFF) / 255.0;
+            r = (primIndex & 0xFF) / 255.0;
+
+            // A
+
+            i = indices[location];
+            vi = i * 3;
+
+            pickPositions[pvi] = positions[vi];
+            pickPositions[pvi + 1] = positions[vi + 1];
+            pickPositions[pvi + 2] = positions[vi + 2];
+
+            pickColors[pci] = r;
+            pickColors[pci + 1] = g;
+            pickColors[pci + 2] = b;
+            pickColors[pci + 3] = a;
+
+            // B
+
+            i = indices[location + 1];
+            vi = i * 3;
+
+            pickPositions[pvi + 3] = positions[vi];
+            pickPositions[pvi + 4] = positions[vi + 1];
+            pickPositions[pvi + 5] = positions[vi + 2];
+
+            pickColors[pci + 4] = r;
+            pickColors[pci + 5] = g;
+            pickColors[pci + 6] = b;
+            pickColors[pci + 7] = a;
+
+            // C
+
+            i = indices[location + 2];
+            vi = i * 3;
+
+            pickPositions[pvi + 6] = positions[vi];
+            pickPositions[pvi + 7] = positions[vi + 1];
+            pickPositions[pvi + 8] = positions[vi + 2];
+
+            pickColors[pci + 8] = r;
+            pickColors[pci + 9] = g;
+            pickColors[pci + 10] = b;
+            pickColors[pci + 11] = a;
+
+            primIndex++;
+        }
+
+        return {
+            positions: pickPositions,
+            colors: pickColors
+        };
+    };
+}());;/**
+ * Curve math functions.
+ */
+(function () {
+
+    "use strict";
+
+    var math = xeogl.math;
+
+    math.tangentQuadraticBezier = function (t, p0, p1, p2) {
+        return 2 * ( 1 - t ) * ( p1 - p0 ) + 2 * t * ( p2 - p1 );
+    };
+
+    math.tangentQuadraticBezier = function (t, p0, p1, p2, p3) {
+        return -3 * p0 * (1 - t) * (1 - t) +
+            3 * p1 * (1 - t) * (1 - t) - 6 * t * p1 * (1 - t) +
+            6 * t * p2 * (1 - t) - 3 * t * t * p2 +
+            3 * t * t * p3;
+    };
+
+    math.tangentSpline = function (t) {
+        var h00 = 6 * t * t - 6 * t;
+        var h10 = 3 * t * t - 4 * t + 1;
+        var h01 = -6 * t * t + 6 * t;
+        var h11 = 3 * t * t - 2 * t;
+        return h00 + h10 + h01 + h11;
+    };
+
+    math.catmullRomInterpolate = function (p0, p1, p2, p3, t) {
+        var v0 = ( p2 - p0 ) * 0.5;
+        var v1 = ( p3 - p1 ) * 0.5;
+        var t2 = t * t;
+        var t3 = t * t2;
+        return ( 2 * p1 - 2 * p2 + v0 + v1 ) * t3 + ( -3 * p1 + 3 * p2 - 2 * v0 - v1 ) * t2 + v0 * t + p1;
+    };
+
+    // Bezier Curve formulii from http://en.wikipedia.org/wiki/B%C3%A9zier_curve
+
+    // Quad Bezier Functions
+
+    math.b2p0 = function (t, p) {
+        var k = 1 - t;
+        return k * k * p;
+
+    };
+
+    math.b2p1 = function (t, p) {
+        return 2 * ( 1 - t ) * t * p;
+    };
+
+    math.b2p2 = function (t, p) {
+        return t * t * p;
+    };
+
+    math.b2 = function (t, p0, p1, p2) {
+        return this.b2p0(t, p0) + this.b2p1(t, p1) + this.b2p2(t, p2);
+    };
+
+    // Cubic Bezier Functions
+
+    math.b3p0 = function (t, p) {
+        var k = 1 - t;
+        return k * k * k * p;
+    };
+
+    math.b3p1 = function (t, p) {
+        var k = 1 - t;
+        return 3 * k * k * t * p;
+    };
+
+    math.b3p2 = function (t, p) {
+        var k = 1 - t;
+        return 3 * k * t * t * p;
+    };
+
+    math.b3p3 = function (t, p) {
+        return t * t * t * p;
+    };
+
+    math.b3 = function (t, p0, p1, p2, p3) {
+        return this.b3p0(t, p0) + this.b3p1(t, p1) + this.b3p2(t, p2) + this.b3p3(t, p3);
+    };
+})();;(function () {
+
+    "use strict";
+
+    xeogl.renderer = xeogl.renderer || {};
 
     /**
      *
      */
-    XEO.renderer.Renderer = function (stats, canvas, gl, options) {
+    xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
 
         options = options || {};
 
@@ -4496,9 +4981,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this.gl = gl;
         this.canvas = canvas;
 
-        this._programFactory = new XEO.renderer.ProgramFactory(this.stats, gl);
-        this._objectFactory = new XEO.renderer.ObjectFactory();
-        this._chunkFactory = new XEO.renderer.ChunkFactory();
+        this._programFactory = new xeogl.renderer.ProgramFactory(this.stats, gl);
+        this._objectFactory = new xeogl.renderer.ObjectFactory();
+        this._chunkFactory = new xeogl.renderer.ChunkFactory();
 
         /**
          * Indicates if the canvas is transparent
@@ -4539,6 +5024,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         // The current ambient color, if available
         this._ambient = null;
+
+        /**
+         * The current ambient color.
+         * @type Float32Array
+         */
+        this.ambientColor = xeogl.math.vec4([0,0,0,1]);
 
         // Objects in a list, ordered by state
         this._objectList = [];
@@ -4755,7 +5246,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Reallocates WebGL resources for objects within this renderer.
      */
-    XEO.renderer.Renderer.prototype.webglRestored = function (gl) {
+    xeogl.renderer.Renderer.prototype.webglRestored = function (gl) {
 
         this.gl = gl;
 
@@ -4777,15 +5268,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     };
 
     /**
-     * Internally creates (or updates) a {@link XEO.renderer.Object} of the given
-     * ID from whatever component state cores are currently set on this {@link XEO.Renderer}.
+     * Internally creates (or updates) a {@link xeogl.renderer.Object} of the given
+     * ID from whatever component state cores are currently set on this {@link xeogl.Renderer}.
      * The object is created if it does not already exist in the display, otherwise
      * it is updated with the current states, possibly replacing states already
      * referenced by the object.
      *
      * @param {String} objectId ID of object to create or update
      */
-    XEO.renderer.Renderer.prototype.buildObject = function (objectId) {
+    xeogl.renderer.Renderer.prototype.buildObject = function (objectId) {
 
         var object = this.objects[objectId];
 
@@ -4906,7 +5397,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     /** Adds a render state chunk to a render graph object.
      */
-    XEO.renderer.Renderer.prototype._setChunk = function (object, order, type, state, neg) {
+    xeogl.renderer.Renderer.prototype._setChunk = function (object, order, type, state, neg) {
 
         var id;
 
@@ -4938,7 +5429,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     };
 
     // Sets the singular ambient light.
-    XEO.renderer.Renderer.prototype._setAmbient = function (state) {
+    xeogl.renderer.Renderer.prototype._setAmbient = function (state) {
 
         var lights = state.lights;
         var light;
@@ -4959,7 +5450,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      *
      * @param {String} objectId ID of object to remove
      */
-    XEO.renderer.Renderer.prototype.removeObject = function (objectId) {
+    xeogl.renderer.Renderer.prototype.removeObject = function (objectId) {
 
         var object = this.objects[objectId];
 
@@ -4993,7 +5484,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Renders a new frame, if neccessary.
      */
-    XEO.renderer.Renderer.prototype.render = function (params) {
+    xeogl.renderer.Renderer.prototype.render = function (params) {
 
         params = params || {};
 
@@ -5029,7 +5520,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Builds the object list from the object map
      */
-    XEO.renderer.Renderer.prototype._buildObjectList = function () {
+    xeogl.renderer.Renderer.prototype._buildObjectList = function () {
         this._objectListLen = 0;
         for (var objectId in this.objects) {
             if (this.objects.hasOwnProperty(objectId)) {
@@ -5041,7 +5532,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Generates object state sort keys
      */
-    XEO.renderer.Renderer.prototype._makeStateSortKeys = function () {
+    xeogl.renderer.Renderer.prototype._makeStateSortKeys = function () {
         var object;
         for (var i = 0, len = this._objectListLen; i < len; i++) {
             object = this._objectList[i];
@@ -5062,19 +5553,19 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * State-sorts the object list
      */
-    XEO.renderer.Renderer.prototype._stateSort = function () {
+    xeogl.renderer.Renderer.prototype._stateSort = function () {
         this._objectList.length = this._objectListLen;
         this._objectList.sort(function (a, b) {
             return a.sortKey - b.sortKey;
         });
     };
 
-    XEO.renderer.Renderer.prototype._renderObjectList = function (params) {
+    xeogl.renderer.Renderer.prototype._renderObjectList = function (params) {
 
         var gl = this.gl;
 
         // The extensions needs to be re-queried in case the context was lost and has been recreated.
-        if (XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]) {
+        if (xeogl.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]) {
             gl.getExtension("OES_element_index_uint");
         }
 
@@ -5083,9 +5574,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         if (ambient) {
             var color = ambient.color;
             var intensity = ambient.intensity;
-            ambientColor = [color[0] * intensity, color[1] * intensity, color[2] * intensity, 1.0];
+            this.ambientColor[0] = color[0] * intensity;
+            this.ambientColor[1] = color[1] * intensity;
+            this.ambientColor[2] = color[2] * intensity;
         } else {
-            ambientColor = [0, 0, 0];
+            this.ambientColor[0] = 0;
+            this.ambientColor[1] = 0;
+            this.ambientColor[2] = 0;
         }
 
         var frameCtx = this._frameCtx;
@@ -5100,7 +5595,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         frameCtx.frontface = true; // true == "ccw" else "cw"
         frameCtx.textureUnit = 0;
         frameCtx.transparent = false; // True while rendering transparency bin
-        frameCtx.ambientColor = ambientColor;
+        frameCtx.ambientColor = this.ambientColor;
         frameCtx.drawElements = 0;
         frameCtx.useProgram = 0;
         frameCtx.bindTexture = 0;
@@ -5112,7 +5607,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         frameCtx.pickIndex = 0;
 
         // The extensions needs to be re-queried in case the context was lost and has been recreated.
-        if (XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]) {
+        if (xeogl.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]) {
             gl.getExtension("OES_element_index_uint");
         }
 
@@ -5126,7 +5621,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         } else {
 
             // Canvas is opaque - set clear color to the current ambient
-            gl.clearColor(ambientColor[0], ambientColor[1], ambientColor[2], 1.0);
+            gl.clearColor(this.ambientColor[0], this.ambientColor[1], this.ambientColor[2], 1.0);
         }
 
 
@@ -5305,9 +5800,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param {*} params Picking params.
      * @returns {*} Hit result, if any.
      */
-    XEO.renderer.Renderer.prototype.pick = (function () {
+    xeogl.renderer.Renderer.prototype.pick = (function () {
 
-        var math = XEO.math;
+        var math = xeogl.math;
 
         var tempVec3a = math.vec3();
         var tempMat4a = math.mat4();
@@ -5320,7 +5815,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var pickBuf = this.pickBuf;
 
             if (!pickBuf) {  // Lazy-create the pick buffer
-                pickBuf = new XEO.renderer.webgl.RenderBuffer(this.canvas, this.gl);
+                pickBuf = new xeogl.renderer.webgl.RenderBuffer(this.canvas, this.gl);
                 this.pickBuf = pickBuf;
             }
 
@@ -5435,10 +5930,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param {Number} len
      * @param {Boolean} opaqueOnly
      */
-    XEO.renderer.Renderer.prototype.readPixels = function (pixels, colors, len, opaqueOnly) {
+    xeogl.renderer.Renderer.prototype.readPixels = function (pixels, colors, len, opaqueOnly) {
 
         if (!this._readPixelBuf) {
-            this._readPixelBuf = new XEO.renderer.webgl.RenderBuffer(this.canvas, this.gl);
+            this._readPixelBuf = new xeogl.renderer.webgl.RenderBuffer(this.canvas, this.gl);
         }
 
         this._readPixelBuf.bind();
@@ -5474,7 +5969,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Destroys this Renderer.
      */
-    XEO.renderer.Renderer.prototype.destroy = function () {
+    xeogl.renderer.Renderer.prototype.destroy = function () {
         this._programFactory.destroy();
     };
 })();
@@ -5482,9 +5977,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.webgl = {
+    xeogl.renderer.webgl = {
 
-        /** Maps XEO component parameter names to WebGL enum names
+        /** Maps xeogl component parameter names to WebGL enum names
          */
         enums: {
             funcAdd: "FUNC_ADD",
@@ -5553,7 +6048,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param itemSize Size of each item
      * @param usage Eg. STATIC_DRAW
      */
-    XEO.renderer.webgl.ArrayBuffer = function (gl, type, data, numItems, itemSize, usage) {
+    xeogl.renderer.webgl.ArrayBuffer = function (gl, type, data, numItems, itemSize, usage) {
 
         /**
          * True when this buffer is allocated and ready to go
@@ -5585,7 +6080,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param data
      * @private
      */
-    XEO.renderer.webgl.ArrayBuffer.prototype._allocate = function (data) {
+    xeogl.renderer.webgl.ArrayBuffer.prototype._allocate = function (data) {
 
         this.allocated = false;
 
@@ -5614,7 +6109,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param data
      * @param offset
      */
-    XEO.renderer.webgl.ArrayBuffer.prototype.setData = function (data, offset) {
+    xeogl.renderer.webgl.ArrayBuffer.prototype.setData = function (data, offset) {
 
         if (!this.allocated) {
             return;
@@ -5646,7 +6141,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Binds this buffer
      */
-    XEO.renderer.webgl.ArrayBuffer.prototype.bind = function () {
+    xeogl.renderer.webgl.ArrayBuffer.prototype.bind = function () {
 
         if (!this.allocated) {
             return;
@@ -5658,7 +6153,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Unbinds this buffer
      */
-    XEO.renderer.webgl.ArrayBuffer.prototype.unbind = function () {
+    xeogl.renderer.webgl.ArrayBuffer.prototype.unbind = function () {
 
         if (!this.allocated) {
             return;
@@ -5670,7 +6165,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Destroys this buffer
      */
-    XEO.renderer.webgl.ArrayBuffer.prototype.destroy = function () {
+    xeogl.renderer.webgl.ArrayBuffer.prototype.destroy = function () {
 
         if (!this.allocated) {
             return;
@@ -5690,16 +6185,16 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     "use strict";
 
     /**
-     * An attribute within a {@link XEO.renderer.webgl.Shader}
+     * An attribute within a {@link xeogl.renderer.webgl.Shader}
      */
-    XEO.renderer.webgl.Attribute = function (gl, location) {
+    xeogl.renderer.webgl.Attribute = function (gl, location) {
 
         this.gl = gl;
 
         this.location = location;
     };
 
-    XEO.renderer.webgl.Attribute.prototype.bindFloatArrayBuffer = function (buffer) {
+    xeogl.renderer.webgl.Attribute.prototype.bindFloatArrayBuffer = function (buffer) {
 
         if (buffer) {
 
@@ -5712,7 +6207,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         }
     };
 
-    XEO.renderer.webgl.Attribute.prototype.bindInterleavedFloatArrayBuffer = function (components, stride, byteOffset) {
+    xeogl.renderer.webgl.Attribute.prototype.bindInterleavedFloatArrayBuffer = function (components, stride, byteOffset) {
 
         this.gl.enableVertexAttribArray(this.location);
 
@@ -5749,7 +6244,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param vertex Source code for vertex shader
      * @param fragment Source code for fragment shader
      */
-    XEO.renderer.webgl.Program = function (stats, gl, vertex, fragment) {
+    xeogl.renderer.webgl.Program = function (stats, gl, vertex, fragment) {
 
         this.stats = stats;
 
@@ -5793,8 +6288,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         // Shaders
 
-        this._vertexShader = new XEO.renderer.webgl.Shader(gl, gl.VERTEX_SHADER, joinSansComments(vertex));
-        this._fragmentShader = new XEO.renderer.webgl.Shader(gl, gl.FRAGMENT_SHADER, joinSansComments(fragment));
+        this._vertexShader = new xeogl.renderer.webgl.Shader(gl, gl.VERTEX_SHADER, joinSansComments(vertex));
+        this._fragmentShader = new xeogl.renderer.webgl.Shader(gl, gl.FRAGMENT_SHADER, joinSansComments(fragment));
 
         if (!this._vertexShader.allocated) {
             this.errorLog = ["Vertex shader failed to allocate"].concat(this._vertexShader.errorLog);
@@ -5843,7 +6338,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         this.linked = gl.getProgramParameter(this.handle, gl.LINK_STATUS);
 
-        // HACK: Disable validation temporarily: https://github.com/xeolabs/xeoengine/issues/5
+        // HACK: Disable validation temporarily: https://github.com/xeolabs/xeogl/issues/5
         // Perhaps we should defer validation until render-time, when the program has values set for all inputs?
 
         //this.validated = this.linked ? gl.getProgramParameter(this.handle, gl.VALIDATE_STATUS) : false;
@@ -5886,11 +6381,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 if ((u.type === gl.SAMPLER_2D) || (u.type === gl.SAMPLER_CUBE) || (u.type === 35682)) {
 
-                    this.samplers[uName] = new XEO.renderer.webgl.Sampler(gl, location);
+                    this.samplers[uName] = new xeogl.renderer.webgl.Sampler(gl, location);
 
                 } else {
 
-                    this.uniforms[uName] = new XEO.renderer.webgl.Uniform(stats.frame, gl, u.type, location);
+                    this.uniforms[uName] = new xeogl.renderer.webgl.Uniform(stats.frame, gl, u.type, location);
                 }
             }
         }
@@ -5907,14 +6402,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 location = gl.getAttribLocation(this.handle, a.name);
 
-                this.attributes[a.name] = new XEO.renderer.webgl.Attribute(gl, location);
+                this.attributes[a.name] = new xeogl.renderer.webgl.Attribute(gl, location);
             }
         }
 
         this.allocated = true;
     };
 
-    XEO.renderer.webgl.Program.prototype.bind = function () {
+    xeogl.renderer.webgl.Program.prototype.bind = function () {
 
         if (!this.allocated) {
             return;
@@ -5923,7 +6418,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this.gl.useProgram(this.handle);
     };
 
-    XEO.renderer.webgl.Program.prototype.setUniform = function (name, value) {
+    xeogl.renderer.webgl.Program.prototype.setUniform = function (name, value) {
 
         if (!this.allocated) {
             return;
@@ -5936,7 +6431,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         }
     };
 
-    XEO.renderer.webgl.Program.prototype.getUniform = function (name) {
+    xeogl.renderer.webgl.Program.prototype.getUniform = function (name) {
 
         if (!this.allocated) {
             return;
@@ -5945,7 +6440,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         return this.uniforms[name];
     };
 
-    XEO.renderer.webgl.Program.prototype.getAttribute = function (name) {
+    xeogl.renderer.webgl.Program.prototype.getAttribute = function (name) {
 
         if (!this.allocated) {
             return;
@@ -5954,7 +6449,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         return this.attributes[name];
     };
 
-    XEO.renderer.webgl.Program.prototype.bindTexture = function (name, texture, unit) {
+    xeogl.renderer.webgl.Program.prototype.bindTexture = function (name, texture, unit) {
 
         if (!this.allocated) {
             return false;
@@ -5970,7 +6465,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         }
     };
 
-    XEO.renderer.webgl.Program.prototype.destroy = function () {
+    xeogl.renderer.webgl.Program.prototype.destroy = function () {
 
         if (!this.allocated) {
             return;
@@ -5993,7 +6488,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.webgl.RenderBuffer = function (canvas, gl, options) {
+    xeogl.renderer.webgl.RenderBuffer = function (canvas, gl, options) {
 
         options = options || {};
 
@@ -6035,14 +6530,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      *
      * @param size {Array of Number} Two-element size vector
      */
-    XEO.renderer.webgl.RenderBuffer.prototype.setSize = function (size) {
+    xeogl.renderer.webgl.RenderBuffer.prototype.setSize = function (size) {
         this.size = size;
     };
 
     /**
      * Called after WebGL context is restored.
      */
-    XEO.renderer.webgl.RenderBuffer.prototype.webglRestored = function (gl) {
+    xeogl.renderer.webgl.RenderBuffer.prototype.webglRestored = function (gl) {
         this.gl = gl;
         this.buffer = null;
         this.allocated = false;
@@ -6052,7 +6547,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Binds this buffer
      */
-    XEO.renderer.webgl.RenderBuffer.prototype.bind = function () {
+    xeogl.renderer.webgl.RenderBuffer.prototype.bind = function () {
 
         this._touch();
 
@@ -6065,7 +6560,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this.bound = true;
     };
 
-    XEO.renderer.webgl.RenderBuffer.prototype._touch = function () {
+    xeogl.renderer.webgl.RenderBuffer.prototype._touch = function () {
 
         var width;
         var height;
@@ -6175,7 +6670,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Clears this renderbuffer
      */
-    XEO.renderer.webgl.RenderBuffer.prototype.clear = function () {
+    xeogl.renderer.webgl.RenderBuffer.prototype.clear = function () {
         if (!this.bound) {
             throw "Render buffer not bound";
         }
@@ -6186,7 +6681,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Reads buffer pixel at given coordinates
      */
-    XEO.renderer.webgl.RenderBuffer.prototype.read = function (pickX, pickY) {
+    xeogl.renderer.webgl.RenderBuffer.prototype.read = function (pickX, pickY) {
         var x = pickX;
         var y = this.canvas.height - pickY;
         var pix = new Uint8Array(4);
@@ -6197,14 +6692,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Unbinds this renderbuffer
      */
-    XEO.renderer.webgl.RenderBuffer.prototype.unbind = function () {
+    xeogl.renderer.webgl.RenderBuffer.prototype.unbind = function () {
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
         this.bound = false;
     };
 
     /** Returns the texture
      */
-    XEO.renderer.webgl.RenderBuffer.prototype.getTexture = function () {
+    xeogl.renderer.webgl.RenderBuffer.prototype.getTexture = function () {
 
         var self = this;
 
@@ -6232,7 +6727,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     /** Destroys this buffer
      */
-    XEO.renderer.webgl.RenderBuffer.prototype.destroy = function () {
+    xeogl.renderer.webgl.RenderBuffer.prototype.destroy = function () {
 
         if (this.allocated) {
 
@@ -6251,7 +6746,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.webgl.Sampler = function (gl, location) {
+    xeogl.renderer.webgl.Sampler = function (gl, location) {
 
         this.bindTexture = function (texture, unit) {
 
@@ -6277,7 +6772,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param type gl.VERTEX_SHADER | gl.FRAGMENT_SHADER
      * @param source Source code for shader
      */
-    XEO.renderer.webgl.Shader = function (gl, type, source) {
+    xeogl.renderer.webgl.Shader = function (gl, type, source) {
 
         /**
          * True if this shader successfully allocated. When false,
@@ -6340,7 +6835,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.webgl.Texture2D = function (gl) {
+    xeogl.renderer.webgl.Texture2D = function (gl) {
 
         this.gl = gl;
 
@@ -6351,7 +6846,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this.allocated = true;
     };
 
-    XEO.renderer.webgl.Texture2D.prototype.setImage = function (image, props) {
+    xeogl.renderer.webgl.Texture2D.prototype.setImage = function (image, props) {
 
         var gl = this.gl;
 
@@ -6364,7 +6859,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         gl.bindTexture(this.target, null);
     };
 
-    XEO.renderer.webgl.Texture2D.prototype.setProps = function (props) {
+    xeogl.renderer.webgl.Texture2D.prototype.setProps = function (props) {
 
         var gl = this.gl;
 
@@ -6412,13 +6907,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         gl.bindTexture(this.target, null);
     };
 
-    XEO.renderer.webgl.Texture2D.prototype._getGLEnum = function (name, defaultVal) {
+    xeogl.renderer.webgl.Texture2D.prototype._getGLEnum = function (name, defaultVal) {
 
         if (name === undefined) {
             return defaultVal;
         }
 
-        var glName = XEO.renderer.webgl.enums[name];
+        var glName = xeogl.renderer.webgl.enums[name];
 
         if (glName === undefined) {
             return defaultVal;
@@ -6428,7 +6923,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     };
 
 
-    XEO.renderer.webgl.Texture2D.prototype.bind = function (unit) {
+    xeogl.renderer.webgl.Texture2D.prototype.bind = function (unit) {
 
         if (!this.allocated) {
             return;
@@ -6448,7 +6943,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         return false;
     };
 
-    XEO.renderer.webgl.Texture2D.prototype.unbind = function (unit) {
+    xeogl.renderer.webgl.Texture2D.prototype.unbind = function (unit) {
 
         if (!this.allocated) {
             return;
@@ -6464,7 +6959,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         }
     };
 
-    XEO.renderer.webgl.Texture2D.prototype.destroy = function () {
+    xeogl.renderer.webgl.Texture2D.prototype.destroy = function () {
 
         if (!this.allocated) {
             return;
@@ -6479,7 +6974,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     };
 
 
-    XEO.renderer.webgl.clampImageSize = function (image, numPixels) {
+    xeogl.renderer.webgl.clampImageSize = function (image, numPixels) {
 
         var n = image.width * image.height;
 
@@ -6492,8 +6987,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             var canvas = document.createElement("canvas");
 
-            canvas.width = XEO.renderer.webgl.nextHighestPowerOfTwo(width);
-            canvas.height = XEO.renderer.webgl.nextHighestPowerOfTwo(height);
+            canvas.width = xeogl.renderer.webgl.nextHighestPowerOfTwo(width);
+            canvas.height = xeogl.renderer.webgl.nextHighestPowerOfTwo(height);
 
             var ctx = canvas.getContext("2d");
 
@@ -6505,14 +7000,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         return image;
     };
 
-    XEO.renderer.webgl.ensureImageSizePowerOfTwo = function (image) {
+    xeogl.renderer.webgl.ensureImageSizePowerOfTwo = function (image) {
 
-        if (!XEO.renderer.webgl.isPowerOfTwo(image.width) || !XEO.renderer.webgl.isPowerOfTwo(image.height)) {
+        if (!xeogl.renderer.webgl.isPowerOfTwo(image.width) || !xeogl.renderer.webgl.isPowerOfTwo(image.height)) {
 
             var canvas = document.createElement("canvas");
 
-            canvas.width = XEO.renderer.webgl.nextHighestPowerOfTwo(image.width);
-            canvas.height = XEO.renderer.webgl.nextHighestPowerOfTwo(image.height);
+            canvas.width = xeogl.renderer.webgl.nextHighestPowerOfTwo(image.width);
+            canvas.height = xeogl.renderer.webgl.nextHighestPowerOfTwo(image.height);
 
             var ctx = canvas.getContext("2d");
 
@@ -6525,11 +7020,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         return image;
     };
 
-    XEO.renderer.webgl.isPowerOfTwo = function (x) {
+    xeogl.renderer.webgl.isPowerOfTwo = function (x) {
         return (x & (x - 1)) === 0;
     };
 
-    XEO.renderer.webgl.nextHighestPowerOfTwo = function (x) {
+    xeogl.renderer.webgl.nextHighestPowerOfTwo = function (x) {
         --x;
         for (var i = 1; i < 32; i <<= 1) {
             x = x | x >> i;
@@ -6542,7 +7037,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.webgl.Uniform = function (renderStats, gl, type, location) {
+    xeogl.renderer.webgl.Uniform = function (renderStats, gl, type, location) {
 
         var func = null;
         var value = null;
@@ -6749,7 +7244,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer = XEO.renderer || {};
+    xeogl.renderer = xeogl.renderer || {};
 
 
     /**
@@ -6757,12 +7252,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Base class for Renderer states.
 
      renderer.State
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      */
-    XEO.renderer.State = Class.extend({
+    xeogl.renderer.State = Class.extend({
 
         __init: function (cfg) {
 
@@ -6782,7 +7277,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         }
     });
 
-    //XEO.renderer.State.prototype.destroy = function () {
+    //xeogl.renderer.State.prototype.destroy = function () {
     //    states.removeItem(this.id);
     //};
 
@@ -6791,15 +7286,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Visibility state.
 
      renderer.Visibility
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @param cfg.visible {Boolean} Flag which controls visibility of the associated render objects.
      @extends renderer.State
      */
-    XEO.renderer.Visibility = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Visibility = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6807,15 +7302,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Culling state.
 
      renderer.Cull
-     @module XEO
+     @module xeogl
 
      @constructor
      @param cfg {*} Configs
      @param cfg.culled {Boolean} Flag which controls cull state of the associated render objects.
      @extends renderer.State
      */
-    XEO.renderer.Cull = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Cull = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6823,7 +7318,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Modes state.
 
      renderer.Mode
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
@@ -6833,8 +7328,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      @param cfg.frontFace {Boolean} Flag which determines winding order of backfaces on the associated render objects - true == "ccw", false == "cw".
      @extends renderer.State
      */
-    XEO.renderer.Modes = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Modes = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6842,15 +7337,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Layer state.
 
      renderer.Layer
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @param cfg.priority {Number} Layer render priority.
      @extends renderer.State
      */
-    XEO.renderer.Layer = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Layer = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6858,15 +7353,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Stage state.
 
      renderer.Stage
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @param cfg.priority {Number} Stage render priority.
      @extends renderer.State
      */
-    XEO.renderer.Stage = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Stage = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6874,7 +7369,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Depth buffer state.
 
      renderer.DepthBuf
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
@@ -6882,8 +7377,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      @param cfg.depthBuf {String} Depth function
      @extends renderer.State
      */
-    XEO.renderer.DepthBuf = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.DepthBuf = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6891,7 +7386,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Color buffer state.
 
      renderer.ColorBuf
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
@@ -6899,8 +7394,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      @param cfg.colorMask {Array of String} The color mask
      @extends renderer.State
      */
-    XEO.renderer.ColorBuf = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.ColorBuf = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6908,15 +7403,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Renderer lights state.
 
      renderer.Lights
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @param cfg.colorMask {Array of Object} The light sources
      @extends renderer.State
      */
-    XEO.renderer.Lights = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Lights = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6924,14 +7419,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      PhongMaterial state.
 
      renderer.PhongMaterial
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.PhongMaterial = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.PhongMaterial = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6939,14 +7434,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Environmental reflection state.
 
      renderer.Reflect
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Reflect = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Reflect = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6954,14 +7449,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Transform state.
 
      renderer.Transform
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Transform = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Transform = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6969,14 +7464,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Billboard transform state.
 
      renderer.Billboard
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Billboard = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Billboard = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -6984,14 +7479,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Stationary transform state.
 
      renderer.Stationary
-     @module XEO
+     @module xeogl
 
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Stationary = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Stationary = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
 
@@ -7000,32 +7495,32 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Render target state.
 
      renderer.RenderTarget
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.RenderTarget = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.RenderTarget = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
-    XEO.renderer.RenderTarget.DEPTH = 0;
-    XEO.renderer.RenderTarget.COLOR = 1;
+    xeogl.renderer.RenderTarget.DEPTH = 0;
+    xeogl.renderer.RenderTarget.COLOR = 1;
 
     /**
 
      Clip planes state.
 
      renderer.Clips
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Clips = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Clips = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -7033,14 +7528,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Renderer morph targets state.
 
      renderer.MorphTargets
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.MorphTargets = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.MorphTargets = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -7048,14 +7543,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Shader state.
 
      renderer.Shader
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Shader = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Shader = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -7063,14 +7558,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Shader parameters state.
 
      renderer.ShaderParams
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.ShaderParams = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.ShaderParams = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -7078,14 +7573,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Texture state.
 
      renderer.Texture
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Texture = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Texture = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
 
@@ -7094,14 +7589,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Fresnel state.
 
      renderer.Fresnel
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Fresnel = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Fresnel = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
 
@@ -7110,14 +7605,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Geometry state.
 
      renderer.Geometry
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.Geometry = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Geometry = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -7125,14 +7620,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Program state.
 
      renderer.ProgramState
-     @module XEO
+     @module xeogl
      
      @constructor
      @param cfg {*} Configs
      @extends renderer.State
      */
-    XEO.renderer.ProgramState = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.ProgramState = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 
     /**
@@ -7140,15 +7635,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      Viewport state.
 
      renderer.Viewport
-     @module XEO
+     @module xeogl
 
      @constructor
      @param cfg {*} Configs
      @param cfg.boundary {Float32Array} Canvas-space viewport extents.
      @extends renderer.State
      */
-    XEO.renderer.Viewport = XEO.renderer.State.extend({
-        _ids: new XEO.utils.Map({})
+    xeogl.renderer.Viewport = xeogl.renderer.State.extend({
+        _ids: new xeogl.utils.Map({})
     });
 })();
 
@@ -7158,9 +7653,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     "use strict";
 
     /**
-     * An object within a XEO.renderer.Renderer
+     * An object within a xeogl.renderer.Renderer
      */
-    XEO.renderer.Object = function (id) {
+    xeogl.renderer.Object = function (id) {
 
         /**
          * ID for this object, unique among all objects in the Renderer
@@ -7189,22 +7684,22 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this.program = null;
 
         /**
-         * State for the XEO.renderer.Stage that this object was compiled from, used for (re)computing #sortKey and visibility cull
+         * State for the xeogl.renderer.Stage that this object was compiled from, used for (re)computing #sortKey and visibility cull
          */
         this.stage = null;
 
         /**
-         * State for the XEO.renderer.Modes that this object was compiled from, used for visibility cull
+         * State for the xeogl.renderer.Modes that this object was compiled from, used for visibility cull
          */
         this.modes = null;
 
         /**
-         * State for the XEO.renderer.Layer that this object was compiled from, used for (re)computing #sortKey and visibility cull
+         * State for the xeogl.renderer.Layer that this object was compiled from, used for (re)computing #sortKey and visibility cull
          */
         this.layer = null;
 
         /**
-         * State for the XEO.renderer.Material that this object was compiled from, used for (re)computing #sortKey
+         * State for the xeogl.renderer.Material that this object was compiled from, used for (re)computing #sortKey
          */
         this.material = null;
 
@@ -7217,7 +7712,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ObjectFactory = function () {
+    xeogl.renderer.ObjectFactory = function () {
 
         var freeObjects = [];
         var numFreeObjects = 0;
@@ -7237,7 +7732,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 return object;
             }
 
-            return new XEO.renderer.Object(id);
+            return new xeogl.renderer.Object(id);
         };
 
         this.put = function (object) {
@@ -7252,17 +7747,17 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer = XEO.renderer || {};
+    xeogl.renderer = xeogl.renderer || {};
 
     /**
      *  Vertex and fragment shaders for pick and draw
      *
      * @param {*} stats Collects runtime statistics
-     * @param {String} hash Hash code which uniquely identifies the capabilities of the program, computed from hashes on the {@link Scene_Core}s that the {@link XEO.renderer.ProgramSource} composed to render
-     * @param {XEO.renderer.ProgramSource} source Sourcecode from which the the program is compiled in {@link #build}
+     * @param {String} hash Hash code which uniquely identifies the capabilities of the program, computed from hashes on the {@link Scene_Core}s that the {@link xeogl.renderer.ProgramSource} composed to render
+     * @param {xeogl.renderer.ProgramSource} source Sourcecode from which the the program is compiled in {@link #build}
      * @param {WebGLRenderingContext} gl WebGL context
      */
-    XEO.renderer.Program = function (stats, hash, source, gl) {
+    xeogl.renderer.Program = function (stats, hash, source, gl) {
 
         this.stats = stats;
 
@@ -7346,7 +7841,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      *  Creates the render and pick programs.
      * This is also re-called to re-create them after WebGL context loss.
      */
-    XEO.renderer.Program.prototype.build = function (gl) {
+    xeogl.renderer.Program.prototype.build = function (gl) {
 
         this.gl = gl;
 
@@ -7356,9 +7851,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this.validated = false;
         this.errorLog = null;
 
-        this.draw = new XEO.renderer.webgl.Program(this.stats, gl, this.source.vertexDraw, this.source.fragmentDraw);
-        this.pickObject = new XEO.renderer.webgl.Program(this.stats, gl, this.source.vertexPickObject, this.source.fragmentPickObject);
-        this.pickPrimitive = new XEO.renderer.webgl.Program(this.stats, gl, this.source.vertexPickPrimitive, this.source.fragmentPickPrimitive);
+        this.draw = new xeogl.renderer.webgl.Program(this.stats, gl, this.source.vertexDraw, this.source.fragmentDraw);
+        this.pickObject = new xeogl.renderer.webgl.Program(this.stats, gl, this.source.vertexPickObject, this.source.fragmentPickObject);
+        this.pickPrimitive = new xeogl.renderer.webgl.Program(this.stats, gl, this.source.vertexPickPrimitive, this.source.fragmentPickPrimitive);
 
         if (!this.draw.allocated) {
             this.errorLog = ["Draw program failed to allocate"].concat(this.draw.errorLog);
@@ -7435,11 +7930,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     "use strict";
 
     /**
-     *  Manages {@link XEO.renderer.ProgramState} instances.
+     *  Manages {@link xeogl.renderer.ProgramState} instances.
      * @param stats Collects runtime statistics
      * @param gl WebGL context
      */
-    XEO.renderer.ProgramFactory = function (stats, gl) {
+    xeogl.renderer.ProgramFactory = function (stats, gl) {
 
         this.stats = stats;
 
@@ -7453,7 +7948,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * Get a program that fits the given set of states.
      * Reuses any free program in the pool that matches the given hash.
      */
-    XEO.renderer.ProgramFactory.prototype.get = function (hash, states) {
+    xeogl.renderer.ProgramFactory.prototype.get = function (hash, states) {
 
         var programState = this._programStates[hash];
 
@@ -7463,11 +7958,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             // Create it and map it to the hash
 
-            var source = XEO.renderer.ProgramSourceFactory.getSource(hash, states);
+            var source = xeogl.renderer.ProgramSourceFactory.getSource(hash, states);
 
-            var program = new XEO.renderer.Program(this.stats, hash, source, this._gl);
+            var program = new xeogl.renderer.Program(this.stats, hash, source, this._gl);
 
-            programState = new XEO.renderer.ProgramState({
+            programState = new xeogl.renderer.ProgramState({
                 program: program,
                 useCount: 0
             });
@@ -7485,7 +7980,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Release a program back to the pool.
      */
-    XEO.renderer.ProgramFactory.prototype.put = function (programState) {
+    xeogl.renderer.ProgramFactory.prototype.put = function (programState) {
 
         if (--programState.useCount <= 0) {
 
@@ -7495,7 +7990,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             program.pickObject.destroy();
             program.pickPrimitive.destroy();
 
-            XEO.renderer.ProgramSourceFactory.putSource(program.hash);
+            xeogl.renderer.ProgramSourceFactory.putSource(program.hash);
 
             delete this._programStates[program.hash];
 
@@ -7506,7 +8001,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Rebuild all programs in the pool after WebGL context was lost and restored.
      */
-    XEO.renderer.ProgramFactory.prototype.webglRestored = function (gl) {
+    xeogl.renderer.ProgramFactory.prototype.webglRestored = function (gl) {
 
         this._gl = gl;
 
@@ -7518,7 +8013,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         }
     };
 
-    XEO.renderer.ProgramFactory.prototype.destroy = function () {
+    xeogl.renderer.ProgramFactory.prototype.destroy = function () {
     };
 
 })();
@@ -7527,7 +8022,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     "use strict";
 
     /**
-     *  Source code for pick and draw shader programs, to be compiled into one or more {@link XEO.renderer.Program}s
+     *  Source code for pick and draw shader programs, to be compiled into one or more {@link xeogl.renderer.Program}s
      *
      * @param {String} hash Hash code identifying the rendering capabilities of the programs
      * @param {String} vertexPickObject Vertex shader source for object picking.
@@ -7537,13 +8032,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param {String} vertexDraw Vertex shader source for drawing.
      * @param {String} fragmentDraw Fragment shader source for drawing.
      */
-    XEO.renderer.ProgramSource = function (hash,
+    xeogl.renderer.ProgramSource = function (hash,
                                            vertexPickObject, fragmentPickObject,
                                            vertexPickPrimitive, fragmentPickPrimitive,
                                            vertexDraw, fragmentDraw) {
 
         /**
-         * Hash code identifying the capabilities of the {@link XEO.renderer.Program} that is compiled from this source
+         * Hash code identifying the capabilities of the {@link xeogl.renderer.Program} that is compiled from this source
          * @type String
          */
         this.hash = hash;
@@ -7585,7 +8080,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         this.fragmentDraw = fragmentDraw;
 
         /**
-         * Count of {@link XEO.renderer.Program}s compiled from this program source code
+         * Count of {@link xeogl.renderer.Program}s compiled from this program source code
          * @type Number
          */
         this.useCount = 0;
@@ -7598,9 +8093,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     "use strict";
 
     /**
-     *  Manages creation, sharing and recycle of {@link XEO.renderer.ProgramSource} instances
+     *  Manages creation, sharing and recycle of {@link xeogl.renderer.ProgramSource} instances
      */
-    XEO.renderer.ProgramSourceFactory = new (function () {
+    xeogl.renderer.ProgramSourceFactory = new (function () {
 
         var cache = {}; // Caches source code against hashes
 
@@ -7647,7 +8142,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             reflectivityFresnel = states.material.reflectivityFresnel;
             emissiveFresnel = states.material.emissiveFresnel;
 
-            source = new XEO.renderer.ProgramSource(
+            source = new xeogl.renderer.ProgramSource(
                 hash,
                 vertexPickObject(),
                 fragmentPickObject(),
@@ -8582,21 +9077,21 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     "use strict";
 
     /**
-     * A chunk of WebGL state changes to render a XEO.renderer.State.
+     * A chunk of WebGL state changes to render a xeogl.renderer.State.
      *
      * @private
      */
-    XEO.renderer.Chunk = function () {
+    xeogl.renderer.Chunk = function () {
     };
 
     /**
      * Initialises the chunk.
      *
      * @param {Number} id Chunk ID
-     * @param {XEO.renderer.Program} program Program to render this chunk
-     * @param {XEO.renderer.State} state The state rendered by this chunk
+     * @param {xeogl.renderer.Program} program Program to render this chunk
+     * @param {xeogl.renderer.State} state The state rendered by this chunk
      */
-    XEO.renderer.Chunk.prototype.init = function (id, program, state) {
+    xeogl.renderer.Chunk.prototype.init = function (id, program, state) {
 
         this.id = id;
 
@@ -8617,16 +9112,16 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     "use strict";
 
     /**
-     *  Manages creation, reuse and destruction of {@link XEO.renderer.Chunk}s.
+     *  Manages creation, reuse and destruction of {@link xeogl.renderer.Chunk}s.
      */
-    XEO.renderer.ChunkFactory = function () {
-        this.types = XEO.renderer.ChunkFactory.types;
+    xeogl.renderer.ChunkFactory = function () {
+        this.types = xeogl.renderer.ChunkFactory.types;
     };
 
     /**
-     * Sub-classes of {@link XEO.renderer.Chunk} provided by this factory
+     * Sub-classes of {@link xeogl.renderer.Chunk} provided by this factory
      */
-    XEO.renderer.ChunkFactory.types = {};   // Supported chunk classes, installed by #createChunkType
+    xeogl.renderer.ChunkFactory.types = {};   // Supported chunk classes, installed by #createChunkType
 
     /**
      * Creates a chunk type.
@@ -8637,13 +9132,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @param params.pickObject
      * @param params.pickPrimitive
      */
-    XEO.renderer.ChunkFactory.createChunkType = function (params) {
+    xeogl.renderer.ChunkFactory.createChunkType = function (params) {
 
         if (!params.type) {
             throw "'type' expected in params";
         }
 
-        var supa = XEO.renderer.Chunk;
+        var supa = xeogl.renderer.Chunk;
 
         var chunkClass = function () { // Create the class
             this.useCount = 0;
@@ -8653,9 +9148,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         chunkClass.prototype = new supa();              // Inherit from base class
         chunkClass.prototype.constructor = chunkClass;
 
-        XEO._apply(params, chunkClass.prototype);   // Augment subclass
+        xeogl._apply(params, chunkClass.prototype);   // Augment subclass
 
-        XEO.renderer.ChunkFactory.types[params.type] = {
+        xeogl.renderer.ChunkFactory.types[params.type] = {
             constructor: chunkClass,
             chunks: {},
             freeChunks: [],
@@ -8668,7 +9163,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Gets a chunk from this factory.
      */
-    XEO.renderer.ChunkFactory.prototype.getChunk = function (id, type, program, state) {
+    xeogl.renderer.ChunkFactory.prototype.getChunk = function (id, type, program, state) {
 
         var chunkType = this.types[type];
 
@@ -8712,9 +9207,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Releases a chunk back to this factory.
      *
-     * @param {XEO.renderer.Chunk} chunk Chunk to release
+     * @param {xeogl.renderer.Chunk} chunk Chunk to release
      */
-    XEO.renderer.ChunkFactory.prototype.putChunk = function (chunk) {
+    xeogl.renderer.ChunkFactory.prototype.putChunk = function (chunk) {
 
         if (chunk.useCount === 0) { // In case of excess puts
             return;
@@ -8735,7 +9230,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Restores the chunks in this factory after a WebGL context recovery.
      */
-    XEO.renderer.ChunkFactory.prototype.webglRestored = function (gl) {
+    xeogl.renderer.ChunkFactory.prototype.webglRestored = function (gl) {
 
         var types = this.types;
         var chunkType;
@@ -8773,7 +9268,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      * Create display state chunk type for draw and pick render of user clipping planes
      */
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "clips",
 
@@ -8852,7 +9347,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      *
      */
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "colorBuf",
 
@@ -8895,7 +9390,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "cubemap",
 
@@ -8943,7 +9438,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      *
      */
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "depthBuf",
 
@@ -8995,11 +9490,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "draw",
 
-        // As we apply a list of state chunks in a {@link XEO.renderer.Renderer},
+        // As we apply a list of state chunks in a {@link xeogl.renderer.Renderer},
         // we track the ID of each chunk in order to avoid redundantly re-applying
         // the same chunk. We don't want that for draw chunks however, because
         // they contain drawElements calls, which we need to do for each object.
@@ -9063,7 +9558,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      *  Create display state chunk type for draw and pick render of geometry
      */
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "geometry",
 
@@ -9157,7 +9652,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "lights",
 
@@ -9262,7 +9757,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "modelTransform",
 
@@ -9299,7 +9794,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "modes",
 
@@ -9425,7 +9920,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "phongMaterial",
 
@@ -9764,7 +10259,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "program",
 
@@ -9792,7 +10287,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "projTransform",
 
@@ -9828,7 +10323,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      *   Create display state chunk type for draw and pick render of renderTarget
      */
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "renderTarget",
 
@@ -9885,7 +10380,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "shader",
 
@@ -9910,7 +10405,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "shaderParams",
 
@@ -9936,7 +10431,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "viewTransform",
 
@@ -9976,7 +10471,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     /**
      *
      */
-    XEO.renderer.ChunkFactory.createChunkType({
+    xeogl.renderer.ChunkFactory.createChunkType({
 
         type: "viewport",
 
@@ -10003,52 +10498,50 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 })();
 ;/**
 
- **Component** is the base class for all xeoEngine components.
+ **Component** is the base class for all xeogl components.
 
  ## Contents
 
- <Ul>
- <li><a href="#ids">Component IDs</a></li>
- <li><a href="#componentProps">Properties</a></li>
- <li><a href="#metadata">Metadata</a></li>
- <li><a href="#logging">Logging</a></li>
- <li><a href="#destruction">Destruction</a></li>
- </ul>
+ * <a href="#ids">Component IDs</a>
+ * <a href="#componentProps">Properties</a>
+ * <a href="#metadata">Metadata</a>
+ * <a href="#logging">Logging</a>
+ * <a href="#destruction">Destruction</a>
 
  ## <a name="ids">Component IDs</a>
 
- Every Component has an ID that's unique within the parent {{#crossLink "Scene"}}{{/crossLink}}. xeoEngine generates
+ Every Component has an ID that's unique within the parent {{#crossLink "Scene"}}{{/crossLink}}. xeogl generates
  the IDs automatically by default, however you can also specify them yourself. In the example below, we're creating a
  scene comprised of {{#crossLink "Scene"}}{{/crossLink}}, {{#crossLink "Material"}}{{/crossLink}}, {{#crossLink "Geometry"}}{{/crossLink}} and
- {{#crossLink "Entity"}}{{/crossLink}} components, while letting xeoEngine generate its own ID for
+ {{#crossLink "Entity"}}{{/crossLink}} components, while letting xeogl generate its own ID for
  the {{#crossLink "Geometry"}}{{/crossLink}}:
 
  ````javascript
  // The Scene is a Component too
- var scene = new XEO.Scene({
+ var scene = new xeogl.Scene({
     id: "myScene"
-});
+ });
 
- var material = new XEO.PhongMaterial(scene, {
+ var material = new xeogl.PhongMaterial(scene, {
     id: "myMaterial"
-});
+ });
 
- var geometry = new XEO.Geometry(scene, {
+ var geometry = new xeogl.Geometry(scene, {
     id: "myGeometry"
-});
+ });
 
- // Let xeoEngine automatically generate the ID for our Entity
- var entity = new XEO.Entity(scene, {
+ // Let xeogl automatically generate the ID for our Entity
+ var entity = new xeogl.Entity(scene, {
     material: material,
     geometry: geometry
-});
+ });
  ````
 
  We can then find those components like this:
 
  ````javascript
  // Find the Scene
- var theScene = XEO.scenes["myScene"];
+ var theScene = xeogl.scenes["myScene"];
 
  // Find the Material
  var theMaterial = theScene.components["myMaterial"];
@@ -10056,7 +10549,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  ## <a name="componentProps">Properties</a>
 
- Almost every property on a xeoEngine Component fires a change event when you update it. For example, we can subscribe
+ Almost every property on a xeogl Component fires a change event when you update it. For example, we can subscribe
  to the {{#crossLink "PhongMaterial/diffuse:event"}}{{/crossLink}} event that a
  {{#crossLink "Material"}}{{/crossLink}} fires when its {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}}
  property is updated, like so:
@@ -10083,14 +10576,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  // Bind a change callback to the Entity's Material
  entity1.on("material", function(material) {
     console.log("Entity's Material has changed to: " + material.id);
-});
+ });
 
  // Now replace that Material with another
- entity1.material = new XEO.PhongMaterial({
+ entity1.material = new xeogl.PhongMaterial({
     id: "myOtherMaterial",
     diffuse: [ 0.3, 0.3, 0.6 ]
     //..
-});
+ });
  ````
 
  ## <a name="metadata">Metadata</a>
@@ -10101,17 +10594,17 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  ````javascript
  // Scene with authoring metadata
- var scene = new XEO.Scene({
+ var scene = new xeogl.Scene({
     id: "myScene",
     meta: {
         title: "My awesome 3D scene",
         author: "@xeolabs",
         date: "February 13 2015"
     }
-});
+ });
 
  // Material with descriptive metadata
- var material = new XEO.PhongMaterial(scene, {
+ var material = new xeogl.PhongMaterial(scene, {
     id: "myMaterial",
     diffuse: [1, 0, 0],
     meta: {
@@ -10119,7 +10612,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         version: "0.1",
         foo: "bar"
     }
-});
+ });
  ````
 
  As with all properties, you can subscribe and change the metadata like this:
@@ -10128,14 +10621,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  // Subscribe to changes to the Material's metadata
  material.on("meta", function(value) {
     console.log("Metadata changed: " + JSON.stringify(value));
-});
+ });
 
  // Change the Material's metadata, firing our change handler
  material.meta = {
     description: "Bright red color with no textures",
     version: "0.2",
     foo: "baz"
-};
+ };
  ````
 
  ## <a name="logging">Logging</a>
@@ -10163,7 +10656,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ````javascript
  material.on("destroyed", function() {
     this.log("Component was destroyed: " + this.id);
-});
+ });
  ````
 
  Or get notification of destruction of any Component within its {{#crossLink "Scene"}}{{/crossLink}}, indiscriminately:
@@ -10171,7 +10664,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ````javascript
  scene.on("componentDestroyed", function(component) {
     this.log("Component was destroyed: " + component.id);
-});
+ });
  ````
 
  Then destroy a component like this:
@@ -10185,20 +10678,20 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  will then automatically link to the {{#crossLink "Scene"}}Scene's{{/crossLink}} default {{#crossLink "Scene/material:property"}}{{/crossLink}}.
 
  @class Component
- @module XEO
+ @module xeogl
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Component
  within the default {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
  @param [cfg] {*} DepthBuf configuration
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Component.
- @param [cfg.isDefault] {Boolean} Set true when this is one of xeoEngine's default components.
+ @param [cfg.isDefault] {Boolean} Set true when this is one of xeogl's default components.
  */
 (function () {
 
     "use strict";
 
-    XEO.Component = Class.extend({
+    xeogl.Component = Class.extend({
 
         __init: function () {
 
@@ -10218,7 +10711,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              */
             this.scene = null;
 
-            if (this.type === "XEO.Scene") {
+            if (this.type === "xeogl.Scene") {
 
                 this.scene = this;
 
@@ -10230,7 +10723,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 if (arg1) {
 
-                    if (arg1.type === "XEO.Scene") {
+                    if (arg1.type === "xeogl.Scene") {
 
                         this.scene = arg1;
 
@@ -10240,17 +10733,17 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     } else {
 
-                        // Create this component within the default XEO Scene
+                        // Create this component within the default xeogl Scene
 
-                        this.scene = XEO.scene;
+                        this.scene = xeogl.scene;
 
                         cfg = arg1;
                     }
                 } else {
 
-                    // Create this component within the default XEO Scene
+                    // Create this component within the default xeogl Scene
 
-                    this.scene = XEO.scene;
+                    this.scene = xeogl.scene;
                 }
 
                 this._renderer = this.scene._renderer;
@@ -10307,7 +10800,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             // Components created with #create
             this._sharedComponents = null; // Lazy-instantiated map
 
-            if (this.scene && this.type !== "XEO.Scene") { // HACK: Don't add scene to itself
+            if (this.scene && this.type !== "xeogl.Scene") { // HACK: Don't add scene to itself
 
                 // Register this component on its scene
                 // Assigns this component an automatic ID if not yet assigned
@@ -10330,13 +10823,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          This is used when <a href="Scene.html#savingAndLoading">loading Scenes from JSON</a>, and is included in the JSON
          representation of this Component, so that this class may be instantiated when loading it from the JSON representation.
 
-         For example: "XEO.AmbientLight", "XEO.ColorTarget", "XEO.Lights" etc.
+         For example: "xeogl.AmbientLight", "xeogl.ColorTarget", "xeogl.Lights" etc.
 
          @property type
          @type String
          @final
          */
-        type: "XEO.Component",
+        type: "xeogl.Component",
 
         /**
          An array of strings that indicates the chain of super-types within this component's inheritance hierarchy.
@@ -10346,7 +10839,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          then this property will have the value:
 
          ````json
-         ["XEO.Component", "XEO.Transform"]
+         ["xeogl.Component", "xeogl.Transform"]
          ````
 
          Note that the chain is ordered downwards in the hierarchy, ie. from super-class down towards sub-class.
@@ -10369,23 +10862,23 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          #### Examples:
 
          ````javascript
-         var myRotate = new XEO.Rotate({ ... });
+         var myRotate = new xeogl.Rotate({ ... });
 
-         myRotate.isType(XEO.Component); // Returns true for all XEO components
-         myRotate.isType("XEO.Component"); // Returns true for all XEO components
-         myRotate.isType(XEO.Rotate); // Returns true
-         myRotate.isType(XEO.Transform); // Returns true
-         myRotate.isType("XEO.Transform"); // Returns true
-         myRotate.isType(XEO.Entity); // Returns false, because XEO.Rotate does not (even indirectly) extend XEO.Entity
+         myRotate.isType(xeogl.Component); // Returns true for all xeogl components
+         myRotate.isType("xeogl.Component"); // Returns true for all xeogl components
+         myRotate.isType(xeogl.Rotate); // Returns true
+         myRotate.isType(xeogl.Transform); // Returns true
+         myRotate.isType("xeogl.Transform"); // Returns true
+         myRotate.isType(xeogl.Entity); // Returns false, because xeogl.Rotate does not (even indirectly) extend xeogl.Entity
          ````
 
          @method isType
-         @param  {String|Function} type Component type to compare with, eg "XEO.PhongMaterial", or a XEO component constructor.
+         @param  {String|Function} type Component type to compare with, eg "xeogl.PhongMaterial", or a xeogl component constructor.
          @returns {Boolean} True if this component is of given type or is subclass of the given type.
          */
         isType: function (type) {
 
-            if (!XEO._isString(type)) {
+            if (!xeogl._isString(type)) {
 
                 // Handle constructor arg
 
@@ -10395,23 +10888,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 }
             }
 
-            if (this.type === type) {
-                return true;
-            }
-
-            var superTypes = this.superTypes;
-
-            if (!superTypes) {
-                return false;
-            }
-
-            for (var i = superTypes.length - 1; i >= 0; i--) {
-                if (superTypes[i] === type) {
-                    return true;
-                }
-            }
-
-            return false;
+            return xeogl._isComponentType(this.type, type);
         },
 
         /**
@@ -10425,8 +10902,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         /**
          * Fires an event on this component.
          *
-         * Notifies existing subscribers to the event, retains the event to give to
-         * any subsequent notifications on that location as they are made.
+         * Notifies existing subscribers to the event, optionally retains the event to give to
+         * any subsequent notifications on the event as they are made.
          *
          * @method fire
          * @param {String} event The event type name
@@ -10488,7 +10965,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 this._events = {};
             }
             if (!this._handleMap) {
-                this._handleMap = new XEO.utils.Map(); // Subscription handle pool
+                this._handleMap = new xeogl.utils.Map(); // Subscription handle pool
             }
             if (!this._handleEvents) {
                 this._handleEvents = {};
@@ -10581,8 +11058,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         },
 
         _message: function (message) {
-            // return " [" + (this.type.indexOf("XEO.") > -1 ? this.type.substring(4) : this.type) + " " + XEO._inQuotes(this.id) + "]: " + message;
-            return " [" + this.type + " " + XEO._inQuotes(this.id) + "]: " + message;
+            // return " [" + (this.type.indexOf("xeogl.") > -1 ? this.type.substring(4) : this.type) + " " + xeogl._inQuotes(this.id) + "]: " + message;
+            return " [" + this.type + " " + xeogl._inQuotes(this.id) + "]: " + message;
         },
 
         /**
@@ -10654,7 +11131,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             delete json.id;
 
-            return new this.constructor(this.scene, XEO._apply(cfg, json));
+            return new this.constructor(this.scene, xeogl._apply(cfg, json));
         },
 
         /**
@@ -10668,6 +11145,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * @param {String} [params.type] Optional expected type of base type of the child; when supplied, will
          * cause an exception if the given child is not the same type or a subtype of this.
          * @param {Boolean} [params.sceneDefault=false]
+         * @param {Boolean} [params.sceneSingleton=false]
          * @param {Function} [params.onAttached] Optional callback called when component attached
          * @param {Function} [params.onAttached.callback] Callback function
          * @param {Function} [params.onAttached.scope] Optional scope for callback
@@ -10689,52 +11167,103 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             var component = params.component;
             var sceneDefault = params.sceneDefault;
+            var sceneSingleton = params.sceneSingleton;
             var type = params.type;
             var on = params.on;
             var recompiles = params.recompiles !== false;
 
-            if (component && XEO._isNumeric(component) || XEO._isString(component)) {
+            // True when child given as config object, where parent manages its instantiation and destruction
+            var managingLifecycle = false;
 
-                // Component ID given
-                // Both numeric and string IDs are supported
+            if (component) {
 
-                var id = component;
+                if (xeogl._isNumeric(component) || xeogl._isString(component)) {
 
-                component = this.scene.components[id];
+                    // Component ID given
+                    // Both numeric and string IDs are supported
 
-                if (!component) {
+                    var id = component;
 
-                    // Quote string IDs in errors
+                    component = this.scene.components[id];
 
-                    this.error("Component not found: " + XEO._inQuotes(id));
-                    return;
+                    if (!component) {
+
+                        // Quote string IDs in errors
+
+                        this.error("Component not found: " + xeogl._inQuotes(id));
+                        return;
+                    }
+
+                } else if (xeogl._isObject(component)) {
+
+                    // Component config given
+
+                    var componentCfg = component;
+                    var componentType = componentCfg.type || type || "xeogl.Component";
+                    var componentClass = window[componentType];
+
+                    if (!componentClass) {
+                        this.error("Component type not found: " + componentType);
+                        return;
+                    }
+
+                    if (type) {
+                        if (!xeogl._isComponentType(componentType, type)) {
+                            this.error("Expected a " + type + " type or subtype, not a " + componentType);
+                            return;
+                        }
+                    }
+
+                    component = new componentClass(componentCfg);
+
+                    managingLifecycle = true;
                 }
             }
 
-            if (!component && sceneDefault === true) {
 
-                // Using a default scene component
+            if (!component) {
 
-                component = this.scene[name];
+                if (sceneSingleton === true) {
 
-                if (!component) {
-                    this.error("Scene has no default component for '" + name + "'");
-                    return null;
+                    // Using the first instance of the component type we find
+
+                    var instances = this.scene.types[type];
+                    for (var id2 in instances) {
+                        if (instances.hasOwnProperty) {
+                            component = instances[id2];
+                            break;
+                        }
+                    }
+
+                    if (!component) {
+                        this.error("Scene has no default component for '" + name + "'");
+                        return null;
+                    }
+
+                } else if (sceneDefault === true) {
+
+                    // Using a default scene component
+
+                    component = this.scene[name];
+
+                    if (!component) {
+                        this.error("Scene has no default component for '" + name + "'");
+                        return null;
+                    }
                 }
-
             }
 
             if (component) {
 
                 if (component.scene.id !== this.scene.id) {
-                    this.error("Not in same scene: " + component.type + " " + XEO._inQuotes(component.id));
+                    this.error("Not in same scene: " + component.type + " " + xeogl._inQuotes(component.id));
                     return;
                 }
 
                 if (type) {
 
                     if (!component.isType(type)) {
-                        this.error("Expected a " + type + " type or subtype: " + component.type + " " + XEO._inQuotes(component.id));
+                        this.error("Expected a " + type + " type or subtype: " + component.type + " " + xeogl._inQuotes(component.id));
                         return;
                     }
                 }
@@ -10772,11 +11301,19 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 var onDetached = oldAttachment.params.onDetached;
                 if (onDetached) {
-                    if (XEO._isFunction(onDetached)) {
-                        onDetached(component);
+                    if (xeogl._isFunction(onDetached)) {
+                        onDetached(oldComponent);
                     } else {
-                        onDetached.scope ? onDetached.callback.call(onDetached.scope, component) : onDetached.callback(component);
+                        onDetached.scope ? onDetached.callback.call(onDetached.scope, oldComponent) : onDetached.callback(oldComponent);
                     }
+                }
+
+                if (oldAttachment.managingLifecycle) {
+
+                    // Note that we just unsubscribed from all events fired by the child
+                    // component, so destroying it won't fire events back at us now.
+
+                    oldComponent.destroy();
                 }
             }
 
@@ -10787,7 +11324,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 var attachment = {
                     params: params,
                     component: component,
-                    subs: []
+                    subs: [],
+                    managingLifecycle: managingLifecycle
                 };
 
                 attachment.subs.push(
@@ -10815,7 +11353,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 var onAttached = params.onAttached;
                 if (onAttached) {
-                    if (XEO._isFunction(onAttached)) {
+                    if (xeogl._isFunction(onAttached)) {
                         onAttached(component);
                     } else {
                         onAttached.scope ? onAttached.callback.call(onAttached.scope, component) : onAttached.callback(component);
@@ -10834,7 +11372,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                             handler = on[event];
 
-                            if (XEO._isFunction(handler)) {
+                            if (xeogl._isFunction(handler)) {
                                 callback = handler;
                                 scope = null;
                             } else {
@@ -10870,7 +11408,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * The method is given a component type, configuration and optional instance ID, like so:
          *
          * ````javascript
-         * var material = myComponent.create(XEO.PhongMaterial, {
+         * var material = myComponent.create(xeogl.PhongMaterial, {
          *      diffuse: [1,0,0],
          *      specular: [1,1,0]
          * }, "myMaterial");
@@ -10883,7 +11421,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * component instance that it returned the first time, and will ignore the configuration:
          *
          * ````javascript
-         * var material2 = component.create(XEO.PhongMaterial, { specular: [1,1,0] }, "myMaterial");
+         * var material2 = component.create(xeogl.PhongMaterial, { specular: [1,1,0] }, "myMaterial");
          * ````
          *
          * So in this example, our {{#crossLink "PhongMaterial"}}{{/crossLink}} will continue to have the red specular
@@ -10895,20 +11433,18 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * times as you got it, the Scene will destroy the component.
          *
          * @method create
-         * @param {String} type Component type - either a string like "XEO.PhongMaterial" or the actual
-         * constructor function, ie. XEO.PhongMaterial.
          * @param {*} [cfg] Configuration for the component instance - only used if this is the first time you are getting
          * the component, ignored when reusing an existing instance.
          * @param {String|Number} [instanceId] Identifies the shared component instance. Note that this is not used as the ID of the
          * component - you can specify the component ID in the ````cfg```` parameter.
          * @returns {*}
          */
-        create: function (type, cfg, instanceId) {
+        create: function (cfg, instanceId) {
 
             // Create or reuse the component via this component's scene;
             // reusing if instanceId given, else getting unique instance otherwise
 
-            var component = this.scene._getSharedComponent(type, cfg, instanceId);
+            var component = this.scene._getSharedComponent(cfg, instanceId);
 
             if (component) {
 
@@ -10945,9 +11481,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             if (!this._updateScheduled) {
                 this._updateScheduled = true;
                 if (priority === 0) {
-                    XEO.deferTask(this._doUpdate, this);
+                    xeogl.deferTask(this._doUpdate, this);
                 } else {
-                    XEO.scheduleTask(this._doUpdate, this);
+                    xeogl.scheduleTask(this._doUpdate, this);
                 }
             }
         },
@@ -10974,7 +11510,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         /**
          * Protected template method, implemented by sub-classes to compile
-         * their state into their Scene's XEO.renderer.Renderer.
+         * their state into their Scene's xeogl.renderer.Renderer.
          *
          * @protected
          */
@@ -11002,11 +11538,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         id: this.id // Only output user-defined IDs
                     };
 
-                    if (!XEO._isEmptyObject(this.meta)) {
+                    if (!xeogl._isEmptyObject(this.meta)) {
                         json.meta = this.meta;
                     }
 
-                    return this._getJSON ? XEO._apply(this._getJSON(), json) : json;
+                    return this._getJSON ? xeogl._apply(this._getJSON(), json) : json;
                 }
             }
             ,
@@ -11067,7 +11603,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var i;
             var len;
 
-            if (!this._attachments) {
+            if (this._attachments) {
                 for (id in this._attachments) {
                     if (this._attachments.hasOwnProperty(id)) {
 
@@ -11080,6 +11616,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                         for (i = 0, len = subs.length; i < len; i++) {
                             component.off(subs[i]);
+                        }
+
+                        if (attachment.managingLifecycle) {
+
+                            // Note that we just unsubscribed from all events fired by the child
+                            // component, so destroying it won't fire events back at us now.
+
+                            component.destroy();
                         }
                     }
                 }
@@ -11127,15 +11671,15 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **Scene** models a 3D scene as a fully-editable and serializable <a href="http://gameprogrammingpatterns.com/component.html" target="_other">component-entity</a> graph.
 
- ## <a name="sceneStructure">Scene Structure</a>
+ ## Scene Structure
 
  A Scene contains a soup of instances of various {{#crossLink "Component"}}Component{{/crossLink}} subtypes, such as
  {{#crossLink "Entity"}}Entity{{/crossLink}}, {{#crossLink "Camera"}}Camera{{/crossLink}}, {{#crossLink "Material"}}Material{{/crossLink}},
  {{#crossLink "Lights"}}Lights{{/crossLink}} etc.  Each {{#crossLink "Entity"}}Entity{{/crossLink}} has a link to one of each of the other types,
  and the same component instances can be shared among many {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- *** Under the hood:*** Within xeoEngine, each {{#crossLink "Entity"}}Entity{{/crossLink}} represents a draw call,
- while its components define all the WebGL state that will be bound for that call. To render a Scene, xeoEngine traverses
+ *** Under the hood:*** Within xeogl, each {{#crossLink "Entity"}}Entity{{/crossLink}} represents a draw call,
+ while its components define all the WebGL state that will be bound for that call. To render a Scene, xeogl traverses
  the graph to bind the states and make the draw calls, while using many optimizations for efficiency (eg. draw list caching and GL state sorting).
 
  <img src="../../../assets/images/Scene.png"></img>
@@ -11176,17 +11720,17 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  override the default components that the Scene would have provided them, and that the same component instances may be shared among multiple Entities.
 
  ```` javascript
- var scene = new XEO.Scene({
+ var scene = new xeogl.Scene({
        id: "myScene"   // ID is optional on all components
   });
 
- var material = new XEO.PhongMaterial(myScene, {
+ var material = new xeogl.PhongMaterial(myScene, {
        id: "myMaterial",         // We'll use this ID to show how to find components by ID
        diffuse: [ 0.6, 0.6, 0.7 ],
        specular: [ 1.0, 1.0, 1.0 ]
    });
 
- var geometry = new XEO.Geometry(myScene, {
+ var geometry = new xeogl.Geometry(myScene, {
        primitive: "triangles",
        positions: [...],
        normals: [...],
@@ -11194,16 +11738,16 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
        indices: [...]
   });
 
- var camera = new XEO.Camera(myScene);
+ var camera = new xeogl.Camera(myScene);
 
- var entity1 = new XEO.Entity(myScene, {
+ var entity1 = new xeogl.Entity(myScene, {
        material: myMaterial,
        geometry: myGeometry,
        camera: myCamera
   });
 
  // Second entity uses Scene's default Material
- var entity3 = new XEO.Entity(myScene, {
+ var entity3 = new xeogl.Entity(myScene, {
        geometry: myGeometry,
        camera: myCamera
   });
@@ -11215,10 +11759,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  ## <a name="findingByID">Finding Scenes and Components by ID</a>
 
- We can have as many Scenes as we want, and can find them by ID on the {{#crossLink "XEO"}}XEO{{/crossLink}} entity's {{#crossLink "XEO/scenes:property"}}scenes{{/crossLink}} map:
+ We can have as many Scenes as we want, and can find them by ID on the {{#crossLink "xeogl"}}xeogl{{/crossLink}} entity's {{#crossLink "xeogl/scenes:property"}}scenes{{/crossLink}} map:
 
  ````javascript
- var theScene = XEO.scenes["myScene"];
+ var theScene = xeogl.scenes["myScene"];
  ````
 
  Likewise we can find a Scene's components within the Scene itself, such as the {{#crossLink "Material"}}Material{{/crossLink}} we
@@ -11230,39 +11774,39 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  ## <a name="defaults">The Default Scene</a>
 
- When you create components without specifying a Scene for them, xeoEngine will put them in its default Scene.
+ When you create components without specifying a Scene for them, xeogl will put them in its default Scene.
 
  For example:
 
  ```` javascript
 
- var material2 = new XEO.PhongMaterial({
+ var material2 = new xeogl.PhongMaterial({
     diffuse: { r: 0.6, g: 0.6, b: 0.7 },
     specular: { 1.0, 1.0, 1.0 }
-});
+ });
 
- var geometry2 = new XEO.Geometry({
+ var geometry2 = new xeogl.Geometry({
      primitive: "triangles",
      positions: [...],
      normals: [...],
      uvs: [...],
      indices: [...]
-});
+ });
 
- var camera = new XEO.Camera();
+ var camera = new xeogl.Camera();
 
- var entity1 = new XEO.Entity({
+ var entity1 = new xeogl.Entity({
      material: material2,
      geometry: geometry2,
      camera: camera2
-});
+ });
  ````
 
- You can then obtain the default Scene from the {{#crossLink "XEO"}}XEO{{/crossLink}} entity's
- {{#crossLink "XEO/scene:property"}}scene{{/crossLink}} property:
+ You can then obtain the default Scene from the {{#crossLink "xeogl"}}xeogl{{/crossLink}} entity's
+ {{#crossLink "xeogl/scene:property"}}scene{{/crossLink}} property:
 
  ````javascript
- var theScene = XEO.scene;
+ var theScene = xeogl.scene;
  ````
 
  or from one of the components we just created:
@@ -11270,9 +11814,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  var theScene = material2.scene;
  ````
 
- ***Note:*** xeoEngine creates the default Scene as soon as you either
+ ***Note:*** xeogl creates the default Scene as soon as you either
  create your first Sceneless {{#crossLink "Entity"}}Entity{{/crossLink}} or reference the
- {{#crossLink "XEO"}}XEO{{/crossLink}} entity's {{#crossLink "XEO/scene:property"}}scene{{/crossLink}} property. Expect to
+ {{#crossLink "xeogl"}}xeogl{{/crossLink}} entity's {{#crossLink "xeogl/scene:property"}}scene{{/crossLink}} property. Expect to
  see the HTML canvas for the default Scene magically appear in the page when you do that.
 
  ## <a name="webgl2">WebGL 2</a>
@@ -11281,7 +11825,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  You can force the Scene to use WebGL 1 by supplying this property to teh Scene's constructor:
 
  ````javascript
- var scene = new XEO.Scene({
+ var scene = new xeogl.Scene({
      webgl2: false // Default is true
  });
 
@@ -11299,21 +11843,20 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  var json = myScene.json;
 
  // Create another scene from that JSON, in a fresh canvas:
- var myOtherScene = new XEO.Scene({
+ var myOtherScene = new xeogl.Scene({
       json: json
-  });
+ });
 
  ***Note:*** this will save your {{#crossLink "Geometry"}}Geometry{{/crossLink}}s' array properties
  ({{#crossLink "Geometry/positions:property"}}positions{{/crossLink}}, {{#crossLink "Geometry/normals:property"}}normals{{/crossLink}},
  {{#crossLink "Geometry/indices:property"}}indices{{/crossLink}} etc) as JSON arrays, which may stress your browser
  if those arrays are huge.
 
-
  @class Scene
- @module XEO
+ @module xeogl
  @constructor
  @param [cfg] Scene parameters
- @param [cfg.id] {String} Optional ID, unique among all Scenes in xeoEngine, generated automatically when omitted.
+ @param [cfg.id] {String} Optional ID, unique among all Scenes in xeogl, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Scene.
  @param [cfg.canvasId] {String} ID of existing HTML5 canvas in the DOM - creates a full-page canvas automatically if this is omitted
  @param [cfg.webgl2=true] {Boolean} Set this false when we **don't** want to use WebGL 2 for our Scene; the Scene will fall
@@ -11322,6 +11865,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  @param [cfg.passes=1] The number of times this Scene renders per frame.
  @param [cfg.clearEachPass=false] When doing multiple passes per frame, specifies whether to clear the
  canvas before each pass (true) or just before the first pass (false).
+ @param [cfg.transparent=false] {Boolean} Whether or not the canvas is transparent.
+ @param [cfg.backgroundColor] {Float32Array} RGBA color for canvas background, when canvas is not transparent. Overridden by backgroundImage.
+ @param [cfg.backgroundImage] {String} URL of an image to show as the canvas background, when canvas is not transparent. Overrides backgroundImage.
  @extends Component
  */
 (function () {
@@ -11345,15 +11891,17 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      * @event warn
      * @param {String} value The warning message
      */
-    XEO.Scene = XEO.Component.extend({
+    xeogl.Scene = xeogl.Component.extend({
 
-        type: "XEO.Scene",
+        type: "xeogl.Scene",
 
         _init: function (cfg) {
 
             var self = this;
 
-            this._componentIDMap = new XEO.utils.Map();
+            var transparent = !!cfg.transparent;
+
+            this._componentIDMap = new xeogl.utils.Map();
 
             /**
              * The epoch time (in milliseconds since 1970) when this Scene was instantiated.
@@ -11371,7 +11919,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * contained in {{#crossLink "Entity/components:property"}}{{/crossLink}}.
              *
              * @property components
-             * @type {String:XEO.Component}
+             * @type {String:xeogl.Component}
              */
             this.components = {};
 
@@ -11380,7 +11928,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * IDs to instances.
              *
              * @property types
-             * @type {String:{String:XEO.Component}}
+             * @type {String:{String:xeogl.Component}}
              */
             this.types = {};
 
@@ -11392,7 +11940,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * will also be contained in {{#crossLink "Entity/components:property"}}{{/crossLink}}.
              *
              * @property entities
-             * @type {String:XEO.Entity}
+             * @type {String:xeogl.Entity}
              */
             this.entities = {};
 
@@ -11405,7 +11953,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             // Count of references to components created with #getSharedComponent
             this._sharedCounts = {};
 
-            // Contains XEO.Entities that need to be recompiled back into this._renderer
+            // Contains xeogl.Entities that need to be recompiled back into this._renderer
             this._dirtyEntities = {};
 
             /**
@@ -11415,7 +11963,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @property configs
              * @type {Configs}
              */
-            this.configs = new XEO.Configs(this, cfg.configs);
+            this.configs = new xeogl.Configs(this, cfg.configs);
 
             /**
              * Manages the HTML5 canvas for this Scene.
@@ -11423,9 +11971,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @property canvas
              * @type {Canvas}
              */
-            this.canvas = new XEO.Canvas(this, {
+            this.canvas = new xeogl.Canvas(this, {
                 canvas: cfg.canvas, // Can be canvas ID, canvas element, or null
-                transparent: cfg.transparent,
+                transparent: transparent,
+                backgroundColor: cfg.backgroundColor,
+                backgroundImage: cfg.backgroundImage,
                 webgl2: cfg.webgl2 !== false,
                 contextAttr: cfg.contextAttr || {}
             });
@@ -11438,11 +11988,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             this.canvas.on("webglContextFailed",
                 function () {
-                    alert("xeoEngine failed to find WebGL!");
+                    alert("xeogl failed to find WebGL!");
                 });
 
-            this._renderer = new XEO.renderer.Renderer(XEO.stats, this.canvas.canvas, this.canvas.gl, {
-                transparent: cfg.transparent
+            this._renderer = new xeogl.renderer.Renderer(xeogl.stats, this.canvas.canvas, this.canvas.gl, {
+                transparent: transparent
             });
 
             /**
@@ -11452,17 +12002,17 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @type {Input}
              * @final
              */
-            this.input = new XEO.Input(this, {
+            this.input = new xeogl.Input(this, {
                 element: this.canvas.overlay
             });
 
             // Register Scene on engine
             // Do this BEFORE we add components below
-            XEO._addScene(this);
+            xeogl._addScene(this);
 
             // Add components specified as JSON
             // This will also add the default components for this Scene,
-            // if this JSON was serialized from a XEO.Scene instance.
+            // if this JSON was serialized from a xeogl.Scene instance.
 
             var componentJSONs = cfg.components;
 
@@ -11536,7 +12086,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 // User-supplied ID
 
                 if (this.components[c.id]) {
-                    this.error("Component " + XEO._inQuotes(c.id) + " already exists in Scene");
+                    this.error("Component " + xeogl._inQuotes(c.id) + " already exists in Scene");
                     return;
                 }
             } else {
@@ -11550,7 +12100,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             // Register for class type
 
-            //var type = c.type.indexOf("XEO.") > -1 ? c.type.substring(4) : c.type;
+            //var type = c.type.indexOf("xeogl.") > -1 ? c.type.substring(4) : c.type;
             var type = c.type;
 
             var types = this.types[c.type];
@@ -11566,9 +12116,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 this._componentDestroyed(c);
             }, this);
 
-            if (c.isType("XEO.Entity")) {
+            if (c.isType("xeogl.Entity")) {
 
-                // Component is a XEO.Entity, or a subtype thereof
+                // Component is a xeogl.Entity, or a subtype thereof
 
                 c.on("dirty", this._entityDirty, this);
 
@@ -11584,7 +12134,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 // Update scene statistics
 
-                XEO.stats.components.entities++;
+                xeogl.stats.components.entities++;
             }
 
             /**
@@ -11594,7 +12144,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              */
             this.fire("componentCreated", c, true);
 
-            //self.log("Created " + c.type + " " + XEO._inQuotes(c.id));
+            //self.log("Created " + c.type + " " + xeogl._inQuotes(c.id));
         },
 
         // Callbacks as members to reduce GC churn
@@ -11611,20 +12161,20 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 delete types[c.id];
 
-                if (XEO._isEmptyObject(types)) {
+                if (xeogl._isEmptyObject(types)) {
                     delete this.types[c.type];
                 }
             }
 
-            if (c.isType("XEO.Entity")) {
+            if (c.isType("xeogl.Entity")) {
 
-                // Component is a XEO.Entity, or a subtype thereof
+                // Component is a xeogl.Entity, or a subtype thereof
 
                 // Update scene statistics,
                 // Unschedule any pending recompilation of
                 // the Entity into the renderer
 
-                XEO.stats.components.entities--;
+                xeogl.stats.components.entities--;
 
                 delete this.entities[c.id];
 
@@ -11638,7 +12188,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              */
             this.fire("componentDestroyed", c, true);
 
-            //this.log("Destroyed " + c.type + " " + XEO._inQuotes(c.id));
+            //this.log("Destroyed " + c.type + " " + xeogl._inQuotes(c.id));
         },
 
         _entityDirty: function (entity) {
@@ -11655,7 +12205,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 // TODO: Getting 'location is not from current program' when this is
                 // uncommented on chrome/windows
 
-                //XEO.scheduleTask(function () {
+                //xeogl.scheduleTask(function () {
                 //    if (self._dirtyEntities[entity.id]) {
                 //        if (entity._valid()) {
                 //            entity._compile();
@@ -11738,7 +12288,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     if (value === undefined || value === null) {
                         value = 1;
 
-                    } else if (!XEO._isNumeric(value) || value <= 0) {
+                    } else if (!xeogl._isNumeric(value) || value <= 0) {
 
                         this.error("Unsupported value for 'passes': '" + value +
                             "' - should be an integer greater than zero.");
@@ -11826,7 +12376,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 get: function () {
                     return this.components["default.project"] ||
-                        new XEO.Perspective(this, {
+                        new xeogl.Perspective(this, {
                             id: "default.project",
                             isDefault: true
                         });
@@ -11849,7 +12399,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 get: function () {
                     return this.components["default.view"] ||
-                        new XEO.Lookat(this, {
+                        new xeogl.Lookat(this, {
                             id: "default.view",
                             isDefault: true
                         });
@@ -11872,7 +12422,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 get: function () {
                     return this.components["default.camera"] ||
-                        new XEO.Camera(this, {
+                        new xeogl.Camera(this, {
                             id: "default.camera",
                             isDefault: true,
                             project: "default.project",
@@ -11898,7 +12448,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 get: function () {
                     return this.components["default.transform"] ||
-                        new XEO.Transform(this, {
+                        new xeogl.Transform(this, {
                             id: "default.transform",
                             isDefault: true
                         });
@@ -11921,7 +12471,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             billboard: {
                 get: function () {
                     return this.components["default.billboard"] ||
-                        new XEO.Billboard(this, {
+                        new xeogl.Billboard(this, {
                             id: "default.billboard",
                             active: false,
                             isDefault: true
@@ -11945,7 +12495,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             stationary: {
                 get: function () {
                     return this.components["default.stationary"] ||
-                        new XEO.Stationary(this, {
+                        new xeogl.Stationary(this, {
                             id: "default.stationary",
                             active: false,
                             isDefault: true
@@ -11969,7 +12519,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 get: function () {
                     return this.components["default.clips"] ||
-                        new XEO.Clips(this, {
+                        new xeogl.Clips(this, {
                             id: "default.clips",
                             isDefault: true
                         });
@@ -11992,7 +12542,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 get: function () {
                     return this.components["default.colorBuf"] ||
-                        new XEO.ColorBuf(this, {
+                        new xeogl.ColorBuf(this, {
                             id: "default.colorBuf",
                             isDefault: true
                         });
@@ -12009,13 +12559,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * {{#crossLink "Entity"}}Entities{{/crossLink}} within this Scene are attached to this
              * {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} by default.
              * @property colorTarget
+             * @private
              * @final
              * @type ColorTarget
              */
             colorTarget: {
                 get: function () {
                     return this.components["default.colorTarget"] ||
-                        new XEO.ColorTarget(this, {
+                        new xeogl.ColorTarget(this, {
                             id: "default.colorTarget",
                             isDefault: true,
                             active: false
@@ -12039,7 +12590,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             depthBuf: {
                 get: function () {
                     return this.components["default.depthBuf"] ||
-                        new XEO.DepthBuf(this, {
+                        new xeogl.DepthBuf(this, {
                             id: "default.depthBuf",
                             isDefault: true,
                             active: true
@@ -12057,13 +12608,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * {{#crossLink "Entity"}}Entities{{/crossLink}} within this Scene are attached to this
              * {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}} by default.
              * @property depthTarget
+             * @private
              * @final
              * @type DepthTarget
              */
             depthTarget: {
                 get: function () {
                     return this.components["default.depthTarget"] ||
-                        new XEO.DepthTarget(this, {
+                        new xeogl.DepthTarget(this, {
                             id: "default.depthTarget",
                             isDefault: true,
                             active: false
@@ -12086,7 +12638,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             visibility: {
                 get: function () {
                     return this.components["default.visibility"] ||
-                        new XEO.Visibility(this, {
+                        new xeogl.Visibility(this, {
                             id: "default.visibility",
                             isDefault: true,
                             visible: true
@@ -12109,7 +12661,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             cull: {
                 get: function () {
                     return this.components["default.cull"] ||
-                        new XEO.Cull(this, {
+                        new xeogl.Cull(this, {
                             id: "default.cull",
                             isDefault: true,
                             culled: false
@@ -12132,7 +12684,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             modes: {
                 get: function () {
                     return this.components["default.modes"] ||
-                        new XEO.Modes(this, {
+                        new xeogl.Modes(this, {
                             id: "default.modes",
                             isDefault: true
                         });
@@ -12153,7 +12705,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             geometry: {
                 get: function () {
                     return this.components["default.geometry"] ||
-                        new XEO.BoxGeometry(this, {
+                        new xeogl.BoxGeometry(this, {
                             id: "default.geometry",
                             isDefault: true
                         });
@@ -12175,7 +12727,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             layer: {
                 get: function () {
                     return this.components["default.layer"] ||
-                        new XEO.Layer(this, {
+                        new xeogl.Layer(this, {
                             id: "default.layer",
                             isDefault: true,
                             priority: 0
@@ -12200,24 +12752,24 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             lights: {
                 get: function () {
                     return this.components["default.lights"] ||
-                        new XEO.Lights(this, {
+                        new xeogl.Lights(this, {
                             id: "default.lights",
                             isDefault: true,
 
-                            // By default a XEO.Lights has an empty lights
+                            // By default a xeogl.Lights has an empty lights
                             // property, so we must provide some lights
 
                             lights: [
 
                                 // Ambient light source #0
-                                new XEO.AmbientLight(this, {
+                                new xeogl.AmbientLight(this, {
                                     id: "default.light0",
                                     color: [0.45, 0.45, 0.5],
                                     intensity: 0.9
                                 }),
 
                                 // Directional light source #1
-                                new XEO.DirLight(this, {
+                                new xeogl.DirLight(this, {
                                     id: "default.light1",
                                     dir: [-0.5, 0.5, -0.6],
                                     color: [0.8, 0.8, 0.7],
@@ -12226,7 +12778,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 }),
                                 //
                                 // Directional light source #2
-                                new XEO.DirLight(this, {
+                                new xeogl.DirLight(this, {
                                     id: "default.light2",
                                     dir: [0.5, -0.5, -0.6],
                                     color: [0.8, 0.8, 0.8],
@@ -12254,7 +12806,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             material: {
                 get: function () {
                     return this.components["default.material"] ||
-                        new XEO.PhongMaterial(this, {
+                        new xeogl.PhongMaterial(this, {
                             id: "default.material",
                             isDefault: true
                         });
@@ -12270,13 +12822,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * {{#crossLink "Entity"}}Entities{{/crossLink}} within this Scene are attached to this
              * {{#crossLink "MorphTargets"}}MorphTargets{{/crossLink}} by default.
              * @property morphTargets
+             * @private
              * @final
              * @type MorphTargets
              */
             morphTargets: {
                 get: function () {
                     return this.components["default.morphTargets"] ||
-                        new XEO.MorphTargets(this, {
+                        new xeogl.MorphTargets(this, {
                             id: "default.morphTargets",
                             isDefault: true
                         });
@@ -12299,7 +12852,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             reflect: {
                 get: function () {
                     return this.components["default.reflect"] ||
-                        new XEO.Reflect(this, {
+                        new xeogl.Reflect(this, {
                             id: "default.reflect",
                             isDefault: true
                         });
@@ -12317,12 +12870,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * {{#crossLink "Shader"}}Shader{{/crossLink}} by default.
              * @property shader
              * @final
+             * @private
              * @type Shader
              */
             shader: {
                 get: function () {
                     return this.components["default.shader"] ||
-                        this.components["default.shader"] || new XEO.Shader(this, {
+                        this.components["default.shader"] || new xeogl.Shader(this, {
                             id: "default.shader",
                             isDefault: true
                         });
@@ -12340,12 +12894,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              *
              * @property shaderParams
              * @final
+             * @private
              * @type ShaderParams
              */
             shaderParams: {
                 get: function () {
                     return this.components["default.shaderParams"] ||
-                        new XEO.ShaderParams(this, {
+                        new xeogl.ShaderParams(this, {
                             id: "default.shaderParams",
                             isDefault: true
                         });
@@ -12368,7 +12923,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             stage: {
                 get: function () {
                     return this.components["default.stage"] ||
-                        new XEO.Stage(this, {
+                        new xeogl.Stage(this, {
                             id: "default.stage",
                             priority: 0,
                             isDefault: true
@@ -12393,7 +12948,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             viewport: {
                 get: function () {
                     return this.components["default.viewport"] ||
-                        new XEO.Viewport(this, {
+                        new xeogl.Viewport(this, {
                             id: "default.viewport",
                             autoBoundary: true,
                             isDefault: true
@@ -12426,9 +12981,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     if (!this._worldBoundary) {
 
                         var self = this;
-                        var aabb = XEO.math.AABB3();
+                        var aabb = xeogl.math.AABB3();
 
-                        this._worldBoundary = new XEO.Boundary3D(this.scene, {
+                        this._worldBoundary = new xeogl.Boundary3D(this.scene, {
 
                             getDirty: function () {
                                 return self._worldBoundaryDirty;
@@ -12436,7 +12991,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                             getAABB: function () {
 
-                                XEO.math.collapseAABB3(aabb);
+                                xeogl.math.collapseAABB3(aabb);
 
                                 var entities = self.entities;
                                 var entity;
@@ -12451,7 +13006,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                             // Only include boundaries of entities that are allowed
                                             // to contribute to the size of an enclosing boundary
 
-                                            XEO.math.expandAABB3(aabb, entity.worldBoundary.aabb);
+                                            xeogl.math.expandAABB3(aabb, entity.worldBoundary.aabb);
                                         }
                                     }
                                 }
@@ -12573,7 +13128,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             // Cached vectors to avoid garbage collection
 
-            var math = XEO.math;
+            var math = xeogl.math;
 
             var localRayOrigin = math.vec3();
             var localRayDir = math.vec3();
@@ -12701,7 +13256,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     var entity = this.entities[hit.entity];
 
-                    hit.entity = entity; // Swap string ID for XEO.Entity
+                    hit.entity = entity; // Swap string ID for xeogl.Entity
 
                     if (params.pickSurface) {
 
@@ -12804,7 +13359,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                                 // Get barycentric coordinates of the ray-triangle intersection
 
-                                math.cartesianToBarycentric2(position, a, b, c, bary);
+                                math.cartesianToBarycentric(position, a, b, c, bary);
 
                                 hit.bary = bary;
 
@@ -12827,8 +13382,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                     nc[2] = normals[ic3 + 2];
 
                                     var normal = math.addVec3(math.addVec3(
-                                            math.mulVec3Scalar(na, bary[0], tempVec3),
-                                            math.mulVec3Scalar(nb, bary[1], tempVec3b), tempVec3c),
+                                        math.mulVec3Scalar(na, bary[0], tempVec3),
+                                        math.mulVec3Scalar(nb, bary[1], tempVec3b), tempVec3c),
                                         math.mulVec3Scalar(nc, bary[2], tempVec3d), tempVec3e);
 
                                     hit.normal = math.transformVec3(entity.transform.leafMatrix, normal, tempVec3f);
@@ -12899,7 +13454,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * The method is given a component type, share ID and constructor attributes, like so:
          *
          * ````javascript
-         * var material = myScene.getComponent("XEO.PhongMaterial", "myMaterial", { diffuse: [1,0,0] });
+         * var material = myScene.getComponent("xeogl.PhongMaterial", "myMaterial", { diffuse: [1,0,0] });
          * ````
          *
          * The first time you call this method for the given ````type```` and ````instanceId````, this method will create the
@@ -12909,7 +13464,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          * component instance that it returned the first time, and will ignore the attributes:
          *
          * ````javascript
-         * var material2 = myScene.getComponent("XEO.PhongMaterial", "myMaterial", { specular: [1,1,0] });
+         * var material2 = myScene.getComponent("xeogl.PhongMaterial", "myMaterial", { specular: [1,1,0] });
          * ````
          *
          * Each time you call this method with the same ````type```` and ````instanceId````, the Scene will internally increment a
@@ -12919,14 +13474,44 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          *
          * @method _getSharedComponent
          * @private
-         * @param {String|Function} type Component type, eg "XEO.PhongMaterial", or constructor.
          * @param {*} [cfg] Attributes for the component instance - only used if this is the first time you are getting
          * the component, ignored when reusing an existing shared component.
          * @param {String|Number} instanceId Identifies the shared component instance. Note that this is not used as the ID of the
          * component - you can specify the component ID in the ````cfg```` parameter.
          * @returns {*}
          */
-        _getSharedComponent: function (type, cfg, instanceId) {
+        _getSharedComponent: function (cfg, instanceId) {
+
+            var type;
+            var claz;
+
+            if (xeogl._isObject(cfg)) { // Component config given
+
+                type = cfg.type || "xeogl.Component";
+                claz = xeogl[type.substring(6)];
+
+            } else if (xeogl._isString(cfg)) {
+
+                type = cfg;
+                claz = xeogl[type.substring(6)];
+
+            } else {
+
+                claz = cfg;
+                type = cfg.prototype.type;
+
+                // TODO: catch unknown component class
+            }
+
+            if (!claz) {
+                this.error("Component type not found: " + type);
+                return;
+            }
+
+            if (!xeogl._isComponentType(type, "xeogl.Component")) {
+                this.error("Expected a xeogl.Component type or subtype");
+                return;
+            }
 
             var component;
 
@@ -12950,25 +13535,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             // Component does not yet exist
 
-            var clazz;
-
-            if (XEO._isString(type)) {
-                var type2 = type.substring(3); // Find constructor on the XEO namespace
-                clazz = XEO[type2];
-                if (!clazz) {
-                    this.error("Component type not found: '" + type + "'");
-                    return null;
-                }
-            } else {
-                clazz = type;
-            }
-
             if (cfg && cfg.id && this.components[cfg.id]) {
-                this.error("Component " + XEO._inQuotes(cfg.id) + " already exists in Scene");
+                this.error("Component " + xeogl._inQuotes(cfg.id) + " already exists in Scene");
                 return null;
             }
 
-            component = new clazz(this, cfg);
+            component = new claz(this, cfg);
 
             if (instanceId !== undefined) {
 
@@ -13037,7 +13609,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             }
 
             if (countCompiledEntities > 0) {
-                //    this.log("Compiled " + countCompiledEntities + " XEO.Entity" + (countCompiledEntities > 1 ? "s" : ""));
+                //    this.log("Compiled " + countCompiledEntities + " xeogl.Entity" + (countCompiledEntities > 1 ? "s" : ""));
             }
 
             // Render a frame
@@ -13048,6 +13620,33 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 clear: clear, // Clear buffers?
                 force: forceRender
             });
+
+            // If the canvas is not transparent and has no background image or color assigned,
+            // then set its color to whatever ambient color the renderer just rendered
+
+            var canvas = this.canvas;
+
+            if (!canvas.transparent && !canvas.backgroundImage && !canvas.backgroundColor) {
+
+                var ambientColor = this._renderer.ambientColor;
+
+                if (!this._lastAmbientColor ||
+                    this._lastAmbientColor[0] !== ambientColor[0] ||
+                    this._lastAmbientColor[1] !== ambientColor[1] ||
+                    this._lastAmbientColor[2] !== ambientColor[2] ||
+                    this._lastAmbientColor[3] !== ambientColor[3]) {
+
+                    canvas.backgroundColor = ambientColor;
+
+                    if (!this._lastAmbientColor) {
+                        this._lastAmbientColor = xeogl.math.vec4();
+                    }
+
+                    this._lastAmbientColor.set(ambientColor);
+                }
+            } else {
+                this._lastAmbientColor = null;
+            }
         },
 
         _getJSON: function () {
@@ -13106,7 +13705,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  * Components for animating state within Scenes.
  *
- * @module XEO
+ * @module xeogl
  * @submodule animation
  */;(function () {
 
@@ -13123,8 +13722,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
      TODO
 
-     @class MorphTargets
-     @module XEO
+
+     @module xeogl
      @submodule animation
      @constructor
      @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this MorphTarget in the default
@@ -13136,9 +13735,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
      @param [cfg.factor=0] {Number} The morph factor.
      @extends Component
      */
-    XEO.MorphTargets = XEO.Component.extend({
+    xeogl.MorphTargets = xeogl.Component.extend({
 
-        type: "XEO.MorphTargets",
+        type: "xeogl.MorphTargets",
 
         _init: function (cfg) {
 
@@ -13226,62 +13825,51 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
 
 ;/**
- A **CameraFlight** flies a {{#crossLink "Camera"}}{{/crossLink}} to a given target.
+ A **CameraFlightAnimation** jumps or flies a {{#crossLink "Camera"}}{{/crossLink}} to look at a given target.
 
- <ul>
- <li>A CameraFlight animates the {{#crossLink "Lookat"}}{{/crossLink}} attached to its {{#crossLink "Camera"}}{{/crossLink}}.</li>
- <li>A CameraFlight can be attached to a different {{#crossLink "Camera"}}{{/crossLink}} at any time.</li>
- <li>While a CameraFlight is busy flying to a target, it can be stopped, or redirected to fly to a different target.</li>
- </ul>
+ <a href="../../examples/#animation_CameraFlightAnimation_Entity"><img src="http://i.giphy.com/3o7TKP0jN800EQ99EQ.gif"></img></a>
 
- A target can be:
+ ## Overview
 
- <ul>
- <li>specific ````eye````, ````look```` and ````up```` positions,</li>
- <li>a World-space {{#crossLink "Boundary3D"}}{{/crossLink}},</li>
- <li>an instance or ID of any {{#crossLink "Component"}}{{/crossLink}} subtype that provides a World-space</li>
- {{#crossLink "Boundary3D"}}{{/crossLink}} in a "worldBoundary" property, or</li>
- <li>an axis-aligned World-space bounding box.</li>
- </ul>
+ * Requires that the {{#crossLink "Camera"}}{{/crossLink}} have a {{#crossLink "Lookat"}}{{/crossLink}} for its {{#crossLink "Camera/view:property"}}view{{/crossLink}} transform.
+ * Can be attached to a different {{#crossLink "Camera"}}{{/crossLink}} at any time.
+ * Can be made to either fly or jump to its target.
+ * While busy flying to a target, it can be stopped, or redirected to fly to a different target.
+
+ A CameraFlightAnimation's target can be:
+
+ * specific ````eye````, ````look```` and ````up```` positions,
+ * a World-space {{#crossLink "Boundary3D"}}{{/crossLink}},
+ * an instance or ID of any {{#crossLink "Component"}}{{/crossLink}} subtype that provides a World-space {{#crossLink "Boundary3D"}}{{/crossLink}} in a "worldBoundary" property, or
+ * an axis-aligned World-space bounding box (AABB).
+
+ When a CameraFlightAnimation's target is a {{#crossLink "Boundary3D"}}{{/crossLink}} or AABB, you can configure its {{#crossLink "CameraFlightAnimation/fit:property"}}{{/crossLink}}
+ and {{#crossLink "CameraFlightAnimation/fitFOV:property"}}{{/crossLink}} properties to make it stop at the point where the target
+ occupies a certain amount of the field-of-view.
 
  ## Examples
 
- <ul>
- <li>[Flying to Entity](../../examples/#animation_CameraFlight_Entity)</li>
- <li>[Flying to Boundary3D](../../examples/#animation_CameraFlight_Boundary3D)</li>
- <li>[Flying to AABB](../../examples/#animation_CameraFlight_AABB)</li>
- </ul>
+ * [Flying to random Entities](../../examples/#animation_CameraFlightAnimation_Entity)
+ * [Flying to Boundary3D](../../examples/#animation_CameraFlightAnimation_Boundary3D)
+ * [Flying to AABB](../../examples/#animation_CameraFlightAnimation_AABB)
 
- ## Flying to a position
-
- Flying the CameraFlight from the previous example to specified eye, look and up positions:
-
- ````Javascript
- cameraFlight.flyTo({
-    eye: [-5,-5,-5],
-    look: [0,0,0]
-    up: [0,1,0],
-    stopFOV: 45, // Default, degrees
-    duration: 1 // Default, seconds
- }, function() {
-    // Arrived
- });
- ````
  ## Flying to an Entity
 
  Flying to an {{#crossLink "Entity"}}{{/crossLink}} (which provides a World-space
  {{#crossLink "Boundary3D"}}{{/crossLink}} via its {{#crossLink "Entity/worldBoundary:property"}}{{/crossLink}} property):
 
  ````Javascript
- var camera = new XEO.Camera();
+ var camera = new xeogl.Camera();
 
- // Create a CameraFlight that takes exactly twenty seconds to fly
- // the Camera to each specified target
- var cameraFlight = new XEO.CameraFlight({
-    camera: camera,
-    stopFOV: 45, // Default, degrees
+ // Create a CameraFlightAnimation that takes one second to fly
+ // the default Scene's default Camera to each specified target
+ var cameraFlight = new xeogl.CameraFlightAnimation({
+    fit: true, // Default
+    fitFOV: 45, // Default, degrees
     duration: 1 // Default, seconds
- });
+ }, function() {
+           // Arrived
+       });
 
  // Create a Entity, which gets all the default components
  var entity = new Entity();
@@ -13289,21 +13877,33 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  // Fly to the Entity's worldBoundary
  cameraFlight.flyTo(entity);
  ````
+ ## Flying to a position
+
+ Flying the CameraFlightAnimation from the previous example to specified eye, look and up positions:
+
+ ````Javascript
+ cameraFlight.flyTo({
+    eye: [-5,-5,-5],
+    look: [0,0,0]
+    up: [0,1,0],
+    duration: 1 // Default, seconds
+ }, function() {
+          // Arrived
+      });
+ ````
 
  ## Flying to a Boundary3D
 
- Flying the CameraFlight from the previous two examples explicitly to the World-space
+ Flying the CameraFlightAnimation from the previous two examples explicitly to the World-space
  {{#crossLink "Boundary3D"}}{{/crossLink}} of the {{#crossLink "Entity"}}{{/crossLink}} property):
 
  ````Javascript
- var worldBoundary = entity.worldBoundary;
-
- cameraFlight.flyTo(worldBoundary);
+ cameraFlight.flyTo(entity.worldBoundary);
  ````
 
  ## Flying to an AABB
 
- Flying the CameraFlight from the previous two examples explicitly to the {{#crossLink "Boundary3D"}}Boundary3D's{{/crossLink}}
+ Flying the CameraFlightAnimation from the previous two examples explicitly to the {{#crossLink "Boundary3D"}}Boundary3D's{{/crossLink}}
  axis-aligned bounding box:
 
  ````Javascript
@@ -13314,33 +13914,32 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  cameraFlight.flyTo(aabb);
  ````
 
- @class CameraFlight
- @author xeolabs / http://xeolabs.org
- @module XEO
+ @class CameraFlightAnimation
+ @module xeogl
  @submodule animation
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}.
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
- @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this CameraFlight.
- @param [cfg.camera] {String|Camera} ID or instance of a {{#crossLink "Camera"}}Camera{{/crossLink}} to control.
- Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this CameraFlight. Defaults to the
+ @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this CameraFlightAnimation.
+ @param [cfg.camera] {Number|String|Camera} ID or instance of a {{#crossLink "Camera"}}Camera{{/crossLink}} to control.
+ Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this CameraFlightAnimation. Defaults to the
  parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance, {{#crossLink "Scene/camera:property"}}camera{{/crossLink}}.
- @param [cfg.stopFOV=45] {Number} How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
-  fill the canvas when calling {{#crossLink "CameraFlight/flyTo:method"}}{{/crossLink}} or {{#crossLink "CameraFlight/jumpTo:method"}}{{/crossLink}}.
- @param [cfg.duration=1] {Number} Flight duration, in seconds, when calling {{#crossLink "CameraFlight/flyTo:method"}}{{/crossLink}}.
+ @param [cfg.fit=true] {Boolean} When true, will ensure that when this CameraFlightAnimation has flown or jumped to a boundary
+ it will adjust the distance between the {{#crossLink "CameraFlightAnimation/camera:property"}}camera{{/crossLink}}'s {{#crossLink "Lookat/eye:property"}}eye{{/crossLink}}
+ and {{#crossLink "Lookat/look:property"}}{{/crossLink}} position so as to ensure that the target boundary is filling the view volume.
+ @param [cfg.fitFOV=45] {Number} How much field-of-view, in degrees, that a target boundary should
+ fill the canvas when fitting the {{#crossLink "Camera"}}Camera{{/crossLink}} to the target boundary.
+ @param [cfg.trail] {Boolean} When true, will cause this CameraFlightAnimation to point the {{#crossLink "Camera"}}{{/crossLink}} in the direction that it is travelling.
+ @param [cfg.duration=1] {Number} Flight duration, in seconds, when calling {{#crossLink "CameraFlightAnimation/flyTo:method"}}{{/crossLink}}.
  @extends Component
  */
 (function () {
 
     "use strict";
 
-    // Caches to avoid garbage collection
+    var math = xeogl.math;
 
-    var tempVec3 = XEO.math.vec3();
-    var tempVec3b = XEO.math.vec3();
-    var tempVec3c = XEO.math.vec3();
-
-    XEO.CameraFlight = XEO.Component.extend({
+    xeogl.CameraFlightAnimation = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -13349,40 +13948,44 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.CameraFlight",
+        type: "xeogl.CameraFlightAnimation",
 
         _init: function (cfg) {
 
-            this._look1 = XEO.math.vec3();
-            this._eye1 = XEO.math.vec3();
-            this._up1 = XEO.math.vec3();
+            this._look1 = math.vec3();
+            this._eye1 = math.vec3();
+            this._up1 = math.vec3();
 
-            this._look2 = XEO.math.vec3();
-            this._eye2 = XEO.math.vec3();
-            this._up2 = XEO.math.vec3();
+            this._look2 = math.vec3();
+            this._eye2 = math.vec3();
+            this._up2 = math.vec3();
 
             this._flying = false;
+            this._flyEyeLookUp = false;
 
             this._callback = null;
             this._callbackScope = null;
 
             this._onTick = null;
 
-            this._stopFOV = 55;
-
             this._time1 = null;
             this._time2 = null;
 
             this.easing = cfg.easing !== false;
 
-            this.duration = cfg.duration || 0.5;
-
+            this.duration = cfg.duration;
+            this.fit = cfg.fit;
+            this.fitFOV = cfg.fitFOV;
+            this.trail = cfg.trail;
             this.camera = cfg.camera;
 
-            // Shows a wireframe box at the given boundary
-            this._boundaryIndicator = this.create(XEO.Entity, {
-                geometry: this.create(XEO.BoundaryGeometry, {
-                    material: this.create(XEO.PhongMaterial, {
+            // Shows a wireframe box for target AABBs
+            this._aabbHelper = this.create({
+                type: "xeogl.Entity",
+                geometry: this.create({
+                    type: "xeogl.AABBGeometry",
+                    material: this.create({
+                        type: "xeogl.PhongMaterial",
                         diffuse: [0, 0, 0],
                         ambient: [0, 0, 0],
                         specular: [0, 0, 0],
@@ -13390,138 +13993,81 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         lineWidth: 3
                     })
                 }),
-                visibility: this.create(XEO.Visibility, {
+                visibility: this.create({
+                    type: "xeogl.Visibility",
                     visible: false
                 }),
-                modes: this.create(XEO.Modes, {
+                modes: this.create({
+                    type: "xeogl.Modes",
+                    collidable: false // Effectively has no boundary
+                })
+            });
+
+            // Shows a wireframe box for target AABBs
+            this._obbHelper = this.create({
+                type: "xeogl.Entity",
+                geometry: this.create({
+                    type: "xeogl.OBBGeometry",
+                    material: this.create({
+                        type: "xeogl.PhongMaterial",
+                        diffuse: [0, 0, 0],
+                        ambient: [0, 0, 0],
+                        specular: [0, 0, 0],
+                        emissive: [1.0, 1.0, 0.0],
+                        lineWidth: 3
+                    })
+                }),
+                visibility: this.create({
+                    type: "xeogl.Visibility",
+                    visible: false
+                }),
+                modes: this.create({
+                    type: "xeogl.Modes",
                     collidable: false // Effectively has no boundary
                 })
             });
         },
 
         /**
-         * Begins flying this CameraFlight's {{#crossLink "Camera"}}{{/crossLink}} to the given target.
+         * Begins flying this CameraFlightAnimation's {{#crossLink "Camera"}}{{/crossLink}} to the given target.
          *
-         * <ul>
-         *     <li>When the target is a boundary, the {{#crossLink "Camera"}}{{/crossLink}} will fly towards the target
-         *     and stop when the target fills most of the canvas.</li>
-         *     <li>When the target is an explicit {{#crossLink "Camera"}}{{/crossLink}} position, given as ````eye````, ````look```` and ````up````
-         *      vectors, then this CameraFlight will interpolate the {{#crossLink "Camera"}}{{/crossLink}} to that target and stop there.</li>
+         *
+         *  * When the target is a boundary, the {{#crossLink "Camera"}}{{/crossLink}} will fly towards the target
+         *    and stop when the target fills most of the canvas.
+         *  * When the target is an explicit {{#crossLink "Camera"}}{{/crossLink}} position, given as ````eye````, ````look```` and ````up````
+         *    vectors, then this CameraFlightAnimation will interpolate the {{#crossLink "Camera"}}{{/crossLink}} to that target and stop there.
          * @method flyTo
-         * @param params  {*|Component} Either a parameters object or a {{#crossLink "Component"}}{{/crossLink}} subtype that has a {{#crossLink "WorldBoundary"}}{{/crossLink}}.
+         * @param [params=scene]  {*|Component} Either a parameters object or a {{#crossLink "Component"}}{{/crossLink}} subtype that has a {{#crossLink "WorldBoundary"}}{{/crossLink}}.
          * @param[params.arc=0]  {Number} Factor in range [0..1] indicating how much the
          * {{#crossLink "Camera/eye:property"}}Camera's eye{{/crossLink}} position will
          * swing away from its {{#crossLink "Camera/eye:property"}}look{{/crossLink}} position as it flies to the target.
-         * @param [params.component] {String|Component} ID or instance of a component to fly to.
+         * @param [params.component] {Number|String|Component} ID or instance of a component to fly to. Defaults to the entire {{#crossLink "Scene"}}{{/crossLink}}.
          * @param [params.aabb] {*}  World-space axis-aligned bounding box (AABB) target to fly to.
-         * @param [params.eye] {Array of Number} Position to fly the eye position to.
-         * @param [params.look] {Array of Number} Position to fly the look position to.
-         * @param [params.up] {Array of Number} Position to fly the up vector to.
-         * @param [params.stopFOV=45] {Number} How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
-         * fill the canvas on arrival.
-         * @param [params.duration=1] {Number} Flight duration in seconds.
+         * @param [params.eye] {Float32Array} Position to fly the eye position to.
+         * @param [params.look] {Float32Array} Position to fly the look position to.
+         * @param [params.up] {Float32Array} Position to fly the up vector to.
+         * @param [params.fit=true] {Boolean} Whether to fit the target to the view volume. Overrides {{#crossLink "CameraFlightAnimation/fit:property"}}{{/crossLink}}.
+         * @param [params.fitFOV] {Number} How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
+         * fill the canvas on arrival. Overrides {{#crossLink "CameraFlightAnimation/fitFOV:property"}}{{/crossLink}}.
+         * @param [params.duration] {Number} Flight duration in seconds.  Overrides {{#crossLink "CameraFlightAnimation/duration:property"}}{{/crossLink}}.
          * @param [callback] {Function} Callback fired on arrival
          * @param [scope] {Object} Optional scope for callback
          */
-        flyTo: function (params, callback, scope) {
+        flyTo: (function () {
 
-            if (this._flying) {
-                this.stop();
-            }
+            var tempVec3 = math.vec3();
 
-            var camera = this._attached.camera;
+            return function (params, callback, scope) {
 
-            if (!camera) {
-                if (callback) {
-                    if (scope) {
-                        callback.call(scope);
-                    } else {
-                        callback();
-                    }
-                }
-                return;
-            }
+                params = params || this.scene;
 
-            this._flying = false;
-
-            this._callback = callback;
-            this._callbackScope = scope;
-
-            var lookat = camera.view;
-
-            this._eye1[0] = lookat.eye[0];
-            this._eye1[1] = lookat.eye[1];
-            this._eye1[2] = lookat.eye[2];
-
-            this._look1[0] = lookat.look[0];
-            this._look1[1] = lookat.look[1];
-            this._look1[2] = lookat.look[2];
-
-            this._up1[0] = lookat.up[0];
-            this._up1[1] = lookat.up[1];
-            this._up1[2] = lookat.up[2];
-
-            var aabb;
-            var eye;
-            var look;
-            var up;
-            var componentId;
-
-            if (params.worldBoundary) {
-
-                // Argument is a Component subtype with a worldBoundary
-
-                aabb = params.worldBoundary.aabb;
-
-            } else if (params.aabb) {
-
-                aabb = params.aabb;
-
-                // Argument is a Boundary3D
-
-            } else if (params.min !== undefined && params.max !== undefined) {
-
-                // Argument is an AABB
-
-                aabb = params;
-
-            } else if (params.eye || params.look || params.up) {
-
-                // Argument is eye, look and up positions
-
-                eye = params.eye;
-                look = params.look;
-                up = params.up;
-
-            } else {
-
-                // Argument must be an instance or ID of a Component (subtype)
-
-                var component = params;
-
-                if (XEO._isNumeric(component) || XEO._isString(component)) {
-
-                    componentId = component;
-
-                    component = this.scene.components[componentId];
-
-                    if (!component) {
-                        this.error("Component not found: " + XEO._inQuotes(componentId));
-                        if (callback) {
-                            if (scope) {
-                                callback.call(scope);
-                            } else {
-                                callback();
-                            }
-                        }
-                        return;
-                    }
+                if (this._flying) {
+                    this.stop();
                 }
 
-                var worldBoundary = component.worldBoundary;
+                var camera = this._attached.camera;
 
-                if (!worldBoundary) {
-                    this.error("Can't fly to component " + XEO._inQuotes(componentId) + " - does not have a worldBoundary");
+                if (!camera) {
                     if (callback) {
                         if (scope) {
                             callback.call(scope);
@@ -13532,237 +14078,425 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     return;
                 }
 
-                aabb = worldBoundary.aabb;
-            }
+                this._flying = false;
 
-            var offset = params.offset;
+                this._callback = callback;
+                this._callbackScope = scope;
 
-            if (aabb) {
+                var view = camera.view;
 
-                if (aabb.max[0] <= aabb.min[0] || aabb.max[1] <= aabb.min[1] || aabb.max[2] <= aabb.min[2]) {
+                this._eye1[0] = view.eye[0];
+                this._eye1[1] = view.eye[1];
+                this._eye1[2] = view.eye[2];
 
-                    // Don't fly to an empty boundary
-                    return;
+                this._look1[0] = view.look[0];
+                this._look1[1] = view.look[1];
+                this._look1[2] = view.look[2];
+
+                this._up1[0] = view.up[0];
+                this._up1[1] = view.up[1];
+                this._up1[2] = view.up[2];
+
+                var aabb;
+                var sphere;
+                var eye;
+                var look;
+                var up;
+                var componentId;
+
+                if (params.worldBoundary) {
+
+                    // Argument is a Component subtype with a worldBoundary
+
+                    aabb = params.worldBoundary.aabb;
+
+                } else if (params.aabb) {
+
+                    aabb = params.aabb;
+
+                    // Argument is a Boundary3D
+
+                } else if (params.length === 6) { // [xmin,ymin,zmin, xmax,ymax,zmax]
+
+                    // Argument is an AABB
+
+                    aabb = params;
+
+                //} else if (params.length === 4) { // [x,y,z,radius]
+                //
+                //    // Argument is an OBB
+                //
+                //    sphere = params;
+
+                } else if (params.eye || params.look || params.up) {
+
+                    // Argument is eye, look and up positions
+
+                    eye = params.eye;
+                    look = params.look;
+                    up = params.up;
+
+                } else {
+
+                    // Argument must be an instance or ID of a Component (subtype)
+
+                    var component = params;
+
+                    if (xeogl._isNumeric(component) || xeogl._isString(component)) {
+
+                        componentId = component;
+
+                        component = this.scene.components[componentId];
+
+                        if (!component) {
+                            this.error("Component not found: " + xeogl._inQuotes(componentId));
+                            if (callback) {
+                                if (scope) {
+                                    callback.call(scope);
+                                } else {
+                                    callback();
+                                }
+                            }
+                            return;
+                        }
+                    }
+
+                    var worldBoundary = component.worldBoundary;
+
+                    if (!worldBoundary) {
+                        this.error("Can't fly to component " + xeogl._inQuotes(componentId) + " - does not have a worldBoundary");
+                        if (callback) {
+                            if (scope) {
+                                callback.call(scope);
+                            } else {
+                                callback();
+                            }
+                        }
+                        return;
+                    }
+
+                    aabb = worldBoundary.aabb;
                 }
 
-                // Show boundary
+                var offset = params.offset;
 
-                this._boundaryIndicator.geometry.aabb = aabb;
-                this._boundaryIndicator.visibility.visible = true;
+                if (aabb) {
 
-                var aabbCenter = XEO.math.getAABBCenter(aabb);
+                    if (aabb[3] <= aabb[0] || aabb[4] <= aabb[1] || aabb[5] <= aabb[2]) {
 
-                this._look2 = params.look || aabbCenter;
+                        // Don't fly to an empty boundary
+                        return;
+                    }
 
-                if (offset) {
-                    this._look2[0] += offset[0];
-                    this._look2[1] += offset[1];
-                    this._look2[2] += offset[2];
+                    // Show boundary
+
+                    this._aabbHelper.geometry.aabb = aabb;
+                    this._aabbHelper.visibility.visible = true;
+
+                    var aabbCenter = math.getAABB3Center(aabb);
+
+                    this._look2 = params.look || aabbCenter;
+
+                    if (offset) {
+                        this._look2[0] += offset[0];
+                        this._look2[1] += offset[1];
+                        this._look2[2] += offset[2];
+                    }
+
+                    var vec = math.normalizeVec3(math.subVec3(this._eye1, this._look1, tempVec3));
+                    var diag = (params.look && false) ? math.getAABB3DiagPoint(aabb, params.look) : math.getAABB3Diag(aabb);
+                    var sca = Math.abs((diag) / Math.tan((params.fitFOV || this._fitFOV) * xeogl.math.DEGTORAD));
+
+                    this._eye2[0] = this._look2[0] + (vec[0] * sca);
+                    this._eye2[1] = this._look2[1] + (vec[1] * sca);
+                    this._eye2[2] = this._look2[2] + (vec[2] * sca);
+
+                    this._up2[0] = this._up1[0];
+                    this._up2[1] = this._up1[1];
+                    this._up2[2] = this._up1[2];
+
+                    this._flyEyeLookUp = false;
+
+                } else if (eye || look || up) {
+
+                    look = look || this._look1;
+                    eye = eye || this._eye1;
+                    up = up || this._up1;
+
+                    this._look2[0] = look[0];
+                    this._look2[1] = look[1];
+                    this._look2[2] = look[2];
+
+                    this._eye2[0] = eye[0];
+                    this._eye2[1] = eye[1];
+                    this._eye2[2] = eye[2];
+
+                    this._up2[0] = up[0];
+                    this._up2[1] = up[1];
+                    this._up2[2] = up[2];
+
+                    this._flyEyeLookUp = true;
                 }
 
-                var vec = XEO.math.normalizeVec3(XEO.math.subVec3(this._eye1, this._look1, tempVec3));
-                var diag = (params.look && false) ? XEO.math.getAABBDiagPoint(aabb, params.look) : XEO.math.getAABBDiag(aabb);
-                var sca = Math.abs((diag) / Math.tan((params.stopFOV || this._stopFOV) / 2));
+                this.fire("started", params, true);
 
-                this._eye2[0] = this._look2[0] + (vec[0] * sca);
-                this._eye2[1] = this._look2[1] + (vec[1] * sca);
-                this._eye2[2] = this._look2[2] + (vec[2] * sca);
+                this._time1 = Date.now();
+                this._time2 = this._time1 + (params.duration ? params.duration * 1000 : this._duration);
 
-                this._up2[0] = this._up1[0];
-                this._up2[1] = this._up1[1];
-                this._up2[2] = this._up1[2];
+                this._flying = true; // False as soon as we stop
 
-            } else if (eye || look || up) {
-
-                look = look || this._look1;
-                eye = eye || this._eye1;
-                up = up || this._up1;
-
-                this._look2[0] = look[0];
-                this._look2[1] = look[1];
-                this._look2[2] = look[2];
-
-                this._eye2[0] = eye[0];
-                this._eye2[1] = eye[1];
-                this._eye2[2] = eye[2];
-
-                this._up2[0] = up[0];
-                this._up2[1] = up[1];
-                this._up2[2] = up[2];
-            }
-
-            this.fire("started", params, true);
-
-            this._time1 = Date.now();
-            this._time2 = this._time1 + (params.duration ? params.duration * 1000 : this._duration);
-
-            this._flying = true; // False as soon as we stop
-
-            XEO.scheduleTask(this._update, this);
-        },
+                xeogl.scheduleTask(this._update, this);
+            };
+        })(),
 
         /**
-         * Jumps this CameraFlight's {{#crossLink "Camera"}}{{/crossLink}} to the given target.
+         * Jumps this CameraFlightAnimation's {{#crossLink "Camera"}}{{/crossLink}} to the given target.
          *
-         * <ul>
-         *     <li>When the target is a boundary, this CameraFlight will position the {{#crossLink "Camera"}}{{/crossLink}}
-         *     at where the target fills most of the canvas.</li>
-         *     <li>When the target is an explicit {{#crossLink "Camera"}}{{/crossLink}} position, given as ````eye````, ````look```` and ````up````
-         *      vectors, then this CameraFlight will jump the {{#crossLink "Camera"}}{{/crossLink}} to that target.</li>
+         *
+         *     * When the target is a boundary, this CameraFlightAnimation will position the {{#crossLink "Camera"}}{{/crossLink}}
+         *     at where the target fills most of the canvas.
+         *     * When the target is an explicit {{#crossLink "Camera"}}{{/crossLink}} position, given as ````eye````, ````look```` and ````up````
+         *      vectors, then this CameraFlightAnimation will jump the {{#crossLink "Camera"}}{{/crossLink}} to that target.
          * @method flyTo
          * @param params  {*|Component} Either a parameters object or a {{#crossLink "Component"}}{{/crossLink}} subtype that has a {{#crossLink "WorldBoundary"}}{{/crossLink}}.
          * @param[params.arc=0]  {Number} Factor in range [0..1] indicating how much the
          * {{#crossLink "Camera/eye:property"}}Camera's eye{{/crossLink}} position will
          * swing away from its {{#crossLink "Camera/eye:property"}}look{{/crossLink}} position as it flies to the target.
-         * @param [params.component] {String|Component} ID or instance of a component to fly to.
+         * @param [params.component] {Number|String|Component} ID or instance of a component to fly to.
          * @param [params.aabb] {*}  World-space axis-aligned bounding box (AABB) target to fly to.
-         * @param [params.eye] {Array of Number} Position to fly the eye position to.
-         * @param [params.look] {Array of Number} Position to fly the look position to.
-         * @param [params.up] {Array of Number} Position to fly the up vector to.
-         * @param [params.stopFOV] {Number} How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
-         * fill the canvas on arrival.
+         * @param [params.eye] {Float32Array} Position to fly the eye position to.
+         * @param [params.look] {Float32Array} Position to fly the look position to.
+         * @param [params.up] {Float32Array} Position to fly the up vector to.
+         * @param [params.fitFOV] {Number} How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
+         * fill the canvas on arrival. Overrides {{#crossLink "CameraFlightAnimation/fitFOV:property"}}{{/crossLink}}.
+         * @param [params.fit] {Boolean} Whether to fit the target to the view volume. Overrides {{#crossLink "CameraFlightAnimation/fit:property"}}{{/crossLink}}.
          */
-        jumpTo: function (params) {
+        jumpTo: (function () {
 
-            if (this._flying) {
-                this.stop();
-            }
+            var eyeLookVec = math.vec3();
+            var newEye = math.vec3();
+            var newLook = math.vec3();
+            var newUp = math.vec3();
+            var newLookEyeVec = math.vec3();
+            var tempVec3e = math.vec3();
 
-            var camera = this._attached.camera;
+            return function (params) {
 
-            if (!camera) {
-                return;
-            }
+                if (this._flying) {
+                    this.stop();
+                }
 
-            var lookat = camera.view;
+                var camera = this._attached.camera;
 
-            var aabb;
-            var eye;
-            var look;
-            var up;
-            var componentId;
+                if (!camera) {
+                    return;
+                }
 
-            if (params.worldBoundary) {
+                var view = camera.view;
 
-                // Argument is a Component subtype with a worldBoundary
+                var aabb;
+                var sphere;
+                var componentId;
 
-                aabb = params.worldBoundary.aabb;
+                if (params.worldBoundary) {
 
-            } else if (params.aabb) {
+                    // Argument is a Component subtype with a worldBoundary
 
-                aabb = params.aabb;
+                    sphere = params.worldBoundary.sphere;
 
-                // Argument is a Boundary3D
+                } else if (params.sphere) {
 
-            } else if (params.min !== undefined && params.max !== undefined) {
+                    sphere = params.sphere;
 
-                // Argument is an AABB
+                } else if (params.aabb) {
 
-                aabb = params;
+                    aabb = params.aabb;
 
-            } else if (params.eye || params.look || params.up) {
+                    // Argument is a Boundary3D
 
-                // Argument is eye, look and up positions
+                } else if (params.length === 6) { // [xmin,ymin,zmin, xmax,ymax,zmax]
 
-                eye = params.eye;
-                look = params.look;
-                up = params.up;
+                    // Argument is an AABB
 
-            } else {
+                    aabb = params;
 
-                // Argument must be an instance or ID of a Component (subtype)
+                } else if (params.length === 4) { // [x,y,z,radius]
 
-                var component = params;
+                    // Argument is an OBB
 
-                if (XEO._isNumeric(component) || XEO._isString(component)) {
+                    sphere = params;
 
-                    componentId = component;
+                } else if (params.eye || params.look || params.up) {
 
-                    component = this.scene.components[componentId];
+                    // Argument is eye, look and up positions
 
-                    if (!component) {
-                        this.error("Component not found: " + XEO._inQuotes(componentId));
+                    newEye = params.eye;
+                    newLook = params.look;
+                    newUp = params.up;
+
+                } else {
+
+                    // Argument must be an instance or ID of a Component (subtype)
+
+                    var component = params;
+
+                    if (xeogl._isNumeric(component) || xeogl._isString(component)) {
+
+                        componentId = component;
+
+                        component = this.scene.components[componentId];
+
+                        if (!component) {
+                            this.error("Component not found: " + xeogl._inQuotes(componentId));
+                            return;
+                        }
+                    }
+
+                    var worldBoundary = component.worldBoundary;
+
+                    if (!worldBoundary) {
+                        this.error("Can't jump to component " + xeogl._inQuotes(componentId) + " - does not have a worldBoundary");
                         return;
                     }
+
+                    sphere = worldBoundary.sphere;
                 }
 
-                var worldBoundary = component.worldBoundary;
+                var offset = params.offset;
 
-                if (!worldBoundary) {
-                    this.error("Can't jump to component " + XEO._inQuotes(componentId) + " - does not have a worldBoundary");
+                if (aabb || sphere) {
+
+                    var diag;
+
+                    if (aabb) {
+
+                        if (aabb[3] <= aabb[0] || aabb[4] <= aabb[1] || aabb[5] <= aabb[2]) {
+
+                            // Don't fly to an empty boundary
+                            return;
+                        }
+
+                        diag = math.getAABB3Diag(aabb);
+                        math.getAABB3Center(aabb, newLook);
+
+                    } else {
+
+                        if (sphere[3] <= 0) {
+                            return;
+                        }
+
+                        diag = sphere[3] * 2;
+
+                        newLook[0] = sphere[0];
+                        newLook[1] = sphere[1];
+                        newLook[2] = sphere[2];
+                    }
+
+                    if (this._trail) {
+                        math.subVec3(view.look, newLook, newLookEyeVec);
+                    } else {
+                        math.subVec3(view.eye, view.look, newLookEyeVec);
+                    }
+
+                    math.normalizeVec3(newLookEyeVec);
+
+                    var dist;
+
+                    var fit = (params.fit !== undefined) ? params.fit : this._fit;
+                    if (fit) {
+                        dist = Math.abs((diag) / Math.tan((params.fitFOV || this._fitFOV) * xeogl.math.DEGTORAD));
+
+                    } else {
+                        dist = math.lenVec3(math.subVec3(view.eye, view.look, tempVec3e));
+                    }
+
+                    math.mulVec3Scalar(newLookEyeVec, dist);
+
+                    view.eye = math.addVec3(newLook, newLookEyeVec, newEye);
+                    view.look = newLook;
+
+                } else if (newEye || newLook || newUp) {
+
+                    if (newEye) {
+                        view.eye = newEye;
+                    }
+
+                    if (newLook) {
+                        view.look = newLook;
+                    }
+
+                    if (newUp) {
+                        view.up = newUp;
+                    }
+                }
+            };
+        })(),
+
+        _update: (function () {
+
+            var newLookEyeVec = math.vec3();
+            var newEye = math.vec3();
+            var newLook = math.vec3();
+            var newUp = math.vec3();
+            var lookEyeVec = math.vec3();
+
+            return function () {
+
+                if (!this._flying) {
                     return;
                 }
 
-                aabb = worldBoundary.aabb;
-            }
+                var time = Date.now();
 
-            var offset = params.offset;
+                var t = (time - this._time1) / (this._time2 - this._time1);
 
-            if (aabb) {
+                var stopping = (t >= 1);
 
-                if (aabb.max[0] <= aabb.min[0] || aabb.max[1] <= aabb.min[1] || aabb.max[2] <= aabb.min[2]) {
+                if (t > 1) {
+                    t = 1;
+                }
 
-                    // Don't fly to an empty boundary
+                t = this.easing ? this._ease(t, 0, 1, 1) : t;
+
+                var view = this._attached.camera.view;
+
+                if (this._flyEyeLookUp) {
+
+                    view.eye = math.lerpVec3(t, 0, 1, this._eye1, this._eye2, newEye);
+                    view.look = math.lerpVec3(t, 0, 1, this._look1, this._look2, newLook);
+                    view.up = math.lerpVec3(t, 0, 1, this._up1, this._up2, newUp);
+
+                } else {
+
+                    math.lerpVec3(t, 0, 1, this._look1, this._look2, newLook);
+
+                    var dist;
+
+                    if (this._trail) {
+                        math.subVec3(newLook, view.look, newLookEyeVec);
+
+                    } else {
+                        math.subVec3(view.eye, view.look, newLookEyeVec);
+                    }
+
+                    math.normalizeVec3(newLookEyeVec);
+                    math.lerpVec3(t, 0, 1, this._eye1, this._eye2, newEye);
+                    math.subVec3(newEye, newLook, lookEyeVec);
+                    dist = math.lenVec3(lookEyeVec);
+                    math.mulVec3Scalar(newLookEyeVec, dist);
+
+                    view.eye = math.addVec3(newLook, newLookEyeVec, newEye);
+                    view.look = newLook;
+                }
+
+                if (stopping) {
+                    this.stop();
                     return;
                 }
 
-                eye = lookat.eye;
-                look = XEO.math.getAABBCenter(aabb);
-
-                var vec = XEO.math.normalizeVec3(XEO.math.subVec3(eye, look, tempVec3));
-                var diag = XEO.math.getAABBDiag(aabb);
-                var sca = Math.abs((diag) / Math.tan((params.stopFOV || this._stopFOV) / 2));
-
-                lookat.eye = [look[0] + (vec[0] * sca), look[1] + (vec[1] * sca), look[2] + (vec[2] * sca)];
-                lookat.look = look;
-
-            } else if (eye || look || up) {
-
-                if (eye) {
-                    lookat.eye = eye;
-                }
-
-                if (look) {
-                    lookat.look = look;
-                }
-
-                if (up) {
-                    lookat.up = up;
-                }
-            }
-        },
-
-        _update: function () {
-
-            if (!this._flying) {
-                return;
-            }
-
-            var time = Date.now();
-
-            var t = (time - this._time1) / (this._time2 - this._time1);
-
-            var stopping = (t >= 1);
-
-            if (t > 1) {
-                t = 1;
-            }
-
-            t = this.easing ? this._ease(t, 0, 1, 1) : t;
-
-            var view = this._attached.camera.view;
-
-            view.eye = XEO.math.lerpVec3(t, 0, 1, this._eye1, this._eye2, tempVec3);
-            view.look = XEO.math.lerpVec3(t, 0, 1, this._look1, this._look2, tempVec3b);
-            view.up = XEO.math.lerpVec3(t, 0, 1, this._up1, this._up2, tempVec3c);
-
-            if (stopping) {
-                this.stop();
-                return;
-            }
-
-            XEO.scheduleTask(this._update, this); // Keep flying
-        },
+                xeogl.scheduleTask(this._update, this); // Keep flying
+            };
+        })(),
 
         // Quadratic easing out - decelerating to zero velocity
         // http://gizma.com/easing
@@ -13782,7 +14516,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 return;
             }
 
-            this._boundaryIndicator.visibility.visible = false;
+            this._aabbHelper.visibility.visible = false;
 
             this._flying = false;
 
@@ -13815,7 +14549,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 return;
             }
 
-            this._boundaryIndicator.visibility.visible = false;
+            this._aabbHelper.visibility.visible = false;
 
             this._flying = false;
 
@@ -13831,12 +14565,24 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
         _props: {
 
+            /**
+             * The {{#crossLink "Camera"}}{{/crossLink}} being controlled by this CameraFlightAnimation.
+             *
+             * Must be within the same {{#crossLink "Scene"}}{{/crossLink}} as this CameraFlightAnimation. Defaults to the parent
+             * {{#crossLink "Scene"}}Scene's{{/crossLink}} default {{#crossLink "Scene/camera:property"}}camera{{/crossLink}} when set to
+             * a null or undefined value.
+             *
+             * Fires a {{#crossLink "CameraFlightAnimation/camera:event"}}{{/crossLink}} event on change.
+             *
+             * @property camera
+             * @type Camera
+             */
             camera: {
 
                 set: function (value) {
 
                     /**
-                     * Fired whenever this CameraFlight's {{#crossLink "CameraFlight/camera:property"}}{{/crossLink}}
+                     * Fired whenever this CameraFlightAnimation's {{#crossLink "CameraFlightAnimation/camera:property"}}{{/crossLink}}
                      * property changes.
                      *
                      * @event camera
@@ -13844,7 +14590,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                      */
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true
                     });
@@ -13858,24 +14604,24 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             },
 
             /**
-             * Flight duration, in seconds, when calling {{#crossLink "CameraFlight/flyTo:method"}}{{/crossLink}}.
+             * Flight duration, in seconds, when calling {{#crossLink "CameraFlightAnimation/flyTo:method"}}{{/crossLink}}.
              *
              * Stops any flight currently in progress.
              *
-             * Fires a {{#crossLink "CameraFlight/duration:event"}}{{/crossLink}} event on change.
+             * Fires a {{#crossLink "CameraFlightAnimation/duration:event"}}{{/crossLink}} event on change.
              *
              * @property duration
-             * @default 1
+             * @default 0.5
              * @type Number
              */
             duration: {
 
                 set: function (value) {
 
-                    value = value || 1.0;
+                    value = value || 0.5;
 
                     /**
-                     Fired whenever this CameraFlight's {{#crossLink "CameraFlight/duration:property"}}{{/crossLink}} property changes.
+                     Fired whenever this CameraFlightAnimation's {{#crossLink "CameraFlightAnimation/duration:property"}}{{/crossLink}} property changes.
 
                      @event duration
                      @param value {Number} The property's new value
@@ -13891,32 +14637,98 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             },
 
             /**
+             * When true, will ensure that this CameraFlightAnimation is flying to a boundary it will always adjust the distance between the
+             * {{#crossLink "CameraFlightAnimation/camera:property"}}camera{{/crossLink}}'s {{#crossLink "Lookat/eye:property"}}eye{{/crossLink}}
+             * and {{#crossLink "Lookat/look:property"}}{{/crossLink}}
+             * so as to ensure that the target boundary is always filling the view volume.
+             *
+             * When false, the eye will remain at its current distance from the look position.
+             *
+             * Fires a {{#crossLink "CameraFlightAnimation/fit:event"}}{{/crossLink}} event on change.
+             *
+             * @property fit
+             * @type Boolean
+             * @default true
+             */
+            fit: {
+
+                set: function (value) {
+
+                    this._fit = value !== false;
+
+                    /**
+                     * Fired whenever this CameraFlightAnimation's
+                     * {{#crossLink "CameraFlightAnimation/fit:property"}}{{/crossLink}} property changes.
+                     * @event fit
+                     * @param value The property's new value
+                     */
+                    this.fire("fit", this._fit);
+                },
+
+                get: function () {
+                    return this._fit;
+                }
+            },
+
+
+            /**
              * How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
-             * fill the canvas when calling {{#crossLink "CameraFlight/flyTo:method"}}{{/crossLink}} or {{#crossLink "CameraFlight/jumpTo:method"}}{{/crossLink}}.
+             * fill the canvas when calling {{#crossLink "CameraFlightAnimation/flyTo:method"}}{{/crossLink}} or {{#crossLink "CameraFlightAnimation/jumpTo:method"}}{{/crossLink}}.
              *
-             * Fires a {{#crossLink "CameraFlight/stopFOV:event"}}{{/crossLink}} event on change.
+             * Fires a {{#crossLink "CameraFlightAnimation/fitFOV:event"}}{{/crossLink}} event on change.
              *
-             * @property stopFOV
+             * @property fitFOV
              * @default 45
              * @type Number
              */
-            stopFOV: {
+            fitFOV: {
 
                 set: function (value) {
 
                     value = value || 45;
 
                     /**
-                     Fired whenever this CameraFlight's {{#crossLink "CameraFlight/stopFOV:property"}}{{/crossLink}} property changes.
+                     Fired whenever this CameraFlightAnimation's {{#crossLink "CameraFlightAnimation/fitFOV:property"}}{{/crossLink}} property changes.
 
-                     @event stopFOV
+                     @event fitFOV
                      @param value {Number} The property's new value
                      */
-                    this._stopFOV = value;
+                    this._fitFOV = value;
                 },
 
                 get: function () {
-                    return this._stopFOV;
+                    return this._fitFOV;
+                }
+            },
+
+            /**
+             * When true, will cause this CameraFlightAnimation to point the {{#crossLink "CameraFlightAnimation/camera:property"}}{{/crossLink}}
+             * in the direction that it is travelling.
+             *
+             * Fires a {{#crossLink "CameraFlightAnimation/trail:event"}}{{/crossLink}} event on change.
+             *
+             * @property trail
+             * @type Boolean
+             * @default false
+             */
+            trail: {
+
+                set: function (value) {
+
+                    this._trail = !!value;
+
+                    /**
+                     * Fired whenever this CameraFlightAnimation's {{#crossLink "CameraFlightAnimation/trail:property"}}{{/crossLink}}
+                     * property changes.
+                     *
+                     * @event trail
+                     * @param value The property's new value
+                     */
+                    this.fire("trail", this._trail);
+                },
+
+                get: function () {
+                    return this._trail;
                 }
             }
         },
@@ -13925,7 +14737,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             var json = {
                 duration: this._duration,
-                stopFOV: this._stopFOV
+                fitFOV: this._fitFOV,
+                fit: this._fit,
+                trail: this._trail
             };
 
             if (this._attached.camera) {
@@ -13944,25 +14758,26 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **Camera** defines viewing and projection transforms for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li> A Camera is composed of a viewing and projection {{#crossLink "Transform"}}{{/crossLink}}.</li>
- <li>The viewing transform is usually a {{#crossLink "Lookat"}}Lookat{{/crossLink}}. Having the viewing transform as a
+ ## Overview
+
+ *  A Camera is composed of a viewing and projection {{#crossLink "Transform"}}{{/crossLink}}.
+ * The viewing transform is usually a {{#crossLink "Lookat"}}Lookat{{/crossLink}}. Having the viewing transform as a
  separate component from the Camera allows us to switch the Camera between multiple, existing viewpoints by simply re-attaching it to
- different viewing transform components (ie. {{#crossLink "Lookat"}}Lookats{{/crossLink}}).</li>
- <li> By default, each Camera has its parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default {{#crossLink "Scene/view:property"}}{{/crossLink}} transform,
+ different viewing transform components (ie. {{#crossLink "Lookat"}}Lookats{{/crossLink}}).
+ *  By default, each Camera has its parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default {{#crossLink "Scene/view:property"}}{{/crossLink}} transform,
  (which is a {{#crossLink "Lookat"}}Lookat{{/crossLink}}) and default
  {{#crossLink "Scene/project:property"}}{{/crossLink}} transform (which is a {{#crossLink "Perspective"}}Perspective{{/crossLink}}).
- You would override those with your own transform components as necessary.</li>
-
- </ul>
+ You would override those with your own transform components as necessary.
 
  <img src="../../../assets/images/Camera.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Perspective Camera](../../examples/#camera_perspective)</li>
- </ul>
+ * [Perspective Camera](../../examples/#transforms_project_perspective)
+ * [Orthographic Camera](../../examples/#transforms_project_ortho)
+ * [Flying a Camera to ](../../examples/#animation_CameraFlightAnimation_AABB)
+ * [Automatically following an Entity with a Camera](../../examples/#animation_CameraFollowAnimation)
+ * [Animating a Camera along a path](../../examples/#animation_CameraPathAnimation_interpolate)
 
  ## Usage
 
@@ -13970,29 +14785,32 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  a {{#crossLink "Lookat"}}{{/crossLink}} view transform and a {{#crossLink "Perspective"}}{{/crossLink}} projection transform.
 
  ```` javascript
- var entity = new XEO.Entity({
-     camera: new XEO.Camera({
-         view: new XEO.Lookat({
+ var entity = new xeogl.Entity({
+     camera: new xeogl.Camera({
+         view: new xeogl.Lookat({
              eye: [0, 0, 10],
              look: [0, 0, 0],
              up: [0, 1, 0]
          }),
-         project: new XEO.Lookat({
+         project: new xeogl.Perspective({
              fovy: 60,
              near: 0.1,
              far: 1000
          })
      }),
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.TorusGeometry()
  });
 
  entity.scene.on("tick", function () {
-     camera.view.rotateEyeY(0.5);
-     camera.view.rotateEyeX(0.3);
+
+     var lookat = entity.camera.view;
+
+     lookat.rotateEyeY(0.5);
+     lookat.rotateEyeX(0.3);
  });
  ````
  @class Camera
- @module XEO
+ @module xeogl
  @submodule camera
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this Camera within the
@@ -14001,10 +14819,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
  You only need to supply an ID if you need to be able to find the Camera by ID within its parent {{#crossLink "Scene"}}Scene{{/crossLink}} later.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Camera.
- @param [cfg.view] {String|XEO.Transform} ID or instance of a view transform within the parent {{#crossLink "Scene"}}Scene{{/crossLink}}. Defaults to the
+ @param [cfg.view] {String|xeogl.Transform} ID or instance of a view transform within the parent {{#crossLink "Scene"}}Scene{{/crossLink}}. Defaults to the
  parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default {{#crossLink "Scene/view:property"}}{{/crossLink}} transform,
  which is a {{#crossLink "Lookat"}}Lookat{{/crossLink}}.
- @param [cfg.project] {String|XEO.Transform} ID or instance of a projection transform
+ @param [cfg.project] {String|xeogl.Transform} ID or instance of a projection transform
  within the parent {{#crossLink "Scene"}}Scene{{/crossLink}}. Defaults to the parent
  {{#crossLink "Scene"}}Scene{{/crossLink}}'s default {{#crossLink "Scene/project:property"}}{{/crossLink}} transform,
  which is a {{#crossLink "Perspective"}}Perspective{{/crossLink}}.
@@ -14014,9 +14832,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.Camera = XEO.Component.extend({
+    xeogl.Camera = xeogl.Component.extend({
 
-        type: "XEO.Camera",
+        type: "xeogl.Camera",
 
         _init: function (cfg) {
 
@@ -14050,7 +14868,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                      */
                     this._attach({
                         name: "project",
-                        type: "XEO.Transform",
+                        type: "xeogl.Transform",
                         component: value,
                         sceneDefault: true,
                         on: {
@@ -14092,7 +14910,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                      */
                     this._attach({
                         name: "view",
-                        type: "XEO.Transform",
+                        type: "xeogl.Transform",
                         component: value,
                         sceneDefault: true,
                         on: {
@@ -14129,32 +14947,32 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **Canvas** manages a {{#crossLink "Scene"}}Scene{{/crossLink}}'s HTML canvas and its WebGL context.
 
- <ul>
- <li>Each {{#crossLink "Scene"}}Scene{{/crossLink}} provides a Canvas as a read-only property on itself.</li>
- <li>When a {{#crossLink "Scene"}}Scene{{/crossLink}} is configured with the ID of
+ ## Overview
+
+ * Each {{#crossLink "Scene"}}Scene{{/crossLink}} provides a Canvas as a read-only property on itself.
+ * When a {{#crossLink "Scene"}}Scene{{/crossLink}} is configured with the ID of
  an existing <a href="http://www.w3.org/TR/html5/scripting-1.html#the-canvas-element">HTMLCanvasElement</a>, then
- the Canvas will bind to that, otherwise the Canvas will automatically create its own.</li>
- <li>A Canvas will fire a {{#crossLink "Canvas/size:event"}}{{/crossLink}} event whenever
- the <a href="http://www.w3.org/TR/html5/scripting-1.html#the-canvas-element">HTMLCanvasElement</a> resizes.</li>
- <li>A Canvas is responsible for obtaining a WebGL context from
- the <a href="http://www.w3.org/TR/html5/scripting-1.html#the-canvas-element">HTMLCanvasElement</a>.</li>
- <li>A Canvas also fires a {{#crossLink "Canvas/webglContextLost:event"}}{{/crossLink}} event when the WebGL context is
- lost, and a {{#crossLink "Canvas/webglContextRestored:event"}}{{/crossLink}} when it is restored again.</li>
- <li>The various components within the parent {{#crossLink "Scene"}}Scene{{/crossLink}} will transparently recover on
- the {{#crossLink "Canvas/webglContextRestored:event"}}{{/crossLink}} event.</li>
- </ul>
+ the Canvas will bind to that, otherwise the Canvas will automatically create its own.
+ * A Canvas will fire a {{#crossLink "Canvas/boundary:event"}}{{/crossLink}} event whenever
+ the <a href="http://www.w3.org/TR/html5/scripting-1.html#the-canvas-element">HTMLCanvasElement</a> resizes.
+ * A Canvas is responsible for obtaining a WebGL context from
+ the <a href="http://www.w3.org/TR/html5/scripting-1.html#the-canvas-element">HTMLCanvasElement</a>.
+ * A Canvas also fires a {{#crossLink "Canvas/webglContextLost:event"}}{{/crossLink}} event when the WebGL context is
+ lost, and a {{#crossLink "Canvas/webglContextRestored:event"}}{{/crossLink}} when it is restored again.
+ * The various components within the parent {{#crossLink "Scene"}}Scene{{/crossLink}} will transparently recover on
+ the {{#crossLink "Canvas/webglContextRestored:event"}}{{/crossLink}} event.
 
  <img src="../../../assets/images/Canvas.png"></img>
 
- <br><br>
  Note that a Canvas also has a {{#crossLink "Spinner"}}{{/crossLink}}, which shows a
  busy spinner when a {{#crossLink "Model"}}{{/crossLink}} is loading, or when directed by application logic.
 
  ## Examples
 
- <ul>
- <li>[Multiple canvases](../../examples/#scene_multipleScenes)</li>
- </ul>
+ * [Multiple canvases/scenes in a page](../../examples/#scene_multipleScenes)
+ * [Taking canvas snapshots](../../examples/#canvas_snapshot)
+ * [Transparent canvas with background image](../../examples/#canvas_transparent)
+ * [Canvas with multiple viewports](../../examples/#canvas_multipleViewports)
 
  ## Usage
 
@@ -14163,7 +14981,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  within the page. Then we subscribe to various events fired by that Canvas component.
 
  ```` javascript
- var scene = new XEO.Scene();
+ var scene = new xeogl.Scene();
 
  // Get the Canvas off the Scene
  // Since we did not configure the Scene with the ID of a DOM canvas element,
@@ -14199,7 +15017,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ```` javascript
  // Create a Scene, this time configuring it with the
  // ID of an existing DOM canvas element
- var scene = new XEO.Scene({
+ var scene = new xeogl.Scene({
           canvasId: "myCanvas"
      });
 
@@ -14211,7 +15029,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  if that's absent. If you just want WebGL 1, disable WebGL 2 like so:
 
  ```` javascript
- var scene = new XEO.Scene({
+ var scene = new xeogl.Scene({
           canvasId: "myCanvas",
           webgl2 : true
      });
@@ -14222,7 +15040,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
 
  @class Canvas
- @module XEO
+ @module xeogl
  @submodule canvas
  @static
  @param {Scene} scene Parent scene
@@ -14232,9 +15050,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.Canvas = XEO.Component.extend({
+    xeogl.Canvas = xeogl.Component.extend({
 
-        type: "XEO.Canvas",
+        type: "xeogl.Canvas",
 
         serializable: false,
 
@@ -14301,6 +15119,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              *
              * @property transparent
              * @type {Boolean}
+             * @default {false}
              * @final
              */
             this.transparent = !!cfg.transparent;
@@ -14312,6 +15131,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              */
             this.contextAttr = cfg.contextAttr || {};
             this.contextAttr.alpha = this.transparent;
+            this.contextAttr.preserveDrawingBuffer = false;
 
             if (!cfg.canvas) {
 
@@ -14323,7 +15143,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 // Canvas supplied
 
-                if (XEO._isString(cfg.canvas)) {
+                if (xeogl._isString(cfg.canvas)) {
 
                     // Canvas ID supplied - find the canvas
 
@@ -14333,7 +15153,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                         // Canvas not found - create one automatically
 
-                        this.error("Canvas element not found: " + XEO._inQuotes(cfg.canvas)
+                        this.error("Canvas element not found: " + xeogl._inQuotes(cfg.canvas)
                             + " - creating default canvas instead.");
 
                         this._createCanvas();
@@ -14381,7 +15201,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 this.canvas.clientWidth, this.canvas.clientHeight
             ];
 
+            this._createBackground();
             this._createOverlay();
+
+            this._resizeBackground();
             this._resizeOverlay();
 
             // Get WebGL context
@@ -14437,6 +15260,8 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     if (newPosition || newSize) {
 
                         self._spinner._adjustPosition();
+
+                        self._resizeBackground();
                         self._resizeOverlay();
 
                         if (newSize) {
@@ -14447,13 +15272,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                             // TODO: Wasteful to re-count pixel size of each canvas on each canvas' resize
                             var countPixels = 0;
                             var scene;
-                            for (var sceneId in XEO.scenes) {
-                                if (XEO.scenes.hasOwnProperty(sceneId)) {
-                                    scene = XEO.scenes[sceneId];
+                            for (var sceneId in xeogl.scenes) {
+                                if (xeogl.scenes.hasOwnProperty(sceneId)) {
+                                    scene = xeogl.scenes[sceneId];
                                     countPixels += scene.canvas.canvas.clientWidth * scene.canvas.canvas.clientHeight;
                                 }
                             }
-                            XEO.stats.memory.pixels = countPixels;
+                            xeogl.stats.memory.pixels = countPixels;
 
                             canvas.width = canvas.clientWidth;
                             canvas.height = canvas.clientHeight;
@@ -14489,9 +15314,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             /**
              *
              */
-            this._spinner = new XEO.Spinner(this.scene, {
+            this._spinner = new xeogl.Spinner(this.scene, {
                 canvas: this.canvas
             });
+
+            // Set property, see definition further down
+            this.backgroundColor = cfg.backgroundColor;
+            this.backgroundImage = cfg.backgroundImage;
         },
 
         /**
@@ -14500,7 +15329,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          */
         _createCanvas: function () {
 
-            var canvasId = "XEO-canvas-" + XEO.math.createUUID();
+            var canvasId = "xeogl-canvas-" + xeogl.math.createUUID();
             var body = document.getElementsByTagName("body")[0];
             var div = document.createElement('div');
 
@@ -14509,11 +15338,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             style.width = "100%";
             style.padding = "0";
             style.margin = "0";
-            style.background = "black";
+            style.background = "rgba(0,0,0,0);";
             style.float = "left";
             style.left = "0";
             style.top = "0";
             style.position = "absolute";
+            style.opacity = "1.0";
             style["z-index"] = "-10000";
 
             div.innerHTML += '<canvas id="' + canvasId + '" style="width: 100%; height: 100%; float: left; margin: 0; padding: 0;"></canvas>';
@@ -14524,34 +15354,58 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         },
 
         /**
+         * Creates a image element behind the canvas, for purpose of showing a custom background.
+         * @private
+         */
+        _createBackground: function () {
+
+            var body = document.getElementsByTagName("body")[0];
+            var div = document.createElement('div');
+
+            var style = div.style;
+            style.padding = "0";
+            style.margin = "0";
+            style.background = null;
+            style.backgroundImage = null;
+            style.float = "left";
+            style.left = "0";
+            style.top = "0";
+            style.width = "0px";
+            style.height = "0px";
+            style.position = "absolute";
+            style.opacity = 1;
+            style["z-index"] = "-20000";
+
+            body.appendChild(div);
+
+            this._backgroundElement = div;
+        },
+
+        /**
          * Creates an invisible DIV over the canvas, for purpose of catching
          * input events without interfering with app-lever UI bits floating underneath.
          * @private
          */
         _createOverlay: function () {
 
-            var overlayId = "XEO-overlay-" + XEO.math.createUUID();
             var body = document.getElementsByTagName("body")[0];
             var div = document.createElement('div');
 
             var style = div.style;
-            //style.height = this.canvas.height + "px";
-            //style.width = "100%";
             style.padding = "0";
             style.margin = "0";
             style.background = "black";
             style.float = "left";
             style.left = "0";
             style.top = "0";
+            style.width = "0px";
+            style.height = "0px";
             style.position = "absolute";
             style.opacity = 0;
             style["z-index"] = "100000";
 
-            //div.innerHTML += '<div id="' + overlayId + '" style="width: 100%; height: 100%; float: left; margin: 0; padding: 0; opacity: 0;"></overlay>';
-
             body.appendChild(div);
 
-            //this.overlay = document.getElementById(overlayId);
             this.overlay = div;
         },
 
@@ -14573,6 +15427,26 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             overlayStyle["top"] = xy.y + "px";
             overlayStyle["width"] = canvas.clientWidth + "px";
             overlayStyle["height"] = canvas.clientHeight + "px";
+        },
+
+        /** (Re)sizes the background DIV to the canvas size
+         * @private
+         */
+        _resizeBackground: function () {
+
+            if (!this.canvas || !this._backgroundElement) {
+                return;
+            }
+
+            var canvas = this.canvas;
+            var background = this._backgroundElement;
+            var backgroundStyle = background.style;
+
+            var xy = this._getElementXY(canvas);
+            backgroundStyle["left"] = xy.x + "px";
+            backgroundStyle["top"] = xy.y + "px";
+            backgroundStyle["width"] = canvas.clientWidth + "px";
+            backgroundStyle["height"] = canvas.clientHeight + "px";
         },
 
         _getElementXY: function (e) {
@@ -14714,6 +15588,96 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         _props: {
 
             /**
+             A background color for the canvas. This is overridden by {{#crossLink "Canvas/backgroundImage:property"}}{{/crossLink}}.
+
+             You can set this to a new color at any time.
+
+             Fires a {{#crossLink "Canvas/backgroundColor:event"}}{{/crossLink}} event on change.
+
+             @property backgroundColor
+             @type Float32Array
+             @default null
+             */
+            backgroundColor: {
+
+                set: function (value) {
+
+                    if (!value) {
+
+                        this._backgroundColor = null;
+
+                    } else {
+
+                        (this._backgroundColor = this._backgroundColor || new xeogl.math.vec4()).set(value || [0, 0, 0, 1]);
+
+                        if (!this._backgroundImageSrc) {
+                            var rgb = "rgb(" + Math.round(this._backgroundColor[0] * 255) + ", " + Math.round(this._backgroundColor[1] * 255) + "," + Math.round(this._backgroundColor[2] * 255) + ")";
+                            this._backgroundElement.style.background = rgb;
+                        }
+                    }
+
+                    /**
+                     Fired whenever this Canvas's {{#crossLink "Canvas/backgroundColor:property"}}{{/crossLink}} property changes.
+                     @event backgroundColor
+                     @param value The property's new value
+                     */
+                    this.fire("backgroundColor", this._backgroundColor);
+                },
+
+                get: function () {
+                    return this._backgroundColor;
+                }
+            },
+
+            /**
+             URL of a background image for the canvas. This is overrided by {{#crossLink "Canvas/backgroundColor/property"}}{{/crossLink}}.
+
+             You can set this to a new file path at any time.
+
+             Fires a {{#crossLink "Canvas/background:event"}}{{/crossLink}} event on change.
+
+             @property backgroundImage
+             @type String
+             */
+            backgroundImage: {
+
+                set: function (value) {
+
+                    if (!value) {
+                        return;
+                    }
+
+                    if (!xeogl._isString(value)) {
+                        this.error("Value for 'backgroundImage' should be a string");
+                        return;
+                    }
+
+                    if (value === this._backgroundImageSrc) { // Already loaded this image
+                        return;
+                    }
+
+                    this._backgroundElement.style.backgroundImage = "url('" + value + "')";
+                    this._backgroundImageSrc = value;
+
+                    if (!this._backgroundImageSrc) {
+                        var rgb = "rgb(" + Math.round(this._backgroundColor[0] * 255) + ", " + Math.round(this._backgroundColor[1] * 255) + "," + Math.round(this._backgroundColor[2] * 255) + ")";
+                        this._backgroundElement.style.background = rgb;
+                    }
+
+                    /**
+                     Fired whenever this Canvas's {{#crossLink "Canvas/backgroundImage:property"}}{{/crossLink}} property changes.
+                     @event backgroundImage
+                     @param value The property's new value
+                     */
+                    this.fire("backgroundImage", this._backgroundImageSrc);
+                },
+
+                get: function () {
+                    return this._backgroundImageSrc;
+                }
+            },
+
+            /**
              The busy {{#crossLink "Spinner"}}{{/crossLink}} for this Canvas.
 
              @property spinner
@@ -14737,24 +15701,22 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A Spinner displays a spinner animation at the center of its {{#crossLink "Canvas"}}{{/crossLink}} while things are loading or otherwise busy.
 
- <ul>
- <li>Spinners are normally shown by {{#crossLink "Model"}}Models{{/crossLink}} while they are loading, however they may also
- be shown by any application code that wants to indicate business.</li>
- <li>By default, they are also shown by components that load assets, such as {{#crossLink "Texture"}}{{/crossLink}}. You
- can disable that by flipping the Spinner's {{#crossLink "Spinner/textures:property"}}{{/crossLink}} property.</li>
- <li>A Spinner component has a {{#crossLink "Spinner/processes:property"}}{{/crossLink}} count that indicates how many
+ ## Overview
+
+ * Spinners are normally shown by {{#crossLink "Model"}}Models{{/crossLink}} while they are loading, however they may also
+ be shown by any application code that wants to indicate business.
+ * By default, they are also shown by components that load assets, such as {{#crossLink "Texture"}}{{/crossLink}}. You
+ can disable that by flipping the Spinner's {{#crossLink "Spinner/textures:property"}}{{/crossLink}} property.
+ * A Spinner component has a {{#crossLink "Spinner/processes:property"}}{{/crossLink}} count that indicates how many
  active processes it currently represents. As a process starts, a process would increment {{#crossLink "Spinner/processes:property"}}{{/crossLink}}, then as it
- completes (or fails), would decrement it again.</li>
- <li>A Spinner is only visible while {{#crossLink "Spinner/processes:property"}}{{/crossLink}} is greater than zero.</li>
- </ul>
+ completes (or fails), would decrement it again.
+ * A Spinner is only visible while {{#crossLink "Spinner/processes:property"}}{{/crossLink}} is greater than zero.
 
  <img src="../../../assets/images/Spinner.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Loading glTF model with spinner](../../examples/#importing_gltf_gearbox)</li>
- </ul>
+ * [Loading glTF model with spinner](../../examples/#importing_gltf_gearbox)
 
  ## Usage
 
@@ -14788,7 +15750,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ````
 
  @class Spinner
- @module XEO
+ @module xeogl
  @submodule canvas
  @extends Component
  */
@@ -14799,9 +15761,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     // Ensures lazy-injected CSS only injected once  
     var spinnerCSSInjected = false;
 
-    XEO.Spinner = XEO.Component.extend({
+    xeogl.Spinner = xeogl.Component.extend({
 
-        type: "XEO.Spinner",
+        type: "xeogl.Spinner",
 
         serializable: false,
 
@@ -15088,60 +16050,58 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  * Components for cross-section views of Entities.
  *
- * @module XEO
+ * @module xeogl
  * @submodule clipping
- */;
-
-/**
+ */;/**
  A **Clip** is an arbitrarily-aligned World-space clipping plane used to create
  cross-section views of associated {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>These are grouped within {{#crossLink "Clips"}}Clips{{/crossLink}} components, which are attached to
+ ## Overview
+
+ * These are grouped within {{#crossLink "Clips"}}Clips{{/crossLink}} components, which are attached to
  {{#crossLink "Entity"}}Entities{{/crossLink}}. See the {{#crossLink "Clips"}}Clips{{/crossLink}} documentation
- for more info.</li>
- <li>A Clip is specified in World-space, as being perpendicular to a vector {{#crossLink "Clip/dir:property"}}{{/crossLink}}
- that emanates from the origin, offset at a distance {{#crossLink "Clip/dist:property"}}{{/crossLink}} along that vector. </li>
- <li>You can move a Clip back and forth along its vector by varying {{#crossLink "Clip/dist:property"}}{{/crossLink}}.</li>
- <li>Likewise, you can rotate a Clip about the origin by rotating the {{#crossLink "Clip/dir:property"}}{{/crossLink}} vector.</li>
- <li>A Clip is has a {{#crossLink "Clip/mode:property"}}{{/crossLink}},  which indicates whether it is disabled
+ for more info.
+ * A Clip is specified in World-space, as being perpendicular to a vector {{#crossLink "Clip/dir:property"}}{{/crossLink}}
+ that emanates from the origin, offset at a distance {{#crossLink "Clip/dist:property"}}{{/crossLink}} along that vector.
+ * You can move a Clip back and forth along its vector by varying {{#crossLink "Clip/dist:property"}}{{/crossLink}}.
+ * Likewise, you can rotate a Clip about the origin by rotating the {{#crossLink "Clip/dir:property"}}{{/crossLink}} vector.
+ * A Clip is has a {{#crossLink "Clip/mode:property"}}{{/crossLink}},  which indicates whether it is disabled
  ("disabled"), discarding fragments that fall on the origin-side of the plane ("inside"), or clipping fragments that
- fall on the other side of the plane from the origin ("outside").</li>
- <li>You can update the {{#crossLink "Clip/mode:property"}}{{/crossLink}} of a Clip to activate or deactivate it, or to
- switch which side it discards fragments from.</li>
- <li>Clipping may also be enabled or disabled for specific {{#crossLink "Entity"}}Entities{{/crossLink}}
+ fall on the other side of the plane from the origin ("outside").
+ * You can update the {{#crossLink "Clip/mode:property"}}{{/crossLink}} of a Clip to activate or deactivate it, or to
+ switch which side it discards fragments from.
+ * Clipping may also be enabled or disabled for specific {{#crossLink "Entity"}}Entities{{/crossLink}}
  via the {{#crossLink "Modes/clipping:property"}}{{/crossLink}} flag on {{#crossLink "Modes"}}Modes{{/crossLink}} components
- attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Clips create within xeoEngine's shaders.</li>
- </ul>
+ attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.
+
 
  <img src="../../../assets/images/Clip.png"></img>
 
  ## Usage
 
- <ul>
- <li>In this example we have an {{#crossLink "Entity"}}{{/crossLink}} that's clipped by a {{#crossLink "Clips"}}{{/crossLink}}
- that contains two {{#crossLink "Clip"}}{{/crossLink}} planes.</li>
- <li>The first {{#crossLink "Clip"}}{{/crossLink}} plane is on the
- positive diagonal, while the second is on the negative diagonal.</li>
- <li>The {{#crossLink "Entity"}}Entity's{{/crossLink}}
- {{#crossLink "Geometry"}}{{/crossLink}} is a box, and the planes will clip off two of the box's corners.</li>
- </ul>
+
+ * In this example we have an {{#crossLink "Entity"}}{{/crossLink}} that's clipped by a {{#crossLink "Clips"}}{{/crossLink}}
+ that contains two {{#crossLink "Clip"}}{{/crossLink}} planes.
+ * The first {{#crossLink "Clip"}}{{/crossLink}} plane is on the
+ positive diagonal, while the second is on the negative diagonal.
+ * The {{#crossLink "Entity"}}Entity's{{/crossLink}}
+ {{#crossLink "Geometry"}}{{/crossLink}} is a box, and the planes will clip off two of the box's corners.
+
 
  ````javascript
  // Create a set of Clip planes
- clips = new XEO.Clip({
+ clips = new xeogl.Clip({
      clips: [
 
          // Clip plane on negative diagonal
-         new XEO.Clip({
+         new xeogl.Clip({
              dir: [-1.0, -1.0, -1.0], // Direction of Clip from World space origin
              dist: 2.0,               // Distance along direction vector
              mode: "outside"          // Clip fragments that fall beyond the plane
          }),
 
          // Clip plane on positive diagonal
-         new XEO.Clip({
+         new xeogl.Clip({
              dir: [1.0, 1.0, 1.0],
              dist: 2.0,
              mode: "outside"
@@ -15150,11 +16110,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  });
 
  // Create an Entity that's clipped by our Clip planes
- var entity = new XEO.Entity({
-     geometry: new XEO.BoxGeometry(),
+ var entity = new xeogl.Entity({
+     geometry: new xeogl.BoxGeometry(),
      clips: clips
  });
-
  ````
 
  ### Toggling clipping on and off
@@ -15163,7 +16122,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  enable or disable clipping of it:
 
  ```` javascript
- entity.modes = new XEO.Modes(scene, {
+ entity.modes = new xeogl.Modes(scene, {
     clipping: true
  });
 
@@ -15172,7 +16131,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ````
 
  @class Clip
- @module XEO
+ @module xeogl
  @submodule clipping
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Clip in the
@@ -15191,9 +16150,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.Clip = XEO.Component.extend({
+    xeogl.Clip = xeogl.Component.extend({
 
-        type: "XEO.Clip",
+        type: "xeogl.Clip",
 
         _init: function (cfg) {
 
@@ -15215,11 +16174,11 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
              Possible states are:
 
-             <ul>
-             <li>"disabled" - inactive</li>
-             <li>"inside" - clipping fragments that fall within the half-space on the origin-side of the Clip plane</li>
-             <li>"outside" - clipping fragments that fall on the other side of the Clip plane from the origin</li>
-             </ul>
+
+             * "disabled" - inactive
+             * "inside" - clipping fragments that fall within the half-space on the origin-side of the Clip plane
+             * "outside" - clipping fragments that fall on the other side of the Clip plane from the origin
+
 
              Fires a {{#crossLink "Clip/mode:event"}}{{/crossLink}} event on change.
 
@@ -15264,7 +16223,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                 set: function (value) {
 
-                    this._state.dir =  value || XEO.math.vec3([1, 0, 0]);
+                    this._state.dir =  value || xeogl.math.vec3([1, 0, 0]);
 
                     this._renderer.imageDirty = true;
 
@@ -15333,22 +16292,21 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  ## Overview
 
- <ul>
- <li>Each {{#crossLink "Clip"}}Clip{{/crossLink}} is specified in World-space, as being perpendicular to a vector
+
+ * Each {{#crossLink "Clip"}}Clip{{/crossLink}} is specified in World-space, as being perpendicular to a vector
  {{#crossLink "Clip/dir:property"}}{{/crossLink}} that emanates from the origin, offset at a
- distance {{#crossLink "Clip/dist:property"}}{{/crossLink}} along that vector. </li>
- <li>You can move each {{#crossLink "Clip"}}Clip{{/crossLink}} back and forth along its vector by varying
- its {{#crossLink "Clip/dist:property"}}{{/crossLink}}.</li>
- <li>Likewise, you can rotate each {{#crossLink "Clip"}}Clip{{/crossLink}} about the origin by rotating
- its {{#crossLink "Clip/dir:property"}}{{/crossLink}} vector.</li>
- <li>Each {{#crossLink "Clip"}}Clip{{/crossLink}} is has a {{#crossLink "Clip/mode:property"}}{{/crossLink}}, which indicates whether it is disabled ("disabled"), discarding fragments that fall on the origin-side of the plane ("inside"), or clipping fragments that fall on the other side of the plane from the origin ("outside").</li>
- <li>You can update each {{#crossLink "Clip"}}Clip{{/crossLink}}'s {{#crossLink "Clip/mode:property"}}{{/crossLink}} to
- activate or deactivate it, or to switch which side it discards fragments from.</li>
- <li>Clipping may also be enabled or disabled for specific {{#crossLink "Entity"}}Entities{{/crossLink}}
+ distance {{#crossLink "Clip/dist:property"}}{{/crossLink}} along that vector.
+ * You can move each {{#crossLink "Clip"}}Clip{{/crossLink}} back and forth along its vector by varying
+ its {{#crossLink "Clip/dist:property"}}{{/crossLink}}.
+ * Likewise, you can rotate each {{#crossLink "Clip"}}Clip{{/crossLink}} about the origin by rotating
+ its {{#crossLink "Clip/dir:property"}}{{/crossLink}} vector.
+ * Each {{#crossLink "Clip"}}Clip{{/crossLink}} is has a {{#crossLink "Clip/mode:property"}}{{/crossLink}}, which indicates whether it is disabled ("disabled"), discarding fragments that fall on the origin-side of the plane ("inside"), or clipping fragments that fall on the other side of the plane from the origin ("outside").
+ * You can update each {{#crossLink "Clip"}}Clip{{/crossLink}}'s {{#crossLink "Clip/mode:property"}}{{/crossLink}} to
+ activate or deactivate it, or to switch which side it discards fragments from.
+ * Clipping may also be enabled or disabled for specific {{#crossLink "Entity"}}Entities{{/crossLink}}
  via the {{#crossLink "Modes/clipping:property"}}{{/crossLink}} flag on {{#crossLink "Modes"}}Modes{{/crossLink}} components
- attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Clips create within xeoEngine's shaders.</li>
- </ul>
+ attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.
+
  <img src="../../../assets/images/Clips.png"></img>
 
  ## Usage
@@ -15356,7 +16314,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  See {{#crossLink "Clip"}}{{/crossLink}} for an example.
 
  @class Clips
- @module XEO
+ @module xeogl
  @submodule clipping
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Clips in the default
@@ -15365,7 +16323,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
  generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Clips.
- @param [cfg.clips] {Array(String)|Array(XEO.Clip)} Array containing either IDs or instances of
+ @param [cfg.clips] {Array(String)|Array(xeogl.Clip)} Array containing either IDs or instances of
  {{#crossLink "Clip"}}Clip{{/crossLink}} components within the parent {{#crossLink "Scene"}}Scene{{/crossLink}}.
  @extends Component
  */
@@ -15373,14 +16331,14 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.Clips = XEO.Component.extend({
+    xeogl.Clips = xeogl.Component.extend({
 
-        type: "XEO.Clips",
+        type: "xeogl.Clips",
 
         _init: function (cfg) {
 
             // Renderer state contains the states of the child Clip components
-            this._state = new XEO.renderer.Clips({
+            this._state = new xeogl.renderer.Clips({
 
                 clips: [],
 
@@ -15411,7 +16369,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              *
              * @property clips
              * @default []
-             * @type Array(XEO.Clip)
+             * @type Array(xeogl.Clip)
              */
             clips: {
 
@@ -15471,7 +16429,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                         clip = value[i];
 
-                        if (XEO._isString(clip)) {
+                        if (xeogl._isString(clip)) {
 
                             // ID given for clip - find the clip component
 
@@ -15480,13 +16438,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                             clip = this.components[id];
 
                             if (!clip) {
-                                this.error("Component not found: " + XEO._inQuotes(id));
+                                this.error("Component not found: " + xeogl._inQuotes(id));
                                 continue;
                             }
                         }
 
-                        if (clip.type !== "XEO.Clip") {
-                            this.error("Component " + XEO._inQuotes(id) + " is not a XEO.Clip");
+                        if (clip.type !== "xeogl.Clip") {
+                            this.error("Component " + xeogl._inQuotes(id) + " is not a xeogl.Clip");
                             continue;
                         }
 
@@ -15502,7 +16460,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                     /**
                      Fired whenever this Clips' {{#crossLink "Clips/clips:property"}}{{/crossLink}} property changes.
                      @event clips
-                     @param value {Array of XEO.Clip} The property's new value
+                     @param value {Array of xeogl.Clip} The property's new value
                      */
                     this.fire("dirty", true);
                     this.fire("clips", this._clips);
@@ -15579,24 +16537,26 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  * Components for managing Scene configuration.
  *
- * @module XEO
+ * @module xeogl
  * @submodule configs
  */;/**
  A **Configs** holds configuration properties for the parent {{#crossLink "Scene"}}Scene{{/crossLink}}.
 
- <ul>
- <li>Each {{#crossLink "Scene"}}Scene{{/crossLink}} provides a Configs on itself as a read-only property.</li>
- <li>Config property values are set on a Configs using its {{#crossLink "Configs/set:method"}}{{/crossLink}} method,
- and changes to properties may be subscribed to using {{#crossLink "Component/on:method"}}{{/crossLink}}.</li>
- <li>You can define your own properties in a Configs, but take care not to clobber the native properties used by
- xeoEngine (see table below).</li>
- </ul>
+ ## Overview
+
+
+ * Each {{#crossLink "Scene"}}Scene{{/crossLink}} provides a Configs on itself as a read-only property.
+ * Config property values are set on a Configs using its {{#crossLink "Configs/set:method"}}{{/crossLink}} method,
+ and changes to properties may be subscribed to using {{#crossLink "Component/on:method"}}{{/crossLink}}.
+ * You can define your own properties in a Configs, but take care not to clobber the native properties used by
+ xeogl (see table below).
+
 
  <img src="../../../assets/images/Configs.png"></img>
 
- ## Native xeoEngine config properties
+ ## Native xeogl config properties
 
- Don't use the following names for your own Configs properties, because these are already used by xeoEngine:
+ Don't use the following names for your own Configs properties, because these are already used by xeogl:
 
  | Name  | Description  |
  |---|---|
@@ -15610,7 +16570,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  property, which fires a change event.
 
  ````Javascript
- var scene = new XEO.Scene();
+ var scene = new xeogl.Scene();
 
  var configs = scene.configs;
 
@@ -15630,7 +16590,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ````
 
  @class Configs
- @module XEO
+ @module xeogl
  @submodule configs
  @constructor
  @param [scene] {Scene} Parent scene - creates this component in the default scene when omitted.
@@ -15641,9 +16601,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.Configs = XEO.Component.extend({
+    xeogl.Configs = xeogl.Component.extend({
 
-        type: "XEO.Configs",
+        type: "xeogl.Configs",
 
         _init: function (cfg) {
 
@@ -15676,7 +16636,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         },
 
         _toJSON: function () {
-            return XEO._copy(this.props);
+            return xeogl._copy(this.props);
         }
     });
 
@@ -15684,7 +16644,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  * Components for controlling things with user input.
  *
- * @module XEO
+ * @module xeogl
  * @submodule controls
  */;/**
  A **CameraControl** pans, rotates and zooms a {{#crossLink "Camera"}}{{/crossLink}} with the mouse and keyboard,
@@ -15692,64 +16652,58 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  A CameraControl contains the following control sub-components, each of which handle an aspect of interaction:
 
- <ul>
- <li>{{#crossLink "KeyboardPanCamera"}}{{/crossLink}} pans the camera with the W,S,A,D,X and Z keys</li>
- <li>{{#crossLink "MousePanCamera"}}{{/crossLink}} pans horizontally and vertically by dragging the mouse with left and right buttons down</li>
- <li>{{#crossLink "KeyboardRotateCamera"}}{{/crossLink}} rotates the camera with the arrow keys</li>
- <li>{{#crossLink "MouseRotateCamera"}}{{/crossLink}} rotates the camera by dragging with the left mouse button down</li>
- <li>{{#crossLink "KeyboardZoomCamera"}}{{/crossLink}} zooms the *eye* position closer and further from the *look* position with the + and - keys</li>
- <li>{{#crossLink "MouseZoomCamera"}}{{/crossLink}} zooms the *eye* closer and further from *look* using the mousewheel</li>
- <li>{{#crossLink "KeyboardAxisCamera"}}{{/crossLink}} between preset left, right, anterior, posterior, superior and inferior views using keys 1-6</li>
- <li>{{#crossLink "MousePickEntity"}}{{/crossLink}} TODO</li>
- <li>{{#crossLink "CameraFlight"}}{{/crossLink}} TODO</li>
- </ul>
+ * {{#crossLink "KeyboardPanCamera"}}{{/crossLink}} pans the camera with the W,S,A,D,X and Z keys
+ * {{#crossLink "MousePanCamera"}}{{/crossLink}} pans horizontally and vertically by dragging the mouse with left and right buttons down
+ * {{#crossLink "KeyboardRotateCamera"}}{{/crossLink}} rotates the camera with the arrow keys
+ * {{#crossLink "MouseRotateCamera"}}{{/crossLink}} rotates the camera by dragging with the left mouse button down
+ * {{#crossLink "KeyboardZoomCamera"}}{{/crossLink}} zooms the *eye* position closer and further from the *look* position with the + and - keys
+ * {{#crossLink "MouseZoomCamera"}}{{/crossLink}} zooms the *eye* closer and further from *look* using the mousewheel
+ * {{#crossLink "KeyboardAxisCamera"}}{{/crossLink}} between preset left, right, anterior, posterior, superior and inferior views using keys 1-6
+ * {{#crossLink "MousePickEntity"}}{{/crossLink}} TODO
+ * {{#crossLink "cameraFlightAnimation"}}{{/crossLink}} TODO
 
  A CameraControl provides these control sub-components as read-only properties, which allows them to be individually configured (or deactivated) as required.
 
- <ul>
- <li>Activating or deactivating a CameraControl will activate or deactivate all its control sub-components.</li>
- <li>Attaching a different {{#crossLink "Camera"}}{{/crossLink}} to the CameraControl will also attach that
- {{#crossLink "Camera"}}{{/crossLink}} to all the control sub-components.</li>
- <li>The control sub-components are not supposed to be re-attached to a different {{#crossLink "Camera"}}{{/crossLink}} than the owner CameraControl.</li>
- <li>A CameraControl manages the life-cycles of its control sub-components, destroying them when the CameraControl is destroyed.</li>
- </ul>
+ * Activating or deactivating a CameraControl will activate or deactivate all its control sub-components.
+ * Attaching a different {{#crossLink "Camera"}}{{/crossLink}} to the CameraControl will also attach that
+ {{#crossLink "Camera"}}{{/crossLink}} to all the control sub-components.
+ * The control sub-components are not supposed to be re-attached to a different {{#crossLink "Camera"}}{{/crossLink}} than the owner CameraControl.
+ * A CameraControl manages the life-cycles of its control sub-components, destroying them when the CameraControl is destroyed.
 
  <img src="../../../assets/images/CameraControl.png"></img>
 
  ## Examples
 
- <ul>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- <li>[KeyboardRotateCamera example](../../examples/#interaction_KeyboardRotateCamera)</li>
- <li>[KeyboardPanCamera example](../../examples/#interaction_KeyboardPanCamera)</li>
- <li>[KeyboardZoomCamera example](../../examples/#interaction_KeyboardZoomCamera)</li>
- <li>[KeyboardRotateCamera example](../../examples/#interaction_KeyboardRotateCamera)</li>
- <li>[KeyboardPanCamera example](../../examples/#interaction_KeyboardPanCamera)</li>
- <li>[KeyboardZoomCamera example](../../examples/#interaction_KeyboardZoomCamera)</li>
- </ul>
+ * [CameraControl example](../../examples/#interaction_CameraControl)
+ * [KeyboardRotateCamera example](../../examples/#interaction_KeyboardRotateCamera)
+ * [KeyboardPanCamera example](../../examples/#interaction_KeyboardPanCamera)
+ * [KeyboardZoomCamera example](../../examples/#interaction_KeyboardZoomCamera)
+ * [KeyboardRotateCamera example](../../examples/#interaction_KeyboardRotateCamera)
+ * [KeyboardPanCamera example](../../examples/#interaction_KeyboardPanCamera)
+ * [KeyboardZoomCamera example](../../examples/#interaction_KeyboardZoomCamera)
 
  ## Usage
 
  ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
+ var camera = new xeogl.Camera({
+     view: new xeogl.Lookat({
          eye: [0, 0, 10],
          look: [0, 0, 0],
          up: [0, 1, 0]
      }),
-     project: new XEO.Perspective({
+     project: new xeogl.Perspective({
          fovy: 60,
          near: 0.1,
          far: 1000
      })
  });
 
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
      camera: camera,
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
 
- var cameraControl = new XEO.CameraControl({
+ var cameraControl = new xeogl.CameraControl({
      camera: entity.camera,
 
      // "First person" mode rotates look about eye.
@@ -15765,7 +16719,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ````
 
  @class CameraControl
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -15784,7 +16738,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
     "use strict";
 
 
-    XEO.CameraControl = XEO.Component.extend({
+    xeogl.CameraControl = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -15793,7 +16747,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.CameraControl",
+        type: "xeogl.CameraControl",
 
         /**
          Indicates that only one instance of a CameraControl may be active within
@@ -15811,22 +16765,27 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var scene = this.scene;
 
             // Shows a bounding box around each Entity we fly to
-            this._boundaryEntity = this.create(XEO.Entity, {
-                geometry: this.create(XEO.BoundaryGeometry),
-                material: this.create(XEO.PhongMaterial, {
+            this._boundaryHelper = this.create({
+                type: "xeogl.Entity",
+                geometry: this.create({
+                    type: "xeogl.AABBGeometry"
+                }),
+                material: this.create({
+                    type: "xeogl.PhongMaterial",
                     diffuse: [0, 0, 0],
                     ambient: [0, 0, 0],
                     specular: [0, 0, 0],
                     emissive: [1.0, 1.0, 0.6],
                     lineWidth: 4
                 }),
-                visibility: this.create(XEO.Visibility, {
+                visibility: this.create({
+                    type: "xeogl.Visibility",
                     visible: false
                 }),
-                modes: this.create(XEO.Modes, {
-
+                modes: this.create({
+                    type: "xeogl.Modes",
                     // Does not contribute to the size of any enclosing boundaries
-                    // that might be calculated by xeoEngine, eg. like that returned by XEO.Scene#worldBoundary
+                    // that might be calculated by xeogl, eg. like that returned by xeogl.Scene#worldBoundary
                     collidable: false
                 })
             });
@@ -15838,7 +16797,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @final
              * @type KeyboardAxisCamera
              */
-            this.keyboardAxis = this.create(XEO.KeyboardAxisCamera, {
+            this.keyboardAxis = this.create(xeogl.KeyboardAxisCamera, {
                 camera: cfg.camera
             });
 
@@ -15849,7 +16808,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @final
              * @type KeyboardRotateCamera
              */
-            this.keyboardRotate = this.create(XEO.KeyboardRotateCamera, {
+            this.keyboardRotate = this.create(xeogl.KeyboardRotateCamera, {
                 camera: cfg.camera
             });
 
@@ -15860,7 +16819,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @final
              * @type MouseRotateCamera
              */
-            this.mouseRotate = this.create(XEO.MouseRotateCamera, {
+            this.mouseRotate = this.create(xeogl.MouseRotateCamera, {
                 camera: cfg.camera
             });
 
@@ -15871,7 +16830,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @final
              * @type KeyboardPanCamera
              */
-            this.keyboardPan = this.create(XEO.KeyboardPanCamera, {
+            this.keyboardPan = this.create(xeogl.KeyboardPanCamera, {
                 camera: cfg.camera
             });
 
@@ -15882,7 +16841,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @final
              * @type MousePanCamera
              */
-            this.mousePan = this.create(XEO.MousePanCamera, {
+            this.mousePan = this.create(xeogl.MousePanCamera, {
                 camera: cfg.camera
             });
 
@@ -15893,7 +16852,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @final
              * @type KeyboardZoomCamera
              */
-            this.keyboardZoom = this.create(XEO.KeyboardZoomCamera, {
+            this.keyboardZoom = this.create(xeogl.KeyboardZoomCamera, {
                 camera: cfg.camera
             });
 
@@ -15904,7 +16863,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @final
              * @type MouseZoomCamera
              */
-            this.mouseZoom = this.create(XEO.MouseZoomCamera, {
+            this.mouseZoom = this.create(xeogl.MouseZoomCamera, {
                 camera: cfg.camera
             });
 
@@ -15915,7 +16874,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * @final
              * @type MousePickEntity
              */
-            this.mousePickEntity = this.create(XEO.MousePickEntity, {
+            this.mousePickEntity = this.create(xeogl.MousePickEntity, {
                 pickSurface: true
             });
 
@@ -15927,13 +16886,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 });
 
             /**
-             * The {{#crossLink "CameraFlight"}}{{/crossLink}} within this CameraControl.
+             * The {{#crossLink "cameraFlightAnimation"}}{{/crossLink}} within this CameraControl.
              *
              * @property cameraFlight
              * @final
-             * @type CameraFlight
+             * @type cameraFlightAnimation
              */
-            this.cameraFlight = this.create(XEO.CameraFlight, {
+            this.cameraFlight = this.create(xeogl.CameraFlightAnimation, {
                 camera: cfg.camera,
                 duration: 0.5
             });
@@ -15953,19 +16912,19 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                 pos = e.worldPos
             }
 
-            var aabb;
+            var worldBoundary = e.entity.worldBoundary;
+            var aabb = worldBoundary.aabb;
+            var sphere = worldBoundary.sphere;
 
-            aabb = e.entity.worldBoundary.aabb;
-
-            this._boundaryEntity.geometry.aabb = aabb;
-            this._boundaryEntity.visibility.visible = true;
+            this._boundaryHelper.geometry.aabb = aabb;
+            //    this._boundaryHelper.visibility.visible = true;
 
             if (pos) {
 
                 // Fly to look at point, don't change eye->look dist
 
                 var view = this.camera.view;
-                var diff = XEO.math.subVec3(view.eye, view.look, []);
+                var diff = xeogl.math.subVec3(view.eye, view.look, []);
 
                 this.cameraFlight.flyTo({
                         look: pos,
@@ -15987,7 +16946,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
         },
 
         _hideEntityBoundary: function () {
-            this._boundaryEntity.visibility.visible = false;
+            this._boundaryHelper.visibility.visible = false;
         },
 
         _props: {
@@ -16051,7 +17010,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                      */
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true,
                         onAdded: this._transformUpdated,
@@ -16145,7 +17104,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  A **CameraController** is the base class for components that control Cameras.
 
  @class CameraController
- @module XEO
+ @module xeogl
  @submodule interaction
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this CameraController in the default
@@ -16164,9 +17123,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.CameraController = XEO.Component.extend({
+    xeogl.CameraController = xeogl.Component.extend({
 
-        type: "XEO.CameraController",
+        type: "xeogl.CameraController",
 
         _init: function (cfg) {
             this.camera = cfg.camera;
@@ -16198,7 +17157,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                      */
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true,
                         //onAdded: this._transformUpdated,
@@ -16268,56 +17227,50 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  A **KeyboardAxisCamera** switches a {{#crossLink "Camera"}}{{/crossLink}} between preset left, right, anterior,
  posterior, superior and inferior views using the keyboard.
 
- <ul>
- <li>A KeyboardAxisCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
- </ul>
+ * A KeyboardAxisCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
 
  By default the views are selected by the following keys:
 
- <ul>
- <li>'1' - left side, viewing center from along -X axis</li>
- <li>'2' - right side, viewing center from along +X axis</li>
- <li>'3' - anterior, viewing center from along -Z axis</li>
- <li>'4' - posterior, viewing center from along +Z axis</li>
- <li>'5' - superior, viewing center from along -Y axis</li>
- <li>'6' - inferior, viewing center from along +Y axis</li>
- </ul>
+ * '1' - left side, viewing center from along -X axis
+ * '2' - right side, viewing center from along +X axis
+ * '3' - anterior, viewing center from along -Z axis
+ * '4' - posterior, viewing center from along +Z axis
+ * '5' - superior, viewing center from along -Y axis
+ * '6' - inferior, viewing center from along +Y axis
 
  ## Examples
 
- <ul>
- <li>[KeyboardAxisCamera example](../../examples/#interaction_KeyboardAxisCamera)</li>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- </ul>
+ * [KeyboardAxisCamera example](../../examples/#interaction_KeyboardAxisCamera)
+ * [CameraControl example](../../examples/#interaction_CameraControl)
 
  ## Usage
 
  ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
+ var camera = new xeogl.Camera({
+     view: new xeogl.Lookat({
          eye: [0, 0, 10],
          look: [0, 0, 0],
          up: [0, 1, 0]
      }),
-     project: new XEO.Perspective({
+     project: new xeogl.Perspective({
          fovy: 60,
          near: 0.1,
          far: 1000
      })
  });
 
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
      camera: camera,
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
 
- new XEO.KeyboardAxisCamera({
+ new xeogl.KeyboardAxisCamera({
      camera: camera
  });
  ````
 
  @class KeyboardAxisCamera
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -16334,7 +17287,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.KeyboardAxisCamera = XEO.Component.extend({
+    xeogl.KeyboardAxisCamera = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -16343,7 +17296,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.KeyboardAxisCamera",
+        type: "xeogl.KeyboardAxisCamera",
 
         _init: function (cfg) {
 
@@ -16353,7 +17306,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
             // Animations
 
-            this._cameraFly = new XEO.CameraFlight(this.scene, {
+            this._cameraFly = new xeogl.CameraFlightAnimation(this.scene, {
                 duration: 1.0
             });
 
@@ -16389,7 +17342,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                      */
                     var camera = this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true
                     });
@@ -16449,7 +17402,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                     || keyCode === input.KEY_NUM_6) {
 
 
-                                    XEO.scheduleTask(function () {
+                                    xeogl.scheduleTask(function () {
                                         self._fly(keyCode);
                                     });
                                 }
@@ -16480,10 +17433,10 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
             var boundary = this.scene.worldBoundary;
             var aabb = boundary.aabb;
             var center = boundary.center;
-            var diag = XEO.math.getAABBDiag(aabb);
+            var diag = xeogl.math.getAABB3Diag(aabb);
 
-            this._stopFOV = 55;
-            var dist = Math.abs((diag) / Math.tan(this._stopFOV / 2));
+            this._fitFOV = 55;
+            var dist = Math.abs((diag) / Math.tan(this._fitFOV / 2));
 
             switch (keyCode) {
 
@@ -16587,49 +17540,45 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **KeyboardRotateCamera** orbits a {{#crossLink "Camera"}}{{/crossLink}} about its point-of-interest using the keyboard's arrow keys.
 
- <ul>
- <li>A KeyboardRotateCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to its target {{#crossLink "Camera"}}{{/crossLink}}.
- <li>The point-of-interest is the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}.</li>
- <li>Orbiting involves rotating the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/eye:property"}}{{/crossLink}}
- about {{#crossLink "Lookat/look:property"}}{{/crossLink}}.</li>
- <li>Y-axis rotation is about the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/up:property"}}{{/crossLink}} vector.</li>
- <li>Z-axis rotation is about the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} -&gt; {{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.</li>
- <li>X-axis rotation is about the vector perpendicular to the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}}
- and {{#crossLink "Lookat/up:property"}}{{/crossLink}} vectors.</li>
- <li>In 'first person' mode, the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}
+ * A KeyboardRotateCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to its target {{#crossLink "Camera"}}{{/crossLink}}.
+ * The point-of-interest is the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}.
+ * Orbiting involves rotating the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/eye:property"}}{{/crossLink}}
+ about {{#crossLink "Lookat/look:property"}}{{/crossLink}}.
+ * Y-axis rotation is about the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/up:property"}}{{/crossLink}} vector.
+ * Z-axis rotation is about the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} -&gt; {{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.
+ * X-axis rotation is about the vector perpendicular to the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}}
+ and {{#crossLink "Lookat/up:property"}}{{/crossLink}} vectors.
+ * In 'first person' mode, the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}
  position will orbit the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} position, otherwise the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}
- will orbit the {{#crossLink "Lookat/look:property"}}{{/crossLink}}.</li>
- </ul>
+ will orbit the {{#crossLink "Lookat/look:property"}}{{/crossLink}}.
 
  ## Examples
 
- <ul>
- <li>[KeyboardRotateCamera example](../../examples/#interaction_KeyboardRotateCamera)</li>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- </ul>
+ * [KeyboardRotateCamera example](../../examples/#interaction_KeyboardRotateCamera)
+ * [CameraControl example](../../examples/#interaction_CameraControl)
 
  ## Usage
 
  ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
+ var camera = new xeogl.Camera({
+     view: new xeogl.Lookat({
          eye: [0, 0, 10],
          look: [0, 0, 0],
          up: [0, 1, 0]
      }),
-     project: new XEO.Perspective({
+     project: new xeogl.Perspective({
          fovy: 60,
          near: 0.1,
          far: 1000
      })
  });
 
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
      camera: camera,
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
 
- new XEO.KeyboardRotateCamera(scene, {
+ new xeogl.KeyboardRotateCamera(scene, {
 
      camera: camera,
 
@@ -16639,7 +17588,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  });
  ````
  @class KeyboardRotateCamera
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -16658,7 +17607,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.KeyboardRotateCamera = XEO.Component.extend({
+    xeogl.KeyboardRotateCamera = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -16667,7 +17616,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.KeyboardRotateCamera",
+        type: "xeogl.KeyboardRotateCamera",
 
         _init: function (cfg) {
 
@@ -16709,7 +17658,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true
                     });
@@ -16756,7 +17705,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * target {{#crossLink "Camera"}}{{/crossLink}}. In 'first person' mode, the
              * {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}
              * position orbits the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} position, otherwise
-             * the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} orbits {{#crossLink "Lookat/look:property"}}{{/crossLink}}.</li>
+             * the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} orbits {{#crossLink "Lookat/look:property"}}{{/crossLink}}.
              *
              * Fires a {{#crossLink "KeyboardRotateCamera/firstPerson:event"}}{{/crossLink}} event on change.
              *
@@ -16910,54 +17859,50 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **KeyboardPanCamera** pans a {{#crossLink "Camera"}}{{/crossLink}} using the W,S,A,D,X and Z keys.
 
- <ul>
- <li>A KeyboardPanCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
- <li>Panning up and down involves translating the positions of the {{#crossLink "Lookat"}}Lookat's{{/crossLink}}
+ * A KeyboardPanCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
+ * Panning up and down involves translating the positions of the {{#crossLink "Lookat"}}Lookat's{{/crossLink}}
  {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and {{#crossLink "Lookat/look:property"}}{{/crossLink}} back and forth
- along the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/up:property"}}{{/crossLink}} vector.</li>
- <li>Panning forwards and backwards involves translating
+ along the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/up:property"}}{{/crossLink}} vector.
+ * Panning forwards and backwards involves translating
  {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and {{#crossLink "Lookat/look:property"}}{{/crossLink}} back and forth along the
- {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.</li>
- <li>Panning left and right involves translating the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and
+ {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.
+ * Panning left and right involves translating the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and
  {{#crossLink "Lookat/look:property"}}{{/crossLink}} along the the vector perpendicular to the {{#crossLink "Lookat/up:property"}}{{/crossLink}}
- and {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vectors.</li>
- </ul>
+ and {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vectors.
 
  ## Examples
 
- <ul>
- <li>[KeyboardPanCamera example](../../examples/#interaction_KeyboardPanCamera)</li>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- </ul>
+ * [KeyboardPanCamera example](../../examples/#interaction_KeyboardPanCamera)
+ * [CameraControl example](../../examples/#interaction_CameraControl)
 
  ## Usage
 
  ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
+ var camera = new xeogl.Camera({
+     view: new xeogl.Lookat({
          eye: [0, 0, 10],
          look: [0, 0, 0],
          up: [0, 1, 0]
      }),
-     project: new XEO.Perspective({
+     project: new xeogl.Perspective({
          fovy: 60,
          near: 0.1,
          far: 1000
      })
  });
 
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
      camera: camera,
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
 
- new XEO.KeyboardPanCamera({
+ new xeogl.KeyboardPanCamera({
      camera: camera
  });
  ````
 
  @class KeyboardPanCamera
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -16975,7 +17920,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.KeyboardPanCamera = XEO.Component.extend({
+    xeogl.KeyboardPanCamera = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -16984,7 +17929,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.KeyboardPanCamera",
+        type: "xeogl.KeyboardPanCamera",
 
         _init: function (cfg) {
 
@@ -17026,7 +17971,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true
                     });
@@ -17190,47 +18135,43 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **KeyboardZoomCamera** zooms a {{#crossLink "Camera"}}{{/crossLink}} using the + and - keys.
 
- <ul>
- <li>A KeyboardZoomCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
- <li>Zooming involves translating the positions of the {{#crossLink "Lookat"}}Lookat's{{/crossLink}}
+ * A KeyboardZoomCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
+ * Zooming involves translating the positions of the {{#crossLink "Lookat"}}Lookat's{{/crossLink}}
  {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and {{#crossLink "Lookat/look:property"}}{{/crossLink}} back and forth
- along the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.</li>
- </ul>
+ along the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.
 
  ## Examples
 
- <ul>
- <li>[KeyboardZoomCamera example](../../examples/#interaction_KeyboardZoomCamera)</li>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- </ul>
+ * [KeyboardZoomCamera example](../../examples/#interaction_KeyboardZoomCamera)
+ * [CameraControl example](../../examples/#interaction_CameraControl)
 
  ## Usage
 
  ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
+ var camera = new xeogl.Camera({
+     view: new xeogl.Lookat({
          eye: [0, 0, 10],
          look: [0, 0, 0],
          up: [0, 1, 0]
      }),
-     project: new XEO.Perspective({
+     project: new xeogl.Perspective({
          fovy: 60,
          near: 0.1,
          far: 1000
      })
  });
 
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
      camera: camera,
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
 
- new XEO.KeyboardZoomCamera({
+ new xeogl.KeyboardZoomCamera({
      camera: camera
  });
  ````
  @class KeyboardZoomCamera
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -17248,7 +18189,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.KeyboardZoomCamera = XEO.Component.extend({
+    xeogl.KeyboardZoomCamera = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -17257,7 +18198,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.KeyboardZoomCamera",
+        type: "xeogl.KeyboardZoomCamera",
 
         _init: function (cfg) {
 
@@ -17299,7 +18240,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true
                     });
@@ -17443,49 +18384,45 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **MouseRotateCamera** orbits a {{#crossLink "Camera"}}{{/crossLink}} about its point-of-interest using the mouse.
 
- <ul>
- <li>A MouseRotateCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
- <li>The point-of-interest is the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}.</li>
- <li>Orbiting involves rotating the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/eye:property"}}{{/crossLink}}
- about {{#crossLink "Lookat/look:property"}}{{/crossLink}}.</li>
- <li>Y-axis rotation is about the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/up:property"}}{{/crossLink}} vector.</li>
- <li>Z-axis rotation is about the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} -&gt; {{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.</li>
- <li>X-axis rotation is about the vector perpendicular to the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}}
- and {{#crossLink "Lookat/up:property"}}{{/crossLink}} vectors.</li>
- <li>In 'first person' mode, the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}
+ * A MouseRotateCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
+ * The point-of-interest is the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}.
+ * Orbiting involves rotating the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/eye:property"}}{{/crossLink}}
+ about {{#crossLink "Lookat/look:property"}}{{/crossLink}}.
+ * Y-axis rotation is about the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/up:property"}}{{/crossLink}} vector.
+ * Z-axis rotation is about the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} -&gt; {{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.
+ * X-axis rotation is about the vector perpendicular to the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}}
+ and {{#crossLink "Lookat/up:property"}}{{/crossLink}} vectors.
+ * In 'first person' mode, the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}
  position will orbit the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} position, otherwise the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}
- will orbit the {{#crossLink "Lookat/look:property"}}{{/crossLink}}.</li>
- </ul>
+ will orbit the {{#crossLink "Lookat/look:property"}}{{/crossLink}}.
 
  ## Examples
 
- <ul>
- <li>[MouseRotateCamera example](../../examples/#interaction_MouseRotateCamera)</li>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- </ul>
+ * [MouseRotateCamera example](../../examples/#interaction_MouseRotateCamera)
+ * [CameraControl example](../../examples/#interaction_CameraControl)
 
  ## Usage
 
  ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
+ var camera = new xeogl.Camera({
+     view: new xeogl.Lookat({
          eye: [0, 0, 10],
          look: [0, 0, 0],
          up: [0, 1, 0]
      }),
-     project: new XEO.Perspective({
+     project: new xeogl.Perspective({
          fovy: 60,
          near: 0.1,
          far: 1000
      })
  });
 
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
      camera: camera,
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
 
- new XEO.MouseRotateCamera(scene, {
+ new xeogl.MouseRotateCamera(scene, {
 
      camera: camera,
 
@@ -17496,7 +18433,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ````
 
  @class MouseRotateCamera
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -17515,7 +18452,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.MouseRotateCamera = XEO.Component.extend({
+    xeogl.MouseRotateCamera = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -17524,7 +18461,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.MouseRotateCamera",
+        type: "xeogl.MouseRotateCamera",
 
         _init: function (cfg) {
 
@@ -17569,7 +18506,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true
                     });
@@ -17616,7 +18553,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
              * target {{#crossLink "Camera"}}{{/crossLink}}. In 'first person' mode, the
              * {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/look:property"}}{{/crossLink}}
              * position orbits the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} position, otherwise
-             * the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} orbits {{#crossLink "Lookat/look:property"}}{{/crossLink}}.</li>
+             * the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} orbits {{#crossLink "Lookat/look:property"}}{{/crossLink}}.
              *
              * Fires a {{#crossLink "MouseRotateCamera/firstPerson:event"}}{{/crossLink}} event on change.
              *
@@ -17837,55 +18774,51 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **MousePanCamera** pans a {{#crossLink "Camera"}}{{/crossLink}} with the mouse.
 
- <ul>
- <li>A MousePanCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
- <li>Panning is done by dragging the mouse with both the left and right buttons down.</li>
- <li>Panning up and down involves translating the positions of the {{#crossLink "Lookat"}}Lookat's{{/crossLink}}
+ * A MousePanCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
+ * Panning is done by dragging the mouse with both the left and right buttons down.
+ * Panning up and down involves translating the positions of the {{#crossLink "Lookat"}}Lookat's{{/crossLink}}
  {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and {{#crossLink "Lookat/look:property"}}{{/crossLink}} back and forth
- along the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/up:property"}}{{/crossLink}} vector.</li>
- <li>Panning forwards and backwards involves translating
+ along the {{#crossLink "Lookat"}}Lookat's{{/crossLink}} {{#crossLink "Lookat/up:property"}}{{/crossLink}} vector.
+ * Panning forwards and backwards involves translating
  {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and {{#crossLink "Lookat/look:property"}}{{/crossLink}} back and forth along the
- {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.</li>
- <li>Panning left and right involves translating the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and
+ {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.
+ * Panning left and right involves translating the {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and
  {{#crossLink "Lookat/look:property"}}{{/crossLink}} along the the vector perpendicular to the {{#crossLink "Lookat/up:property"}}{{/crossLink}}
- and {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vectors.</li>
- </ul>
+ and {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vectors.
 
  ## Examples
 
- <ul>
- <li>[MousePanCamera example](../../examples/#interaction_MousePanCamera)</li>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- </ul>
+ * [MousePanCamera example](../../examples/#interaction_MousePanCamera)
+ * [CameraControl example](../../examples/#interaction_CameraControl)
 
  ## Usage
 
  ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
+ var camera = new xeogl.Camera({
+     view: new xeogl.Lookat({
          eye: [0, 0, 10],
          look: [0, 0, 0],
          up: [0, 1, 0]
      }),
-     project: new XEO.Perspective({
+     project: new xeogl.Perspective({
          fovy: 60,
          near: 0.1,
          far: 1000
      })
  });
 
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
      camera: camera,
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
 
- new XEO.MousePanCamera({
+ new xeogl.MousePanCamera({
      camera: camera
  });
  ````
 
  @class MousePanCamera
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -17903,7 +18836,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.MousePanCamera = XEO.Component.extend({
+    xeogl.MousePanCamera = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -17912,7 +18845,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.MousePanCamera",
+        type: "xeogl.MousePanCamera",
 
         _init: function (cfg) {
 
@@ -17957,7 +18890,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true
                     });
@@ -18127,33 +19060,31 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  ## Examples
 
- <ul>
- <li>[MousePickEntity example](../../examples/#interaction_MousePickEntity)</li>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- </ul>
+ * [MousePickEntity example](../../examples/#interaction_MousePickEntity)
+ * [CameraControl example](../../examples/#interaction_CameraControl)
 
  ## Usage
 
  ````Javascript
  // Create some Entities
 
- var entity1 = new XEO.Entity({
+ var entity1 = new xeogl.Entity({
     id: "entity1",
-    transform: new XEO.Translate(scene, { xyz: [-5, 0, 0] })
+    transform: new xeogl.Translate(scene, { xyz: [-5, 0, 0] })
  });
 
- var entity2 = new XEO.Entity({
+ var entity2 = new xeogl.Entity({
     id: "entity2",
-    transform: new XEO.Translate(scene, { xyz: [0, 0, 0] })
+    transform: new xeogl.Translate(scene, { xyz: [0, 0, 0] })
  });
 
- var entity3 = new XEO.Entity({
+ var entity3 = new xeogl.Entity({
     id: "entity3",
-    transform: new XEO.Translate(scene, { xyz: [5, 0, 0] })
+    transform: new xeogl.Translate(scene, { xyz: [5, 0, 0] })
  });
 
  // Create a MousePickEntity
- var mousePickEntity = new XEO.MousePickEntity({
+ var mousePickEntity = new xeogl.MousePickEntity({
 
     // We want the 3D World-space coordinates
     // of each location we pick
@@ -18175,7 +19106,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  ````
 
  @class MousePickEntity
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -18191,7 +19122,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.MousePickEntity = XEO.Component.extend({
+    xeogl.MousePickEntity = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -18200,7 +19131,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.MousePickEntity",
+        type: "xeogl.MousePickEntity",
 
         _init: function (cfg) {
 
@@ -18384,47 +19315,43 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 })();;/**
  A **MouseZoomCamera** zooms a {{#crossLink "Camera"}}{{/crossLink}} using the mouse wheel.
 
- <ul>
- <li>A MouseZoomCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
- <li>Zooming involves translating the positions of the {{#crossLink "Lookat"}}Lookat's{{/crossLink}}
+ * A MouseZoomCamera updates the {{#crossLink "Lookat"}}{{/crossLink}} attached to the target {{#crossLink "Camera"}}{{/crossLink}}.
+ * Zooming involves translating the positions of the {{#crossLink "Lookat"}}Lookat's{{/crossLink}}
  {{#crossLink "Lookat/eye:property"}}{{/crossLink}} and {{#crossLink "Lookat/look:property"}}{{/crossLink}} back and forth
- along the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.</li>
- </ul>
+ along the {{#crossLink "Lookat/eye:property"}}{{/crossLink}}-&gt;{{#crossLink "Lookat/look:property"}}{{/crossLink}} vector.
 
  ## Examples
 
- <ul>
- <li>[MouseZoomCamera example](../../examples/#interaction_MouseZoomCamera)</li>
- <li>[CameraControl example](../../examples/#interaction_CameraControl)</li>
- </ul>
+ * [MouseZoomCamera example](../../examples/#interaction_MouseZoomCamera)
+ * [CameraControl example](../../examples/#interaction_CameraControl)
 
  ## Usage
 
  ````Javascript
- var camera = new XEO.Camera({
-     view: new XEO.Lookat({
+ var camera = new xeogl.Camera({
+     view: new xeogl.Lookat({
          eye: [0, 0, 10],
          look: [0, 0, 0],
          up: [0, 1, 0]
      }),
-     project: new XEO.Perspective({
+     project: new xeogl.Perspective({
          fovy: 60,
          near: 0.1,
          far: 1000
      })
  });
 
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
      camera: camera,
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
 
- new XEO.MouseZoomCamera({
+ new xeogl.MouseZoomCamera({
      camera: camera
  });
  ````
  @class MouseZoomCamera
- @module XEO
+ @module xeogl
  @submodule controls
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
@@ -18442,7 +19369,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.MouseZoomCamera = XEO.Component.extend({
+    xeogl.MouseZoomCamera = xeogl.Component.extend({
 
         /**
          JavaScript class name for this Component.
@@ -18451,7 +19378,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
          @type String
          @final
          */
-        type: "XEO.MouseZoomCamera",
+        type: "xeogl.MouseZoomCamera",
 
         _init: function (cfg) {
 
@@ -18494,7 +19421,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true
                     });
@@ -18558,9 +19485,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                         var targeting = false;
                         var progress = 0;
 
-                        var eyeVec = XEO.math.vec3();
-                        var lookVec = XEO.math.vec3();
-                        var tempVec3 = XEO.math.vec3();
+                        var eyeVec = xeogl.math.vec3();
+                        var lookVec = xeogl.math.vec3();
+                        var tempVec3 = xeogl.math.vec3();
 
                         var self = this;
 
@@ -18597,9 +19524,9 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                 lookVec[1] = look[1];
                                 lookVec[2] = look[2];
 
-                                XEO.math.subVec3(eyeVec, lookVec, tempVec3);
+                                xeogl.math.subVec3(eyeVec, lookVec, tempVec3);
 
-                                var lenLook = Math.abs(XEO.math.lenVec3(tempVec3));
+                                var lenLook = Math.abs(xeogl.math.lenVec3(tempVec3));
                                 var lenLimits = 1000;
                                 var f = self._sensitivity * (2.0 + (lenLook / lenLimits));
 
@@ -18632,7 +19559,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
                                     if (targeting) {
                                         camera.view.zoom(progress);
 
-                                        if (camera.project.isType("XEO.Ortho")) {
+                                        if (camera.project.isType("xeogl.Ortho")) {
 
                                         }
                                     }
@@ -18684,18 +19611,18 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  * Components for controlling the visibility of Entities.
  *
- * @module XEO
+ * @module xeogl
  * @submodule culling
  */;/**
- A **Cull** toggles the culling of attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ A **Cull** component toggles the culling of attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>An {{#crossLink "Entity"}}{{/crossLink}} is visible when its Cull's {{#crossLink "Cull/culled:property"}}{{/crossLink}} property is true and {{#crossLink "Visibility"}}Visibility's{{/crossLink}} {{#crossLink "Visibility/visible:property"}}{{/crossLink}} property is false.</li>
- <li>Cull components are intended for **visibility culling systems** to control the visibility of {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>{{#crossLink "Visibility"}}{{/crossLink}} components are intended for users to control the visibility of {{#crossLink "Entity"}}Entities{{/crossLink}} via UIs.</li>
- <li>A Cull may be shared among multiple {{#crossLink "Entity"}}Entities{{/crossLink}} to toggle
- their culling status as a group.</li>
- </ul>
+ ## Overview
+
+ * An {{#crossLink "Entity"}}{{/crossLink}} is visible when its Cull's {{#crossLink "Cull/culled:property"}}{{/crossLink}} property is true and {{#crossLink "Visibility"}}Visibility's{{/crossLink}} {{#crossLink "Visibility/visible:property"}}{{/crossLink}} property is false.
+ * Cull components are intended for **visibility culling systems** to control the visibility of {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * {{#crossLink "Visibility"}}{{/crossLink}} components are intended for users to control the visibility of {{#crossLink "Entity"}}Entities{{/crossLink}} via UIs.
+ * A Cull may be shared among multiple {{#crossLink "Entity"}}Entities{{/crossLink}} to toggle
+ their culling status as a group.
 
  <img src="../../../assets/images/Cull.png"></img>
 
@@ -18706,24 +19633,24 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
  ````javascript
  // Create a Cull component
- var cull = new XEO.Cull({
+ var cull = new xeogl.Cull({
     culled: false
-});
+ });
 
  // Create two Entities whose culling will be controlled by our Cull
 
- var entity1 = new XEO.Entity({
+ var entity1 = new xeogl.Entity({
     cull: cull
-});
+ });
 
- var entity2 = new XEO.Entity({
+ var entity2 = new xeogl.Entity({
     cull: cull
-});
+ });
 
  // Subscribe to change on the Cull's "culled" property
  var handle = cull.on("culled", function(value) {
     //...
-});
+ });
 
  // Hide our Entities by flipping the Cull's "culled" property,
  // which will also call our handler
@@ -18737,7 +19664,7 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  cull.destroy();
  ````
  @class Cull
- @module XEO
+ @module xeogl
  @submodule culling
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Cull in the default
@@ -18752,13 +19679,13 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 
     "use strict";
 
-    XEO.Cull = XEO.Component.extend({
+    xeogl.Cull = xeogl.Component.extend({
 
-        type: "XEO.Cull",
+        type: "xeogl.Cull",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.Cull({
+            this._state = new xeogl.renderer.Cull({
                 culled: true
             });
 
@@ -18824,14 +19751,12 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
 ;/**
  A **Visibility** toggles the visibility of attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>An {{#crossLink "Entity"}}{{/crossLink}} is visible when its Visibility's {{#crossLink "Visibility/visible:property"}}{{/crossLink}}
- property is true and {{#crossLink "Cull"}}Cull's{{/crossLink}} {{#crossLink "Cull/culled:property"}}{{/crossLink}} property is false.</li>
- <li>Visibility components are intended for users to control the visibility of {{#crossLink "Entity"}}Entities{{/crossLink}} via UIs.</li>
- <li>{{#crossLink "Cull"}}{{/crossLink}} components are intended for **visibility culling systems** to control the visibility of {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>A Visibility may be shared among multiple {{#crossLink "Entity"}}Entities{{/crossLink}} to toggle
- their visibility as a group.</li>
- </ul>
+ * An {{#crossLink "Entity"}}{{/crossLink}} is visible when its Visibility's {{#crossLink "Visibility/visible:property"}}{{/crossLink}}
+ property is true and {{#crossLink "Cull"}}Cull's{{/crossLink}} {{#crossLink "Cull/culled:property"}}{{/crossLink}} property is false.
+ * Visibility components are intended for users to control the visibility of {{#crossLink "Entity"}}Entities{{/crossLink}} via UIs.
+ * {{#crossLink "Cull"}}{{/crossLink}} components are intended for **visibility culling systems** to control the visibility of {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * A Visibility may be shared among multiple {{#crossLink "Entity"}}Entities{{/crossLink}} to toggle
+ their visibility as a group.
 
  <img src="../../../assets/images/Visibility.png"></img>
 
@@ -18841,38 +19766,38 @@ XEO.math.b3 = function (t, p0, p1, p2, p3) {
  two {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
  ````javascript
-var visibility = new XEO.Visibility({
+ var visibility = new xeogl.Visibility({
     visible: true
-});
+ });
 
-// Create two Entities whose visibility will be controlled by our Visibility
+ // Create two Entities whose visibility will be controlled by our Visibility
 
-var entity1 = new XEO.Entity({
+ var entity1 = new xeogl.Entity({
     visibility: visibility
-});
+ });
 
-var entity2 = new XEO.Entity({
+ var entity2 = new xeogl.Entity({
     visibility: visibility
-});
+ });
 
-// Subscribe to change on the Visibility's "visible" property
-var handle = visibility.on("visible", function(value) {
+ // Subscribe to change on the Visibility's "visible" property
+ var handle = visibility.on("visible", function(value) {
     //...
-});
+ });
 
-// Hide our Entities by flipping the Visibility's "visible" property,
-// which will also call our handler
-visibility.visible = false;
+ // Hide our Entities by flipping the Visibility's "visible" property,
+ // which will also call our handler
+ visibility.visible = false;
 
-// Unsubscribe from the Visibility again
-visibility.off(handle);
+ // Unsubscribe from the Visibility again
+ visibility.off(handle);
 
-// When we destroy our Visibility, the Entities will fall back
-// on the Scene's default Visibility instance
-visibility.destroy();
+ // When we destroy our Visibility, the Entities will fall back
+ // on the Scene's default Visibility instance
+ visibility.destroy();
  ````
  @class Visibility
- @module XEO
+ @module xeogl
  @submodule culling
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Visibility in the default
@@ -18887,13 +19812,13 @@ visibility.destroy();
 
     "use strict";
 
-    XEO.Visibility = XEO.Component.extend({
+    xeogl.Visibility = xeogl.Component.extend({
 
-        type: "XEO.Visibility",
+        type: "xeogl.Visibility",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.Visibility({
+            this._state = new xeogl.renderer.Visibility({
                 visible: true
             });
 
@@ -18953,79 +19878,81 @@ visibility.destroy();
 ;/**
  * Components for defining geometry.
  *
- * @module XEO
+ * @module xeogl
  * @submodule geometry
  */;/**
- A **Geometry** defines the geometric shape of attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ A **Geometry** defines a mesh for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>Like everything in xeoEngine, all properties on a Geometry are dynamically editable.</li>
- <li>When no shape is specified, a Geometry will be a 2x2x2 box by default.</li>
- <li>A {{#crossLink "Scene"}}{{/crossLink}} provides a 2x2x2 box for {{#crossLink "Entity"}}Entities{{/crossLink}}
- default to when they are not configured with a Geometry.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Geometries create within xeoEngine's shaders.</li>
- <li>A Geometry provides its local-space boundary as a {{#crossLink "Boundary3D"}}{{/crossLink}}.</li>
- </ul>
+ <a href="../../examples/#geometry_triangles_texture"><img src="../../assets/images/screenshots/BoxGeometry.png"></img></a>
+
+ ## Overview
+
+ * Like everything in xeogl, all properties on a Geometry are dynamically editable.
+ * Set a Geometry's {{#crossLink "Geometry/autoNormals:property"}}{{/crossLink}} ````true```` to make the Geometry automatically generate it's vertex normal vectors from its {{#crossLink "Geometry/positions:property"}}{{/crossLink}} and {{#crossLink "Geometry/indices:property"}}{{/crossLink}}.
+ * When no shape is specified, a Geometry will be a 2x2x2 box by default.
+ * A {{#crossLink "Scene"}}{{/crossLink}} provides a 2x2x2 box for {{#crossLink "Entity"}}Entities{{/crossLink}}
+ by default when they are not configured with a Geometry.
+ * A Geometry provides its local-space boundary as a {{#crossLink "Boundary3D"}}{{/crossLink}}.
 
  <img src="../../../assets/images/Geometry.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Simple triangle mesh](../../examples/#geometry_triangles)</li>
- <li>[Triangle mesh with diffuse texture](../../examples/#geometry_triangles_texture)</li>
- <li>[Triangle mesh with vertex colors](../../examples/#geometry_triangles_vertexColors)</li>
- <li>[Wireframe box](../../examples/#geometry_lines)</li>
- <li>[Dynamically modifying a TorusGeometry](../../examples/#geometry_modifying)</li>
- </ul>
+ * [Simple triangle mesh](../../examples/#geometry_triangles)
+ * [Triangle mesh with diffuse texture](../../examples/#geometry_triangles_texture)
+ * [Triangle mesh with vertex colors](../../examples/#geometry_triangles_vertexColors)
+ * [Wireframe box](../../examples/#geometry_lines)
+ * [Dynamically modifying a TorusGeometry](../../examples/#geometry_modifying)
 
- ## Default shape</a>
+ ## Usage
+
+ ### Default shape</a>
 
  If you create a Geometry with no specified shape, it will default to a box-shaped triangle mesh with dimensions 2x2x2:
 
  ```` javascript
- var entity = new XEO.Entity({
-    geometry: new XEO.Geometry() // 2x2x2 box
-});
+ var entity = new xeogl.Entity({
+    geometry: new xeogl.Geometry() // 2x2x2 box
+ });
  ````
 
- ## Scene's default Geometry
+ ### Scene's default Geometry
 
  If you create an {{#crossLink "Entity"}}{{/crossLink}} with no Geometry, it will inherit its {{#crossLink "Scene"}}Scene's{{/crossLink}}
  default {{#crossLink "Scene/geometry:property"}}{{/crossLink}}, which is a 2x2x2 triangle mesh box:
 
  ```` javascript
- var entity2 = new XEO.Entity();
+ var entity2 = new xeogl.Entity();
  ````
 
- ## Sharing among Entities
+ ### Sharing among Entities
 
- xeoEngine components can be shared among multiple {{#crossLink "Entity"}}Entities{{/crossLink}}. For components like
+ xeogl components can be shared among multiple {{#crossLink "Entity"}}Entities{{/crossLink}}. For components like
  Geometry and {{#crossLink "Texture"}}{{/crossLink}}, this can provide significant memory
- and performance savings. To render the example below, xeoEngine will issue two draw WebGL calls, one for
+ and performance savings. To render the example below, xeogl will issue two draw WebGL calls, one for
  each {{#crossLink "Entity"}}{{/crossLink}}, but will only need to bind the Geometry's arrays once on WebGL.
 
  ```` javascript
- var boxGeometry = new XEO.BoxGeometry();
+ var boxGeometry = new xeogl.BoxGeometry();
 
- new XEO.Entity({
+ new xeogl.Entity({
     geometry: boxGeometry
  });
 
- new XEO.Entity({
+ new xeogl.Entity({
     geometry: boxGeometry,
-    transform:  new XEO.Translate({
+    transform:  new xeogl.Translate({
         xyz: [5, 0, 0
     })
  });
  ````
 
- ## Creating a custom Geometry
+ ### Creating a custom Geometry
 
  Let's create an {{#crossLink "Entity"}}{{/crossLink}} with a custom Geometry that's a quad-shaped triangle mesh:
 
  ```` javascript
- var quadGeometry = new XEO.Geometry({
+ var quadGeometry = new xeogl.Geometry({
 
         // Supported primitives are 'points', 'lines', 'line-loop', 'line-strip', 'triangles',
         // 'triangle-strip' and 'triangle-fan'.primitive: "triangles",
@@ -19070,20 +19997,17 @@ visibility.destroy();
         ]
 });
 
- var quadEntity = new XEO.Entity({
+ var quadEntity = new xeogl.Entity({
     geometry: quadGeometry
  });
  ````
  ## Editing Geometry
 
- Recall that everything in xeoEngine is dynamically editable. Let's update the
+ Recall that everything in xeogl is dynamically editable. Let's update the
  {{#crossLink "Geometry/indices:property"}}{{/crossLink}} to reverse the direction of the triangles:
 
  ````javascript
- customGeometry.indices = [
- 2, 1, 0,
- 3, 2, 0
- ];
+ customGeometry.indices = [ 2, 1, 0, 3, 2, 0 ];
  ````
 
  Now let's make it wireframe by changing its primitive type from ````triangles```` to ````lines````:
@@ -19092,13 +20016,13 @@ visibility.destroy();
  quadGeometry.primitive = "lines";
  ````
 
- ## Toggling back-faces on and off
+ ### Toggling back-faces on and off
 
  Now we'll attach a {{#crossLink "Modes"}}{{/crossLink}} to that last {{#crossLink "Entity"}}{{/crossLink}}, so that
- we can show or hide its {{#crossLink "Geometry"}}Geometry's{{/crossLink}} back-faces:
+ we can show or hide its {{#crossLink "Geometry"}}Geometry's{{/crossLink}} backfaces:
 
  ```` javascript
- var modes = new XEO.Modes();
+ var modes = new xeogl.Modes();
 
  quadEntity.modes = modes;
 
@@ -19107,12 +20031,12 @@ visibility.destroy();
  modes.backfaces = false;
  ````
 
- ## Setting front-face vertex winding
+ ### Setting front-face vertex winding
 
  The <a href="https://www.opengl.org/wiki/Face_Culling" target="other">vertex winding order</a> of each face determines
  whether it's a front-face or a back-face.
 
- By default, xeoEngine considers faces to be front-faces if they have a counter-clockwise
+ By default, xeogl considers faces to be front-faces if they have a counter-clockwise
  winding order, but we can change that by setting the {{#crossLink "Modes"}}{{/crossLink}}
  {{#crossLink "Modes/frontface:property"}}{{/crossLink}} property:
 
@@ -19123,7 +20047,9 @@ visibility.destroy();
  modes.frontface = "cw";
  ````
 
- ## Getting boundary
+ ### Getting the Local-space boundary
+
+ We can get a Geometry's Local-space {{#crossLink "Boundary3D"}}{{/crossLink}} like so:
 
  ````javascript
  var localBoundary = quadGeometry.localBoundary;
@@ -19133,13 +20059,14 @@ visibility.destroy();
         obb = localBoundary.obb;
         aabb = localBoundary.aabb;
         center = localBoundary.center;
+        sphere = localBoundary;
 
         //...
     });
  ````
 
  @class Geometry
- @module XEO
+ @module xeogl
  @submodule geometry
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Geometry in the default
@@ -19150,27 +20077,27 @@ visibility.destroy();
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Geometry.
  @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values are 'points', 'lines', 'line-loop', 'line-strip', 'triangles', 'triangle-strip' and 'triangle-fan'.
  @param [cfg.positions] {Array of Number} Positions array.
- @param [cfg.normals] {Array of Number} Normals array.
+ @param [cfg.normals] {Array of Number} Vertex normal vectors array.
  @param [cfg.uv] {Array of Number} UVs array.
  @param [cfg.colors] {Array of Number} Vertex colors.
  @param [cfg.tangents] {Array of Number} Vertex tangents.
  @param [cfg.indices] {Array of Number} Indices array.
- @param [cfg.autoNormals] {Boolean} Set true to automatically generate normal vectors from positions and indices.
+ @param [cfg.autoNormals] {Boolean} Set true to automatically generate normal vectors from the positions and indices, if those are supplied.
  @extends Component
  */
 (function () {
 
     "use strict";
 
-    XEO.Geometry = XEO.Component.extend({
+    xeogl.Geometry = xeogl.Component.extend({
 
-        type: "XEO.Geometry",
+        type: "xeogl.Geometry",
 
         _init: function (cfg) {
 
             var self = this;
 
-            this._state = new XEO.renderer.Geometry({
+            this._state = new xeogl.renderer.Geometry({
 
                 primitive: null, // WebGL enum
                 primitiveName: null, // String
@@ -19291,7 +20218,7 @@ visibility.destroy();
 
             this._webglContextRestored = this.scene.canvas.on("webglContextRestored", this._scheduleGeometryUpdate, this);
 
-            XEO.stats.memory.meshes++;
+            xeogl.stats.memory.meshes++;
         },
 
         /**
@@ -19302,7 +20229,7 @@ visibility.destroy();
         _scheduleUpdate: function () {
             if (!this._updateScheduled) {
                 this._updateScheduled = true;
-                XEO.scheduleTask(this._doUpdate, this);
+                xeogl.scheduleTask(this._doUpdate, this);
             }
         },
 
@@ -19312,7 +20239,7 @@ visibility.destroy();
 
                 this._geometryUpdateScheduled = true; // Prevents needless scheduling within _update()
 
-                if (this._update) { // Template method from XEO.Component
+                if (this._update) { // Template method from xeogl.Component
                     this._update();
                 }
 
@@ -19327,7 +20254,7 @@ visibility.destroy();
         _scheduleGeometryUpdate: function () {
             if (!this._geometryUpdateScheduled) {
                 this._geometryUpdateScheduled = true;
-                XEO.scheduleTask(this._updateGeometry, this);
+                xeogl.scheduleTask(this._updateGeometry, this);
             }
         },
 
@@ -19385,14 +20312,14 @@ visibility.destroy();
 
             var usage = gl.STATIC_DRAW;
 
-            var memoryStats = XEO.stats.memory;
+            var memoryStats = xeogl.stats.memory;
 
             if (this._positionsDirty) {
                 if (this._state.positions) {
                     memoryStats.positions -= this._state.positions.numItems;
                     this._state.positions.destroy();
                 }
-                this._state.positions = this._positionsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._positionsData, this._positionsData.length, 3, usage) : null;
+                this._state.positions = this._positionsData ? new xeogl.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._positionsData, this._positionsData.length, 3, usage) : null;
                 if (this._state.positions) {
                     memoryStats.positions += this._state.positions.numItems;
                 }
@@ -19408,7 +20335,7 @@ visibility.destroy();
                     memoryStats.colors -= this._state.colors.numItems;
                     this._state.colors.destroy();
                 }
-                this._state.colors = this._colorsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._colorsData, this._colorsData.length, 4, usage) : null;
+                this._state.colors = this._colorsData ? new xeogl.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._colorsData, this._colorsData.length, 4, usage) : null;
                 if (this._state.colors) {
                     memoryStats.colors += this._state.colors.numItems;
                 }
@@ -19424,10 +20351,10 @@ visibility.destroy();
                 // Automatic normal generation
 
                 if (this._autoNormals && this._positionsData && this._indicesData) {
-                    this._normalsData = XEO.math.buildNormals(this._positionsData, this._indicesData);
+                    this._normalsData = xeogl.math.buildNormals(this._positionsData, this._indicesData);
                 }
 
-                this._state.normals = this._normalsData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._normalsData, this._normalsData.length, 3, usage) : null;
+                this._state.normals = this._normalsData ? new xeogl.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._normalsData, this._normalsData.length, 3, usage) : null;
                 if (this._state.normals) {
                     memoryStats.normals += this._state.normals.numItems;
                 }
@@ -19444,7 +20371,7 @@ visibility.destroy();
                     memoryStats.uvs -= this._state.uv.numItems;
                     this._state.uv.destroy();
                 }
-                this._state.uv = this._uvData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._uvData, this._uvData.length, 2, usage) : null;
+                this._state.uv = this._uvData ? new xeogl.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._uvData, this._uvData.length, 2, usage) : null;
                 if (this._state.uv) {
                     memoryStats.uvs += this._state.uv.numItems;
                 }
@@ -19462,7 +20389,7 @@ visibility.destroy();
                     this._state.indices.destroy();
                 }
 
-                this._state.indices = this._indicesData ? new XEO.renderer.webgl.ArrayBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, this._indicesData, this._indicesData.length, 1, usage) : null;
+                this._state.indices = this._indicesData ? new xeogl.renderer.webgl.ArrayBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, this._indicesData, this._indicesData.length, 1, usage) : null;
                 if (this._state.indices) {
                     memoryStats.indices += this._state.indices.numItems;
                 }
@@ -19489,7 +20416,7 @@ visibility.destroy();
                 this._doUpdate();
             }
 
-            var memoryStats = XEO.stats.memory;
+            var memoryStats = xeogl.stats.memory;
 
             if (this._tangents) {
                 memoryStats.tangents -= this._tangents.numItems;
@@ -19500,14 +20427,14 @@ visibility.destroy();
                 return null;
             }
 
-            this._tangentsData = XEO.math.buildTangents(this._positionsData, this._indicesData, this._uvData);
+            this._tangentsData = xeogl.math.buildTangents(this._positionsData, this._indicesData, this._uvData);
 
             var gl = this.scene.canvas.gl;
 
             var usage = gl.STATIC_DRAW;
 
             this._tangents = this._tangentsData ?
-                new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._tangentsData, this._tangentsData.length, 3, usage) : null;
+                new xeogl.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, this._tangentsData, this._tangentsData.length, 3, usage) : null;
 
             if (this._tangents) {
                 memoryStats.tangents += this._tangents.numItems;
@@ -19534,15 +20461,15 @@ visibility.destroy();
 
                 var usage = gl.STATIC_DRAW;
 
-                var arrays = XEO.math.getPickPrimitives(this._positionsData, this._indicesData);
+                var arrays = xeogl.math.buildPickTriangles(this._positionsData, this._indicesData);
 
                 var pickPositions = arrays.positions;
                 var pickColors = arrays.colors;
 
-                this._pickPositions = new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, pickPositions, pickPositions.length, 3, usage);
-                this._pickColors = new XEO.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, pickColors, pickColors.length, 4, usage);
+                this._pickPositions = new xeogl.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, pickPositions, pickPositions.length, 3, usage);
+                this._pickColors = new xeogl.renderer.webgl.ArrayBuffer(gl, gl.ARRAY_BUFFER, pickColors, pickColors.length, 4, usage);
 
-                var memoryStats = XEO.stats.memory;
+                var memoryStats = xeogl.stats.memory;
 
                 memoryStats.positions += this._pickPositions.numItems;
                 memoryStats.colors += this._pickColors.numItems;
@@ -19553,7 +20480,7 @@ visibility.destroy();
 
         _destroyPickVBOs: function () {
 
-            var memoryStats = XEO.stats.memory;
+            var memoryStats = xeogl.stats.memory;
 
             if (this._pickPositions) {
                 this._pickPositions.destroy();
@@ -19679,7 +20606,7 @@ visibility.destroy();
             /**
              * The Geometry's positions array.
              *
-             * This property is a one-dimensional array - use  {{#crossLink "XEO.math/flatten:method"}}{{/crossLink}} to
+             * This property is a one-dimensional array - use  {{#crossLink "xeogl.math/flatten:method"}}{{/crossLink}} to
              * convert two-dimensional arrays for assignment to this property.
              *
              * Fires a {{#crossLink "Geometry/positions:event"}}{{/crossLink}} event on change.
@@ -19742,7 +20669,7 @@ visibility.destroy();
             },
 
             /**
-             * The Geometry's normal vectors array.
+             * The Geometry's vertex normal vectors array.
              *
              * Fires a {{#crossLink "Geometry/normals:event"}}{{/crossLink}} event on change.
              *
@@ -19894,7 +20821,7 @@ visibility.destroy();
             /**
              * The Geometry's indices array.
              *
-             * If ````XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]```` is true, then this can be
+             * If ````xeogl.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"]```` is true, then this can be
              * a ````Uint32Array````, otherwise it needs to be a ````Uint16Array````.
              *
              * Fires a {{#crossLink "Geometry/indices:event"}}{{/crossLink}} event on change.
@@ -19912,7 +20839,7 @@ visibility.destroy();
 
                     if (value) {
 
-                        var bigIndicesSupported = XEO.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"];
+                        var bigIndicesSupported = xeogl.WEBGL_INFO.SUPPORTED_EXTENSIONS["OES_element_index_uint"];
 
                         if (!bigIndicesSupported && value.constructor === Uint32Array) {
                             this.error("This WebGL implementation does not support Uint32Array");
@@ -19981,7 +20908,7 @@ visibility.destroy();
 
                         //this._setBoundaryDirty();
 
-                        this._localBoundary = new XEO.Boundary3D(this.scene, {
+                        this._localBoundary = new xeogl.Boundary3D(this.scene, {
 
                             // Inject callbacks through which this Geometry
                             // can manage caching for the boundary
@@ -20070,6 +20997,8 @@ visibility.destroy();
                 this._localBoundary.fire("updated", true);
             }
         },
+
+
 
         _compile: function () {
 
@@ -20184,18 +21113,24 @@ visibility.destroy();
 
             // Decrement geometry statistic
 
-            XEO.stats.memory.meshes--;
+            xeogl.stats.memory.meshes--;
         }
     });
 })();
 ;/**
- A **BoxGeometry** defines box-shaped geometry for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ A **BoxGeometry** is a parameterized {{#crossLink "Geometry"}}{{/crossLink}} that defines a box-shaped mesh for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+
+ <a href="../../examples/#geometry_BoxGeometry"><img src="../../assets/images/screenshots/BoxGeometry.png"></img></a>
+
+ ## Overview
+
+ * Dynamically modify a BoxGeometry's dimensions at any time by updating its {{#crossLink "BoxGeometry/center:property"}}{{/crossLink}}, {{#crossLink "BoxGeometry/xSize:property"}}{{/crossLink}}, {{#crossLink "BoxGeometry/ySize:property"}}{{/crossLink}} and {{#crossLink "BoxGeometry/zSize:property"}}{{/crossLink}} properties.
+ * Dynamically switch its primitive type between ````"points"````, ````"lines"```` and ````"triangles"```` at any time by
+ updating its {{#crossLink "Geometry/primitive:property"}}{{/crossLink}} property.
 
  ## Examples
 
- <ul>
- <li>[Textured BoxGeometry](../../examples/#geometry_BoxGeometry)</li>
- </ul>
+ * [Textured BoxGeometry](../../examples/#geometry_BoxGeometry)
 
  ## Usage
 
@@ -20203,16 +21138,17 @@ visibility.destroy();
  diffuse {{#crossLink "Texture"}}{{/crossLink}}:
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     geometry: new XEO.BoxGeometry({
-        xSize: 1,
+     geometry: new xeogl.BoxGeometry({
+        center: [0,0,0],
+        xSize: 1,  // Half-size on each axis; BoxGeometry is actually two units big on each side.
         ySize: 1,
         zSize: 1
      }),
 
-     material: new XEO.PhongMaterial({
-        diffuseMap: new XEO.Texture({
+     material: new xeogl.PhongMaterial({
+        diffuseMap: new xeogl.Texture({
             src: "textures/diffuse/uvGrid2.jpg"
         })
      })
@@ -20220,7 +21156,7 @@ visibility.destroy();
  ````
 
  @class BoxGeometry
- @module XEO
+ @module xeogl
  @submodule geometry
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this BoxGeometry in the default
@@ -20229,24 +21165,26 @@ visibility.destroy();
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
  generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this BoxGeometry.
- @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values are 'points', 'lines', 'line-loop', 'line-strip', 'triangles', 'triangle-strip' and 'triangle-fan'.
- @param [cfg.xSize=1.0] {Number}
- @param [cfg.ySize=1.0] {Number}
- @param [cfg.zSize=1.0] {Number}
+ @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values for a BoxGeometry are 'points', 'lines' and 'triangles'.
+ @param [cfg.center] {Float32Array} 3D point indicating the center position.
+ @param [cfg.xSize=1.0] {Number} Half-size on the X-axis.
+ @param [cfg.ySize=1.0] {Number} Half-size on the Y-axis.
+ @param [cfg.zSize=1.0] {Number} Half-size on the Z-axis.
  @extends Geometry
  */
 (function () {
 
     "use strict";
 
-    XEO.BoxGeometry = XEO.Geometry.extend({
+    xeogl.BoxGeometry = xeogl.Geometry.extend({
 
-        type: "XEO.BoxGeometry",
+        type: "xeogl.BoxGeometry",
 
         _init: function (cfg) {
 
             this._super(cfg);
 
+            this.center = cfg.center;
             this.xSize = cfg.xSize;
             this.ySize = cfg.ySize;
             this.zSize = cfg.zSize;
@@ -20260,12 +21198,12 @@ visibility.destroy();
          */
         _update: function () {
 
-            var xmin = -this._xSize;
-            var ymin = -this._ySize;
-            var zmin = -this._zSize;
-            var xmax = this._xSize;
-            var ymax = this._ySize;
-            var zmax = this._zSize;
+            var xmin = -this._xSize + this._center[0];
+            var ymin = -this._ySize + this._center[1];
+            var zmin = -this._zSize + this._center[2];
+            var xmax = this._xSize + this._center[0];
+            var ymax = this._ySize + this._center[1];
+            var zmax = this._zSize + this._center[2];
 
             // The vertices - eight for our cube, each
             // one spanning three array elements for X,Y and Z
@@ -20431,7 +21369,37 @@ visibility.destroy();
         _props: {
 
             /**
-             * The BoxGeometry's size on the X-axis.
+             * 3D point indicating the center position of this BoxGeometry.
+             *
+             * Fires an {{#crossLink "BoxGeometry/center:event"}}{{/crossLink}} event on change.
+             *
+             * @property center
+             * @default [0,0,0]
+             * @type {Float32Array}
+             */
+            center: {
+
+                set: function (value) {
+
+                    (this._center = this._center || new xeogl.math.vec3()).set(value || [0, 0, 0]);
+
+                    this._scheduleUpdate();
+
+                    /**
+                     Fired whenever this BoxGeometry's {{#crossLink "BoxGeometry/center:property"}}{{/crossLink}} property changes.
+                     @event center
+                     @param value {Float32Array} The property's new value
+                     */
+                    this.fire("center", this._center);
+                },
+
+                get: function () {
+                    return this._center;
+                }
+            },
+
+            /**
+             * The BoxGeometry's half-size on the X-axis.
              *
              * Fires a {{#crossLink "BoxGeometry/xsize:event"}}{{/crossLink}} event on change.
              *
@@ -20473,7 +21441,7 @@ visibility.destroy();
             },
 
             /**
-             * The BoxGeometry's size on the Y-axis.
+             * The BoxGeometry's half-size on the Y-axis.
              *
              * Fires a {{#crossLink "BoxGeometry/ySize:event"}}{{/crossLink}} event on change.
              *
@@ -20515,7 +21483,7 @@ visibility.destroy();
             },
 
             /**
-             * The BoxGeometry's size on the Z-axis.
+             * The BoxGeometry's half-size on the Z-axis.
              *
              * Fires a {{#crossLink "BoxGeometry/zSize:event"}}{{/crossLink}} event on change.
              *
@@ -20559,6 +21527,7 @@ visibility.destroy();
 
         _getJSON: function () {
             return {
+                center: this._center.slice(),
                 xSize: this._xSize,
                 ySize: this._ySize,
                 zSize: this._zSize
@@ -20568,261 +21537,23 @@ visibility.destroy();
 
 })();
 ;/**
- A **BoundaryGeometry** is a {{#crossLink "Geometry"}}{{/crossLink}} that shows the entity-aligned wireframe bounding box (OBB)
- of a {{#crossLink "Boundary3D"}}{{/crossLink}}.
+ A **TorusGeometry** is a parameterized {{#crossLink "Geometry"}}{{/crossLink}} that defines a torus-shaped mesh for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
+ <a href="../../examples/#geometry_TorusGeometry"><img src="../../assets/images/screenshots/TorusGeometry.png"></img></a>
+
+ ## Overview
+
+ * Dynamically modify a TorusGeometry's shape at any time by updating its {{#crossLink "TorusGeometry/center:property"}}{{/crossLink}}, {{#crossLink "TorusGeometry/radius:property"}}{{/crossLink}}, {{#crossLink "TorusGeometry/tube:property"}}{{/crossLink}},
+ {{#crossLink "TorusGeometry/radialSegments:property"}}{{/crossLink}}, {{#crossLink "TorusGeometry/tubeSegments:property"}}{{/crossLink}},  and
+ {{#crossLink "TorusGeometry/arc:property"}}{{/crossLink}} properties.
+ * Dynamically switch its primitive type between ````"points"````, ````"lines"```` and ````"triangles"```` at any time by
+ updating its {{#crossLink "Geometry/primitive:property"}}{{/crossLink}} property.
+ 
  ## Examples
 
- <ul>
- <li>[Rendering a BoundaryGeometry](../../examples/#geometry_BoundaryGeometry)</li>
- </ul>
 
- ## Usage
+ * [Textured TorusGeometry](../../examples/#geometry_TorusGeometry)
 
- An {{#crossLink "Entity"}}{{/crossLink}} with a BoundaryGeometry that shows the extents of the
- World-space {{#crossLink "Boundary3D"}}{{/crossLink}} of another {{#crossLink "Entity"}}{{/crossLink}}:
-
- ````javascript
-
- // First Entity with a BoxGeometry
- var box = new XEO.Entity({
-     geometry: new XEO.BoxGeometry({
-        xSize: 1,
-        ySize: 1,
-        zSize: 1
-     })
- });
-
- // World-space boundary of the first entity
- var worldBoundary = box.worldBoundary;
-
- // Second Entity with a BoundaryGeometry that shows a wireframe box
- // for the World-space boundary of the first Entity
-
- new XEO.Entity({
-
-     geometry: new XEO.BoundaryGeometry({
-         boundary: worldBoundary
-     }),
-
-     material: new XEO.PhongMaterial({
-         diffuse: [0.5, 1.0, 0.5],
-         emissive: [0.5, 1.0, 0.5],
-         lineWidth:2
-     })
- });
- ````
-
- @class BoundaryGeometry
- @module XEO
- @submodule geometry
- @constructor
- @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this BoundaryGeometry in the default
- {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
- @param [cfg] {*} Configs
- @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
- generated automatically when omitted.
- @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this BoundaryGeometry.
- @param [cfg.boundary] {Boundary3D} ID or instance of a {{#crossLink "Boundary3D"}}{{/crossLink}}
- @extends Component
- */
-(function () {
-
-    "use strict";
-
-    XEO.BoundaryGeometry = XEO.Geometry.extend({
-
-        type: "XEO.BoundaryGeometry",
-
-        _init: function (cfg) {
-
-            this._super(cfg);
-
-            this.primitive = cfg.primitive || "lines";
-
-            this.indices = [
-                0, 1, 1, 2, 2, 3, 3, 0, 4,
-                5, 5, 6, 6, 7, 7, 4, 0, 4,
-                1, 5, 2, 6, 3, 7
-            ];
-
-            if (cfg.boundary) {
-                this.boundary = cfg.boundary;
-
-            } else if (cfg.obb) {
-                this.obb = cfg.obb;
-
-            } else if (cfg.aabb) {
-                this.aabb = cfg.aabb;
-
-            } else if (cfg.positions) {
-                this.positions = cfg.positions;
-
-            } else {
-                this.positions = [
-                    1.0, 1.0, 1.0,
-                    1.0, -1.0, 1.0,
-                    -1.0, -1.0, 1.0,
-                    -1.0, 1.0, 1.0,
-                    1.0, 1.0, -1.0,
-                    1.0, -1.0, -1.0,
-                    -1.0, -1.0, -1.0,
-                    -1.0, 1.0, -1.0
-                ];
-            }
-        },
-
-        _props: {
-
-            /**
-             * The {{#crossLink "Boundary3D"}}{{/crossLink}} we are showing.
-             *
-             * Fires a {{#crossLink "BoundaryGeometry/boundary:event"}}{{/crossLink}} event on change.
-             *
-             * @property Boundary3D
-             * @type Boundary3D
-             */
-            boundary: {
-
-                set: function (value) {
-
-                    var geometryDirty = false;
-                    var self = this;
-
-                    this._attach({
-                        name: "boundary",
-                        type: "XEO.Boundary3D",
-                        component: value,
-                        sceneDefault: false,
-                        on: {
-                            updated: function () {
-                                if (geometryDirty) {
-                                    return;
-                                }
-                                geometryDirty = true;
-                                XEO.scheduleTask(function () {
-                                    self._setPositionsFromOBB(self._attached.boundary.obb);
-                                    geometryDirty = false;
-                                });
-                            }
-                        },
-                        onAttached: function () {
-                            self._setPositionsFromOBB(self._attached.boundary.obb);
-                        }
-                    });
-                },
-
-                get: function () {
-                    return this._attached.boundary;
-                }
-            },
-
-            /**
-             * The {{#crossLink "Boundary3D"}}{{/crossLink}} we are showing.
-             *
-             * Fires a {{#crossLink "BoundaryGeometry/boundary:event"}}{{/crossLink}} event on change.
-             *
-             * @property Boundary3D
-             * @type Boundary3D
-             */
-            obb: {
-
-                set: function (value) {
-
-                    if (!value) {
-                        return;
-                    }
-
-                    if (this._attached.boundary) {
-                        this.boundary = null;
-                    }
-
-                    this._setPositionsFromOBB(value);
-                }
-            },
-
-            /**
-             * Assign to an Axis-aligned bounding-box
-             *
-             * @property aabb
-             * @type Boundary3D
-             */
-            aabb: {
-
-                set: function (value) {
-
-                    if (!value) {
-                        return;
-                    }
-
-                    if (this._attached.boundary) {
-                        this.boundary = null;
-                    }
-
-                    this._setPositionsFromAABB(value);
-                }
-            }
-        },
-
-        _setPositionsFromOBB: function (obb) {
-            this.positions = [
-                obb[0][0], obb[0][1], obb[0][2],
-                obb[1][0], obb[1][1], obb[1][2],
-                obb[2][0], obb[2][1], obb[2][2],
-                obb[3][0], obb[3][1], obb[3][2],
-                obb[4][0], obb[4][1], obb[4][2],
-                obb[5][0], obb[5][1], obb[5][2],
-                obb[6][0], obb[6][1], obb[6][2],
-                obb[7][0], obb[7][1], obb[7][2]
-            ];
-        },
-
-        _setPositionsFromAABB: function (aabb) {
-            this.positions = [
-                aabb.max[0], aabb.max[1], aabb.max[2],
-                aabb.max[0], aabb.min[1], aabb.max[2],
-                aabb.min[0], aabb.min[1], aabb.max[2],
-                aabb.min[0], aabb.max[1], aabb.max[2],
-                aabb.max[0], aabb.max[1], aabb.min[2],
-                aabb.max[0], aabb.min[1], aabb.min[2],
-                aabb.min[0], aabb.min[1], aabb.min[2],
-                aabb.min[0], aabb.max[1], aabb.min[2]
-            ];
-        },
-
-        _getJSON: function () {
-
-            var json = {};
-
-            if (this._attached.boundary) {
-                json.boundary = this._attached.boundary.id;
-
-            } else if (json.positions) {
-                json.positions = this.positions;
-            }
-
-            return json;
-        },
-
-        _destroy: function () {
-
-            if (this._attached.boundary) {
-                this._attached.boundary.off(this._onBoundaryUpdated);
-                this._attached.boundary.off(this._onBoundaryDestroyed);
-            }
-
-            this._super();
-        }
-    });
-})();
-;/**
- A **TorusGeometry** defines torus-shaped geometry for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
-
- ## Examples
-
- <ul>
- <li>[Textured TorusGeometry](../../examples/#geometry_TorusGeometry)</li>
- </ul>
 
  ## Usage
 
@@ -20830,9 +21561,10 @@ visibility.destroy();
  diffuse {{#crossLink "Texture"}}{{/crossLink}}:
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     geometry: new XEO.TorusGeometry({
+     geometry: new xeogl.TorusGeometry({
+         center: [0,0,0],
          radius: 1.0,
          tube: 0.3,
          radialSegments: 32,
@@ -20840,8 +21572,8 @@ visibility.destroy();
          arc: Math.PI * 2.0
      }),
 
-     material: new XEO.PhongMaterial({
-        diffuseMap: new XEO.Texture({
+     material: new xeogl.PhongMaterial({
+        diffuseMap: new xeogl.Texture({
             src: "textures/diffuse/uvGrid2.jpg"
         })
      })
@@ -20849,7 +21581,7 @@ visibility.destroy();
  ````
 
  @class TorusGeometry
- @module XEO
+ @module xeogl
  @submodule geometry
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this TorusGeometry in the default
@@ -20858,7 +21590,8 @@ visibility.destroy();
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
  generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this TorusGeometry.
- @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values are 'points', 'lines', 'line-loop', 'line-strip', 'triangles', 'triangle-strip' and 'triangle-fan'.
+ @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values for a TorusGeometry are 'points', 'lines' and 'triangles'.
+ @param [cfg.center] {Float32Array} 3D point indicating the center position of the TorusGeometry.
  @param [cfg.radius=1] {Number} The overall radius of the TorusGeometry.
  @param [cfg.tube=0.3] {Number} The tube radius of the TorusGeometry.
  @param [cfg.radialSegments=32] {Number} The number of radial segments that make up the TorusGeometry.
@@ -20871,15 +21604,16 @@ visibility.destroy();
 
     "use strict";
 
-    XEO.TorusGeometry = XEO.Geometry.extend({
+    xeogl.TorusGeometry = xeogl.Geometry.extend({
 
-        type: "XEO.TorusGeometry",
+        type: "xeogl.TorusGeometry",
 
         _init: function (cfg) {
 
             this._super(cfg);
 
             this.lod = cfg.lod;
+            this.center = cfg.center;
             this.radius = cfg.radius;
             this.tube = cfg.tube;
             this.radialSegments = cfg.radialSegments;
@@ -20894,6 +21628,10 @@ visibility.destroy();
          * @protected
          */
         _update: function () {
+
+            var xCenter = this._center[0];
+            var yCenter = this._center[1];
+            var zCenter = this._center[2];
 
             var radius = this._radius;
             var tube = this._tube;
@@ -20940,14 +21678,14 @@ visibility.destroy();
                     y = (radius + tube * Math.cos(v) ) * Math.sin(u);
                     z = tube * Math.sin(v);
 
-                    positions.push(x);
-                    positions.push(y);
-                    positions.push(z);
+                    positions.push(x + xCenter);
+                    positions.push(y + yCenter);
+                    positions.push(z + zCenter);
 
                     uvs.push(1 - (i / tubeSegments));
                     uvs.push(1 - (j / radialSegments));
 
-                    vec = XEO.math.normalizeVec3(XEO.math.subVec3([x, y, z], [centerX, centerY, centerZ], []), []);
+                    vec = xeogl.math.normalizeVec3(xeogl.math.subVec3([x, y, z], [centerX, centerY, centerZ], []), []);
 
                     normals.push(vec[0]);
                     normals.push(vec[1]);
@@ -21025,6 +21763,36 @@ visibility.destroy();
 
                 get: function () {
                     return this._lod;
+                }
+            },
+
+            /**
+             * 3D point indicating the center position of this TorusGeometry.
+             *
+             * Fires an {{#crossLink "TorusGeometry/center:event"}}{{/crossLink}} event on change.
+             *
+             * @property center
+             * @default [0,0,0]
+             * @type {Float32Array}
+             */
+            center: {
+
+                set: function (value) {
+
+                    (this._center = this._center || new xeogl.math.vec3()).set(value || [0, 0, 0]);
+
+                    this._scheduleUpdate();
+
+                    /**
+                     Fired whenever this TorusGeometry's {{#crossLink "TorusGeometry/center:property"}}{{/crossLink}} property changes.
+                     @event center
+                     @param value {Float32Array} The property's new value
+                     */
+                    this.fire("center", this._center);
+                },
+
+                get: function () {
+                    return this._center;
                 }
             },
 
@@ -21244,6 +22012,7 @@ visibility.destroy();
         _getJSON: function () {
             return {
                 // Don't save lod
+                center: this._center.slice(),
                 radius: this._radius,
                 tube: this._tube,
                 radialSegments: this._radialSegments,
@@ -21255,13 +22024,22 @@ visibility.destroy();
 
 })();
 ;/**
- A **SphereGeometry** defines spherical geometry for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ A **SphereGeometry** is a parameterized {{#crossLink "Geometry"}}{{/crossLink}} that defines a sphere-shaped mesh for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
+ <a href="../../examples/#geometry_SphereGeometry"><img src="../../assets/images/screenshots/SphereGeometry.png"></img></a>
+
+ ## Overview
+ 
+ * Dynamically modify a SphereGeometry's shape at any time by updating its {{#crossLink "SphereGeometry/center:property"}}{{/crossLink}}, {{#crossLink "SphereGeometry/radius:property"}}{{/crossLink}}, {{#crossLink "SphereGeometry/heightSegments:property"}}{{/crossLink}} and
+ {{#crossLink "SphereGeometry/widthSegments:property"}}{{/crossLink}} properties.
+ * Dynamically switch its primitive type between ````"points"````, ````"lines"```` and ````"triangles"```` at any time by
+ updating its {{#crossLink "Geometry/primitive:property"}}{{/crossLink}} property.
+ 
  ## Examples
 
- <ul>
- <li>[Textured SphereGeometry](../../examples/#geometry_SphereGeometry)</li>
- </ul>
+
+ * [Textured SphereGeometry](../../examples/#geometry_SphereGeometry)
+
 
  ## Usage
 
@@ -21269,16 +22047,17 @@ visibility.destroy();
  diffuse {{#crossLink "Texture"}}{{/crossLink}}:
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     geometry: new XEO.SphereGeometry({
+     geometry: new xeogl.SphereGeometry({
+         center: [0,0,0],
          radius: 1.5,
          heightSegments: 60,
          widthSegments: 60
      }),
 
-     material: new XEO.PhongMaterial({
-        diffuseMap: new XEO.Texture({
+     material: new xeogl.PhongMaterial({
+        diffuseMap: new xeogl.Texture({
             src: "textures/diffuse/uvGrid2.jpg"
         })
      })
@@ -21286,7 +22065,7 @@ visibility.destroy();
  ````
 
  @class SphereGeometry
- @module XEO
+ @module xeogl
  @submodule geometry
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this SphereGeometry in the default
@@ -21295,10 +22074,11 @@ visibility.destroy();
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
  generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this SphereGeometry.
- @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values are 'points', 'lines', 'line-loop', 'line-strip', 'triangles', 'triangle-strip' and 'triangle-fan'.
+ @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values for a SphereGeometry are 'points', 'lines' and 'triangles'.
+ @param [cfg.center] {Float32Array} 3D point indicating the center position of the SphereGeometry.
  @param [cfg.radius=1] {Number}
- @param [cfg.heightSegments=24] {Number}
- @param [cfg.widthSegments=18] {Number}
+ @param [cfg.heightSegments=24] {Number} The SphereGeometry's number of latitudinal bands.
+ @param [cfg.widthSegments=18] {Number} The SphereGeometry's number of longitudinal bands.
  @param [cfg.lod=1] {Number} Level-of-detail, in range [0..1].
  @extends Geometry
  */
@@ -21306,15 +22086,16 @@ visibility.destroy();
 
     "use strict";
 
-    XEO.SphereGeometry = XEO.Geometry.extend({
+    xeogl.SphereGeometry = xeogl.Geometry.extend({
 
-        type: "XEO.SphereGeometry",
+        type: "xeogl.SphereGeometry",
 
         _init: function (cfg) {
 
             this._super(cfg);
 
             this.lod = cfg.lod;
+            this.center = cfg.center;
             this.radius = cfg.radius;
             this.heightSegments = cfg.heightSegments;
             this.widthSegments = cfg.widthSegments;
@@ -21360,6 +22141,10 @@ visibility.destroy();
             var y;
             var z;
 
+            var xCenter = this._center[0];
+            var yCenter = this._center[1];
+            var zCenter = this._center[2];
+
             var u;
             var v;
 
@@ -21391,9 +22176,9 @@ visibility.destroy();
                     uvs.push(u);
                     uvs.push(v);
 
-                    positions.push(radius * x);
-                    positions.push(radius * y);
-                    positions.push(radius * z);
+                    positions.push(xCenter + radius * x);
+                    positions.push(yCenter + radius * y);
+                    positions.push(zCenter + radius * z);
                 }
             }
 
@@ -21463,6 +22248,36 @@ visibility.destroy();
             },
 
             /**
+             * 3D point indicating the center position of this SphereGeometry.
+             *
+             * Fires an {{#crossLink "SphereGeometry/center:event"}}{{/crossLink}} event on change.
+             *
+             * @property center
+             * @default [0,0,0]
+             * @type {Float32Array}
+             */
+            center: {
+
+                set: function (value) {
+
+                    (this._center = this._center || new xeogl.math.vec3()).set(value || [0, 0, 0]);
+
+                    this._scheduleUpdate();
+
+                    /**
+                     Fired whenever this SphereGeometry's {{#crossLink "SphereGeometry/center:property"}}{{/crossLink}} property changes.
+                     @event center
+                     @param value {Float32Array} The property's new value
+                     */
+                    this.fire("center", this._center);
+                },
+
+                get: function () {
+                    return this._center;
+                }
+            },
+            
+            /**
              * The SphereGeometry's radius.
              *
              * Fires a {{#crossLink "SphereGeometry/radius:event"}}{{/crossLink}} event on change.
@@ -21506,7 +22321,7 @@ visibility.destroy();
 
 
             /**
-             * The SphereGeometry's number of latitude bands.
+             * The SphereGeometry's number of latitudinal bands.
              *
              * Fires a {{#crossLink "SphereGeometry/heightSegments:event"}}{{/crossLink}} event on change.
              *
@@ -21548,7 +22363,7 @@ visibility.destroy();
             },
 
             /**
-             * The SphereGeometry's number of longitude bands.
+             * The SphereGeometry's number of longitudinal bands.
              *
              * Fires a {{#crossLink "SphereGeometry/widthSegments:event"}}{{/crossLink}} event on change.
              *
@@ -21593,6 +22408,7 @@ visibility.destroy();
         _getJSON: function () {
             return {
                 // Don't save lod
+                center: this._center.slice(),
                 radius: this._radius,
                 heightSegments: this._heightSegments,
                 widthSegments: this._widthSegments
@@ -21600,6 +22416,698 @@ visibility.destroy();
         }
     });
 
+})();
+;/**
+ An **BoundingSphereGeometry** is a {{#crossLink "Geometry"}}{{/crossLink}} that shows the extents of a World-space bounding sphere.
+
+ <a href="../../examples/#boundaries_Entity_worldBoundary_sphere"><img src="http://i.giphy.com/3oz8xRv4g56Y4pZKWk.gif"></img></a>
+
+ ## Overview
+
+ * A sphere is given as a four-element Float32Array containing elements````[x,y,z,radius]````.
+ * Set the BoundingSphereGeometry's {{#crossLink "BoundingSphereGeometry/sphere:property"}}{{/crossLink}} property to a sphere to fix the BoundingSphereGeometry to those extents, or
+ * Set the BoundingSphereGeometry's {{#crossLink "BoundingSphereGeometry/boundary:property"}}{{/crossLink}} property to a {{#crossLink "Boundary3D"}}{{/crossLink}}
+ to make it dynamically fit itself to changes in the {{#crossLink "Boundary3D"}}{{/crossLink}}'s {{#crossLink "Boundary3D/sphere:property"}}{{/crossLink}} extents.
+
+ ## Examples
+
+ * [Rendering a BoundingSphereGeometry](../../examples/#boundaries_Entity_worldBoundary_sphere)
+
+ ## Usage
+
+ In the example below we'll render a transparent {{#crossLink "Entity"}}{{/crossLink}} with a BoundingSphereGeometry that shows the spherical extents of the
+ World-space {{#crossLink "Boundary3D"}}{{/crossLink}} of another {{#crossLink "Entity"}}{{/crossLink}}:
+
+ ````javascript
+ // First Entity with a TorusGeometry
+ var torus = new xeogl.Entity({
+     geometry: new xeogl.TorusGeometry()
+ });
+
+ // Second Entity with an BoundingSphereGeometry that shows a wireframe box
+ // for the World-space boundary of the first Entity
+
+ var boundaryHelper = new xeogl.Entity({
+
+     geometry: new xeogl.BoundingSphereGeometry({
+         boundary: torus.worldBoundary
+     }),
+
+     material: new xeogl.PhongMaterial({
+         diffuse: [0.5, 1.0, 0.5],
+         emissive: [0.5, 1.0, 0.5],
+         opacity: 0.4
+     }),
+
+     modes: new xeogl.Modes({
+        transparent: true
+     })
+ });
+ ````
+
+ Now whenever our torus {{#crossLink "Entity"}}{{/crossLink}} changes shape or position, our BoundingSphereGeometry will automatically
+ update to stay fitted to it.
+
+ As shown below, we can also directly configure the BoundingSphereGeometry with
+ the {{#crossLink "Boundary3D"}}{{/crossLink}}'s {{#crossLink "Boundary3D/aabb:property"}}AABB{{/crossLink}}. In this second example, we'll
+ show the sphere as wireframe.
+
+ ````javascript
+ var boundaryHelper2 = new xeogl.Entity({
+
+     geometry: new xeogl.BoundingSphereGeometry({
+         boundary: torus.worldBoundary.sphere,
+         primitive: "lines"
+     }),
+
+     material: new xeogl.PhongMaterial({
+         diffuse: [0.5, 1.0, 0.5],
+         emissive: [0.5, 1.0, 0.5],
+         lineWidth:2
+     })
+ });
+ ````
+ Note that, without the reference to a {{#crossLink "Boundary3D"}}{{/crossLink}}, our second BoundingSphereGeometry is fixed to the
+ given AABB and will not automatically update whenever our torus {{#crossLink "Entity"}}{{/crossLink}} changes shape or position.
+
+ @class BoundingSphereGeometry
+ @module xeogl
+ @submodule geometry
+ @constructor
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this BoundingSphereGeometry in the default
+ {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
+ @param [cfg] {*} Configs
+ @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
+ generated automatically when omitted.
+ @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this BoundingSphereGeometry.
+ @param [cfg.boundary] {Number|String|Boundary3D} ID or instance of a {{#crossLink "Boundary3D"}}{{/crossLink}}.
+ @param [cfg.aabb] {Float32Array} An axis-aligned box (AABB) in a six-element Float32Array
+ containing the min/max extents of the axis-aligned volume, ie. ````(xmin,ymin,zmin,xmax,ymax,zmax)````.
+ @extends Component
+ */
+(function () {
+
+    "use strict";
+
+    xeogl.BoundingSphereGeometry = xeogl.SphereGeometry.extend({
+
+        type: "xeogl.BoundingSphereGeometry",
+
+        _init: function (cfg) {
+
+            this._super(cfg);
+
+           // this.primitive = cfg.primitive || "lines";
+
+            if (cfg.boundary) {
+                this.boundary = cfg.boundary;
+
+            } else if (cfg.sphere) {
+                this.sphere = cfg.sphere;
+            }
+        },
+
+        _props: {
+
+            /**
+             A {{#crossLink "Boundary3D"}}{{/crossLink}} whose {{#crossLink "Boundary3D/aabb:property"}}OBB{{/crossLink}} we'll
+             dynamically fit this OBBGeometry to.
+
+             This property effectively replaces the {{#crossLink "BoundingSphereGeometry/aabb:property"}}{{/crossLink}} property.
+
+             Fires a {{#crossLink "BoundingSphereGeometry/boundary:event"}}{{/crossLink}} event on change.
+
+             @property boundary
+             @type Boundary3D
+             */
+            boundary: {
+
+                set: function (value) {
+
+                    var geometryDirty = false;
+                    var self = this;
+
+                    /**
+                     * Fired whenever this BoundingSphereGeometry's {{#crossLink "BoundingSphereGeometry/boundary:property"}}{{/crossLink}}
+                     * property changes.
+                     *
+                     * @event boundary
+                     * @param value The property's new value
+                     */
+                    this._attach({
+                        name: "boundary",
+                        type: "xeogl.Boundary3D",
+                        component: value,
+                        sceneDefault: false,
+                        on: {
+                            updated: function () {
+                                if (geometryDirty) {
+                                    return;
+                                }
+                                geometryDirty = true;
+                                xeogl.scheduleTask(function () {
+                                    self._setFromSphere(self._attached.boundary.sphere);
+                                    geometryDirty = false;
+                                });
+                            }
+                        },
+                        onAttached: function () {
+                            self._setFromSphere(self._attached.boundary.sphere);
+                        }
+                    });
+                },
+
+                get: function () {
+                    return this._attached.boundary;
+                }
+            },
+
+            /**
+             Sets this BoundingSphereGeometry to an axis-aligned box (SPHERE), given as a six-element Float32Array
+             containing the min/max extents of the
+             axis-aligned volume, ie. ````[xmin,ymin,zmin,xmax,ymax,zmax]````.
+
+             This property overrides the {{#crossLink "BoundingSphereGeometry/boundary:property"}}{{/crossLink}} property, causing it to become null.
+
+             @property sphere
+             @type Float32Array
+             */
+            sphere: {
+
+                set: function (value) {
+
+                    if (!value) {
+                        return;
+                    }
+
+                    if (this._attached.boundary) {
+                        this.boundary = null;
+                    }
+
+                    this._setFromSphere(value);
+                }
+            }
+        },
+
+        _setFromSphere: (function () {
+
+            var vec3 = xeogl.math.vec3();
+
+            return function (sphere) {
+
+                vec3[0] = sphere[0];
+                vec3[1] = sphere[1];
+                vec3[2] = sphere[2];
+
+                this.center = vec3;
+                this.radius = sphere[4];
+            };
+        })()
+
+        //_getJSON: function () {
+        //
+        //    var json = {};
+        //
+        //    if (this._attached.boundary) {
+        //        json.boundary = this._attached.boundary.id;
+        //
+        //    } else if (this.positions) {
+        //        this.positions = this.positions;
+        //    }
+        //
+        //    return json;
+        //},
+
+    });
+})();
+;/**
+ An **OBBGeometry** is a {{#crossLink "Geometry"}}{{/crossLink}} that shows the extents of a World-space entity-oriented bounding box (OBB).
+
+ <a href="../../examples/#geometry_OBBGeometry"><img src="http://i.giphy.com/3o6ZsSVy0NKXZ1vDSo.gif"></img></a>
+
+ ## Overview
+
+ * A World-space OBB a bounding box that's oriented to its contents, given as a 32-element array containing the homogeneous coordinates for the eight corner vertices, ie. each having elements [x,y,z,w].
+ * Set an OBBGeometry's {{#crossLink "OBBGeometry/obb:property"}}{{/crossLink}} property to an OBB to fix it to those extents, or
+ * Set an OBBGeometry's {{#crossLink "OBBGeometry/boundary:property"}}{{/crossLink}} property to a {{#crossLink "Boundary3D"}}{{/crossLink}}
+ to make it dynamically fit itself to changes in the {{#crossLink "Boundary3D"}}{{/crossLink}}'s {{#crossLink "Boundary3D/obb:property"}}{{/crossLink}} extents.
+
+ ## Examples
+
+ * [Rendering an OBBGeometry](../../examples/#geometry_OBBGeometry)
+
+ ## Usage
+
+ An {{#crossLink "Entity"}}{{/crossLink}} with a OBBGeometry that shows the extents of the
+ World-space {{#crossLink "Boundary3D"}}{{/crossLink}} of another {{#crossLink "Entity"}}{{/crossLink}}:
+
+ ````javascript
+ // First Entity with a TorusGeometry
+ var torus = new xeogl.Entity({
+     geometry: new xeogl.TorusGeometry()
+ });
+
+ // Second Entity with an OBBGeometry that shows a wireframe box
+ // for the World-space boundary of the first Entity
+
+ var boundaryHelper = new xeogl.Entity({
+
+     geometry: new xeogl.OBBGeometry({
+         boundary: torus.worldBoundary
+     }),
+
+     material: new xeogl.PhongMaterial({
+         diffuse: [0.5, 1.0, 0.5],
+         emissive: [0.5, 1.0, 0.5],
+         lineWidth:2
+     })
+ });
+ ````
+
+ Now whenever our torus {{#crossLink "Entity"}}{{/crossLink}} changes shape or position, our OBBGeometry will automatically
+ update to stay fitted to it.
+
+ We could also directly configure the OBBGeometry with
+ the {{#crossLink "Boundary3D"}}{{/crossLink}}'s {{#crossLink "Boundary3D/obb:property"}}OBB{{/crossLink}}:
+
+ ````javascript
+ var boundaryHelper2 = new xeogl.Entity({
+
+     geometry: new xeogl.OBBGeometry({
+         boundary: torus.worldBoundary.obb
+     }),
+
+     material: new xeogl.PhongMaterial({
+         diffuse: [0.5, 1.0, 0.5],
+         emissive: [0.5, 1.0, 0.5],
+         lineWidth:2
+     })
+ });
+ ````
+ Note that, without the reference to a {{#crossLink "Boundary3D"}}{{/crossLink}}, our second OBBGeometry is fixed to the
+ given OBB and will not automatically update whenever our torus {{#crossLink "Entity"}}{{/crossLink}} changes shape or position.
+
+ @class OBBGeometry
+ @module xeogl
+ @submodule geometry
+ @constructor
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this OBBGeometry in the default
+ {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
+ @param [cfg] {*} Configs
+ @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
+ generated automatically when omitted.
+ @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this OBBGeometry.
+ @param [cfg.boundary] {Number|String|Boundary3D} ID or instance of a {{#crossLink "Boundary3D"}}{{/crossLink}}.
+ @param [cfg.obb] {Float32Array} An entity-oriented box (OBB) in a 32-element Float32Array
+ containing homogeneous coordinates for the eight corner vertices, ie. each having elements (x,y,z,w).
+ @extends Component
+ */
+(function () {
+
+    "use strict";
+
+    xeogl.OBBGeometry = xeogl.Geometry.extend({
+
+        type: "xeogl.OBBGeometry",
+
+        _init: function (cfg) {
+
+            this._super(cfg);
+
+            this.primitive = cfg.primitive || "lines";
+
+            this.indices = [
+                0, 1, 1, 2, 2, 3, 3, 0, 4,
+                5, 5, 6, 6, 7, 7, 4, 0, 4,
+                1, 5, 2, 6, 3, 7
+            ];
+
+            if (cfg.boundary) {
+                this.boundary = cfg.boundary;
+
+            } else if (cfg.obb) {
+                this.obb = cfg.obb;
+
+            } else if (cfg.positions) {
+                this.positions = cfg.positions;
+
+            } else {
+                this.positions = [
+                    1.0, 1.0, 1.0,
+                    1.0, -1.0, 1.0,
+                    -1.0, -1.0, 1.0,
+                    -1.0, 1.0, 1.0,
+                    1.0, 1.0, -1.0,
+                    1.0, -1.0, -1.0,
+                    -1.0, -1.0, -1.0,
+                    -1.0, 1.0, -1.0
+                ];
+            }
+        },
+
+        _props: {
+
+            /**
+             A {{#crossLink "Boundary3D"}}{{/crossLink}} whose {{#crossLink "Boundary3D/obb:property"}}OBB{{/crossLink}} we'll
+             dynamically fit this OBBGeometry to.
+
+             This property effectively replaces the {{#crossLink "OBBGeometry/obb:property"}}{{/crossLink}} property.
+
+             Fires a {{#crossLink "OBBGeometry/boundary:event"}}{{/crossLink}} event on change.
+
+             @property boundary
+             @type Boundary3D
+             */
+            boundary: {
+
+                set: function (value) {
+
+                    var geometryDirty = false;
+                    var self = this;
+
+                    /**
+                     * Fired whenever this OBBGeometry's {{#crossLink "OBBGeometry/boundary:property"}}{{/crossLink}}
+                     * property changes.
+                     *
+                     * @event boundary
+                     * @param value The property's new value
+                     */
+                    this._attach({
+                        name: "boundary",
+                        type: "xeogl.Boundary3D",
+                        component: value,
+                        sceneDefault: false,
+                        on: {
+                            updated: function () {
+                                if (geometryDirty) {
+                                    return;
+                                }
+                                geometryDirty = true;
+                                xeogl.scheduleTask(function () {
+                                    self._setPositionsFromOBB(self._attached.boundary.obb);
+                                    geometryDirty = false;
+                                });
+                            }
+                        },
+                        onAttached: function () {
+                            self._setPositionsFromOBB(self._attached.boundary.obb);
+                        }
+                    });
+                },
+
+                get: function () {
+                    return this._attached.boundary;
+                }
+            },
+
+            /**
+             Sets this OBBGeometry to an entity-oriented bounding box (OBB), given as a 32-element Float32Array
+             containing homogeneous coordinates for the eight corner vertices, ie. each having elements [x,y,z,w].
+
+             This property effectively replaces the {{#crossLink "OBBGeometry/boundary:property"}}{{/crossLink}} property, causing it to become null.
+
+             @property obb
+             @type Float32Array
+             */
+            obb: {
+
+                set: function (value) {
+
+                    if (!value) {
+                        return;
+                    }
+
+                    if (this._attached.boundary) {
+                        this.boundary = null;
+                    }
+
+                    this._setPositionsFromOBB(value);
+                }
+            }
+        },
+
+        _setPositionsFromOBB: function (obb) {
+            this.positions = [
+                obb[0], obb[1], obb[2],
+                obb[4], obb[5], obb[6],
+                obb[8], obb[9], obb[10],
+                obb[12], obb[13], obb[14],
+                obb[16], obb[17], obb[18],
+                obb[20], obb[21], obb[22],
+                obb[24], obb[25], obb[26],
+                obb[28], obb[29], obb[30]
+            ];
+        },
+
+        _getJSON: function () {
+
+            var json = {};
+
+            if (this._attached.boundary) {
+                json.boundary = this._attached.boundary.id;
+
+            } else if (this.positions) {
+                json.positions = this.positions;
+            }
+
+            return json;
+        }
+    });
+})();
+;/**
+ An **AABBGeometry** is a {{#crossLink "Geometry"}}{{/crossLink}} that shows the extents of a World-space axis-aligned bounding box (AABB).
+
+ <a href="../../examples/#geometry_AABBGeometry"><img src="http://i.giphy.com/3o6ZsSVy0NKXZ1vDSo.gif"></img></a>
+
+ ## Overview
+
+ * A World-space AABB is an axis-aligned box given as a six-element array containing the min/max extents of an axis-aligned volume, ie. ````[xmin,ymin,zmin,xmax,ymax,zmax]````.
+ * Set a AABBGeometry's {{#crossLink "AABBGeometry/aabb:property"}}{{/crossLink}} property to an AABB to fix the AABBGeometry to those extents, or
+ * set a AABBGeometry's {{#crossLink "AABBGeometry/boundary:property"}}{{/crossLink}} property to a {{#crossLink "Boundary3D"}}{{/crossLink}}
+ to make it dynamically fit itself to changes in the {{#crossLink "Boundary3D"}}{{/crossLink}}'s {{#crossLink "Boundary3D/aabb:property"}}{{/crossLink}} extents.
+
+ ## Examples
+
+ * [Rendering an AABBGeometry](../../examples/#geometry_AABBGeometry)
+
+ ## Usage
+
+ An {{#crossLink "Entity"}}{{/crossLink}} with a AABBGeometry that shows the extents of the
+ World-space {{#crossLink "Boundary3D"}}{{/crossLink}} of another {{#crossLink "Entity"}}{{/crossLink}}:
+
+ ````javascript
+ // First Entity with a TorusGeometry
+ var torus = new xeogl.Entity({
+     geometry: new xeogl.TorusGeometry()
+ });
+
+ // Second Entity with an AABBGeometry that shows a wireframe box
+ // for the World-space boundary of the first Entity
+
+ var boundaryHelper = new xeogl.Entity({
+
+     geometry: new xeogl.AABBGeometry({
+         boundary: torus.worldBoundary
+     }),
+
+     material: new xeogl.PhongMaterial({
+         diffuse: [0.5, 1.0, 0.5],
+         emissive: [0.5, 1.0, 0.5],
+         lineWidth:2
+     })
+ });
+ ````
+
+ Now whenever our torus {{#crossLink "Entity"}}{{/crossLink}} changes shape or position, our AABBGeometry will automatically
+ update to stay fitted to it.
+
+ We could also directly configure the AABBGeometry with
+ the {{#crossLink "Boundary3D"}}{{/crossLink}}'s {{#crossLink "Boundary3D/aabb:property"}}AABB{{/crossLink}}:
+
+ ````javascript
+ var boundaryHelper2 = new xeogl.Entity({
+
+     geometry: new xeogl.AABBGeometry({
+         boundary: torus.worldBoundary.aabb
+     }),
+
+     material: new xeogl.PhongMaterial({
+         diffuse: [0.5, 1.0, 0.5],
+         emissive: [0.5, 1.0, 0.5],
+         lineWidth:2
+     })
+ });
+ ````
+ Note that, without the reference to a {{#crossLink "Boundary3D"}}{{/crossLink}}, our second AABBGeometry is fixed to the
+ given AABB and will not automatically update whenever our torus {{#crossLink "Entity"}}{{/crossLink}} changes shape or position.
+
+ @class AABBGeometry
+ @module xeogl
+ @submodule geometry
+ @constructor
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this AABBGeometry in the default
+ {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
+ @param [cfg] {*} Configs
+ @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
+ generated automatically when omitted.
+ @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this AABBGeometry.
+ @param [cfg.boundary] {Number|String|Boundary3D} ID or instance of a {{#crossLink "Boundary3D"}}{{/crossLink}}.
+ @param [cfg.aabb] {Float32Array} An axis-aligned box (AABB) in a six-element Float32Array
+ containing the min/max extents of the axis-aligned volume, ie. ````(xmin,ymin,zmin,xmax,ymax,zmax)````.
+ @extends Component
+ */
+(function () {
+
+    "use strict";
+
+    xeogl.AABBGeometry = xeogl.Geometry.extend({
+
+        type: "xeogl.AABBGeometry",
+
+        _init: function (cfg) {
+
+            this._super(cfg);
+
+            this.primitive = cfg.primitive || "lines";
+
+            this.indices = [
+                0, 1, 1, 2, 2, 3, 3, 0, 4,
+                5, 5, 6, 6, 7, 7, 4, 0, 4,
+                1, 5, 2, 6, 3, 7
+            ];
+
+            if (cfg.boundary) {
+                this.boundary = cfg.boundary;
+
+            } else if (cfg.aabb) {
+                this.aabb = cfg.aabb;
+
+            } else if (cfg.positions) {
+                this.positions = cfg.positions;
+
+            } else {
+                this.positions = [
+                    1.0, 1.0, 1.0,
+                    1.0, -1.0, 1.0,
+                    -1.0, -1.0, 1.0,
+                    -1.0, 1.0, 1.0,
+                    1.0, 1.0, -1.0,
+                    1.0, -1.0, -1.0,
+                    -1.0, -1.0, -1.0,
+                    -1.0, 1.0, -1.0
+                ];
+            }
+        },
+
+        _props: {
+
+            /**
+             A {{#crossLink "Boundary3D"}}{{/crossLink}} whose {{#crossLink "Boundary3D/aabb:property"}}OBB{{/crossLink}} we'll
+             dynamically fit this OBBGeometry to.
+
+             This property effectively replaces the {{#crossLink "AABBGeometry/aabb:property"}}{{/crossLink}} property.
+
+             Fires a {{#crossLink "AABBGeometry/boundary:event"}}{{/crossLink}} event on change.
+
+             @property boundary
+             @type Boundary3D
+             */
+            boundary: {
+
+                set: function (value) {
+
+                    var geometryDirty = false;
+                    var self = this;
+
+                    /**
+                     * Fired whenever this AABBGeometry's {{#crossLink "AABBGeometry/boundary:property"}}{{/crossLink}}
+                     * property changes.
+                     *
+                     * @event boundary
+                     * @param value The property's new value
+                     */
+                    this._attach({
+                        name: "boundary",
+                        type: "xeogl.Boundary3D",
+                        component: value,
+                        sceneDefault: false,
+                        on: {
+                            updated: function () {
+                                if (geometryDirty) {
+                                    return;
+                                }
+                                geometryDirty = true;
+                                xeogl.scheduleTask(function () {
+                                    self._setPositionsFromAABB(self._attached.boundary.aabb);
+                                    geometryDirty = false;
+                                });
+                            }
+                        },
+                        onAttached: function () {
+                            self._setPositionsFromAABB(self._attached.boundary.aabb);
+                        }
+                    });
+                },
+
+                get: function () {
+                    return this._attached.boundary;
+                }
+            },
+
+            /**
+             Sets this AABBGeometry to an axis-aligned box (AABB), given as a six-element Float32Array
+             containing the min/max extents of the
+             axis-aligned volume, ie. ````[xmin,ymin,zmin,xmax,ymax,zmax]````.
+
+             This property overrides the {{#crossLink "AABBGeometry/boundary:property"}}{{/crossLink}} property, causing it to become null.
+
+             @property aabb
+             @type Float32Array
+             */
+            aabb: {
+
+                set: function (value) {
+
+                    if (!value) {
+                        return;
+                    }
+
+                    if (this._attached.boundary) {
+                        this.boundary = null;
+                    }
+
+                    this._setPositionsFromAABB(value);
+                }
+            }
+        },
+
+        _setPositionsFromAABB: function (aabb) {
+            this.positions = [
+                aabb[3], aabb[4], aabb[5],
+                aabb[3], aabb[1], aabb[5],
+                aabb[0], aabb[1], aabb[5],
+                aabb[0], aabb[4], aabb[5],
+                aabb[3], aabb[4], aabb[2],
+                aabb[3], aabb[1], aabb[2],
+                aabb[0], aabb[1], aabb[2],
+                aabb[0], aabb[4], aabb[2]
+            ];
+        },
+
+        _getJSON: function () {
+
+            var json = {};
+
+            if (this._attached.boundary) {
+                json.boundary = this._attached.boundary.id;
+
+            } else if (this.positions) {
+                this.positions = this.positions;
+            }
+
+            return json;
+        }
+    });
 })();
 ;/**
 
@@ -21611,29 +23119,29 @@ visibility.destroy();
  a {{#crossLink "PhongMaterial"}}{{/crossLink}}:
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     geometry: new XEO.PathGeometry({
+     geometry: new xeogl.PathGeometry({
 
         divisions: 10,
 
-        path: new XEO.Path({
+        path: new xeogl.Path({
 
             // Subpaths
 
             curves: [
-                new XEO.CubicBezierCurve({
+                new xeogl.CubicBezierCurve({
                     v0: [-10, 0, 0],
                     v1: [-5, 15, 0],
                     v2: [20, 15, 0],
                     v3: [10, 0, 0]
                 }),
-                new XEO.QuadraticBezierCurve({
+                new xeogl.QuadraticBezierCurve({
                     v0: [10, 0, 0],
                     v1: [30, 15, 0],
                     v2: [20, 0, 0]
                 }),
-                new XEO.SplineCurve({
+                new xeogl.SplineCurve({
                     points: [
                         [20, 0, 0],
                         [-5, 15, 0],
@@ -21645,20 +23153,20 @@ visibility.destroy();
         })
      }),
 
-     material: new XEO.PhongMaterial(
+     material: new xeogl.PhongMaterial(
         diffuse: [1,0,0]
      })
  });
  ````
 
  @class PathGeometry
- @module XEO
+ @module xeogl
  @submodule geometry
  @extends Geometry
  */
-XEO.PathGeometry = XEO.Geometry.extend({
+xeogl.PathGeometry = xeogl.Geometry.extend({
 
-    type: "XEO.PathGeometry",
+    type: "xeogl.PathGeometry",
 
     // Constructor
 
@@ -21736,7 +23244,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
                  */
                 this._attach({
                     name: "path",
-                    type: "XEO.Curve",
+                    type: "xeogl.Curve",
                     component: value,
                     sceneDefault: false,
                     on: {
@@ -21794,13 +23302,21 @@ XEO.PathGeometry = XEO.Geometry.extend({
         return json;
     }
 });;/**
- A **CylinderGeometry** defines cylindrical geometry for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ A **CylinderGeometry** is a parameterized {{#crossLink "Geometry"}}{{/crossLink}} that defines a cylinder-shaped mesh for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+
+ <a href="../../examples/#geometry_CylinderGeometry"><img src="../../assets/images/screenshots/CylinderGeometry.png"></img></a>
+
+ ## Overview
+
+ * Dynamically modify a CylinderGeometry's shape at any time by updating its {{#crossLink "CylinderGeometry/center:property"}}{{/crossLink}}, {{#crossLink "CylinderGeometry/radiusTop:property"}}{{/crossLink}}, {{#crossLink "CylinderGeometry/radiusBottom:property"}}{{/crossLink}}, {{#crossLink "CylinderGeometry/height:property"}}{{/crossLink}},
+ {{#crossLink "CylinderGeometry/radialSegments:property"}}{{/crossLink}}, {{#crossLink "CylinderGeometry/heightSegments:property"}}{{/crossLink}} and
+ {{#crossLink "CylinderGeometry/openEnded:property"}}{{/crossLink}} properties.
+ * Dynamically switch its primitive type between ````"points"````, ````"lines"```` and ````"triangles"```` at any time by
+ updating its {{#crossLink "Geometry/primitive:property"}}{{/crossLink}} property.
 
  ## Examples
 
- <ul>
- <li>[Textured CylinderGeometry](../../examples/#geometry_CylinderGeometry)</li>
- </ul>
+ * [Textured CylinderGeometry](../../examples/#geometry_CylinderGeometry)
 
  ## Usage
 
@@ -21808,9 +23324,10 @@ XEO.PathGeometry = XEO.Geometry.extend({
  diffuse {{#crossLink "Texture"}}{{/crossLink}}:
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     geometry: new XEO.CylinderGeometry({
+     geometry: new xeogl.CylinderGeometry({
+         center: [0,0,0],
          radiusTop: 2.0,
          radiusBottom: 2.0,
          height: 5.0,
@@ -21819,8 +23336,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
          openEnded: false
      }),
 
-     material: new XEO.PhongMaterial({
-        diffuseMap: new XEO.Texture({
+     material: new xeogl.PhongMaterial({
+        diffuseMap: new xeogl.Texture({
             src: "textures/diffuse/uvGrid2.jpg"
         })
      })
@@ -21828,7 +23345,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
  ````
 
  @class CylinderGeometry
- @module XEO
+ @module xeogl
  @submodule geometry
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this CylinderGeometry in the default
@@ -21837,7 +23354,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
  generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this CylinderGeometry.
- @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values are 'points', 'lines', 'line-loop', 'line-strip', 'triangles', 'triangle-strip' and 'triangle-fan'.
+ @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values for a CylinderGeometry are 'points', 'lines' and 'triangles'.
+ @param [cfg.center] {Float32Array} 3D point indicating the center position of the CylinderGeometry.
  @param [cfg.radiusTop=1] {Number} Radius of top.
  @param [cfg.radiusBottom=1] {Number} Radius of bottom.
  @param [cfg.height=1] {Number} Height.
@@ -21851,15 +23369,16 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
     "use strict";
 
-    XEO.CylinderGeometry = XEO.Geometry.extend({
+    xeogl.CylinderGeometry = xeogl.Geometry.extend({
 
-        type: "XEO.CylinderGeometry",
+        type: "xeogl.CylinderGeometry",
 
         _init: function (cfg) {
 
             this._super(cfg);
-
+            this.center = cfg.center;
             this.lod = cfg.lod;
+            this.center = cfg.center;
             this.radiusTop = cfg.radiusTop;
             this.radiusBottom = cfg.radiusBottom;
             this.height = cfg.height;
@@ -21875,6 +23394,10 @@ XEO.PathGeometry = XEO.Geometry.extend({
          * @protected
          */
         _update: function () {
+
+            var centerX = this._center[0];
+            var centerY = this._center[1];
+            var centerZ = this._center[2];
 
             var radiusTop = this._radiusTop;
             var radiusBottom = this._radiusBottom;
@@ -21935,19 +23458,23 @@ XEO.PathGeometry = XEO.Geometry.extend({
                     normals.push(currentRadius * x);
                     normals.push(normalY); //todo
                     normals.push(currentRadius * z);
-                    uvs.push( (i * radialLength));
-                    uvs.push(1-  h * 1 / heightSegments);
-                    positions.push(currentRadius * x);
-                    positions.push(currentHeight);
-                    positions.push(currentRadius * z);
+
+                    uvs.push((i * radialLength));
+                    uvs.push(1 - h * 1 / heightSegments);
+
+                    positions.push((currentRadius * x) + centerX);
+                    positions.push((currentHeight) + centerY);
+                    positions.push((currentRadius * z) + centerZ);
                 }
             }
 
             // create faces
             for (h = 0; h < heightSegments; h++) {
                 for (i = 0; i <= radialSegments; i++) {
+
                     first = h * (radialSegments + 1) + i;
                     second = first + radialSegments;
+
                     indices.push(first);
                     indices.push(second);
                     indices.push(second + 1);
@@ -21966,11 +23493,13 @@ XEO.PathGeometry = XEO.Geometry.extend({
                 normals.push(0.0);
                 normals.push(1.0);
                 normals.push(0.0);
+
                 uvs.push(0.5);
                 uvs.push(0.5);
-                positions.push(0);
-                positions.push(heightHalf);
-                positions.push(0);
+
+                positions.push(0 + centerX);
+                positions.push(heightHalf + centerY);
+                positions.push(0 + centerZ);
 
                 // top triangle fan
                 for (i = 0; i <= radialSegments; i++) {
@@ -21982,16 +23511,19 @@ XEO.PathGeometry = XEO.Geometry.extend({
                     normals.push(radiusTop * x);
                     normals.push(1.0);
                     normals.push(radiusTop * z);
+
                     uvs.push(tu);
                     uvs.push(tv);
-                    positions.push(radiusTop * x);
-                    positions.push(heightHalf);
-                    positions.push(radiusTop * z);
+
+                    positions.push((radiusTop * x) + centerX);
+                    positions.push((heightHalf) + centerY);
+                    positions.push((radiusTop * z) + centerZ);
                 }
 
                 for (i = 0; i < radialSegments; i++) {
                     center = startIndex;
                     first = startIndex + 1 + i;
+
                     indices.push(first);
                     indices.push(first + 1);
                     indices.push(center);
@@ -22000,38 +23532,47 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
             // create bottom cap
             if (!openEnded && radiusBottom > 0) {
+
                 startIndex = (positions.length / 3);
 
                 // top center
                 normals.push(0.0);
                 normals.push(-1.0);
                 normals.push(0.0);
+
                 uvs.push(0.5);
                 uvs.push(0.5);
-                positions.push(0);
-                positions.push(0 - heightHalf);
-                positions.push(0);
+
+                positions.push(0 + centerX);
+                positions.push(0 - heightHalf + centerY);
+                positions.push(0 + centerZ);
 
                 // top triangle fan
                 for (i = 0; i <= radialSegments; i++) {
+
                     x = Math.sin(i * radialAngle);
                     z = Math.cos(i * radialAngle);
+
                     tu = (0.5 * Math.sin(i * radialAngle)) + 0.5;
                     tv = (0.5 * Math.cos(i * radialAngle)) + 0.5;
 
                     normals.push(radiusBottom * x);
                     normals.push(-1.0);
                     normals.push(radiusBottom * z);
+
                     uvs.push(tu);
                     uvs.push(tv);
-                    positions.push(radiusBottom * x);
-                    positions.push(0 - heightHalf);
-                    positions.push(radiusBottom * z);
+
+                    positions.push((radiusBottom * x) + centerX);
+                    positions.push((0 - heightHalf) + centerY);
+                    positions.push((radiusBottom * z) + centerZ);
                 }
 
                 for (i = 0; i < radialSegments; i++) {
+
                     center = startIndex;
                     first = startIndex + 1 + i;
+
                     indices.push(center);
                     indices.push(first + 1);
                     indices.push(first);
@@ -22085,6 +23626,36 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                 get: function () {
                     return this._lod;
+                }
+            },
+
+            /**
+             * 3D point indicating the center position of this CylinderGeometry.
+             *
+             * Fires an {{#crossLink "CylinderGeometry/center:event"}}{{/crossLink}} event on change.
+             *
+             * @property center
+             * @default [0,0,0]
+             * @type {Float32Array}
+             */
+            center: {
+
+                set: function (value) {
+
+                    (this._center = this._center || new xeogl.math.vec3()).set(value || [0, 0, 0]);
+
+                    this._scheduleUpdate();
+
+                    /**
+                     Fired whenever this CylinderGeometry's {{#crossLink "CylinderGeometry/center:property"}}{{/crossLink}} property changes.
+                     @event center
+                     @param value {Float32Array} The property's new value
+                     */
+                    this.fire("center", this._center);
+                },
+
+                get: function () {
+                    return this._center;
                 }
             },
 
@@ -22340,6 +23911,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
         _getJSON: function () {
             return {
                 // Don't save lod
+                center: this._center.slice(),
                 radiusTop: this._radiusTop,
                 radiusBottom: this._radiusBottom,
                 height: this._height,
@@ -22352,13 +23924,21 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
 })();
 ;/**
- A **PlaneGeometry** defines a plane geometry for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ A **PlaneGeometry** is a parameterized {{#crossLink "Geometry"}}{{/crossLink}} that defines a plane-shaped mesh for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
+ <a href="../../examples/#geometry_PlaneGeometry"><img src="../../assets/images/screenshots/PlaneGeometry.png"></img></a>
+
+ ## Overview
+
+ * A PlaneGeometry lies in the X-Z plane.
+ * Dynamically modify it's shape at any time by updating its {{#crossLink "PlaneGeometry/center:property"}}{{/crossLink}}, {{#crossLink "PlaneGeometry/xSize:property"}}{{/crossLink}}, {{#crossLink "PlaneGeometry/zSize:property"}}{{/crossLink}}, {{#crossLink "PlaneGeometry/xSegments:property"}}{{/crossLink}} and
+ {{#crossLink "PlaneGeometry/zSegments:property"}}{{/crossLink}} properties.
+ * Dynamically switch its primitive type between ````"points"````, ````"lines"```` and ````"triangles"```` at any time by
+ updating its {{#crossLink "Geometry/primitive:property"}}{{/crossLink}} property.
+ 
  ## Examples
 
- <ul>
- <li>[Textured PlaneGeometry](../../examples/#geometry_PlaneGeometry)</li>
- </ul>
+ * [Textured PlaneGeometry](../../examples/#geometry_PlaneGeometry)
 
  ## Usage
 
@@ -22366,10 +23946,11 @@ XEO.PathGeometry = XEO.Geometry.extend({
  diffuse {{#crossLink "Texture"}}{{/crossLink}}:
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     geometry: new XEO.PlaneGeometry({
+     geometry: new xeogl.PlaneGeometry({
          primitive: "triangles",
+         center: [0,0,0],
          xSize: 2,
          zSize: 2,
          xSegments: 10,
@@ -22377,8 +23958,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
          lod: 1.0 // Default
      }),
 
-     material: new XEO.PhongMaterial({
-        diffuseMap: new XEO.Texture({
+     material: new xeogl.PhongMaterial({
+        diffuseMap: new xeogl.Texture({
             src: "textures/diffuse/uvGrid2.jpg"
         })
      })
@@ -22386,7 +23967,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
  ````
 
  @class PlaneGeometry
- @module XEO
+ @module xeogl
  @submodule geometry
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this PlaneGeometry in the default
@@ -22395,7 +23976,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
  generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this PlaneGeometry.
- @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values are 'points', 'lines', 'line-loop', 'line-strip', 'triangles', 'triangle-strip' and 'triangle-fan'.
+ @param [cfg.primitive="triangles"] {String} The primitive type. Accepted values for a PlaneGeometry are 'points', 'lines' and 'triangles'.
+ @param [cfg.center] {Float32Array} 3D point indicating the center position of the PlaneGeometry.
  @param [cfg.xSize=1] {Number} Dimension on the X-axis.
  @param [cfg.zSize=1] {Number} Dimension on the Z-axis.
  @param [cfg.xSegments=1] {Number} Number of segments on the X-axis.
@@ -22408,14 +23990,16 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
     "use strict";
 
-    XEO.PlaneGeometry = XEO.Geometry.extend({
+    xeogl.PlaneGeometry = xeogl.Geometry.extend({
 
-        type: "XEO.PlaneGeometry",
+        type: "xeogl.PlaneGeometry",
 
         _init: function (cfg) {
 
             this._super(cfg);
 
+            this.center = cfg.center;
+            
             this.xSize = cfg.xSize;
             this.zSize = cfg.zSize;
 
@@ -22435,7 +24019,9 @@ XEO.PathGeometry = XEO.Geometry.extend({
          */
         _update: function () {
 
-            // Geometry needs rebuild
+            var centerX = this._center[0];
+            var centerY = this._center[1];
+            var centerZ = this._center[2];
 
             var width = this._xSize;
             var height = this._zSize;
@@ -22486,8 +24072,9 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                     x = ix * segmentWidth - halfWidth;
 
-                    positions[offset] = x;
-                    positions[offset + 2] = -z;
+                    positions[offset] = x + centerX;
+                    positions[offset + 1] = centerY;
+                    positions[offset + 2] = -z + centerZ;
 
                     normals[offset + 2] = -1;
 
@@ -22572,6 +24159,36 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                 get: function () {
                     return this._lod;
+                }
+            },
+
+            /**
+             * 3D point indicating the center position of this PlaneGeometry.
+             *
+             * Fires an {{#crossLink "PlaneGeometry/center:event"}}{{/crossLink}} event on change.
+             *
+             * @property center
+             * @default [0,0,0]
+             * @type {Float32Array}
+             */
+            center: {
+
+                set: function (value) {
+
+                    (this._center = this._center || new xeogl.math.vec3()).set(value || [0, 0, 0]);
+
+                    this._scheduleUpdate();
+
+                    /**
+                     Fired whenever this PlaneGeometry's {{#crossLink "PlaneGeometry/center:property"}}{{/crossLink}} property changes.
+                     @event center
+                     @param value {Float32Array} The property's new value
+                     */
+                    this.fire("center", this._center);
+                },
+
+                get: function () {
+                    return this._center;
                 }
             },
 
@@ -22746,6 +24363,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
         _getJSON: function () {
             return {
+                center: this._center.slice(),
                 xSize: this._xSize,
                 zSize: this._zSize,
                 xSegments: this._xSegments,
@@ -22764,9 +24382,9 @@ XEO.PathGeometry = XEO.Geometry.extend({
  diffuse {{#crossLink "Texture"}}{{/crossLink}}:
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     geometry: new XEO.LatheGeometry({
+     geometry: new xeogl.LatheGeometry({
         primitive: "triangles",
         points: [
             [ 0, 0,  8],
@@ -22782,16 +24400,15 @@ XEO.PathGeometry = XEO.Geometry.extend({
         autoNormals: true // Default
      }),
 
-     material: new XEO.PhongMaterial({
-        diffuseMap: new XEO.Texture({
+     material: new xeogl.PhongMaterial({
+        diffuseMap: new xeogl.Texture({
             src: "textures/diffuse/uvGrid2.jpg"
         })
      })
  });
  ````
 
- @class LatheGeometry
- @module XEO
+ @module xeogl
  @submodule geometry
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this LatheGeometry in the default
@@ -22812,9 +24429,9 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
     "use strict";
 
-    XEO.LatheGeometry = XEO.Geometry.extend({
+    xeogl.LatheGeometry = xeogl.Geometry.extend({
 
-        type: "XEO.LatheGeometry",
+        type: "xeogl.LatheGeometry",
 
         _init: function (cfg) {
 
@@ -22843,8 +24460,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
             if (segments < 4) {
                 segments = 4;
             }
-            var phiStart = this._phiStart * XEO.math.DEGTORAD;
-            var phiLength = this._phiLength * XEO.math.DEGTORAD;
+            var phiStart = this._phiStart * xeogl.math.DEGTORAD;
+            var phiLength = this._phiLength * xeogl.math.DEGTORAD;
             var points = this._points;
             var inversePointLength = 1.0 / ( points.length - 1 );
             var inverseSegments = 1.0 / segments;
@@ -23131,495 +24748,14 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
 })();
 ;/**
- * Components for managing collections of components.
- *
- * @module XEO
- * @submodule collections
- */;/**
- A **Collection** is a set of {{#crossLink "Component"}}Components{{/crossLink}}.
-
- <ul>
- <li>A {{#crossLink "Component"}}Component{{/crossLink}} can be included in more than one Collection.</li>
- <li>{{#crossLink "Component"}}Components{{/crossLink}} can be added to a Collection by instance, ID or type.</li>
- <li>A Collection supports iteration over its {{#crossLink "Component"}}Components{{/crossLink}}.</li>
- <li>A {{#crossLink "Model"}}Model{{/crossLink}} stores the {{#crossLink "Component"}}Components{{/crossLink}} it has loaded in a Collection.</li>
- <li>A {{#crossLink "CollectionBoundary"}}CollectionBoundary{{/crossLink}} provides a World-space {{#crossLink "Boundary3D"}}{{/crossLink}} that encloses a Collection.</li>
- </ul>
-
- <img src="../../../assets/images/Collection.png"></img>
-
- ## Examples
-
- <ul>
- <li>[Adding Entities to a Collection](../../examples/#collections_Collection_creating_add)</li>
- <li>[Adding components types to a Collection](../../examples/#collections_Collection_creating_type)</li>
- <li>[Iterating a Collection](../../examples/#boundaries_Collection_iterating)</li>
- <li>[Visualizing World-space boundary of a Collection](../../examples/#boundaries_CollectionBoundary)</li>
- <li>[Visualizing World-space boundaries of a hierarchy of Collections](../../examples/#boundaries_CollectionBoundary_hierarchy)</li>
- </ul>
-
- ## Creating Collections
-
- Our first Collection contains a {{#crossLink "PhongMaterial"}}{{/crossLink}}, added by ID, plus a {{#crossLink "BoxGeometry"}}{{/crossLink}} and
- an {{#crossLink "Entity"}}{{/crossLink}}, both added by instance.
-
- ````javascript
- var material = new XEO.PhongMaterial({
-     id: "myMaterial",
-     diffuse: [0.5, 0.5, 0.0]
- });
-
- var geometry = new XEO.BoxGeometry();
-
- var entity = new XEO.Entity({
-    id: "myEntity",
-    material: material,
-    geometry: geometry
- });
-
- var collection1 = new XEO.Collection({ // Initialize with the three components
-     components: [
-         "myMaterial",
-         geometry,
-         myEntity
-     ]
- });
- ````
- Our second Collection includes the {{#crossLink "BoxGeometry"}}{{/crossLink}}, added by instance,
- and the {{#crossLink "Entity"}}{{/crossLink}}, added by type. If there were more than
- one {{#crossLink "Entity"}}{{/crossLink}} in the scene, then that type would ensure
- that all the {{#crossLink "Entity"}}Entities{{/crossLink}} were in the Collection.
-
- ````javascript
- var collection2 = new XEO.Collection();
-
- collection2.add([  // Add two components
-    geometry,
-    "XEO.Entity",
- ]);
- ````
-
- ## Accessing Components
-
- Iterate over the components in a Collection using the convenience iterator:
-
- ````javascript
- collection1.iterate(function(component) {
-     if (component.isType("XEO.Entity")) {
-         this.log("Found the Entity: " + component.id);
-     }
-     //..
- });
- ````
-
- A Collection also registers its components by type:
-
- ````javascript
- var entities = collection1.types["XEO.Entity"];
- var theEntity = entities["myEntity"];
- ````
-
- ## Removing Components
-
- We can remove components from a Collection by instance, ID or type:
-
- ````javascript
- collection1.remove("myMaterial"); // Remove one component by ID
- collection1.remove([geometry, myEntity]); // Remove two components by instance
- collection2.remove("XEO.Geometry"); // Remove all Geometries
- ````
-
- ## Getting the boundary of a Collection
-
- A {{#crossLink "CollectionBoundary"}}{{/crossLink}} provides a {{#crossLink "Boundary3D"}}{{/crossLink}} that
- dynamically fits to the collective World-space boundary of all the Components in a Collection.
-
- ````javascript
- var collectionBoundary = new XEO.CollectionBoundary({
-    collection: collection1
- });
-
- var worldBoundary = collectionBoundary.worldBoundary;
- ````
- The {{#crossLink "Boundary3D"}}{{/crossLink}}
- will automatically update whenever we add, remove or update any Components that have World-space boundaries. We can subscribe
- to updates on it like so:
-
- ````javascript
- worldBoundary.on("updated", function() {
-     obb = worldBoundary.obb;
-     aabb = worldBoundary.aabb;
-     center = worldBoundary.center;
-     //...
- });
- ````
-
- Now, if we now re-insert our {{#crossLink "Entity"}}{{/crossLink}} into to our Collection,
- the {{#crossLink "Boundary3D"}}{{/crossLink}} will fire our update handler.
-
- ````javascript
- collection1.add(myEntity);
- ````
-
-
- @class Collection
- @module XEO
- @submodule collections
- @constructor
- @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}.
- @param [cfg] {*} Configs
- @param [cfg.id] {String} Optional ID, unique among all components in the parent scene, generated automatically when omitted.
- @param [cfg.meta] {String:Component} Optional map of user-defined metadata to attach to this Collection.
- @param [cfg.components] {{Array of String|Component}} Array of {{#crossLink "Component"}}{{/crossLink}} IDs or instances.
- @extends Component
- */
-(function () {
-
-    "use strict";
-
-    XEO.Collection = XEO.Component.extend({
-
-        /**
-         JavaScript class name for this Component.
-
-         @property type
-         @type String
-         @final
-         */
-        type: "XEO.Collection",
-
-        _init: function (cfg) {
-
-            /**
-             * The {{#crossLink "Components"}}{{/crossLink}} within this Collection, mapped to their IDs.
-             *
-             * Fires an {{#crossLink "Collection/updated:event"}}{{/crossLink}} event on change.
-             *
-             * @property components
-             * @type {{String:Component}}
-             */
-            this.components = {};
-
-            /**
-             * The number of {{#crossLink "Components"}}{{/crossLink}} within this Collection.
-             *
-             * @property numComponents
-             * @type Number
-             */
-            this.numComponents = 0;
-
-            /**
-             * A map of maps; for each {{#crossLink "Component"}}{{/crossLink}} type in this Collection,
-             * a map to IDs to {{#crossLink "Component"}}{{/crossLink}} instances, eg.
-             *
-             * ````
-             * "XEO.Geometry": {
-             *   "alpha": <XEO.Geometry>,
-             *   "beta": <XEO.Geometry>
-             * },
-             * "XEO.Rotate": {
-             *   "charlie": <XEO.Rotate>,
-             *   "delta": <XEO.Rotate>,
-             *   "echo": <XEO.Rotate>,
-             * },
-             * //...
-             * ````
-             *
-             * @property types
-             * @type {String:{String:XEO.Component}}
-             */
-            this.types = {};
-
-            // Subscriptions to "destroyed" events from components
-            this._destroyedSubs = {};
-
-            if (cfg.components) {
-                this.add(cfg.components);
-            }
-        },
-
-        /**
-         * Adds one or more {{#crossLink "Component"}}Components{{/crossLink}}s to this Collection.
-         *
-         * The {{#crossLink "Component"}}Component(s){{/crossLink}} may be specified by instance, ID or type.
-         *
-         * See class comment for usage examples.
-         *
-         * The {{#crossLink "Component"}}Components{{/crossLink}} must be in the same {{#crossLink "Scene"}}{{/crossLink}} as this Collection.
-         *
-         * Fires an {{#crossLink "Collection/added:event"}}{{/crossLink}} event.
-         *
-         * @method add
-         * @param {Array of Component} components Array of {{#crossLink "Component"}}Components{{/crossLink}} instances.
-         */
-        add: function (components) {
-
-            components = XEO._isArray(components) ? components : [components];
-
-            for (var i = 0, len = components.length; i < len; i++) {
-                this._add(components[i]);
-            }
-        },
-
-        _add: function (c) {
-
-            var componentId;
-            var component;
-            var type;
-            var types;
-
-            if (c.type) {
-
-                // Component instance
-
-                component = c;
-
-            } else if (XEO._isNumeric(c) || XEO._isString(c)) {
-
-                if (this.scene.types[c]) {
-
-                    // Component type
-
-                    type = c;
-
-                    types = this.scene.types[type];
-
-                    if (!types) {
-                        this.warn("Component type not found: '" + type + "'");
-                        return;
-                    }
-
-                    for (componentId in types) {
-                        if (types.hasOwnProperty(componentId)) {
-                            this._add(types[componentId]);
-                        }
-                    }
-
-                    return;
-
-                } else {
-
-                    // Component ID
-
-                    component = this.scene.components[c];
-
-                    if (!component) {
-                        this.warn("Component not found: " + XEO._inQuotes(c));
-                        return;
-                    }
-                }
-
-            } else {
-
-                return;
-            }
-
-            if (component.scene !== this.scene) {
-
-                // Component in wrong Scene
-
-                this.warn("Attempted to add component from different XEO.Scene: " + XEO._inQuotes(component.id));
-                return;
-            }
-
-            // Add component to this map
-
-            if (this.components[component.id]) {
-
-                // Component already in this Collection
-                return;
-            }
-
-            this.components[component.id] = component;
-
-            // Register component for its type
-
-            types = this.types[component.type];
-
-            if (!types) {
-                types = this.types[component.type] = {};
-            }
-
-            types[component.id] = component;
-
-            this.numComponents++;
-
-            // Remove component when it's destroyed
-
-            var self = this;
-
-            this._destroyedSubs[component.id] = component.on("destroyed",
-                function () {
-                    self._remove(component);
-                });
-
-            /**
-             * Fired whenever an individual {{#crossLink "Component"}}{{/crossLink}} is added to this {{#crossLink "Collection"}}{{/crossLink}}.
-             * @event added
-             * @param value {Component} The {{#crossLink "Component"}}{{/crossLink}} that was added.
-             */
-            this.fire("added", component);
-
-            if (!this._dirty) {
-                this._scheduleUpdate();
-            }
-        },
-
-        _scheduleUpdate: function () {
-            if (!this._dirty) {
-                this._dirty = true;
-                XEO.scheduleTask(this._notifyUpdated, this);
-            }
-        },
-
-        _notifyUpdated: function () {
-
-            /* Fired on the next {{#crossLink "Scene/tick.animate:event"}}{{/crossLink}} whenever
-             * {{#crossLink "Component"}}Components{{/crossLink}} were added or removed since the
-             * last {{#crossLink "Scene/tick.animate:event"}}{{/crossLink}} event, to provide a batched change event
-             * for subscribers who don't want to react to every individual addition or removal on this Collection.
-             *
-             * @event updated
-             */
-            this.fire("updated");
-            this._dirty = false;
-        },
-
-        /**
-         * Removes all {{#crossLink "Component"}}Components{{/crossLink}} from this Collection.
-         *
-         * Fires an {{#crossLink "Collection/updated:event"}}{{/crossLink}} event.
-         *
-         * @method clear
-         */
-        clear: function () {
-
-            this.iterate(function (component) {
-                this._remove(component);
-            });
-        },
-
-        /**
-         * Destroys all {{#crossLink "Component"}}Components{{/crossLink}} in this Collection.
-         *
-         * @method destroyAll
-         */
-        destroyAll: function () {
-
-            this.iterate(function (component) {
-                component.destroy();
-            });
-        },
-
-        /**
-         * Removes one or more {{#crossLink "Component"}}Components{{/crossLink}} from this Collection.
-         *
-         * The {{#crossLink "Component"}}Component(s){{/crossLink}} may be specified by instance, ID or type.
-         *
-         * See class comment for usage examples.
-         *
-         * Fires a {{#crossLink "Collection/removed:event"}}{{/crossLink}} event.
-         *
-         * @method remove
-         * @param {Array of Components} components Array of {{#crossLink "Component"}}Components{{/crossLink}} instances.
-         */
-        remove: function (components) {
-
-            components = XEO._isArray(components) ? components : [components];
-
-            for (var i = 0, len = components.length; i < len; i++) {
-                this._remove(components[i]);
-            }
-        },
-
-        _remove: function (component) {
-
-            var componentId = component.id;
-
-            if (component.scene !== this.scene) {
-                this.warn("Attempted to remove component that's not in same XEO.Scene: '" + componentId + "'");
-                return;
-            }
-
-            delete this.components[componentId];
-
-            // Unsubscribe from component destruction
-
-            component.off(this._destroyedSubs[componentId]);
-
-            delete this._destroyedSubs[componentId];
-
-            // Unregister component for its type
-
-            var types = this.types[component.type];
-
-            if (types) {
-                delete types[component.id];
-            }
-
-            this.numComponents--;
-
-            /**
-             * Fired whenever an individual {{#crossLink "Component"}}{{/crossLink}} is removed from this {{#crossLink "Collection"}}{{/crossLink}}.
-             * @event removed
-             * @param value {Component} The {{#crossLink "Component"}}{{/crossLink}} that was removed.
-             */
-            this.fire("removed", component);
-
-            if (!this._dirty) {
-                this._scheduleUpdate();
-            }
-        },
-
-        /**
-         * Iterates with a callback over the {{#crossLink "Component"}}Components{{/crossLink}} in this Collection.
-         *
-         * @method iterate
-         * @param {Function} callback Callback called for each {{#crossLink "Component"}}{{/crossLink}}.
-         * @param {Object} [scope=this] Optional scope for the callback, defaults to this Collection.
-         */
-        iterate: function (callback, scope) {
-            scope = scope || this;
-            var components = this.components;
-            for (var componentId in components) {
-                if (components.hasOwnProperty(componentId)) {
-                    callback.call(scope, components[componentId]);
-                }
-            }
-        },
-
-        _getJSON: function () {
-
-            var componentIds = [];
-
-            for (var componentId in this.components) {
-                if (this.components.hasOwnProperty(componentId)) {
-                    componentIds.push(this.components[componentId].id); // Don't convert numbers into strings
-                }
-            }
-
-            return {
-                components: componentIds
-            };
-        },
-
-        _destroy: function () {
-
-            this.clear();
-        }
-    });
-
-})();;/**
  * Components for capturing user input.
  *
- * @module XEO
+ * @module xeogl
  * @submodule input
  */;/**
  Publishes keyboard and mouse events that occur on the parent {{#crossLink "Scene"}}{{/crossLink}}'s {{#crossLink "Canvas"}}{{/crossLink}}.
 
- <ul>
- <li>Each {{#crossLink "Scene"}}{{/crossLink}} provides an Input on itself as a read-only property.</li>
- </ul>
+ * Each {{#crossLink "Scene"}}{{/crossLink}} provides an Input on itself as a read-only property.
 
  <img src="../../../assets/images/Input.png"></img>
 
@@ -23629,7 +24765,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
  a {{#crossLink "Scene"}}Scene's{{/crossLink}} {{#crossLink "Canvas"}}Canvas{{/crossLink}}.
 
  ````javascript
- var myScene = new XEO.Scene();
+ var myScene = new xeogl.Scene();
 
  var input = myScene.input;
 
@@ -23705,7 +24841,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
  ````
 
  @class Input
- @module XEO
+ @module xeogl
  @submodule input
  @extends Component
  */
@@ -23713,9 +24849,9 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
     "use strict";
 
-    XEO.Input = XEO.Component.extend({
+    xeogl.Input = xeogl.Component.extend({
 
-        type: "XEO.Input",
+        type: "xeogl.Input",
 
         serializable: false,
 
@@ -24088,8 +25224,8 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                 var orientation;
                 var orientationAngle;
-                var acceleration = XEO.math.vec3();
-                var accelerationIncludingGravity = XEO.math.vec3();
+                var acceleration = xeogl.math.vec3();
+                var accelerationIncludingGravity = xeogl.math.vec3();
 
                 var orientationChangeEvent = {
                     orientation: null,
@@ -24100,7 +25236,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
                     orientationAngle: 0,
                     acceleration: null,
                     accelerationIncludingGravity: accelerationIncludingGravity,
-                    rotationRate: XEO.math.vec3(),
+                    rotationRate: xeogl.math.vec3(),
                     interval: 0
                 };
 
@@ -25059,44 +26195,44 @@ XEO.PathGeometry = XEO.Geometry.extend({
 ;/**
  * Components for defining light sources.
  *
- * @module XEO
+ * @module xeogl
  * @submodule lighting
  */;/**
  A **Lights** defines a group of light sources that illuminate attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
+ ## Overview
+
  A Lights may contain a virtually unlimited number of three types of light source:
 
- <ul>
- <li>{{#crossLink "AmbientLight"}}AmbientLight{{/crossLink}}s, which are fixed-intensity and fixed-color, and
- affect all the {{#crossLink "Entity"}}Entities{{/crossLink}} equally,</li>
- <li>{{#crossLink "PointLight"}}PointLight{{/crossLink}}s, which emit light that
- originates from a single point and spreads outward in all directions, and </li>
- <li>{{#crossLink "DirLight"}}DirLight{{/crossLink}}s, which illuminate all the
- {{#crossLink "Entity"}}Entities{{/crossLink}} equally from a given direction</li>
- </ul>
+ * {{#crossLink "AmbientLight"}}AmbientLight{{/crossLink}}s, which are fixed-intensity and fixed-color, and
+ affect all the {{#crossLink "Entity"}}Entities{{/crossLink}} equally,
+ * {{#crossLink "PointLight"}}PointLight{{/crossLink}}s, which emit light that
+ originates from a single point and spreads outward in all directions, and
+ * {{#crossLink "DirLight"}}DirLight{{/crossLink}}s, which illuminate all the
+ {{#crossLink "Entity"}}Entities{{/crossLink}} equally from a given direction
 
  <img src="../../../assets/images/Lights.png"></img>
 
  ## Usage
 
  ```` javascript
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
 
-     lights: new XEO.Lights({
+     lights: new xeogl.Lights({
          lights: [
 
-             new XEO.AmbientLight({
+             new xeogl.AmbientLight({
                  color: [0.7, 0.7, 0.7]
              })
 
-             new XEO.DirLight({
+             new xeogl.DirLight({
                  dir:         [-1, -1, -1],
                  color:       [0.5, 0.7, 0.5],
                  intensity:   1.0,
                  space:      "view"  // Other option is "world", for World-space
              }),
 
-             new XEO.PointLight({
+             new xeogl.PointLight({
                  pos: [0, 100, 100],
                  color: [0.5, 0.7, 0.5],
                  intensity: 1
@@ -25108,20 +26244,20 @@ XEO.PathGeometry = XEO.Geometry.extend({
          ]
     }),
 
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         ambient:    [0.3, 0.3, 0.3],
         diffuse:    [0.7, 0.7, 0.7],
         specular:   [1. 1, 1],
         shininess:  30
     }),
 
-    geometry: new XEO.BoxGeometry()
+    geometry: new xeogl.BoxGeometry()
  });
  ````
 
  @class Lights
  @constructor
- @module XEO
+ @module xeogl
  @submodule lighting
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Lights in the default
  {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
@@ -25135,14 +26271,14 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
     "use strict";
 
-    XEO.Lights = XEO.Component.extend({
+    xeogl.Lights = xeogl.Component.extend({
 
-        type: "XEO.Lights",
+        type: "xeogl.Lights",
 
         _init: function (cfg) {
 
             // Renderer state contains the states of the child light source components
-            this._state = new XEO.renderer.Lights({
+            this._state = new xeogl.renderer.Lights({
                 lights: [],
                 hash: ""
             });
@@ -25173,9 +26309,9 @@ XEO.PathGeometry = XEO.Geometry.extend({
              ````javascript
              var lights = myLights.lights;
 
-             lights.push(new XEO.PointLight({...}));
+             lights.push(new xeogl.PointLight({...}));
 
-             myLights.lights = lights; // This way, the XEO.Lights component is able to detect that the new light was added.
+             myLights.lights = lights; // This way, the xeogl.Lights component is able to detect that the new light was added.
              ````
 
              We'll be able to relax this once JavaScript gets the (proper) ability to observe array updates.
@@ -25243,7 +26379,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
                         light = value[i];
 
-                        if (XEO._isNumeric(light) || XEO._isString(light)) {
+                        if (xeogl._isNumeric(light) || xeogl._isString(light)) {
 
                             // ID given for light - find the light component
 
@@ -25252,15 +26388,15 @@ XEO.PathGeometry = XEO.Geometry.extend({
                             light = this.scene.components[id];
 
                             if (!light) {
-                                this.error("Component not found: " + XEO._inQuotes(id));
+                                this.error("Component not found: " + xeogl._inQuotes(id));
                                 continue;
                             }
                         }
 
                         var type = light.type;
 
-                        if (type !== "XEO.AmbientLight" && type !== "XEO.DirLight" && type !== "XEO.PointLight") {
-                            this.error("Component " + XEO._inQuotes(light.id) + " is not an XEO.AmbientLight, XEO.DirLight or XEO.PointLight ");
+                        if (type !== "xeogl.AmbientLight" && type !== "xeogl.DirLight" && type !== "xeogl.PointLight") {
+                            this.error("Component " + xeogl._inQuotes(light.id) + " is not an xeogl.AmbientLight, xeogl.DirLight or xeogl.PointLight ");
                             continue;
                         }
 
@@ -25359,50 +26495,48 @@ XEO.PathGeometry = XEO.Geometry.extend({
     });
 })();
 ;/**
-
  An **AmbientLight** defines an ambient light source of fixed intensity and color that affects all attached {{#crossLink "Entity"}}Entities{{/crossLink}}
  equally.
 
- <ul>
- <li>AmbientLights are grouped, along with other light source types, within
- {{#crossLink "Lights"}}Lights{{/crossLink}} components, which are attached to {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>When the {{#crossLink "Entity"}}Entities{{/crossLink}} have {{#crossLink "PhongMaterial"}}PhongMaterials{{/crossLink}},
+ <a href="../../examples/#lights_ambient"><img src="http://i.giphy.com/l0HlGTxXQWMRVOPwk.gif"></img></a>
+
+ ## Overview
+
+ * AmbientLights are grouped, along with other light source types, within
+ {{#crossLink "Lights"}}Lights{{/crossLink}} components, which are attached to {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * When the {{#crossLink "Entity"}}Entities{{/crossLink}} have {{#crossLink "PhongMaterial"}}PhongMaterials{{/crossLink}},
  AmbientLight {{#crossLink "AmbientLight/color:property"}}color{{/crossLink}} is multiplied by
- {{#crossLink "PhongMaterial"}}PhongMaterial{{/crossLink}} {{#crossLink "PhongMaterial/ambient:property"}}{{/crossLink}}.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that AmbientLights create within xeoEngine's shaders.</li>
- </ul>
+ {{#crossLink "PhongMaterial"}}PhongMaterial{{/crossLink}} {{#crossLink "PhongMaterial/ambient:property"}}{{/crossLink}} at each rendered fragment of the {{#crossLink "Geometry"}}{{/crossLink}} surface.
 
  <img src="../../../assets/images/AmbientLight.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Ambient light source](../../examples/#lights_ambient)</li>
- </ul>
+ * [Ambient light source](../../examples/#lights_ambient)
 
  ## Usage
 
  ```` javascript
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
 
-        lights: new XEO.Lights({
-            lights: [
-                new XEO.AmbientLight({
-                    color: [0.7, 0.7, 0.7]
-                })
-            ]
-        }),
- ,
-        material: new XEO.PhongMaterial({
-            diffuse: [0.5, 0.5, 0.0]
-        }),
+     lights: new xeogl.Lights({
+         lights: [
+             new xeogl.AmbientLight({
+                 color: [0.7, 0.7, 0.7]
+             })
+         ]
+     }),
 
-        geometry: new XEO.BoxGeometry()
-  });
+     material: new xeogl.PhongMaterial({
+        diffuse: [0.5, 0.5, 0.0]
+     }),
+
+     geometry: new xeogl.BoxGeometry()
+ });
  ````
 
  @class AmbientLight
- @module XEO
+ @module xeogl
  @submodule lighting
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this AmbientLight within the
@@ -25417,15 +26551,15 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
     "use strict";
 
-    XEO.AmbientLight = XEO.Component.extend({
+    xeogl.AmbientLight = xeogl.Component.extend({
 
-        type: "XEO.AmbientLight",
+        type: "xeogl.AmbientLight",
 
         _init: function (cfg) {
 
             this._state = {
                 type: "ambient",
-                color: XEO.math.vec3([0.7, 0.7, 0.7]),
+                color: xeogl.math.vec3([0.7, 0.7, 0.7]),
                 intensity: 1.0
             };
 
@@ -25510,34 +26644,31 @@ XEO.PathGeometry = XEO.Geometry.extend({
  A **DirLight** is a directional light source that illuminates all attached {{#crossLink "Entity"}}Entities{{/crossLink}} equally
  from a given direction.
 
- <ul>
- <li>DirLights are grouped, along with other light source types, within {{#crossLink "Lights"}}Lights{{/crossLink}} components,
- which are attached to {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>DirLights have a direction, but no position.</li>
- <li>DirLights may be defined in either **World** or **View** coordinate space. When in World-space, their direction
+ ## Overview
+
+ * DirLights are grouped, along with other light source types, within {{#crossLink "Lights"}}Lights{{/crossLink}} components,
+ which are attached to {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * DirLights have a direction, but no position.
+ * DirLights may be defined in either **World** or **View** coordinate space. When in World-space, their direction
  is relative to the World coordinate system, and will appear to move as the {{#crossLink "Camera"}}{{/crossLink}} moves.
  When in View-space, their direction is relative to the View coordinate system, and will behave as if fixed to the viewer's
- head as the {{#crossLink "Camera"}}{{/crossLink}} moves.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that DirLights create within xeoEngine's shaders.</li>
- </ul>
+ head as the {{#crossLink "Camera"}}{{/crossLink}} moves.
 
  <img src="../../../assets/images/DirLight.png"></img>
 
  ## Examples
 
- <ul>
- <li>[View-space directional light](../../examples/#lights_directional_view)</li>
- <li>[World-space directional light](../../examples/#lights_directional_world)</li>
- </ul>
+ * [View-space directional light](../../examples/#lights_directional_view)
+ * [World-space directional light](../../examples/#lights_directional_world)
 
  ## Usage
 
  ```` javascript
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
 
-    lights: new XEO.Lights({
+    lights: new xeogl.Lights({
         lights: [
-            new XEO.DirLight({
+            new xeogl.DirLight({
 
                 // Note that this is the direction the light is shining,
                 // not the direction to the light source
@@ -25550,19 +26681,19 @@ XEO.PathGeometry = XEO.Geometry.extend({
         ]
     }),
 
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         ambient:    [0.3, 0.3, 0.3],
         diffuse:    [0.7, 0.7, 0.7],
         specular:   [1. 1, 1],
         shininess:  30
     }),
 
-    geometry: new XEO.BoxGeometry()
+    geometry: new xeogl.BoxGeometry()
 });
  ````
 
  @class DirLight
- @module XEO
+ @module xeogl
  @submodule lighting
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this DirLight within the
@@ -25582,16 +26713,16 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
     "use strict";
 
-    XEO.DirLight = XEO.Component.extend({
+    xeogl.DirLight = xeogl.Component.extend({
 
-        type: "XEO.DirLight",
+        type: "xeogl.DirLight",
 
         _init: function (cfg) {
 
             this._state = {
                 type: "dir",
-                dir: XEO.math.vec3([1.0, 1.0, 1.0]),
-                color: XEO.math.vec3([0.7, 0.7, 0.8]),
+                dir: xeogl.math.vec3([1.0, 1.0, 1.0]),
+                color: xeogl.math.vec3([0.7, 0.7, 0.8]),
                 intensity: 1.0,
                 space: "view"
             };
@@ -25701,10 +26832,10 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
              Supported values are:
 
-             <ul>
-             <li>"view" - View space, aligned within the view volume as if fixed to the viewer's head</li>
-             <li>"world" - World space, fixed within the world, moving within the view volume with respect to camera</li>
-             </ul>
+
+             * "view" - View space, aligned within the view volume as if fixed to the viewer's head
+             * "world" - World space, fixed within the world, moving within the view volume with respect to camera
+
 
              Fires a {{#crossLink "DirLight/space:event"}}{{/crossLink}} event on change.
 
@@ -25747,40 +26878,37 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
 })();
 ;/**
+ A **PointLight** defines a positional light source that originates from a single point and spreads outward in all directions, to illuminate attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- A **PointLight** defines a positional light source that originates from a single point and spreads outward in all directions, to illuminate
- attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ <a href="../../examples/#lights_point_world"><img src="http://i.giphy.com/3o6ZsZoFGIOJ2nlmN2.gif"></img></a>
 
- <ul>
- <li>PointLights are grouped, along with other light source types, within {{#crossLink "Lights"}}Lights{{/crossLink}} components,
- which are attached to {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>PointLights have a position, but no direction.</li>
- <li>PointLights may be defined in either **World** or **View** coordinate space. When in World-space, their positions
+ ## Overview
+
+ * PointLights are grouped, along with other light source types, within {{#crossLink "Lights"}}Lights{{/crossLink}} components,
+ which are attached to {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * PointLights have a position, but no direction.
+ * PointLights may be defined in either **World** or **View** coordinate space. When in World-space, their positions
  are relative to the World coordinate system, and will appear to move as the {{#crossLink "Camera"}}{{/crossLink}} moves.
  When in View-space, their positions are relative to the View coordinate system, and will behave as if fixed to the viewer's
- head as the {{#crossLink "Camera"}}{{/crossLink}} moves.</li>
- <li>PointLights have {{#crossLink "PointLight/constantAttenuation:property"}}{{/crossLink}}, {{#crossLink "PointLight/linearAttenuation:property"}}{{/crossLink}} and
- {{#crossLink "PointLight/quadraticAttenuation:property"}}{{/crossLink}} factors, which indicate how their intensity attenuates over distance.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that PointLights create within xeoEngine's shaders.</li>
- </ul>
+ head as the {{#crossLink "Camera"}}{{/crossLink}} moves.
+ * PointLights have {{#crossLink "PointLight/constantAttenuation:property"}}{{/crossLink}}, {{#crossLink "PointLight/linearAttenuation:property"}}{{/crossLink}} and
+ {{#crossLink "PointLight/quadraticAttenuation:property"}}{{/crossLink}} factors, which indicate how their intensity attenuates over distance.
 
  <img src="../../../assets/images/PointLight.png"></img>
 
  ## Examples
 
- <ul>
- <li>[View-space point light](../../examples/#lights_point_view)</li>
- <li>[World-space point light](../../examples/#lights_point_world)</li>
- </ul>
+ * [View-space point light](../../examples/#lights_point_view)
+ * [World-space point light](../../examples/#lights_point_world)
 
  ## Usage
 
  ```` javascript
- var entity = new XEO.Entity(scene, {
+ var entity = new xeogl.Entity(scene, {
 
-        lights: new XEO.Lights({
+        lights: new xeogl.Lights({
             lights: [
-                new XEO.PointLight({
+                new xeogl.PointLight({
                     pos: [0, 100, 100],
                     color: [0.5, 0.7, 0.5],
                     intensity: 1
@@ -25792,16 +26920,16 @@ XEO.PathGeometry = XEO.Geometry.extend({
             ]
         }),
  ,
-        material: new XEO.PhongMaterial({
+        material: new xeogl.PhongMaterial({
             diffuse: [0.5, 0.5, 0.0]
         }),
 
-        geometry: new XEO.BoxGeometry()
+        geometry: new xeogl.BoxGeometry()
   });
  ````
 
  @class PointLight
- @module XEO
+ @module xeogl
  @submodule lighting
  @constructor
  @extends Component
@@ -25822,16 +26950,16 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
     "use strict";
 
-    XEO.PointLight = XEO.Component.extend({
+    xeogl.PointLight = xeogl.Component.extend({
 
-        type: "XEO.PointLight",
+        type: "xeogl.PointLight",
 
         _init: function (cfg) {
 
             this._state = {
                 type: "point",
-                pos: XEO.math.vec3([1.0, 1.0, 1.0]),
-                color: XEO.math.vec3([0.7, 0.7, 0.8]),
+                pos: xeogl.math.vec3([1.0, 1.0, 1.0]),
+                color: xeogl.math.vec3([0.7, 0.7, 0.8]),
                 intensity: 1.0,
 
                 // Packaging constant, linear and quadratic attenuation terms
@@ -26043,10 +27171,10 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
              Supported values are:
 
-             <ul>
-             <li>"view" - View space, aligned within the view volume as if fixed to the viewer's head</li>
-             <li>"world" - World space, fixed within the world, moving within the view volume with respect to camera</li>
-             </ul>
+
+             * "view" - View space, aligned within the view volume as if fixed to the viewer's head
+             * "world" - World space, fixed within the world, moving within the view volume with respect to camera
+
 
              Fires a {{#crossLink "PointLight/space:event"}}{{/crossLink}} event on change.
 
@@ -26093,11 +27221,588 @@ XEO.PathGeometry = XEO.Geometry.extend({
 
 })();
 ;/**
- * Imports content from files.
+ * Models are units of xeogl content.
  *
- * @module XEO
- * @submodule importing
- */;// Copyright (c) 2013 Fabrice Robinet
+ * @module xeogl
+ * @submodule models
+ */;(function () {
+
+    "use strict";
+
+    /**
+     A **Model** is a unit of content within a xeogl {{#crossLink "Scene"}}{{/crossLink}}.
+
+     ## Overview
+
+     * A Model is a container of {{#crossLink "Component"}}Components{{/crossLink}}.
+     * Can be transformed within World-space by attaching it to a {{#crossLink "Transform"}}{{/crossLink}}.
+     * Provides its World-space boundary as a {{#crossLink "Boundary3D"}}{{/crossLink}}.
+     * Subclassed by {{#crossLink "GLTFModel"}}{{/crossLink}}, which loads glTF files.
+     * Subclassed by {{#crossLink "BuildableModel"}}{{/crossLink}}, which provides a fluent API for building itself.
+
+     <img src="../../../assets/images/Model.png"></img>
+
+     @class Model
+     @module xeogl
+     @submodule models
+     @constructor
+     @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this ModelModel in the default
+     {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
+     @param [cfg] {*} Configs
+     @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
+     generated automatically when omitted.
+     @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this ModelModel.
+     @param [cfg.transform] {Number|String|Transform} A Local-to-World-space (modelling) {{#crossLink "Transform"}}{{/crossLink}} to attach to this Model.
+     Must be within the same {{#crossLink "Scene"}}{{/crossLink}} as this Model. Internally, the given
+     {{#crossLink "Transform"}}{{/crossLink}} will be inserted above each top-most {{#crossLink "Transform"}}Transform{{/crossLink}}
+     that the Model attaches to its {{#crossLink "Entity"}}Entities{{/crossLink}}.
+     @extends Component
+     */
+    xeogl.Model = xeogl.Component.extend({
+
+        /**
+         JavaScript class name for this Component.
+
+         @property type
+         @type String
+         @final
+         */
+        type: "xeogl.Model",
+
+        _init: function (cfg) {
+
+            /**
+             * The {{#crossLink "Components"}}{{/crossLink}} within this Model, mapped to their IDs.
+             *
+             * Fires an {{#crossLink "Model/updated:event"}}{{/crossLink}} event on change.
+             *
+             * @property components
+             * @type {{String:Component}}
+             */
+            this.components = {};
+
+            /**
+             * The number of {{#crossLink "Components"}}{{/crossLink}} within this Model.
+             *
+             * @property numComponents
+             * @type Number
+             */
+            this.numComponents = 0;
+
+            /**
+             * A map of maps; for each {{#crossLink "Component"}}{{/crossLink}} type in this Model,
+             * a map to IDs to {{#crossLink "Component"}}{{/crossLink}} instances, eg.
+             *
+             * ````
+             * "xeogl.Geometry": {
+             *   "alpha": <xeogl.Geometry>,
+             *   "beta": <xeogl.Geometry>
+             * },
+             * "xeogl.Rotate": {
+             *   "charlie": <xeogl.Rotate>,
+             *   "delta": <xeogl.Rotate>,
+             *   "echo": <xeogl.Rotate>,
+             * },
+             * //...
+             * ````
+             *
+             * @property types
+             * @type {String:{String:xeogl.Component}}
+             */
+            this.types = {};
+
+            // Subscriptions to "destroyed" events from components
+            this._onDestroyed = {};
+
+            // Subscriptions to "updated" events from components' worldBoundaries
+            this._onWorldBoundaryUpdated = {};
+
+            this._aabbDirty = true;
+
+            // Dummy transform to make it easy to graft user-supplied transforms above added entities
+            this._dummyRootTransform = this.create({
+                type: "xeogl.Transform",
+                meta: "dummy"
+            });
+
+            this.transform = cfg.transform;
+
+            if (cfg.components) {
+                this.add(cfg.components);
+            }
+        },
+
+        /**
+         * Adds one or more {{#crossLink "Component"}}Components{{/crossLink}} to this Model.
+         *
+         * The {{#crossLink "Component"}}Component(s){{/crossLink}} may be specified by instance, ID or type.
+         *
+         * See class comment for usage examples.
+         *
+         * The {{#crossLink "Component"}}Components{{/crossLink}} must be in the same {{#crossLink "Scene"}}{{/crossLink}} as this Model.
+         *
+         * Fires an {{#crossLink "Model/added:event"}}{{/crossLink}} event.
+         *
+         * @method add
+         * @param {Array of Component} components Array of {{#crossLink "Component"}}Components{{/crossLink}} instances.
+         */
+        add: function (components) {
+
+            components = xeogl._isArray(components) ? components : [components];
+
+            for (var i = 0, len = components.length; i < len; i++) {
+                this._add(components[i]);
+            }
+        },
+
+        _add: function (c) {
+
+            var componentId;
+            var component;
+            var type;
+            var types;
+
+            if (xeogl._isNumeric(c) || xeogl._isString(c)) {
+
+                if (this.scene.types[c]) {
+
+                    // Component type
+
+                    type = c;
+
+                    types = this.scene.types[type];
+
+                    if (!types) {
+                        this.warn("Component type not found: '" + type + "'");
+                        return;
+                    }
+
+                    for (componentId in types) {
+                        if (types.hasOwnProperty(componentId)) {
+                            this._add(types[componentId]);
+                        }
+                    }
+
+                    return;
+
+                } else {
+
+                    // Component ID
+
+                    component = this.scene.components[c];
+
+                    if (!component) {
+                        this.warn("Component not found: " + xeogl._inQuotes(c));
+                        return;
+                    }
+                }
+
+            } else if (xeogl._isObject(c)) {
+
+                // Component config given
+
+                var type = c.type || "xeogl.Component";
+
+                if (!xeogl._isComponentType(type)) {
+                    this.error("Not a xeogl component type: " + type);
+                    return;
+                }
+
+                component = new window[type](this.scene, c);
+
+            } else if (c.type) {
+
+                // Component instance
+
+                component = c;
+
+            } else {
+
+                return;
+            }
+
+            if (component.scene !== this.scene) {
+
+                // Component in wrong Scene
+
+                this.warn("Attempted to add component from different xeogl.Scene: " + xeogl._inQuotes(component.id));
+                return;
+            }
+
+            // Add component to this map
+
+            if (this.components[component.id]) {
+
+                // Component already in this Model
+                return;
+            }
+
+            this.components[component.id] = component;
+
+            // Register component for its type
+
+            types = this.types[component.type];
+
+            if (!types) {
+                types = this.types[component.type] = {};
+            }
+
+            types[component.id] = component;
+
+            this.numComponents++;
+
+            // Remove component when it's destroyed
+
+            var self = this;
+
+            this._onDestroyed[component.id] = component.on("destroyed", function () {
+                self._remove(component);
+            });
+
+            if (component.isType("xeogl.Entity")) {
+
+                // Insert the dummy transform above
+                // each entity we just loaded
+
+                var rootTransform = component.transform;
+
+                if (!rootTransform) {
+
+                    component.transform = self._dummyRootTransform;
+
+                } else {
+
+                    while (rootTransform.parent) {
+
+                        if (rootTransform.id === self._dummyRootTransform.id) {
+
+                            // Since transform hierarchies may contain
+                            // transforms that share the same parents, there is potential to find
+                            // our dummy root transform while walking up an entity's transform
+                            // path, when that path is joins a path that belongs to an Entity that
+                            // we processed earlier
+
+                            return;
+                        }
+
+                        rootTransform = rootTransform.parent;
+                    }
+
+                    if (rootTransform.id !== self._dummyRootTransform.id) {
+                        rootTransform.parent = self._dummyRootTransform;
+                    }
+                }
+            }
+
+            if (component.worldBoundary) {
+                this._onWorldBoundaryUpdated[c.id] = component.worldBoundary.on("updated", this._updated, this);
+                if (!this._aabbDirty) {
+                    this._setAABBDirty();
+                }
+            }
+
+            /**
+             * Fired whenever an individual {{#crossLink "Component"}}{{/crossLink}} is added to this {{#crossLink "Model"}}{{/crossLink}}.
+             * @event added
+             * @param value {Component} The {{#crossLink "Component"}}{{/crossLink}} that was added.
+             */
+            this.fire("added", component);
+
+            if (!this._dirty) {
+                this._scheduleUpdate();
+            }
+        },
+
+        _scheduleUpdate: function () {
+            if (!this._dirty) {
+                this._dirty = true;
+                xeogl.scheduleTask(this._notifyUpdated, this);
+            }
+        },
+
+        _notifyUpdated: function () {
+
+            /* Fired on the next {{#crossLink "Scene/tick.animate:event"}}{{/crossLink}} whenever
+             * {{#crossLink "Component"}}Components{{/crossLink}} were added or removed since the
+             * last {{#crossLink "Scene/tick.animate:event"}}{{/crossLink}} event, to provide a batched change event
+             * for subscribers who don't want to react to every individual addition or removal on this Model.
+             *
+             * @event updated
+             */
+            this.fire("updated");
+            this._dirty = false;
+        },
+
+        /**
+         * Destroys all {{#crossLink "Component"}}Components{{/crossLink}} in this Model.
+         *
+         * @method destroyAll
+         */
+        destroyAll: function () {
+
+            this.iterate(function (component) {
+                component.destroy();
+            });
+        },
+
+        /**
+         * Removes all {{#crossLink "Component"}}Components{{/crossLink}} from this Model.
+         *
+         * @method removeAll
+         */
+        removeAll: function () {
+
+            // this.iterate(function (component) {
+            //     component.destroy();
+            // });
+        },
+
+        _remove: function (component) {
+
+            var componentId = component.id;
+
+            if (component.scene !== this.scene) {
+                this.warn("Attempted to remove component that's not in same xeogl.Scene: '" + componentId + "'");
+                return;
+            }
+
+            delete this.components[componentId];
+
+            // Unsubscribe from component destruction
+
+            component.off(this._onDestroyed[componentId]);
+            delete this._onDestroyed[componentId];
+
+            // Unregister component for its type
+
+            var types = this.types[component.type];
+
+            if (types) {
+                delete types[component.id];
+            }
+
+            this.numComponents--;
+
+            //
+
+            if (component.worldBoundary) {
+                component.worldBoundary.off(this._onWorldBoundaryUpdated[component.id]);
+                delete this._onWorldBoundaryUpdated[component.id];
+            }
+
+            if (!this._aabbDirty) {
+                this._setAABBDirty();
+            }
+
+
+            /**
+             * Fired whenever an individual {{#crossLink "Component"}}{{/crossLink}} is removed from this {{#crossLink "Model"}}{{/crossLink}}.
+             * @event removed
+             * @param value {Component} The {{#crossLink "Component"}}{{/crossLink}} that was removed.
+             */
+            this.fire("removed", component);
+
+            if (!this._dirty) {
+                this._scheduleUpdate();
+            }
+        },
+
+        /**
+         * Iterates with a callback over the {{#crossLink "Component"}}Components{{/crossLink}} in this Model.
+         *
+         * @method iterate
+         * @param {Function} callback Callback called for each {{#crossLink "Component"}}{{/crossLink}}.
+         * @param {Object} [scope=this] Optional scope for the callback, defaults to this Model.
+         */
+        iterate: function (callback, scope) {
+            scope = scope || this;
+            var components = this.components;
+            for (var componentId in components) {
+                if (components.hasOwnProperty(componentId)) {
+                    callback.call(scope, components[componentId]);
+                }
+            }
+        },
+
+        _props: {
+
+            /**
+             * The Local-to-World-space (modelling) {{#crossLink "Transform"}}{{/crossLink}} attached to this Model.
+             *
+             * Must be within the same {{#crossLink "Scene"}}{{/crossLink}} as this Model.
+             *
+             * Internally, the given {{#crossLink "Transform"}}{{/crossLink}} will be inserted above each top-most
+             * {{#crossLink "Transform"}}Transform{{/crossLink}} that the Model attaches to
+             * its {{#crossLink "Entity"}}Entities{{/crossLink}}.
+             *
+             * Fires an {{#crossLink "Model/transform:event"}}{{/crossLink}} event on change.
+             *
+             * @property transform
+             * @type Transform
+             */
+            transform: {
+
+                set: function (value) {
+
+                    /**
+                     * Fired whenever this Model's {{#crossLink "Model/transform:property"}}{{/crossLink}} property changes.
+                     *
+                     * @event transform
+                     * @param value The property's new value
+                     */
+                    this._attach({
+                        name: "transform",
+                        type: "xeogl.Transform",
+                        component: value,
+                        sceneDefault: false,
+                        onAttached: {
+                            callback: this._transformUpdated,
+                            scope: this
+                        }
+                    });
+                },
+
+                get: function () {
+                    return this._attached.transform;
+                }
+            },
+
+            /**
+             * World-space 3D boundary enclosing all the components in this Model.
+             *
+             * If you call {{#crossLink "Component/destroy:method"}}{{/crossLink}} on this boundary, then
+             * this property will be assigned to a fresh {{#crossLink "Boundary3D"}}{{/crossLink}} instance next
+             * time you reference it.
+             *
+             * @property worldBoundary
+             * @type Boundary3D
+             * @final
+             */
+            worldBoundary: {
+
+                get: function () {
+
+                    if (!this._worldBoundary) {
+
+                        var self = this;
+
+                        this._worldBoundary = this.create({
+
+                            type: "xeogl.Boundary3D",
+
+                            getDirty: function () {
+                                if (self._aabbDirty) {
+                                    self._buildAABB();
+                                    self._aabbDirty = false;
+                                    return true;
+                                }
+                                return false;
+                            },
+
+                            getAABB: function () {
+                                return self._aabb;
+                            }
+                        });
+
+                        this._worldBoundary.on("destroyed",
+                            function () {
+                                self._worldBoundary = null;
+                            });
+                    }
+
+                    return this._worldBoundary;
+                }
+            }
+        },
+
+        _transformUpdated: function (transform) {
+            this._dummyRootTransform.parent = transform;
+        },
+
+        _updated: function () {
+            if (!this._aabbDirty) {
+                this._setAABBDirty();
+            }
+        },
+
+        _setAABBDirty: function () {
+            this._aabbDirty = true;
+            if (this._worldBoundary) {
+                this._worldBoundary.fire("updated", true);
+            }
+        },
+
+        _buildAABB: function () {
+
+            if (!this._aabb) {
+                this._aabb = xeogl.math.AABB3();
+            }
+
+            var xmin = 100000;
+            var ymin = 100000;
+            var zmin = 100000;
+            var xmax = -100000;
+            var ymax = -100000;
+            var zmax = -100000;
+
+            var component;
+            var worldBoundary;
+            var aabb;
+
+            var components = this.components;
+
+            for (var componentId in components) {
+                if (components.hasOwnProperty(componentId)) {
+
+                    component = components[componentId];
+
+                    worldBoundary = component.worldBoundary;
+
+                    if (worldBoundary) {
+
+                        aabb = worldBoundary.aabb;
+
+                        if (aabb[0] < xmin) {
+                            xmin = aabb[0];
+                        }
+
+                        if (aabb[1] < ymin) {
+                            ymin = aabb[1];
+                        }
+
+                        if (aabb[2] < zmin) {
+                            zmin = aabb[2];
+                        }
+
+                        if (aabb[3] > xmax) {
+                            xmax = aabb[3];
+                        }
+
+                        if (aabb[4] > ymax) {
+                            ymax = aabb[4];
+                        }
+
+                        if (aabb[5] > zmax) {
+                            zmax = aabb[5];
+                        }
+                    }
+                }
+            }
+
+            this._aabb[0] = xmin;
+            this._aabb[1] = ymin;
+            this._aabb[2] = zmin;
+            this._aabb[3] = xmax;
+            this._aabb[4] = ymax;
+            this._aabb[5] = zmax;
+        },
+
+        _destroy: function () {
+            this.removeAll();
+        }
+    });
+
+})();;// Copyright (c) 2013 Fabrice Robinet
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26173,7 +27878,7 @@ XEO.PathGeometry = XEO.Geometry.extend({
         "animations"
     ];
 
-    XEO.glTFParser = Object.create(Object.prototype, {
+    xeogl.glTFParser = Object.create(Object.prototype, {
 
         _rootDescription: {value: null, writable: true},
 
@@ -26498,12 +28203,12 @@ XEO.PathGeometry = XEO.Geometry.extend({
     });
 })();
 ;/**
- * Private xeoEngine glTF loading utilities.
+ * Private xeogl glTF loading utilities.
  *
  * Adapted from the THREE loader by Tony Parisi (http://www.tonyparisi.com)
  * https://github.com/KhronosGroup/glTF/blob/master/loaders/threejs/glTFLoaderUtils.js
  */
-XEO.GLTFLoaderUtils = Object.create(Object, {
+xeogl.GLTFLoaderUtils = Object.create(Object, {
 
     // errors
 
@@ -26617,12 +28322,12 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             }
 
             if (!type) {
-                delegate.handleError(XEO.GLTFLoaderUtils.INVALID_TYPE, null);
+                delegate.handleError(xeogl.GLTFLoaderUtils.INVALID_TYPE, null);
                 return;
             }
 
             if (!path) {
-                delegate.handleError(XEO.GLTFLoaderUtils.INVALID_PATH);
+                delegate.handleError(xeogl.GLTFLoaderUtils.INVALID_PATH);
                 return;
             }
 
@@ -26637,7 +28342,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     delegate.streamAvailable(path, xhr.response);
 
                 } else {
-                    delegate.handleError(XEO.GLTFLoaderUtils.XMLHTTPREQUEST_STATUS_ERROR, this.status);
+                    delegate.handleError(xeogl.GLTFLoaderUtils.XMLHTTPREQUEST_STATUS_ERROR, this.status);
                 }
             };
             xhr.send(null);
@@ -26791,7 +28496,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
     },
 });
 ;/**
- * Private xeoEngine glTF loader core.
+ * Private xeogl glTF loader core.
  *
  * Adapted from the THREE loader by Tony Parisi (http://www.tonyparisi.com)
  * https://github.com/KhronosGroup/glTF/blob/master/loaders/threejs/glTFLoaderUtils.js
@@ -26945,11 +28650,11 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
     };
 
 
-    XEO.GLTFLoader = Object.create(XEO.glTFParser, {
+    xeogl.GLTFLoader = Object.create(xeogl.glTFParser, {
 
-        setCollection: {
-            value: function (collection) {
-                this.collection = collection;
+        setModel: {
+            value: function (model) {
+                this.model = model;
             }
         },
 
@@ -26957,14 +28662,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             enumerable: true,
             value: function (userInfo, options, ok) {
 
-                if (!this.collection) {
-                    throw "collection not set";
+                if (!this.model) {
+                    throw "model not set";
                 }
 
                 this.resources = new Resources();
 
-                XEO.glTFParser.handleLoadCompleted = ok;
-                XEO.glTFParser.load.call(this, userInfo, options);
+                xeogl.glTFParser.handleLoadCompleted = ok;
+                xeogl.glTFParser.load.call(this, userInfo, options);
             }
         },
 
@@ -27012,13 +28717,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 var image = this._json.images[description.source];
 
-                var texture = new XEO.Texture(this.collection.scene, {
+                var texture = new xeogl.Texture(this.model.scene, {
                     id: this._makeID(entryID),
                     src: image.uri,
                     flipY: true
                 });
 
-                this.collection.add(texture);
+                this.model.add(texture);
 
                 this.resources.setEntry(entryID, texture, description);
 
@@ -27049,7 +28754,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 var entry;
 
                 if (diffuseVal) {
-                    if (XEO._isString(diffuseVal)) {
+                    if (xeogl._isString(diffuseVal)) {
                         entry = this.resources.getEntry(diffuseVal);
                         if (entry) {
                             cfg.diffuseMap = entry.object;
@@ -27060,7 +28765,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 }
 
                 if (specularVal) {
-                    if (XEO._isString(specularVal)) {
+                    if (xeogl._isString(specularVal)) {
                         entry = this.resources.getEntry(specularVal);
                         if (entry) {
                             cfg.specularMap = entry.object;
@@ -27071,7 +28776,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 }
 
                 if (emissiveVal) {
-                    if (XEO._isString(emissiveVal)) {
+                    if (xeogl._isString(emissiveVal)) {
                         entry = this.resources.getEntry(emissiveVal);
                         if (entry) {
                             cfg.emissiveMap = entry.object;
@@ -27081,9 +28786,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     }
                 }
 
-                var material = new XEO.PhongMaterial(this.collection.scene, cfg);
+                var material = new xeogl.PhongMaterial(this.model.scene, cfg);
 
-                this.collection.add(material);
+                this.model.add(material);
 
                 this.resources.setEntry(entryID, material, description);
 
@@ -27118,11 +28823,11 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                     if (primitiveDescription.mode === WebGLRenderingContext.TRIANGLES) {
 
-                        var geometry = new XEO.Geometry(this.collection.scene, {
+                        var geometry = new xeogl.Geometry(this.model.scene, {
                             id: this._makeID(entryID)
                         });
 
-                        this.collection.add(geometry);
+                        this.model.add(geometry);
 
                         var materialEntry = this.resources.getEntry(primitiveDescription.material);
                         var material = materialEntry.object;
@@ -27149,7 +28854,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                         };
 
                         var indicesContext = new IndicesContext(indicesObject, geometry);
-                        var alreadyProcessedIndices = XEO.GLTFLoaderUtils.getBuffer(indicesObject, indicesDelegate, indicesContext);
+                        var alreadyProcessedIndices = xeogl.GLTFLoaderUtils.getBuffer(indicesObject, indicesDelegate, indicesContext);
 
                         // Load Vertex Attributes
                         allAttributes.forEach(function (semantic) {
@@ -27189,7 +28894,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                             var attribContext = new VertexAttributeContext(attributeObject, semantic, geometry);
 
-                            var alreadyProcessedAttribute = XEO.GLTFLoaderUtils.getBuffer(attributeObject, vertexAttributeDelegate, attribContext);
+                            var alreadyProcessedAttribute = xeogl.GLTFLoaderUtils.getBuffer(attributeObject, vertexAttributeDelegate, attribContext);
 
                             /*if(alreadyProcessedAttribute) {
                              vertexAttributeDelegate.resourceAvailable(alreadyProcessedAttribute, attribContext);
@@ -27242,78 +28947,78 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     return;
                 }
 
-                var collection = this.collection;
-                var scene = collection.scene;
+                var model = this.model;
+                var scene = model.scene;
 
                 if (node.matrix) {
                     var matrix = node.matrix;
-                    transform = new XEO.Transform(scene, {
+                    transform = new xeogl.Transform(scene, {
                         id: this._makeID(nodeId + ".transform"),
                         matrix: matrix,
                         parent: transform
                     });
-                    collection.add(transform);
+                    model.add(transform);
                 }
 
                 if (node.translation) {
                     var translation = node.translation;
-                    transform = new XEO.Translate(scene, {
+                    transform = new xeogl.Translate(scene, {
                         id: this._makeID(nodeId + ".translation"),
                         xyz: [translation[0], translation[1], translation[2]],
                         parent: transform
                     });
-                    collection.add(transform);
+                    model.add(transform);
                 }
 
                 if (node.rotation) {
                     var rotation = node.rotation;
-                    transform = new XEO.Rotate(scene, {
+                    transform = new xeogl.Rotate(scene, {
                         id: this._makeID(nodeId + ".rotation"),
                         xyz: [rotation[0], rotation[1], rotation[2]],
                         angle: rotation[3],
                         parent: transform
                     });
-                    collection.add(transform);
+                    model.add(transform);
                 }
 
                 if (node.scale) {
                     var scale = node.scale;
-                    transform = new XEO.Scale(scene, {
+                    transform = new xeogl.Scale(scene, {
                         id: this._makeID(nodeId + ".scale"),
                         xyz: [scale[0], scale[1], scale[2]],
                         parent: transform
                     });
-                    collection.add(transform);
+                    model.add(transform);
                 }
 
                 if (node.meshes) {
 
-                    // One XEO.Visibility per mesh group
+                    // One xeogl.Visibility per mesh group
 
-                    var visibility = new XEO.Visibility(scene, {
+                    var visibility = new xeogl.Visibility(scene, {
                         id: this._makeID(nodeId + ".visibility")
                     });
 
-                    collection.add(visibility);
+                    model.add(visibility);
 
-                    // One XEO.Cull per mesh group
+                    // One xeogl.Cull per mesh group
 
-                    var cull = new XEO.Cull(scene, {
+                    var cull = new xeogl.Cull(scene, {
                         id: this._makeID(nodeId + ".cull")
                     });
 
-                    collection.add(cull);
+                    model.add(cull);
 
-                    // One XEO.Modes per mesh group
+                    // One xeogl.Modes per mesh group
 
-                    var modes = new XEO.Modes(scene, {
+                    var modes = new xeogl.Modes(scene, {
                         id: this._makeID(nodeId + ".modes")
                     });
 
-                    collection.add(cull);
+                    model.add(cull);
 
-                    // One XEO.Entity per mesh, each sharing the same
-                    // XEO.Visibility, XEO.Cull and XEO.Nodes
+                    // One xeogl.Entity per mesh, each sharing the same
+                    // xeogl.Visibility, xeogl.Cull and xeogl.Nodes
 
                     var meshes = node.meshes;
                     var imeshes;
@@ -27325,7 +29030,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     var geometry;
                     var entityId;
                     var j;
-                    var entities = scene.types["XEO.Entity"];
+                    var entities = scene.types["xeogl.Entity"];
                     var entity;
 
                     for (imeshes = 0; imeshes < lenMeshes; imeshes++) {
@@ -27350,7 +29055,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                             //    entityId = this._makeID(nodeId + ".entity." + i + "." + j);
                             //}
 
-                            entity = new XEO.Entity(scene, {
+                            entity = new xeogl.Entity(scene, {
                                 id: entityId,
                                 meta: {
                                     name: node.name
@@ -27362,13 +29067,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                                 cull: cull,
                                 modes: modes,
 
-                                // Indicates that this Entity is freshly loaded -  increments the XEO.Spinner#processes
+                                // Indicates that this Entity is freshly loaded -  increments the xeogl.Spinner#processes
                                 // count on the Scene Canvas, which will decrement again as soon as Entity is compiled
                                 // into the render graph, causing the Spinner to show until this Entity is visible
                                 loading: true
                             });
 
-                            collection.add(entity);
+                            model.add(entity);
                         }
                     }
                 }
@@ -27393,71 +29098,65 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    var glTFLoader = XEO.GLTFLoader;
-
     /**
-     A **Model** loads content from a <a href="https://github.com/KhronosGroup/glTF" target = "_other">glTF</a> file into its parent {{#crossLink "Scene"}}{{/crossLink}}.
+     A **GLTFModel** is a {{#crossLink "Model"}}{{/crossLink}} that loads itself from a <a href="https://github.com/KhronosGroup/glTF" target = "_other">glTF</a> file.
 
-     <ul><li>A Model begins loading as soon as it's {{#crossLink "Model/src:property"}}{{/crossLink}}
-     property is set to the location of a valid glTF file.</li>
-     <li>A Model keeps all its loaded components in a {{#crossLink "Collection"}}{{/crossLink}}.</li>
-     <li>A Model can be attached to an animated and dynamically-editable
-     modelling {{#crossLink "Transform"}}{{/crossLink}} hierarchy, to rotate, translate and scale it within the World-space coordinate system, in the
-     same way that an {{#crossLink "Entity"}}{{/crossLink}} can.</li>
-     <li>You can set a Model's {{#crossLink "Model/src:property"}}{{/crossLink}} property to a new file path at any time,
-     which will cause it to load components from the new file (destroying any components loaded previously).</li>
-     </ul>
+     <a href="../../examples/#models_GLTFModel_gearbox"><img src="../../../assets/images/gltf/glTF_gearbox_squashed.png"></img></a>
 
-     <img src="../../../assets/images/Model.png"></img>
+     ## Overview
 
-     ## Examples
+     * A GLTFModel is a container of {{#crossLink "Component"}}Components{{/crossLink}} that loads itself from glTF.
+     * It begins loading as soon as you set its {{#crossLink "GLTFModel/src:property"}}{{/crossLink}}
+     property to the location of a valid glTF file.
+     * You can set {{#crossLink "GLTFModel/src:property"}}{{/crossLink}} to a new file path at any time, which causes
+     the GLTFModel to clear itself and load components from the new file.
+     * Can be transformed within World-space by attached it to a {{#crossLink "Transform"}}{{/crossLink}}.
+     * Provides its World-space boundary as a {{#crossLink "Boundary3D"}}{{/crossLink}}.
 
-     <ul>
-     <li>[Gearbox](../../examples/#importing_gltf_gearbox)</li>
-     <li>[Buggy](../../examples/#importing_gltf_buggy)</li>
-     <li>[Reciprocating Saw](../../examples/#importing_gltf_ReciprocatingSaw)</li>
-     <li>[Textured Duck](../../examples/#importing_gltf_duck)</li>
-     <li>[Model with entity explorer UI](../../examples/#demos_ui_explorer)</li>
-     <li>[Fly camera to model entities](../../examples/#boundaries_flyToBoundary)</li>
-     <li>[Ensuring individual materials on Model entities](../../examples/#importing_gltf_techniques_uniqueMaterials)</li>
-     <li>[Baking transform hierarchies](../../examples/#importing_gltf_techniques_bakeTransforms)</li>
-     <li>[Attaching transforms to Models, via constructor](../../examples/#importing_gltf_techniques_configTransform)</li>
-     <li>[Attaching transforms to Models, via property](../../examples/#importing_gltf_techniques_attachTransform)</li>
-     </ul>
+     <img src="../../../assets/images/GLTFModel.png"></img>
 
      ## Tutorials
 
-     Find API documentation for Model here:
+     * [Importing glTF](https://github.com/xeolabs/xeogl/wiki/Models-glTF)
 
-     <ul>
-     <li>[Importing glTF](https://github.com/xeolabs/xeoengine/wiki/Importing-glTF)</li>
-     </ul>
+     ## Examples
 
-     @class Model
-     @module XEO
-     @submodule importing
-     @extends Component
+     * [Gearbox](../../examples/#models_GLTFModel_gearbox)
+     * [Buggy](../../examples/#models_GLTFModel_buggy)
+     * [Reciprocating Saw](../../examples/#models_GLTFModel_ReciprocatingSaw)
+     * [Textured Duck](../../examples/#models_GLTFModel_duck)
+     * [GLTFModel with entity explorer UI](../../examples/#demos_ui_explorer)
+     * [Fly camera to GLTFModel entities](../../examples/#boundaries_flyToBoundary)
+     * [Ensuring individual materials on GLTFModel entities](../../examples/#models__uniqueMaterials)
+     * [Baking transform hierarchies](../../examples/#models_bakeTransforms)
+     * [Attaching transforms to GLTFModel, via constructor](../../examples/#models_configureTransform)
+     * [Attaching transforms to GLTFModel, via property](../../examples/#models_attachTransform)
+
+     @class GLTFModel
+     @module xeogl
+     @submodule models
+     @constructor
+     @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this GLTFModel in the default
+     {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
+     @param [cfg] {*} Configs
+     @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}},
+     generated automatically when omitted.
+     @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this GLTFModel.
+     @param [cfg.src] {String} Path to a glTF file. You can set this to a new file path at any time, which will cause the
+     GLTFModel to load components from the new file (after first destroying any components loaded from a previous file path).
+     @param [cfg.transform] {Number|String|Transform} A Local-to-World-space (modelling) {{#crossLink "Transform"}}{{/crossLink}} to attach to this GLTFModel.
+     Must be within the same {{#crossLink "Scene"}}{{/crossLink}} as this GLTFModel. Internally, the given
+     {{#crossLink "Transform"}}{{/crossLink}} will be inserted above each top-most {{#crossLink "Transform"}}Transform{{/crossLink}}
+     that the GLTFModel attaches to its {{#crossLink "Entity"}}Entities{{/crossLink}}.
+     @extends Model
      */
-    XEO.Model = XEO.Component.extend({
+    xeogl.GLTFModel = xeogl.Model.extend({
 
-        type: "XEO.Model",
+        type: "xeogl.GLTFModel",
 
         _init: function (cfg) {
 
             this._super(cfg);
-
-            // The XEO.Collection that will hold all the components
-            // we create from the glTF model; this will be available
-            // as a public, immutable #collection property
-
-            this._collection = this.create(XEO.Collection);
-
-            // Dummy transform to make it easy to graft user-supplied
-            // transforms above loaded entities
-
-            this._dummyRootTransform = this.create(XEO.Transform, {
-                meta: "dummy"
-            });
 
             this._src = null;
 
@@ -27466,24 +29165,23 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 return;
             }
 
-            if (!XEO._isString(cfg.src)) {
+            if (!xeogl._isString(cfg.src)) {
                 this.error("Value for config 'src' should be a string");
                 return;
             }
 
             this.src = cfg.src;
-            this.transform = cfg.transform;
         },
 
         _props: {
 
             /**
-             Path to the glTF file.
+             Path to a glTF file.
 
-             You can set this to a new file path at any time, which will cause the Model to load components from
+             You can set this to a new file path at any time, which will cause the GLTFModel to load components from
              the new file (after first destroying any components loaded from a previous file path).
 
-             Fires a {{#crossLink "Model/src:event"}}{{/crossLink}} event on change.
+             Fires a {{#crossLink "GLTFModel/src:event"}}{{/crossLink}} event on change.
 
              @property src
              @type String
@@ -27496,16 +29194,16 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                         return;
                     }
 
-                    if (!XEO._isString(value)) {
+                    if (!xeogl._isString(value)) {
                         this.error("Value for 'src' should be a string");
                         return;
                     }
 
-                    if (value === this._src) { // Already loaded this model
+                    if (value === this._src) { // Already loaded this GLTFModel
 
                         /**
-                         Fired whenever this Model has finished loading components from the glTF file
-                         specified by {{#crossLink "Model/src:property"}}{{/crossLink}}.
+                         Fired whenever this GLTFModel has finished loading components from the glTF file
+                         specified by {{#crossLink "GLTFModel/src:property"}}{{/crossLink}}.
                          @event loaded
                          */
                         this.fire("loaded");
@@ -27513,18 +29211,18 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                         return;
                     }
 
-                    this._clear();
+                    this.destroyAll();
 
                     this._src = value;
 
-                    glTFLoader.setCollection(this._collection);
+                    var glTFLoader = xeogl.GLTFLoader;
+
+                    glTFLoader.setModel(this);
                     glTFLoader.initWithPath(this.id, this._src);
 
                     var self = this;
                     var userInfo = null;
                     var options = null;
-                    var rootTransform;
-                    var dummyRootTransform = self._dummyRootTransform;
 
                     // Increment processes represented by loading spinner
                     // Spinner appears as soon as count is non-zero
@@ -27532,63 +29230,22 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     var spinner = self.scene.canvas.spinner;
                     spinner.processes++;
 
-                    glTFLoader.load(userInfo, options,
-                        function () {
+                    glTFLoader.load(userInfo, options, function () {
 
-                            self._collection.iterate(function (component) {
+                        // Decrement processes represented by loading spinner
+                        // Spinner disappears if the count is now zero
+                        spinner.processes--;
 
-                                if (component.isType("XEO.Entity")) {
-
-                                    // Insert the dummy transform above
-                                    // each entity we just loaded
-
-                                    rootTransform = component.transform;
-
-                                    if (!rootTransform) {
-
-                                        component.transform = dummyRootTransform;
-
-                                    } else {
-
-                                        while (rootTransform.parent) {
-
-                                            if (rootTransform.id === dummyRootTransform.id) {
-
-                                                // Since transform hierarchies created by the glTFLoader may contain
-                                                // transforms that share the same parents, there is potential to find
-                                                // our dummy root transform while walking up an entity's transform
-                                                // path, when that path is joins a path that belongs to an Entity that
-                                                // we processed earlier
-
-                                                return;
-                                            }
-
-                                            rootTransform = rootTransform.parent;
-                                        }
-
-                                        if (rootTransform.id === dummyRootTransform.id) {
-                                            return;
-                                        }
-
-                                        rootTransform.parent = dummyRootTransform;
-                                    }
-                                }
-                            });
-
-                            // Decrement processes represented by loading spinner
-                            // Spinner disappears if the count is now zero
-                            spinner.processes--;
-
-                            /**
-                             Fired whenever this Model has finished loading components from the glTF file
-                             specified by {{#crossLink "Model/src:property"}}{{/crossLink}}.
-                             @event loaded
-                             */
-                            self.fire("loaded");
-                        });
+                        /**
+                         Fired whenever this GLTFModel has finished loading components from the glTF file
+                         specified by {{#crossLink "GLTFModel/src:property"}}{{/crossLink}}.
+                         @event loaded
+                         */
+                        self.fire("loaded");
+                    });
 
                     /**
-                     Fired whenever this Model's {{#crossLink "Model/src:property"}}{{/crossLink}} property changes.
+                     Fired whenever this GLTFModel's {{#crossLink "GLTFModel/src:property"}}{{/crossLink}} property changes.
                      @event src
                      @param value The property's new value
                      */
@@ -27598,124 +29255,40 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 get: function () {
                     return this._src;
                 }
-            },
-
-            /**
-             * A {{#crossLink "Collection"}}{{/crossLink}} containing the scene components loaded by this Model.
-             *
-             * Whenever {{#crossLink "Model/src:property"}}{{/crossLink}} is set to the location of a valid glTF file,
-             * and once the file has been loaded, this {{#crossLink "Collection"}}{{/crossLink}} will contain whatever
-             * components were loaded from that file.
-             *
-             * Note that prior to loading the file, the Model will destroy any components in the {{#crossLink "Collection"}}{{/crossLink}}.
-             *
-             * @property collection
-             * @type Collection
-             * @final
-             */
-            collection: {
-
-                get: function () {
-                    return this._collection;
-                }
-            },
-
-            /**
-             * The Local-to-World-space (modelling) {{#crossLink "Transform"}}{{/crossLink}} attached to this Model.
-             *
-             * Must be within the same {{#crossLink "Scene"}}{{/crossLink}} as this Model.
-             *
-             * Internally, the given {{#crossLink "Transform"}}{{/crossLink}} will be inserted above each top-most
-             * {{#crossLink "Transform"}}Transform{{/crossLink}} that the Model attaches to
-             * its {{#crossLink "Entity"}}Entities{{/crossLink}}.
-             *
-             * Fires an {{#crossLink "Model/transform:event"}}{{/crossLink}} event on change.
-             *
-             * @property transform
-             * @type Transform
-             */
-            transform: {
-
-                set: function (value) {
-
-                    /**
-                     * Fired whenever this Model's {{#crossLink "Model/transform:property"}}{{/crossLink}} property changes.
-                     *
-                     * @event transform
-                     * @param value The property's new value
-                     */
-                    this._attach({
-                        name: "transform",
-                        type: "XEO.Transform",
-                        component: value,
-                        sceneDefault: false,
-                        onAttached: {
-                            callback: this._transformUpdated,
-                            scope: this
-                        }
-                    });
-                },
-
-                get: function () {
-                    return this._attached.transform;
-                }
-            }
-        },
-
-        _transformUpdated: function (transform) {
-            this._dummyRootTransform.parent = transform;
-        },
-
-        _clear: function () {
-
-            var c = [];
-
-            this._collection.iterate(
-                function (component) {
-                    c.push(component);
-                });
-
-            while (c.length) {
-                c.pop().destroy();
             }
         },
 
         _getJSON: function () {
 
-            var json = {
-                src: this._src
-            };
+            var json =  {};
 
-            if (this._attached.transform) {
-                json.transform = this._attached.transform.id;
+            if (this.src) {
+                json.src = this._src;
             }
 
             return json;
         },
 
         _destroy: function () {
-            this._clear();
+            this.destroyAll();
         }
     });
-
 
 })();;/**
  * Components to define the surface appearance of Entities.
  *
- * @module XEO
+ * @module xeogl
  * @submodule materials
  */;/**
  A **Material** defines the surface appearance of attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
  Material is the base class for:
 
- <ul>
- <li>{{#crossLink "PhongMaterial"}}{{/crossLink}} - Blinn-Phong shading material.</li>
- <li>(more Material subtypes coming)</li>
- </ul>
+ * {{#crossLink "PhongMaterial"}}{{/crossLink}} - Blinn-Phong shading material.
+ * (more Material subtypes coming)
 
  @class Material
- @module XEO
+ @module xeogl
  @submodule materials
  @constructor
  @extends Component
@@ -27724,9 +29297,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Material = XEO.Component.extend({
+    xeogl.Material = xeogl.Component.extend({
 
-        type: "XEO.Material",
+        type: "xeogl.Material",
 
         _init: function () {
 
@@ -27740,27 +29313,26 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  attached {{#crossLink "Entity"}}Entities{{/crossLink}} using
  the <a href="http://en.wikipedia.org/wiki/Phong_reflection_model">Phong</a> lighting model.
 
- <ul>
- <li>PhongMaterial properties, along with {{#crossLink "PhongMaterial/emissive:property"}}{{/crossLink}},
+ ## Overview
+
+ * PhongMaterial properties, along with {{#crossLink "PhongMaterial/emissive:property"}}{{/crossLink}},
  {{#crossLink "PhongMaterial/opacity:property"}}{{/crossLink}} and {{#crossLink "PhongMaterial/reflectivity:property"}}{{/crossLink}},
- specify attributes that are to be **applied uniformly** across the surface of attached {{#crossLink "Geometry"}}Geometries{{/crossLink}}.</li>
- <li>Most of those attributes can be textured, **effectively replacing the values set for those properties**, by
+ specify attributes that are to be **applied uniformly** across the surface of attached {{#crossLink "Geometry"}}Geometries{{/crossLink}}.
+ * Most of those attributes can be textured, **effectively replacing the values set for those properties**, by
  assigning {{#crossLink "Texture"}}Textures{{/crossLink}} to the PhongMaterial's
  {{#crossLink "PhongMaterial/diffuseMap:property"}}{{/crossLink}}, {{#crossLink "PhongMaterial/specularMap:property"}}{{/crossLink}},
  {{#crossLink "PhongMaterial/emissiveMap:property"}}{{/crossLink}}, {{#crossLink "PhongMaterial/opacityMap:property"}}{{/crossLink}}
- and  {{#crossLink "PhongMaterial/reflectivityMap:property"}}{{/crossLink}} properties.</li>
- <li>For example, the value of {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}} will be ignored if your
+ and  {{#crossLink "PhongMaterial/reflectivityMap:property"}}{{/crossLink}} properties.
+ * For example, the value of {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}} will be ignored if your
  PhongMaterial also has a {{#crossLink "PhongMaterial/diffuseMap:property"}}{{/crossLink}} set to a {{#crossLink "Texture"}}Texture{{/crossLink}}.
  The {{#crossLink "Texture"}}Texture's{{/crossLink}} pixel colors directly provide the diffuse color of each fragment across the
  {{#crossLink "Geometry"}}{{/crossLink}} surface, ie. they are not multiplied by
- the {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}} for each pixel, as is done in many shading systems.</li>
- <li>When the {{#crossLink "Entity"}}{{/crossLink}}'s {{#crossLink "Geometry"}}{{/crossLink}} has a
+ the {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}} for each pixel, as is done in many shading systems.
+ * When the {{#crossLink "Entity"}}{{/crossLink}}'s {{#crossLink "Geometry"}}{{/crossLink}} has a
  {{#crossLink "Geometry/primitive:property"}}{{/crossLink}} set to "lines" or "points" then only the {{#crossLink "PhongMaterial"}}{{/crossLink}}'s
  {{#crossLink "PhongMaterial/emissive:property"}}{{/crossLink}}, {{#crossLink "PhongMaterial/emissiveMap:property"}}{{/crossLink}},
  {{#crossLink "PhongMaterial/opacity:property"}}{{/crossLink}} and {{#crossLink "PhongMaterial/opacityMap:property"}}{{/crossLink}}
- will actually be applied, since those primitive types cannot be shaded.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that PhongMaterials create within xeoEngine's shaders.</li>
- </ul>
+ will actually be applied, since those primitive types cannot be shaded.
 
  <img src="../../../assets/images/PhongMaterial.png"></img>
 
@@ -27768,26 +29340,24 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  In this example we have an Entity with
 
- <ul>
- <li>a {{#crossLink "Lights"}}{{/crossLink}} containing an {{#crossLink "AmbientLight"}}{{/crossLink}} and a {{#crossLink "DirLight"}}{{/crossLink}},</li>
- <li>a {{#crossLink "PhongMaterial"}}{{/crossLink}} which applies a {{#crossLink "Texture"}}{{/crossLink}} as a diffuse map and a specular {{#crossLink "Fresnel"}}{{/crossLink}}, and
- <li>a {{#crossLink "TorusGeometry"}}{{/crossLink}}.</li>
- </ul>
+ * a {{#crossLink "Lights"}}{{/crossLink}} containing an {{#crossLink "AmbientLight"}}{{/crossLink}} and a {{#crossLink "DirLight"}}{{/crossLink}},
+ * a {{#crossLink "PhongMaterial"}}{{/crossLink}} which applies a {{#crossLink "Texture"}}{{/crossLink}} as a diffuse map and a specular {{#crossLink "Fresnel"}}{{/crossLink}}, and
+ * a {{#crossLink "TorusGeometry"}}{{/crossLink}}.
 
- Note that xeoEngine will ignore the PhongMaterial's {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}}
+ Note that xeogl will ignore the PhongMaterial's {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}}
  property, since we assigned the {{#crossLink "Texture"}}{{/crossLink}} to the PhongMaterial's
  {{#crossLink "PhongMaterial/diffuseMap:property"}}{{/crossLink}} property. The {{#crossLink "Texture"}}Texture's{{/crossLink}} pixel
  colors directly provide the diffuse color of each fragment across the {{#crossLink "Geometry"}}{{/crossLink}} surface.
 
  ```` javascript
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
 
-    lights: new XEO.Lights({
+    lights: new xeogl.Lights({
         lights: [
-            new XEO.AmbientLight({
+            new xeogl.AmbientLight({
                 color: [0.7, 0.7, 0.7]
             }),
-            new XEO.DirLight({
+            new xeogl.DirLight({
                 dir: [-1, -1, -1],
                 color: [0.5, 0.7, 0.5],
                 intensity: [1.0, 1.0, 1.0],
@@ -27796,14 +29366,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         ]
     }),
 
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         ambient: [0.3, 0.3, 0.3],
         diffuse: [0.5, 0.5, 0.0],   // Ignored, since we have assigned a Texture to diffuseMap, below
-        diffuseMap: new XEO.Texture({
+        diffuseMap: new xeogl.Texture({
             src: "diffuseMap.jpg"
         }),
         specular: [1, 1, 1],
-        specularFresnel: new XEO.Fresnel({
+        specularFresnel: new xeogl.Fresnel({
             leftColor: [1.0, 1.0, 1.0],
             rightColor: [0.0, 0.0, 0.0],
             power: 4
@@ -27812,12 +29382,12 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         opacity: 1.0 // Default
     }),
 
-    geometry: new XEO.TorusGeometry()
+    geometry: new xeogl.TorusGeometry()
 });
  ````
 
  @class PhongMaterial
- @module XEO
+ @module xeogl
  @submodule materials
  @constructor
  @extends Material
@@ -27852,20 +29422,20 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.PhongMaterial = XEO.Material.extend({
+    xeogl.PhongMaterial = xeogl.Material.extend({
 
-        type: "XEO.PhongMaterial",
+        type: "xeogl.PhongMaterial",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.PhongMaterial({
+            this._state = new xeogl.renderer.PhongMaterial({
 
                 type: "phongMaterial",
 
-                ambient: XEO.math.vec3([1.0, 1.0, 1.0]),
-                diffuse: XEO.math.vec3([1.0, 1.0, 1.0]),
-                specular: XEO.math.vec3([1.0, 1.0, 1.0]),
-                emissive: XEO.math.vec3([0.0, 0.0, 0.0]),
+                ambient: xeogl.math.vec3([1.0, 1.0, 1.0]),
+                diffuse: xeogl.math.vec3([1.0, 1.0, 1.0]),
+                specular: xeogl.math.vec3([1.0, 1.0, 1.0]),
+                emissive: xeogl.math.vec3([0.0, 0.0, 0.0]),
 
                 opacity: 1.0,
                 shininess: 30.0,
@@ -28259,7 +29829,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event normalMap
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Texture", "normalMap", texture);
+                    this._attachComponent("xeogl.Texture", "normalMap", texture);
                 },
 
                 get: function () {
@@ -28288,7 +29858,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event ambientMap
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Texture", "ambientMap", texture);
+                    this._attachComponent("xeogl.Texture", "ambientMap", texture);
                 },
 
                 get: function () {
@@ -28317,7 +29887,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event diffuseMap
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Texture", "diffuseMap", texture);
+                    this._attachComponent("xeogl.Texture", "diffuseMap", texture);
                 },
 
                 get: function () {
@@ -28346,7 +29916,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event specularMap
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Texture", "specularMap", texture);
+                    this._attachComponent("xeogl.Texture", "specularMap", texture);
                 },
 
                 get: function () {
@@ -28375,7 +29945,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event emissiveMap
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Texture", "emissiveMap", texture);
+                    this._attachComponent("xeogl.Texture", "emissiveMap", texture);
                 },
 
                 get: function () {
@@ -28404,7 +29974,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event opacityMap
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Texture", "opacityMap", texture);
+                    this._attachComponent("xeogl.Texture", "opacityMap", texture);
                 },
 
                 get: function () {
@@ -28433,7 +30003,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event reflectivityMap
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Texture", "reflectivityMap", texture);
+                    this._attachComponent("xeogl.Texture", "reflectivityMap", texture);
                 },
 
                 get: function () {
@@ -28460,7 +30030,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event reflection
                      @param value {Reflect} The property's new value
                      */
-                    this._attachComponent("XEO.Reflect", "reflection", cubeMap);
+                    this._attachComponent("xeogl.Reflect", "reflection", cubeMap);
                 },
 
                 get: function () {
@@ -28489,7 +30059,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event diffuseFresnel
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Fresnel", "diffuseFresnel", fresnel);
+                    this._attachComponent("xeogl.Fresnel", "diffuseFresnel", fresnel);
                 },
 
                 get: function () {
@@ -28518,7 +30088,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event specularFresnel
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Fresnel", "specularFresnel", fresnel);
+                    this._attachComponent("xeogl.Fresnel", "specularFresnel", fresnel);
                 },
 
                 get: function () {
@@ -28547,7 +30117,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event emissiveFresnel
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Fresnel", "emissiveFresnel", fresnel);
+                    this._attachComponent("xeogl.Fresnel", "emissiveFresnel", fresnel);
                 },
 
                 get: function () {
@@ -28576,7 +30146,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event opacityFresnel
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Fresnel", "opacityFresnel", fresnel);
+                    this._attachComponent("xeogl.Fresnel", "opacityFresnel", fresnel);
                 },
 
                 get: function () {
@@ -28605,7 +30175,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      @event reflectivityFresnel
                      @param value Number The property's new value
                      */
-                    this._attachComponent("XEO.Fresnel", "reflectivityFresnel", fresnel);
+                    this._attachComponent("xeogl.Fresnel", "reflectivityFresnel", fresnel);
                 },
 
                 get: function () {
@@ -28823,61 +30393,56 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 ;/**
  A **Texture** specifies a texture map.
 
- <ul>
- <li>Textures are grouped within {{#crossLink "PhongMaterial"}}PhongMaterials{{/crossLink}}s, which are attached to
- {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>To create a Texture from an image file, set the Texture's {{#crossLink "Texture/src:property"}}{{/crossLink}}
- property to the image file path.</li>
- <li>To create a Texture from an HTMLImageElement, set the Texture's {{#crossLink "Texture/image:property"}}{{/crossLink}}
- property to the HTMLImageElement.</li>
- <li>To render color images of {{#crossLink "Entity"}}Entities{{/crossLink}} to a Texture, set the Texture's {{#crossLink "Texture/target:property"}}{{/crossLink}}
- property to a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} that is attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>Similarly, to render depth images of {{#crossLink "Entity"}}Entities{{/crossLink}} to a Texture, set the Texture's {{#crossLink "Texture/target:property"}}{{/crossLink}}
- property to a {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}} that is attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>For special effects, we often use rendered Textures in combination with {{#crossLink "Shader"}}Shaders{{/crossLink}} and {{#crossLink "Stage"}}Stages{{/crossLink}}.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Textures create within xeoEngine's shaders.</li>
- </ul>
+ <a href="../../examples/#materials_texture_diffuse"><img src="../../assets/images/screenshots/TorusGeometry.png"></img></a>
+
+ ## Overview
+
+ * Textures are grouped within {{#crossLink "PhongMaterial"}}PhongMaterials{{/crossLink}}s, which are attached to
+ {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ To create a Texture from an image file, set the Texture's {{#crossLink "Texture/src:property"}}{{/crossLink}}
+ property to the image file path.
+ To create a Texture from an HTMLImageElement, set the Texture's {{#crossLink "Texture/image:property"}}{{/crossLink}}
+ property to the HTMLImageElement.
+ To render color images of {{#crossLink "Entity"}}Entities{{/crossLink}} to a Texture, set the Texture's {{#crossLink "Texture/target:property"}}{{/crossLink}}
+ property to a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} that is attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ Similarly, to render depth images of {{#crossLink "Entity"}}Entities{{/crossLink}} to a Texture, set the Texture's {{#crossLink "Texture/target:property"}}{{/crossLink}}
+ property to a {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}} that is attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ For special effects, we often use rendered Textures in combination with {{#crossLink "Shader"}}Shaders{{/crossLink}} and {{#crossLink "Stage"}}Stages{{/crossLink}}.
 
  <img src="../../../assets/images/Texture.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Diffuse Texture](../../examples/#materials_texture_diffuse)</li>
- <li>[Specular Texture](../../examples/#materials_texture_specular)</li>
- <li>[Opacity Texture](../../examples/#materials_texture_opacity)</li>
- <li>[Emissive Texture](../../examples/#materials_texture_emissive)</li>
- <li>[Reflectivity Texture](../../examples/#materials_texture_reflectivity)</li>
- <li>[Normal map](../../examples/#materials_texture_normalMap)</li>
- <li>[Diffuse Video Texture](../../examples/#materials_texture_video)</li>
- <li>[Diffuse Procedural Texture](../../examples/#materials_texture_procedural)</li>
- <li>[Texture Animation](../../examples/#materials_texture_animation)</li>
- </ul>
+ * [Diffuse Texture](../../examples/#materials_texture_diffuse)
+ * [Specular Texture](../../examples/#materials_texture_specular)
+ * [Opacity Texture](../../examples/#materials_texture_opacity)
+ * [Emissive Texture](../../examples/#materials_texture_emissive)
+ * [Normal map](../../examples/#materials_texture_normalMap)
+ * [Diffuse Video Texture](../../examples/#materials_texture_video)
+ * [Texture Animation](../../examples/#materials_texture_animation)
 
  ## Usage
 
  In this example we have an Entity with
 
- <ul>
- <li>a {{#crossLink "Lights"}}{{/crossLink}} containing an {{#crossLink "AmbientLight"}}{{/crossLink}} and a {{#crossLink "DirLight"}}{{/crossLink}},</li>
- <li>a {{#crossLink "PhongMaterial"}}{{/crossLink}} which applies diffuse and specular {{#crossLink "Texture"}}Textures{{/crossLink}}, and
- <li>a {{#crossLink "TorusGeometry"}}{{/crossLink}}.</li>
- </ul>
+ * a {{#crossLink "Lights"}}{{/crossLink}} containing an {{#crossLink "AmbientLight"}}{{/crossLink}} and a {{#crossLink "DirLight"}}{{/crossLink}},
+ * a {{#crossLink "PhongMaterial"}}{{/crossLink}} which applies diffuse and specular {{#crossLink "Texture"}}Textures{{/crossLink}}, and
+ * a {{#crossLink "TorusGeometry"}}{{/crossLink}}.
 
- Note that xeoEngine will ignore the {{#crossLink "PhongMaterial"}}PhongMaterial's{{/crossLink}} {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}}
+ Note that xeogl will ignore the {{#crossLink "PhongMaterial"}}PhongMaterial's{{/crossLink}} {{#crossLink "PhongMaterial/diffuse:property"}}{{/crossLink}}
  and {{#crossLink "PhongMaterial/specular:property"}}{{/crossLink}} properties, since we assigned {{#crossLink "Texture"}}Textures{{/crossLink}} to the {{#crossLink "PhongMaterial"}}PhongMaterial's{{/crossLink}} {{#crossLink "PhongMaterial/diffuseMap:property"}}{{/crossLink}} and
  {{#crossLink "PhongMaterial/specularMap:property"}}{{/crossLink}} properties. The {{#crossLink "Texture"}}Textures'{{/crossLink}} pixel
  colors directly provide the diffuse and specular components for each fragment across the {{#crossLink "Geometry"}}{{/crossLink}} surface.
 
  ```` javascript
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
 
-    lights: new XEO.Lights({
+    lights: new xeogl.Lights({
         lights: [
-            new XEO.AmbientLight({
+            new xeogl.AmbientLight({
                 color: [0.7, 0.7, 0.7]
             }),
-            new XEO.DirLight({
+            new xeogl.DirLight({
                 dir: [-1, -1, -1],
                 color: [0.5, 0.7, 0.5],
                 intensity: [1.0, 1.0, 1.0],
@@ -28886,26 +30451,26 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         ]
     }),
 
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         ambient: [0.3, 0.3, 0.3],
         diffuse: [0.5, 0.5, 0.0],   // Ignored, since we have assigned a Texture to diffuseMap, below
         specular: [1.0, 1.0, 1.0],   // Ignored, since we have assigned a Texture to specularMap, below
-        diffuseMap: new XEO.Texture({
+        diffuseMap: new xeogl.Texture({
             src: "diffuseMap.jpg"
         }),
-        specularMap: new XEO.Fresnel({
+        specularMap: new xeogl.Fresnel({
             src: "diffuseMap.jpg"
         }),
         shininess: 80, // Default
         opacity: 1.0 // Default
     }),
 
-    geometry: new XEO.TorusGeometry()
+    geometry: new xeogl.TorusGeometry()
 });
  ````
 
  @class Texture
- @module XEO
+ @module xeogl
  @submodule materials
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Texture in the default
@@ -28915,7 +30480,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Texture.
  @param [cfg.src=null] {String} Path to image file to load into this Texture. See the {{#crossLink "Texture/src:property"}}{{/crossLink}} property for more info.
  @param [cfg.image=null] {HTMLImageElement} HTML Image object to load into this Texture. See the {{#crossLink "Texture/image:property"}}{{/crossLink}} property for more info.
- @param [cfg.target=null] {String | XEO.ColorTarget | XEO.DepthTarget} Instance or ID of a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} or
+ @param [cfg.target=null] {String | xeogl.ColorTarget | xeogl.DepthTarget} Instance or ID of a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} or
  {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}} to source this Texture from. See the {{#crossLink "Texture/target:property"}}{{/crossLink}} property for more info.
  @param [cfg.minFilter="linearMipmapLinear"] {String} How the texture is sampled when a texel covers less than one pixel. See the {{#crossLink "Texture/minFilter:property"}}{{/crossLink}} property for more info.
  @param [cfg.magFilter="linear"] {String} How the texture is sampled when a texel covers more than one pixel. See the {{#crossLink "Texture/magFilter:property"}}{{/crossLink}} property for more info.
@@ -28931,17 +30496,17 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Texture = XEO.Component.extend({
+    xeogl.Texture = xeogl.Component.extend({
 
-        type: "XEO.Texture",
+        type: "xeogl.Texture",
 
         _init: function (cfg) {
 
             // Rendering state
 
-            this._state = new XEO.renderer.Texture({
+            this._state = new xeogl.renderer.Texture({
 
-                texture: null,  // XEO.renderer.webgl.Texture2D
+                texture: null,  // xeogl.renderer.webgl.Texture2D
                 matrix: null,   // Float32Array
 
                 // Texture properties
@@ -28959,15 +30524,15 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             this._src = null;   // URL string
             this._image = null; // HTMLImageElement
-            this._target = null;// XEO.RenderTarget
+            this._target = null;// xeogl.RenderTarget
 
             this._pageTable = null; // Float32Array
 
             // Transformation
 
-            this._translate = XEO.math.vec2([0, 0]);
-            this._scale = XEO.math.vec2([1, 1]);
-            this._rotate = XEO.math.vec2([0, 0]);
+            this._translate = xeogl.math.vec2([0, 0]);
+            this._scale = xeogl.math.vec2([1, 1]);
+            this._rotate = xeogl.math.vec2([0, 0]);
 
             // Dirty flags, processed in _buildTexture()
 
@@ -29007,7 +30572,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 this.target = cfg.target; // Render target
             }
 
-            XEO.stats.memory.textures++;
+            xeogl.stats.memory.textures++;
         },
 
         _webglContextRestored: function () {
@@ -29066,7 +30631,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     }
 
                     if (!state.texture) {
-                        state.texture = new XEO.renderer.webgl.Texture2D(gl);
+                        state.texture = new xeogl.renderer.webgl.Texture2D(gl);
                     }
 
                     state.texture.setImage(this._image, state);
@@ -29106,17 +30671,17 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 var t;
 
                 if (this._translate[0] !== 0 || this._translate[2] !== 0) {
-                    matrix = XEO.math.translationMat4v([this._translate[0], this._translate[1], 0]);
+                    matrix = xeogl.math.translationMat4v([this._translate[0], this._translate[1], 0]);
                 }
 
                 if (this._scale[0] !== 1 || this._scale[1] !== 1) {
-                    t = XEO.math.scalingMat4v([this._scale[0], this._scale[1], 1]);
-                    matrix = matrix ? XEO.math.mulMat4(matrix, t) : t;
+                    t = xeogl.math.scalingMat4v([this._scale[0], this._scale[1], 1]);
+                    matrix = matrix ? xeogl.math.mulMat4(matrix, t) : t;
                 }
 
                 if (this._rotate !== 0) {
-                    t = XEO.math.rotationMat4v(this._rotate * 0.0174532925, [0, 0, 1]);
-                    matrix = matrix ? XEO.math.mulMat4(matrix, t) : t;
+                    t = xeogl.math.rotationMat4v(this._rotate * 0.0174532925, [0, 0, 1]);
+                    matrix = matrix ? xeogl.math.mulMat4(matrix, t) : t;
                 }
 
                 var oldMatrix = state.matrix;
@@ -29128,7 +30693,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 if (!!matrix !== !!oldMatrix) {
 
                     // Matrix has been lazy-created, now need
-                    // to recompile xeoEngine shaders to use the matrix
+                    // to recompile xeogl shaders to use the matrix
 
                     this.fire("dirty");
                 }
@@ -29162,7 +30727,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     }
 
                     if (!state.texture) {
-                        state.texture = new XEO.renderer.webgl.Texture2D(gl);
+                        state.texture = new xeogl.renderer.webgl.Texture2D(gl);
                     }
 
                     state.texture.setImage(this._image, state);
@@ -29194,7 +30759,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     // Keep self._src because that's where we loaded the image
                     // from, and we may need to save that in JSON later
 
-                    self._image = XEO.renderer.webgl.ensureImageSizePowerOfTwo(image);
+                    self._image = xeogl.renderer.webgl.ensureImageSizePowerOfTwo(image);
 
                     self._imageDirty = true;
                     self._srcDirty = false;
@@ -29270,7 +30835,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    this._image = XEO.renderer.webgl.ensureImageSizePowerOfTwo(value);
+                    this._image = xeogl.renderer.webgl.ensureImageSizePowerOfTwo(value);
                     this._src = null;
 
                     this._imageDirty = true;
@@ -29348,7 +30913,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              *
              * @property target
              * @default null
-             * @type String | XEO.ColorTarget | XEO.DepthTarget
+             * @type String | xeogl.ColorTarget | xeogl.DepthTarget
              */
             target: {
 
@@ -29380,7 +30945,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      * Fired whenever this Texture's   {{#crossLink "Texture/target:property"}}{{/crossLink}} property changes.
                      * @event target
                      * @param value The property's new value
-                     * @type String | XEO.ColorTarget | XEO.DepthTarget
+                     * @type String | xeogl.ColorTarget | xeogl.DepthTarget
                      */
                     this.fire("target", this._target);
                 },
@@ -29524,34 +31089,34 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              *
              * Options are:
              *
-             * <ul>
-             *     <li>**"nearest"** - Uses the value of the texture element that is nearest
-             *     (in Manhattan distance) to the center of the pixel being textured.</li>
              *
-             *     <li>**"linear"** - Uses the weighted average of the four texture elements that are
-             *     closest to the center of the pixel being textured.</li>
+             *     * **"nearest"** - Uses the value of the texture element that is nearest
+             *     (in Manhattan distance) to the center of the pixel being textured.
              *
-             *     <li>**"nearestMipmapNearest"** - Chooses the mipmap that most closely matches the
+             *     * **"linear"** - Uses the weighted average of the four texture elements that are
+             *     closest to the center of the pixel being textured.
+             *
+             *     * **"nearestMipmapNearest"** - Chooses the mipmap that most closely matches the
              *     size of the pixel being textured and uses the "nearest" criterion (the texture
-             *     element nearest to the center of the pixel) to produce a texture value.</li>
+             *     element nearest to the center of the pixel) to produce a texture value.
              *
-             *     <li>**"linearMipmapNearest"** - Chooses the mipmap that most closely matches the size of
+             *     * **"linearMipmapNearest"** - Chooses the mipmap that most closely matches the size of
              *     the pixel being textured and uses the "linear" criterion (a weighted average of the
              *     four texture elements that are closest to the center of the pixel) to produce a
-             *     texture value.</li>
+             *     texture value.
              *
-             *     <li>**"nearestMipmapLinear"** - Chooses the two mipmaps that most closely
+             *     * **"nearestMipmapLinear"** - Chooses the two mipmaps that most closely
              *     match the size of the pixel being textured and uses the "nearest" criterion
              *     (the texture element nearest to the center of the pixel) to produce a texture
              *     value from each mipmap. The final texture value is a weighted average of those two
-             *     values.</li>
+             *     values.
              *
-             *     <li>**"linearMipmapLinear"** - **(default)** - Chooses the two mipmaps that most closely match the size
+             *     * **"linearMipmapLinear"** - **(default)** - Chooses the two mipmaps that most closely match the size
              *     of the pixel being textured and uses the "linear" criterion (a weighted average
              *     of the four texture elements that are closest to the center of the pixel) to
              *     produce a texture value from each mipmap. The final texture value is a weighted
-             *     average of those two values.</li>
-             * </ul>
+             *     average of those two values.
+             *
              *
              * Fires a {{#crossLink "Texture/minFilter:event"}}{{/crossLink}} event on change.
              *
@@ -29601,12 +31166,12 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              *
              * Options are:
              *
-             * <ul>
-             *     <li>**"nearest"** - Uses the value of the texture element that is nearest
-             *     (in Manhattan distance) to the center of the pixel being textured.</li>
-             *     <li>**"linear"** - **(default)** - Uses the weighted average of the four texture elements that are
-             *     closest to the center of the pixel being textured.</li>
-             * </ul>
+             *
+             *     * **"nearest"** - Uses the value of the texture element that is nearest
+             *     (in Manhattan distance) to the center of the pixel being textured.
+             *     * **"linear"** - **(default)** - Uses the weighted average of the four texture elements that are
+             *     closest to the center of the pixel being textured.
+             *
              *
              * Fires a {{#crossLink "Texture/magFilter:event"}}{{/crossLink}} event on change.
              *
@@ -29651,14 +31216,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              *
              * Options are:
              *
-             * <ul>
-             *     <li>**"clampToEdge"** -  causes *S* coordinates to be clamped to the size of the texture.</li>
-             *     <li>**"mirroredRepeat"** - causes the *S* coordinate to be set to the fractional part of the texture coordinate
+             *
+             *     * **"clampToEdge"** -  causes *S* coordinates to be clamped to the size of the texture.
+             *     * **"mirroredRepeat"** - causes the *S* coordinate to be set to the fractional part of the texture coordinate
              *     if the integer part of *S* is even; if the integer part of *S* is odd, then the *S* texture coordinate is
-             *     set to *1 - frac ⁡ S* , where *frac ⁡ S* represents the fractional part of *S*.</li>
-             *     <li>**"repeat"** - **(default)** - causes the integer part of the *S* coordinate to be ignored; xeoEngine uses only the
-             *     fractional part, thereby creating a repeating pattern.</li>
-             * </ul>
+             *     set to *1 - frac ⁡ S* , where *frac ⁡ S* represents the fractional part of *S*.
+             *     * **"repeat"** - **(default)** - causes the integer part of the *S* coordinate to be ignored; xeogl uses only the
+             *     fractional part, thereby creating a repeating pattern.
+             *
              *
              * Fires a {{#crossLink "Texture/wrapS:event"}}{{/crossLink}} event on change.
              *
@@ -29703,14 +31268,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              *
              * Options are:
              *
-             * <ul>
-             *     <li>**"clampToEdge"** -  Causes *T* coordinates to be clamped to the size of the texture.</li>
-             *     <li>**"mirroredRepeat"** - Causes the *T* coordinate to be set to the fractional part of the texture coordinate
+             *
+             *     * **"clampToEdge"** -  Causes *T* coordinates to be clamped to the size of the texture.
+             *     * **"mirroredRepeat"** - Causes the *T* coordinate to be set to the fractional part of the texture coordinate
              *     if the integer part of *T* is even; if the integer part of *T* is odd, then the *T* texture coordinate is
-             *     set to *1 - frac ⁡ S* , where *frac ⁡ S* represents the fractional part of *T*.</li>
-             *     <li>**"repeat"** - **(default)** - Causes the integer part of the *T* coordinate to be ignored; xeoEngine uses only the
-             *     fractional part, thereby creating a repeating pattern.</li>
-             * </ul>
+             *     set to *1 - frac ⁡ S* , where *frac ⁡ S* represents the fractional part of *T*.
+             *     * **"repeat"** - **(default)** - Causes the integer part of the *T* coordinate to be ignored; xeogl uses only the
+             *     fractional part, thereby creating a repeating pattern.
+             *
              *
              * Fires a {{#crossLink "Texture/wrapT:event"}}{{/crossLink}} event on change.
              *
@@ -29850,48 +31415,47 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 this._state.texture.destroy();
             }
 
-            XEO.stats.memory.textures--;
+            xeogl.stats.memory.textures--;
         }
     });
 
 })();
 ;/**
- A **Fresnel** specifies a Fresnel effect.
+ A **Fresnel** specifies a Fresnel effect for attached {{#crossLink "PhongMaterial"}}PhongMaterials{{/crossLink}}.
 
- <ul>
- <li>Fresnels are grouped within {{#crossLink "PhongMaterial"}}{{/crossLink}}s, which are attached to
- {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Fresnels create within xeoEngine's shaders.</li>
- </ul>
+ <a href="../../examples/#materials_fresnel_specular"><img src="../../assets/images/screenshots/diffuseFresnel.png"></img></a>
+
+ ## Overview
+
+ * Fresnels are grouped within {{#crossLink "PhongMaterial"}}{{/crossLink}}s, which are attached to
+ {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
  ## Examples
 
- <ul>
- <li>[Diffuse Fresnel](../../examples/#materials_fresnel_diffuse)</li>
- <li>[Specular Fresnel](../../examples/#materials_fresnel_specular)</li>
- <li>[Opacity Fresnel](../../examples/#materials_fresnel_opacity)</li>
- <li>[Emissive Fresnel](../../examples/#materials_fresnel_emissive)</li>
- </ul>
+ * [Diffuse Fresnel](../../examples/#materials_fresnel_diffuse)
+ * [Specular Fresnel](../../examples/#materials_fresnel_specular)
+ * [Opacity Fresnel](../../examples/#materials_fresnel_opacity)
+ * [Emissive Fresnel](../../examples/#materials_fresnel_emissive)
 
  <img src="../../../assets/images/Fresnel.png"></img>
 
  ## Usage
 
  ````javascript
- var entity = new XEO.Entity({
+ var entity = new xeogl.Entity({
 
-     material: new XEO.PhongMaterial({
+     material: new xeogl.PhongMaterial({
          ambient: [0.3, 0.3, 0.3],
          shininess: 30,
 
-         diffuseFresnel: new XEO.Fresnel({
+         diffuseFresnel: new xeogl.Fresnel({
              edgeColor: [1.0, 1.0, 1.0],
              centerColor: [0.0, 0.0, 0.0],
              power: 4,
              bias: 0.6
          }),
 
-         specularFresnel: new XEO.Fresnel({
+         specularFresnel: new xeogl.Fresnel({
              edgeColor: [1.0, 1.0, 1.0],
              centerColor: [0.0, 0.0, 0.0],
              power: 4,
@@ -29899,12 +31463,12 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
          })
      }),
 
-     new XEO.TorusGeometry()
+     new xeogl.TorusGeometry()
  });
  ````
 
  @class Fresnel
- @module XEO
+ @module xeogl
  @submodule materials
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Geometry in the default
@@ -29923,15 +31487,15 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Fresnel = XEO.Component.extend({
+    xeogl.Fresnel = xeogl.Component.extend({
 
-        type: "XEO.Fresnel",
+        type: "xeogl.Fresnel",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.Fresnel({
-                edgeColor: XEO.math.vec3([0, 0, 0]),
-                centerColor: XEO.math.vec3([1, 1, 1]),
+            this._state = new xeogl.renderer.Fresnel({
+                edgeColor: xeogl.math.vec3([0, 0, 0]),
+                centerColor: xeogl.math.vec3([1, 1, 1]),
                 edgeBias: 0,
                 centerBias: 1,
                 power: 1
@@ -30123,84 +31687,81 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  ## Overview
 
- <ul>
- <li>Reflects are grouped within {{#crossLink "Material"}}Material{{/crossLink}}s, which are attached to
- {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>To create a Reflect from an image file, set the Reflect's {{#crossLink "Reflect/src:property"}}{{/crossLink}}
- property to the image file path.</li>
- <li>To create a Reflect from an HTML DOM Image object, set the Reflect's {{#crossLink "Reflect/image:property"}}{{/crossLink}}
- property to the entity.</li>
- <li>To render color images of {{#crossLink "Entity"}}Entities{{/crossLink}} to a Reflect, set the Reflect's {{#crossLink "Reflect/target:property"}}{{/crossLink}}
- property to a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} that is attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>Similarly, to render depth images of {{#crossLink "Entity"}}Entities{{/crossLink}} to a Reflect, set the Reflect's {{#crossLink "Reflect/target:property"}}{{/crossLink}}
- property to a {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}} that is attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>For special effects, we often use rendered Reflects in combination with {{#crossLink "Shader"}}Shaders{{/crossLink}} and {{#crossLink "Stage"}}Stages{{/crossLink}}.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Reflects create within xeoEngine's shaders.</li>
- </ul>
+ * Reflects are grouped within {{#crossLink "Material"}}Material{{/crossLink}}s, which are attached to
+ {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * To create a Reflect from an image file, set the Reflect's {{#crossLink "Reflect/src:property"}}{{/crossLink}}
+ property to the image file path.
+ * To create a Reflect from an HTML DOM Image object, set the Reflect's {{#crossLink "Reflect/image:property"}}{{/crossLink}}
+ property to the entity.
+ * To render color images of {{#crossLink "Entity"}}Entities{{/crossLink}} to a Reflect, set the Reflect's {{#crossLink "Reflect/target:property"}}{{/crossLink}}
+ property to a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} that is attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * Similarly, to render depth images of {{#crossLink "Entity"}}Entities{{/crossLink}} to a Reflect, set the Reflect's {{#crossLink "Reflect/target:property"}}{{/crossLink}}
+ property to a {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}} that is attached to those {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * For special effects, we often use rendered Reflects in combination with {{#crossLink "Shader"}}Shaders{{/crossLink}} and {{#crossLink "Stage"}}Stages{{/crossLink}}.
 
  <img src="../../../assets/images/Reflect.png"></img>
 
  ## Usage
 
  The example below has:
- <ul>
- <li>three Reflects,</li>
- <li>a {{#crossLink "PhongMaterial"}}{{/crossLink}} which applies the {{#crossLink "Reflect"}}{{/crossLink}}s as diffuse, normal and specular maps,</li>
- <li>a {{#crossLink "Lights"}}{{/crossLink}} containing an {{#crossLink "AmbientLight"}}{{/crossLink}} and a {{#crossLink "PointLight"}}{{/crossLink}},</li>
- <li>a {{#crossLink "Geometry"}}{{/crossLink}} that has the default box shape, and
- <li>an {{#crossLink "Entity"}}{{/crossLink}} attached to all of the above.</li>
- </ul>
+
+ * three Reflects,
+ * a {{#crossLink "PhongMaterial"}}{{/crossLink}} which applies the {{#crossLink "Reflect"}}{{/crossLink}}s as diffuse, normal and specular maps,
+ * a {{#crossLink "Lights"}}{{/crossLink}} containing an {{#crossLink "AmbientLight"}}{{/crossLink}} and a {{#crossLink "PointLight"}}{{/crossLink}},
+ * a {{#crossLink "Geometry"}}{{/crossLink}} that has the default box shape, and
+ * an {{#crossLink "Entity"}}{{/crossLink}} attached to all of the above.
+
 
  ```` javascript
- var scene = new XEO.Scene();
+ var scene = new xeogl.Scene();
 
- var reflect1 = new XEO.Reflect(scene, {
+ var reflect1 = new xeogl.Reflect(scene, {
     src: "diffuseMap.jpg"
  });
 
- var reflect2 = new XEO.Reflect(scene, {
+ var reflect2 = new xeogl.Reflect(scene, {
     src: "normalMap.jpg"
  });
 
- var reflect3 = new XEO.Reflect(scene, {
+ var reflect3 = new xeogl.Reflect(scene, {
     src: "specularMap.jpg"
-});
+ });
 
- var material = new XEO.PhongMaterial(scene, {
+ var material = new xeogl.PhongMaterial(scene, {
     ambient: [0.3, 0.3, 0.3],
     shininess: 30,
     diffuseMap: reflect1,
     normalMap: reflect2,
     specularMap: reflect3
-});
+ });
 
- var light1 = new XEO.PointLight(scene, {
+ var light1 = new xeogl.PointLight(scene, {
     pos: [0, 100, 100],
     color: [0.5, 0.7, 0.5]
-});
+ });
 
- var light2 = new XEO.AmbientLight(scene, {
+ var light2 = new xeogl.AmbientLight(scene, {
     color: [0.5, 0.7, 0.5]
-});
+ });
 
- var lights = new XEO.Lights(scene, {
+ var lights = new xeogl.Lights(scene, {
     lights: [
         light1,
         light2
     ]
-});
+ });
 
  // Geometry without parameters will default to a 2x2x2 box.
- var geometry = new XEO.Geometry(scene);
+ var geometry = new xeogl.Geometry(scene);
 
- var entity = new XEO.Entity(scene, {
+ var entity = new xeogl.Entity(scene, {
     lights: lights,
     material: material,
     geometry: geometry
-});
+ });
  ````
- @class Reflect
- @module XEO
+
+ @module xeogl
  @submodule materials
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Reflect in the default
@@ -30210,7 +31771,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Reflect.
  @param [cfg.src=null] {String} Path to image file to load into this Reflect. See the {{#crossLink "Reflect/src:property"}}{{/crossLink}} property for more info.
  @param [cfg.image=null] {HTMLImageElement} HTML Image object to load into this Reflect. See the {{#crossLink "Reflect/image:property"}}{{/crossLink}} property for more info.
- @param [cfg.target=null] {String | XEO.ColorTarget | XEO.DepthTarget} Instance or ID of a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} or
+ @param [cfg.target=null] {String | xeogl.ColorTarget | xeogl.DepthTarget} Instance or ID of a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} or
  {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}} to source this Reflect from. See the {{#crossLink "Reflect/target:property"}}{{/crossLink}} property for more info.
  @param [cfg.minFilter="linearMipmapLinear"] {String} How the reflect is sampled when a texel covers less than one pixel. See the {{#crossLink "Reflect/minFilter:property"}}{{/crossLink}} property for more info.
  @param [cfg.magFilter="linear"] {String} How the reflect is sampled when a texel covers more than one pixel. See the {{#crossLink "Reflect/magFilter:property"}}{{/crossLink}} property for more info.
@@ -30225,15 +31786,15 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Reflect = XEO.Component.extend({
+    xeogl.Reflect = xeogl.Component.extend({
 
-        type: "XEO.Reflect",
+        type: "xeogl.Reflect",
 
         _init: function (cfg) {
 
             // Rendering state
 
-            this._state = new XEO.renderer.Reflect({
+            this._state = new xeogl.renderer.Reflect({
                 texture: null
             });
 
@@ -30251,7 +31812,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             this.src = cfg.src;
 
-            XEO.stats.memory.textures++;
+            xeogl.stats.memory.textures++;
         },
 
         _webglContextRestored: function () {
@@ -30319,7 +31880,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     // Keep self._src because that's where we loaded the image
                     // from, and we may need to save that in JSON later
 
-                    self._image = XEO.renderer.webgl.ensureImageSizePowerOfTwo(image);
+                    self._image = xeogl.renderer.webgl.ensureImageSizePowerOfTwo(image);
 
                     self._imageDirty = true;
                     self._srcDirty = false;
@@ -30422,7 +31983,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 this._state.texture.destroy();
             }
 
-            XEO.stats.memory.textures--;
+            xeogl.stats.memory.textures--;
         }
     });
 
@@ -30430,41 +31991,39 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 ;/**
  * Entities.
  *
- * @module XEO
+ * @module xeogl
  * @submodule entities
  */;/**
- An **Entity** is an object within a xeoEngine {{#crossLink "Scene"}}Scene{{/crossLink}}.
+ An **Entity** is an object within a xeogl {{#crossLink "Scene"}}Scene{{/crossLink}}.
 
  ## Overview
 
- See the {{#crossLink "Scene"}}Scene{{/crossLink}} class documentation for more information on Entities.</li>
+ See the {{#crossLink "Scene"}}Scene{{/crossLink}} class documentation for more information on Entities.
 
  <img src="../../../assets/images/Entity.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Minimal Entity example](../../examples/#entities_minimal)</li>
- </ul>
+ * [Minimal Entity example](../../examples/#entities_minimal)
 
  ## Boundaries
 
  #### Local-space
 
  A Entity provides its Local-space boundary as a {{#crossLink "Boundary3D"}}{{/crossLink}} that encloses
- the {{#crossLink "Geometry"}}{{/crossLink}} {{#crossLink "Geometry/positions:property"}}{{/crossLink}}.</li>
+ the {{#crossLink "Geometry"}}{{/crossLink}} {{#crossLink "Geometry/positions:property"}}{{/crossLink}}.
 
  ```` javascript
- var scene = new XEO.Scene();
+ var scene = new xeogl.Scene();
 
- var geometry = new XEO.Geometry(myScene, {
+ var geometry = new xeogl.Geometry(myScene, {
       //...
-  });
+ });
 
- var entity = new XEO.Entity(myScene, {
+ var entity = new xeogl.Entity(myScene, {
        geometry: myGeometry,
        transform: translate
-  });
+ });
 
  // Get the Local-space Boundary3D
  var localBoundary = entity.localBoundary;
@@ -30480,31 +32039,29 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  // get the Local-space center of the Entity:
  var center = localBoundary.center;
-
  ````
 
  #### World-space
 
  A Entity provides its World-space boundary as a {{#crossLink "Boundary3D"}}{{/crossLink}} that encloses
  the {{#crossLink "Geometry"}}{{/crossLink}} {{#crossLink "Geometry/positions:property"}}{{/crossLink}} after
- transformation by the Entity's {{#crossLink "Entity/transform:property"}}Modelling transform{{/crossLink}}.</li>
-
+ transformation by the Entity's {{#crossLink "Entity/transform:property"}}Modelling transform{{/crossLink}}.
 
  ```` javascript
- var scene = new XEO.Scene();
+ var scene = new xeogl.Scene();
 
- var geometry = new XEO.Geometry(myScene, {
+ var geometry = new xeogl.Geometry(myScene, {
       //...
-  });
+ });
 
- var translate = new XEO.Translate(scene, {
+ var translate = new xeogl.Translate(scene, {
     xyz: [-5, 0, 0] // Translate along -X axis
  });
 
- var entity = new XEO.Entity(myScene, {
+ var entity = new xeogl.Entity(myScene, {
        geometry: myGeometry,
        transform: translate
-  });
+ });
 
  // Get the World-space Boundary3D
  var worldBoundary = entity.worldBoundary;
@@ -30520,7 +32077,6 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  // get the World-space center of the Entity:
  var center = worldBoundary.center;
-
  ````
 
  #### View-space
@@ -30528,7 +32084,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  A Entity also provides its View-space boundary as a {{#crossLink "Boundary3D"}}{{/crossLink}} that encloses
  the {{#crossLink "Geometry/positions:property"}}Geometry positions{{/crossLink}} after
  their transformation by the {{#crossLink "Camera/view:property"}}View{{/crossLink}} and
- {{#crossLink "Entity/transform:property"}}Modelling{{/crossLink}} transforms.</li>
+ {{#crossLink "Entity/transform:property"}}Modelling{{/crossLink}} transforms.
 
  ```` javascript
  // Get the View-space Boundary3D
@@ -30545,7 +32101,6 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  // get the View-space center of the Entity:
  var center = viewBoundary.center;
-
  ````
 
  #### View-space
@@ -30553,7 +32108,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  A Entity also provides its Canvas-space boundary as a {{#crossLink "Boundary2D"}}{{/crossLink}} that encloses
  the {{#crossLink "Geometry/positions:property"}}Geometry positions{{/crossLink}} after
  their transformation by the {{#crossLink "Entity/transform:property"}}Modelling{{/crossLink}},
- {{#crossLink "Camera/view:property"}}View{{/crossLink}} and {{#crossLink "Camera/project:property"}}Projection{{/crossLink}} transforms.</li>
+ {{#crossLink "Camera/view:property"}}View{{/crossLink}} and {{#crossLink "Camera/project:property"}}Projection{{/crossLink}} transforms.
 
  ```` javascript
  // Get the Canvas-space Boundary2D
@@ -30565,14 +32120,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  // get the Canvas-space center of the Entity:
  var center = canvasBoundary.center;
-
  ````
 
  @class Entity
- @module XEO
+ @module xeogl
  @submodule entities
  @constructor
- @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Entity within xeoEngine's default {{#crossLink "XEO/scene:property"}}scene{{/crossLink}} by default.
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Entity within xeogl's default {{#crossLink "xeogl/scene:property"}}scene{{/crossLink}} by default.
  @param [cfg] {*} Configs
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Entity.
@@ -30580,10 +32134,6 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance, {{#crossLink "Scene/camera:property"}}camera{{/crossLink}}.
  @param [cfg.clips] {String|Clips} ID or instance of a {{#crossLink "Clips"}}Clips{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the
  parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance, {{#crossLink "Scene/clips:property"}}clips{{/crossLink}}.
- @param [cfg.colorTarget] {String|ColorTarget} ID or instance of a {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the
- parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance, {{#crossLink "Scene/colorTarget:property"}}colorTarget{{/crossLink}}.
- @param [cfg.depthTarget] {String|DepthTarget} ID or instance of a {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the
- parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance, {{#crossLink "Scene/depthTarget:property"}}depthTarget{{/crossLink}}.
  @param [cfg.depthBuf] {String|DepthBuf} ID or instance of a {{#crossLink "DepthBuf"}}DepthBuf{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the
  parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance, depth {{#crossLink "Scene/depthBuf:property"}}depthBuf{{/crossLink}}.
  @param [cfg.visibility] {String|Visibility} ID or instance of a {{#crossLink "Visibility"}}Visibility{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the
@@ -30604,10 +32154,6 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  default instance, {{#crossLink "Scene/morphTargets:property"}}morphTargets{{/crossLink}}.
  @param [cfg.reflect] {String|Reflect} ID or instance of a {{#crossLink "CubeMap"}}CubeMap{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance,
  {{#crossLink "Scene/reflect:property"}}reflection{{/crossLink}}.
- @param [cfg.shader] {String|Shader} ID or instance of a {{#crossLink "Shader"}}Shader{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance,
- {{#crossLink "Scene/shader:property"}}shader{{/crossLink}}.
- @param [cfg.shaderParams] {String|ShaderParams} ID or instance of a {{#crossLink "ShaderParams"}}ShaderParams{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance,
- {{#crossLink "Scene/shaderParams:property"}}shaderParams{{/crossLink}}.
  @param [cfg.stage] {String|Stage} ID or instance of of a {{#crossLink "Stage"}}Stage{{/crossLink}} to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance,
  {{#crossLink "Scene/stage:property"}}stage{{/crossLink}}.
  @param [cfg.transform] {String|Transform} ID or instance of a modelling transform to attach to this Entity. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this Entity. Defaults to the parent {{#crossLink "Scene"}}Scene{{/crossLink}}'s default instance,
@@ -30632,9 +32178,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Entity = XEO.Component.extend({
+    xeogl.Entity = xeogl.Component.extend({
 
-        type: "XEO.Entity",
+        type: "xeogl.Entity",
 
         _init: function (cfg) {
 
@@ -30709,7 +32255,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "camera",
-                        type: "XEO.Camera",
+                        type: "xeogl.Camera",
                         component: value,
                         sceneDefault: true,
                         on: {
@@ -30753,7 +32299,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "clips",
-                        type: "XEO.Clips",
+                        type: "xeogl.Clips",
                         component: value,
                         sceneDefault: true
                     });
@@ -30774,6 +32320,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              * Fires an {{#crossLink "Entity/colorTarget:event"}}{{/crossLink}} event on change.
              *
              * @property colorTarget
+             * @private
              * @type ColorTarget
              */
             colorTarget: {
@@ -30787,7 +32334,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "colorTarget",
-                        type: "XEO.ColorTarget",
+                        type: "xeogl.ColorTarget",
                         component: value,
                         sceneDefault: true
                     });
@@ -30822,7 +32369,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "colorBuf",
-                        type: "XEO.ColorBuf",
+                        type: "xeogl.ColorBuf",
                         component: value,
                         sceneDefault: true
                     });
@@ -30843,6 +32390,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              * Fires an {{#crossLink "Entity/depthTarget:event"}}{{/crossLink}} event on change.
              *
              * @property depthTarget
+             * @private
              * @type DepthTarget
              */
             depthTarget: {
@@ -30857,7 +32405,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "depthTarget",
-                        type: "XEO.DepthTarget",
+                        type: "xeogl.DepthTarget",
                         component: value,
                         sceneDefault: true
                     });
@@ -30892,7 +32440,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "depthBuf",
-                        type: "XEO.DepthBuf",
+                        type: "xeogl.DepthBuf",
                         component: value,
                         sceneDefault: true
                     });
@@ -30927,7 +32475,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "visibility",
-                        type: "XEO.Visibility",
+                        type: "xeogl.Visibility",
                         component: value,
                         sceneDefault: true
                     });
@@ -30963,7 +32511,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                     this._attach({
                         name: "cull",
-                        type: "XEO.Cull",
+                        type: "xeogl.Cull",
                         component: value,
                         sceneDefault: true
                     });
@@ -30998,7 +32546,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "modes",
-                        type: "XEO.Modes",
+                        type: "xeogl.Modes",
                         component: value,
                         sceneDefault: true
                     });
@@ -31033,9 +32581,15 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                     this._setWorldBoundaryDirty();
 
+                    /**
+                     * Fired whenever this Entity's {{#crossLink "Entity/geometry:property"}}{{/crossLink}} property changes.
+                     *
+                     * @event modes
+                     * @param value The property's new value
+                     */
                     this._attach({
                         name: "geometry",
-                        type: "XEO.Geometry",
+                        type: "xeogl.Geometry",
                         component: value,
                         sceneDefault: true,
                         on: {
@@ -31080,7 +32634,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "layer",
-                        type: "XEO.Layer",
+                        type: "xeogl.Layer",
                         component: value,
                         sceneDefault: true
                     });
@@ -31115,7 +32669,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "lights",
-                        type: "XEO.Lights",
+                        type: "xeogl.Lights",
                         component: value,
                         sceneDefault: true
                     });
@@ -31150,7 +32704,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "material",
-                        type: "XEO.Material",
+                        type: "xeogl.Material",
                         component: value,
                         sceneDefault: true
                     });
@@ -31171,6 +32725,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              * Fires an {{#crossLink "Entity/morphTargets:event"}}{{/crossLink}} event on change.
              *
              * @property morphTargets
+             * @private
              * @type MorphTargets
              */
             morphTargets: {
@@ -31184,7 +32739,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "morphTargets",
-                        type: "XEO.MorphTargets",
+                        type: "xeogl.MorphTargets",
                         component: value,
                         sceneDefault: true
                     });
@@ -31219,7 +32774,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "reflect",
-                        type: "XEO.Reflect",
+                        type: "xeogl.Reflect",
                         component: value,
                         sceneDefault: true
                     });
@@ -31240,6 +32795,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              * Fires an {{#crossLink "Entity/shader:event"}}{{/crossLink}} event on change.
              *
              * @property shader
+             * @private
              * @type Shader
              */
             shader: {
@@ -31253,7 +32809,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "shader",
-                        type: "XEO.Shader",
+                        type: "xeogl.Shader",
                         component: value,
                         sceneDefault: true
                     });
@@ -31274,6 +32830,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              * Fires an {{#crossLink "Entity/shaderParams:event"}}{{/crossLink}} event on change.
              *
              * @property shaderParams
+             * @private
              * @type ShaderParams
              */
             shaderParams: {
@@ -31288,7 +32845,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "shaderParams",
-                        type: "XEO.ShaderParams",
+                        type: "xeogl.ShaderParams",
                         component: value,
                         sceneDefault: true
                     });
@@ -31323,7 +32880,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "stage",
-                        type: "XEO.Stage",
+                        type: "xeogl.Stage",
                         component: value,
                         sceneDefault: true
                     });
@@ -31367,7 +32924,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "transform",
-                        type: "XEO.Transform",
+                        type: "xeogl.Transform",
                         component: value,
                         sceneDefault: true,
                         on: {
@@ -31381,7 +32938,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                                     this._transformDirty = true;
 
-                                    XEO.scheduleTask(this._transformUpdated, this);
+                                    xeogl.scheduleTask(this._transformUpdated, this);
                                 },
                                 scope: this
                             },
@@ -31427,7 +32984,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "billboard",
-                        type: "XEO.Billboard",
+                        type: "xeogl.Billboard",
                         component: value,
                         sceneDefault: true
                     });
@@ -31463,7 +33020,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "viewport",
-                        type: "XEO.Viewport",
+                        type: "xeogl.Viewport",
                         component: value,
                         sceneDefault: true
                     });
@@ -31503,7 +33060,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                      */
                     this._attach({
                         name: "stationary",
-                        type: "XEO.Stationary",
+                        type: "xeogl.Stationary",
                         component: value,
                         sceneDefault: true
                     });
@@ -31560,7 +33117,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              *
              * <h4>Example</h4>
              *
-             * [here](http://xeoengine.org/examples/#boundaries_Entity_worldBoundary)
+             * [here](http://xeogl.org/examples/#boundaries_Entity_worldBoundary)
              *
              * <h4>Performance</h4>
              *
@@ -31581,11 +33138,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                         // this._setWorldBoundaryDirty();
 
-                        this._worldBoundary = new XEO.Boundary3D(this.scene, {
+                        this._worldBoundary = this.create({
 
-                            meta: {
-                                desc: "Entity " + self.id + " World-space boundary" // For debugging
-                            },
+                            type:"xeogl.Boundary3D",
 
                             getDirty: function () {
                                 if (self._worldBoundaryDirty) {
@@ -31669,11 +33224,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                         //     this._setViewBoundaryDirty();
 
-                        this._viewBoundary = new XEO.Boundary3D(this.scene, {
+                        this._viewBoundary = this.create({
 
-                            meta: {
-                                desc: "Entity " + self.id + " View-space boundary" // For debugging
-                            },
+                            type:"xeogl.Boundary3D",
 
                             getDirty: function () {
                                 if (self._viewBoundaryDirty) {
@@ -31740,11 +33293,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                         //   this._setCanvasBoundaryDirty();
 
-                        this._canvasBoundary = new XEO.Boundary2D(this.scene, {
+                        this._canvasBoundary = this.create({
 
-                            meta: {
-                                desc: "Entity " + self.id + " Canvas-space boundary" // For debugging
-                            },
+                            type:"xeogl.Boundary2D",
 
                             getDirty: function () {
                                 if (self._canvasBoundaryDirty) {
@@ -31779,7 +33330,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              * This is sometimes useful to have as a reference
              * when constructing your own custom {{#crossLink "Shader"}}{{/crossLink}} components.
              *
-             * Will return null if xeoEngine has not yet rendered this Entity.
+             * Will return null if xeogl has not yet rendered this Entity.
              *
              * @property glsl
              * @type JSON
@@ -31816,7 +33367,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              * This is sometimes useful to have as a reference
              * when constructing your own custom {{#crossLink "Shader"}}{{/crossLink}} components.
              *
-             * Will return null if xeoEngine has not yet rendered this Entity.
+             * Will return null if xeogl has not yet rendered this Entity.
              *
              * @property glslString
              * @type String
@@ -31875,6 +33426,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
         },
 
+
+
         _compile: function () {
 
             var self = this;
@@ -31892,7 +33445,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 var task = function () {
 
                     if (!self._valid()) {
-                        XEO.scheduleTask(task);
+                        xeogl.scheduleTask(task);
                         return;
                     }
 
@@ -31901,7 +33454,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     self._compiling = false;
                 };
 
-                XEO.scheduleTask(task);
+                xeogl.scheduleTask(task);
             }
         },
 
@@ -31940,7 +33493,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             if (this._loading) {
 
-                // This Entity was flagged as freshly loaded, which incremented the XEO.Spinner#processes
+                // This Entity was flagged as freshly loaded, which incremented the xeogl.Spinner#processes
                 // count on the Scene Canvas, causing a spinner to appear. Unflag and decrement the
                 // count now that we have compiled it into the render graph. Spinner will disappear
                 // when the count has returned to zero.
@@ -31988,19 +33541,6 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         },
 
         _destroy: function () {
-
-            if (this._worldBoundary) {
-                this._worldBoundary.destroy();
-            }
-
-            if (this._viewBoundary) {
-                this._viewBoundary.destroy();
-            }
-
-            if (this._canvasBoundary) {
-                this._canvasBoundary.destroy();
-            }
-
             this._renderer.removeObject(this.id);
         }
     });
@@ -32009,17 +33549,16 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 ;/**
  * Components that influence the way entities are rendered with WebGL.
  *
- * @module XEO
+ * @module xeogl
  * @submodule rendering
  */;/**
-
  A **ColorBuf** configures the WebGL color buffer for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>A ColorBuf configures **the way** that pixels are written to the WebGL color buffer.</li>
- <li>ColorBuf is not to be confused with {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}}, which stores rendered pixel
- colors for consumption by {{#crossLink "Texture"}}Textures{{/crossLink}}, used when performing *render-to-texture*.</li>
- </ul>
+ ## Overview
+
+ * A ColorBuf configures the way that pixels are written to the WebGL color buffer.
+ * ColorBuf is not to be confused with {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}}, which stores rendered pixel
+ colors for consumption by {{#crossLink "Texture"}}Textures{{/crossLink}}, used when performing *render-to-texture*.
 
  <img src="../../../assets/images/ColorBuf.png"></img>
 
@@ -32029,9 +33568,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  that sets the WebGL color mask and enables blending:
 
  ````javascript
- new XEO.Entity({
-     geometry: new XEO.BoxGeometry(),
-     colorBuf: new XEO.ColorBuf({
+ new xeogl.Entity({
+     geometry: new xeogl.BoxGeometry(),
+     colorBuf: new xeogl.ColorBuf({
          blendEnabled: true,
          colorMask: [true, true, true, true]
      })
@@ -32039,7 +33578,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````
 
  @class ColorBuf
- @module XEO
+ @module xeogl
  @submodule rendering
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this ColorBuf within the
@@ -32055,13 +33594,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.ColorBuf = XEO.Component.extend({
+    xeogl.ColorBuf = xeogl.Component.extend({
 
-        type: "XEO.ColorBuf",
+        type: "xeogl.ColorBuf",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.ColorBuf({
+            this._state = new xeogl.renderer.ColorBuf({
                 blendEnabled: false,
                 colorMask: [true, true, true, true]
             });
@@ -32155,11 +33694,11 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 ;/**
  A **DepthBuf** configures the WebGL depth buffer for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>A DepthBuf configures **the way** that pixel depths are written to the WebGL depth buffer</li>
- <li>DepthBuf is not to be confused with {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}}, which stores rendered pixel
- depths for consumption by {{#crossLink "Texture"}}Textures{{/crossLink}}, used when performing *render-to-texture*.</li>
- </ul>
+ ## Overview
+
+ * A DepthBuf configures the way that pixel depths are written to the WebGL depth buffer
+ * DepthBuf is not to be confused with {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}}, which stores rendered pixel
+ depths for consumption by {{#crossLink "Texture"}}Textures{{/crossLink}}, used when performing *render-to-texture*.
 
  <img src="../../../assets/images/DepthBuf.png"></img>
 
@@ -32169,9 +33708,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  that uses the "less" depth comparison function and sets pixels depths to 0.5 whenever it's cleared.
 
  ````javascript
- new XEO.Entity({
-     geometry: new XEO.BoxGeometry(),
-     depthBuf: new XEO.ColorBuf({
+ new xeogl.Entity({
+     geometry: new xeogl.BoxGeometry(),
+     depthBuf: new xeogl.ColorBuf({
          clearDepth: 0.5,
          depthFunc: "less"
      })
@@ -32179,7 +33718,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````
 
  @class DepthBuf
- @module XEO
+ @module xeogl
  @submodule rendering
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this DepthBuf
@@ -32196,13 +33735,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.DepthBuf = XEO.Component.extend({
+    xeogl.DepthBuf = xeogl.Component.extend({
 
-        type: "XEO.DepthBuf",
+        type: "xeogl.DepthBuf",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.DepthBuf({
+            this._state = new xeogl.renderer.DepthBuf({
                 clearDepth: null,
                 depthFunc: null,
                 active: true
@@ -32251,14 +33790,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
              *
              * Accepted values are:
              *
-             * <ul>
-             *     <li>"less"</li>
-             *     <li>"equal"</li>
-             *     <li>"lequal"</li>
-             *     <li>"greater"</li>
-             *     <li>"notequal"</li>
-             *     <li>"gequal"</li>
-             * </ul>
+             *
+             *     * "less"
+             *     * "equal"
+             *     * "lequal"
+             *     * "greater"
+             *     * "notequal"
+             *     * "gequal"
+             *
              *
              * Fires a {{#crossLink "DepthBuf/depthFunc:event"}}{{/crossLink}} event on change.
              *
@@ -32371,31 +33910,29 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 ;/**
  A **Layer** sets the rendering order of {{#crossLink "Entity"}}Entities{{/crossLink}} within their {{#crossLink "Stage"}}Stages{{/crossLink}}.
 
- <ul>
- <li>When xeoEngine renders a {{#crossLink "Scene"}}Scene{{/crossLink}}, each {{#crossLink "Stage"}}Stage{{/crossLink}} within that will render its bin
- of {{#crossLink "Entity"}}Entities{{/crossLink}} in turn, from the lowest priority {{#crossLink "Stage"}}Stage{{/crossLink}} to the highest.</li>
- <li>{{#crossLink "Stage"}}Stages{{/crossLink}} are typically used for ordering the render-to-texture steps in posteffects pipelines.</li>
- <li>You can control the render order of the individual {{#crossLink "Entity"}}Entities{{/crossLink}} ***within*** a {{#crossLink "Stage"}}Stage{{/crossLink}}
- by associating them with {{#crossLink "Layer"}}Layers{{/crossLink}}.</li>
- <li>{{#crossLink "Layer"}}Layers{{/crossLink}} are typically used to <a href="https://www.opengl.org/wiki/Transparency_Sorting" target="_other">transparency-sort</a> the
- {{#crossLink "Entity"}}Entities{{/crossLink}} within {{#crossLink "Stage"}}Stages{{/crossLink}}.</li>
- <li>{{#crossLink "Entity"}}Entities{{/crossLink}} not explicitly attached to a Layer are implicitly
+ ## Overview
+
+ * When xeogl renders a {{#crossLink "Scene"}}Scene{{/crossLink}}, each {{#crossLink "Stage"}}Stage{{/crossLink}} within that will render its bin
+ of {{#crossLink "Entity"}}Entities{{/crossLink}} in turn, from the lowest priority {{#crossLink "Stage"}}Stage{{/crossLink}} to the highest.
+ * {{#crossLink "Stage"}}Stages{{/crossLink}} are typically used for ordering the render-to-texture steps in posteffects pipelines.
+ * You can control the render order of the individual {{#crossLink "Entity"}}Entities{{/crossLink}} ***within*** a {{#crossLink "Stage"}}Stage{{/crossLink}}
+ by associating them with {{#crossLink "Layer"}}Layers{{/crossLink}}.
+ * {{#crossLink "Layer"}}Layers{{/crossLink}} are typically used to <a href="https://www.opengl.org/wiki/Transparency_Sorting" target="_other">transparency-sort</a> the
+ {{#crossLink "Entity"}}Entities{{/crossLink}} within {{#crossLink "Stage"}}Stages{{/crossLink}}.
+ * {{#crossLink "Entity"}}Entities{{/crossLink}} not explicitly attached to a Layer are implicitly
  attached to the {{#crossLink "Scene"}}Scene{{/crossLink}}'s default
  {{#crossLink "Scene/layer:property"}}layer{{/crossLink}}. which has
- a {{#crossLink "Layer/priority:property"}}{{/crossLink}} value of zero.</li>
- <li>You can use Layers without defining any {{#crossLink "Stage"}}Stages{{/crossLink}} if you simply let your
+ a {{#crossLink "Layer/priority:property"}}{{/crossLink}} value of zero.
+ * You can use Layers without defining any {{#crossLink "Stage"}}Stages{{/crossLink}} if you simply let your
  {{#crossLink "Entity"}}Entities{{/crossLink}} fall back on the {{#crossLink "Scene"}}Scene{{/crossLink}}'s default
- {{#crossLink "Scene/stage:property"}}stage{{/crossLink}}. which has a {{#crossLink "Stage/priority:property"}}{{/crossLink}} value of zero.</li>
- </ul>
+ {{#crossLink "Scene/stage:property"}}stage{{/crossLink}}. which has a {{#crossLink "Stage/priority:property"}}{{/crossLink}} value of zero.
 
  <img src="../../../assets/images/Layer.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Z-sorted transparent entities](../../examples/#materials_techniques_transparencySort)</li>
- <li>[Clouds as billboarded and z-sorted alpha maps](../../examples/#billboards_spherical_clouds)</li>
- </ul>
+ * [Z-sorted transparent entities](../../examples/#materials_techniques_transparencySort)
+ * [Clouds as billboarded and z-sorted alpha maps](../../examples/#billboards_spherical_clouds)
 
  ## Usage
 
@@ -32416,66 +33953,66 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````javascript
  // A Stage, just for completeness
  // We could instead just implicitly default to the Scene's default Stage
- var stage = new XEO.Stage({
+ var stage = new xeogl.Stage({
     priority: 0
-});
+ });
 
  // Geometry we'll share among our Entities
- var geometry = new XEO.BoxGeometry();
+ var geometry = new xeogl.BoxGeometry();
 
  // Innermost box
  // Blue and opaque, in Layer with render order 0, renders first
 
- var entity1 = new XEO.Entity({
+ var entity1 = new xeogl.Entity({
     geometry: geometry,
     stage: stage,
-    layer: new XEO.Layer({
+    layer: new xeogl.Layer({
         priority: 1
     }),
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         diffuse: [0.2, 0.2, 1.0],
         opacity: 1.0
     })
-});
+ });
 
  // Middle box
  // Red and transparent, in Layer with render order 2, renders next
 
- var entity2 = new XEO.Entity({
+ var entity2 = new xeogl.Entity({
     geometry: geometry,
     stage: stage,
-    layer: new XEO.Layer({
+    layer: new xeogl.Layer({
         priority: 2
     }),
-    material: new XEO.Layer({
+    material: new xeogl.Layer({
         priority: 2
     }),
-    scale: new XEO.Scale({
+    scale: new xeogl.Scale({
         xyz: [6, 6, 6]
     })
-});
+ });
 
  // Outermost box
  // Green and transparent, in Layer with render order 3, renders last
 
- var entity3 = new XEO.Entity({
+ var entity3 = new xeogl.Entity({
     geometry: geometry,
     stage: stage,
-    layer: new XEO.Layer({
+    layer: new xeogl.Layer({
         priority: 3
     }),
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         diffuse: [0.2, 1, 0.2],
         opacity: 0.2
     }),
-    scale: new XEO.Scale({
+    scale: new xeogl.Scale({
         xyz: [9, 9, 9]
     })
-});
+ });
  ````
 
  @class Layer
- @module XEO
+ @module xeogl
  @submodule rendering
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Geometry in the default
@@ -32490,13 +34027,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Layer = XEO.Component.extend({
+    xeogl.Layer = xeogl.Component.extend({
 
-        type: "XEO.Layer",
+        type: "xeogl.Layer",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.Layer({
+            this._state = new xeogl.renderer.Layer({
                 priority: null
             });
 
@@ -32571,31 +34108,28 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  A **ColorTarget** is a  <a href="http://en.wikipedia.org/wiki/Render_Target" target="other">render target</a>  that
  captures the colors pixels rendered for associated {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>ColorTargets are typically used when *rendering-to-texture*.</li>
- <li>A ColorTarget provides the pixel colors as a dynamic color image that may be consumed by {{#crossLink "Texture"}}Textures{{/crossLink}}.</li>
- <li>ColorTarget is not to be confused with {{#crossLink "ColorBuf"}}ColorBuf{{/crossLink}}, which configures ***how*** the pixel colors are written with respect to the WebGL color buffer.</li>
- <li>Use {{#crossLink "Stage"}}Stages{{/crossLink}} when you need to ensure that a ColorTarget is rendered before
- the {{#crossLink "Texture"}}Textures{{/crossLink}} that consume it.</li>
- <li>For special effects, we often use ColorTargets and {{#crossLink "Texture"}}Textures{{/crossLink}} in combination
- with {{#crossLink "DepthTarget"}}DepthTargets{{/crossLink}} and {{#crossLink "Shader"}}Shaders{{/crossLink}}.</li>
- </ul>
+ * ColorTargets are typically used when *rendering-to-texture*.
+ * A ColorTarget provides the pixel colors as a dynamic color image that may be consumed by {{#crossLink "Texture"}}Textures{{/crossLink}}.
+ * ColorTarget is not to be confused with {{#crossLink "ColorBuf"}}ColorBuf{{/crossLink}}, which configures ***how*** the pixel colors are written with respect to the WebGL color buffer.
+ * Use {{#crossLink "Stage"}}Stages{{/crossLink}} when you need to ensure that a ColorTarget is rendered before
+ the {{#crossLink "Texture"}}Textures{{/crossLink}} that consume it.
+ * For special effects, we often use ColorTargets and {{#crossLink "Texture"}}Textures{{/crossLink}} in combination
+ with {{#crossLink "DepthTarget"}}DepthTargets{{/crossLink}} and {{#crossLink "Shader"}}Shaders{{/crossLink}}.
 
  <img src="../../../assets/images/ColorTarget.png"></img>
 
  ## Usage
 
  This example contains an {{#crossLink "Entity"}}{{/crossLink}} that renders its pixel colors to a ColorTarget, which is then
- piped into a {{#crossLink "Texture"}}{{/crossLink}} that's applied to a second {{#crossLink "Entity"}}{{/crossLink}}.</li>
- </ul>
+ piped into a {{#crossLink "Texture"}}{{/crossLink}} that's applied to a second {{#crossLink "Entity"}}{{/crossLink}}.
 
  ````javascript
- var colorTarget = new XEO.ColorTarget();
+ var colorTarget = new xeogl.ColorTarget();
 
  // First Entity renders to the ColorTarget
 
- var entity1 = new XEO.Entity({
-    geometry: new XEO.BoxGeometry(),
+ var entity1 = new xeogl.Entity({
+    geometry: new xeogl.BoxGeometry(),
     colorTarget: colorTarget
  });
 
@@ -32603,18 +34137,18 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  // Second Entity is textured with the
  // image of the first Entity
 
- var entity2 = new XEO.Entity({
-     geometry: new XEO.BoxGeometry()
-     material: new XEO.PhongMaterial({
-         diffuseMap: new XEO.Texture({
+ var entity2 = new xeogl.Entity({
+     geometry: new xeogl.BoxGeometry()
+     material: new xeogl.PhongMaterial({
+         diffuseMap: new xeogl.Texture({
             target: colorTarget
          })
      })
 });
  ````
 
- @class ColorTarget
- @module XEO
+
+ @module xeogl
  @submodule rendering
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this ColorTarget within the
@@ -32631,14 +34165,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.ColorTarget = XEO.Component.extend({
+    xeogl.ColorTarget = xeogl.Component.extend({
 
-        type: "XEO.ColorTarget",
+        type: "xeogl.ColorTarget",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.RenderTarget({
-                type: XEO.renderer.RenderTarget.COLOR,
+            this._state = new xeogl.renderer.RenderTarget({
+                type: xeogl.renderer.RenderTarget.COLOR,
                 renderBuf: null
             });
 
@@ -32721,7 +34255,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                         var canvas = this.scene.canvas;
 
-                        state.renderBuf = new XEO.renderer.webgl.RenderBuffer({
+                        state.renderBuf = new xeogl.renderer.webgl.RenderBuffer({
                             canvas: canvas.canvas,
                             gl: canvas.gl,
                             size: this._size
@@ -32773,7 +34307,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             this.scene.canvas.off(this._webglContextRestored);
 
-            this._state.renderBuf.destroy();
+            if (this._state.renderBuf) {
+                this._state.renderBuf.destroy();
+            }
 
             this._state.destroy();
         }
@@ -32784,49 +34320,44 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  A **DepthTarget** is a  <a href="http://en.wikipedia.org/wiki/Render_Target" target="other">render target</a>  that
  captures the depths of the pixels rendered for the attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>DepthTargets are typically used when *rendering-to-texture*.</li>
- <li>A DepthTarget provides the pixel depths as a dynamic color-encoded image that may be fed into {{#crossLink "Texture"}}Textures{{/crossLink}}.</li>
- <li>DepthTarget is not to be confused with {{#crossLink "DepthBuf"}}DepthBuf{{/crossLink}}, which configures ***how*** the pixel depths are written with respect to the WebGL depth buffer.</li>
- <li>Use {{#crossLink "Stage"}}Stages{{/crossLink}} when you need to ensure that a DepthTarget is rendered before
- the {{#crossLink "Texture"}}Textures{{/crossLink}} that consume it.</li>
- <li>For special effects, we often use DepthTargets and {{#crossLink "Texture"}}Textures{{/crossLink}} in combination
- with {{#crossLink "DepthTarget"}}DepthTargets{{/crossLink}} and {{#crossLink "Shader"}}Shaders{{/crossLink}}.</li>
- </ul>
+ * DepthTargets are typically used when *rendering-to-texture*.
+ * A DepthTarget provides the pixel depths as a dynamic color-encoded image that may be fed into {{#crossLink "Texture"}}Textures{{/crossLink}}.
+ * DepthTarget is not to be confused with {{#crossLink "DepthBuf"}}DepthBuf{{/crossLink}}, which configures ***how*** the pixel depths are written with respect to the WebGL depth buffer.
+ * Use {{#crossLink "Stage"}}Stages{{/crossLink}} when you need to ensure that a DepthTarget is rendered before
+ the {{#crossLink "Texture"}}Textures{{/crossLink}} that consume it.
+ * For special effects, we often use DepthTargets and {{#crossLink "Texture"}}Textures{{/crossLink}} in combination
+ with {{#crossLink "DepthTarget"}}DepthTargets{{/crossLink}} and {{#crossLink "Shader"}}Shaders{{/crossLink}}.
 
  <img src="../../../assets/images/DepthTarget.png"></img>
 
  ## Usage
 
  This example contains an {{#crossLink "Entity"}}{{/crossLink}} that renders its (RBGA-encoded) pixel depths to a DepthTarget, which is then
- piped into a {{#crossLink "Texture"}}{{/crossLink}} that's applied to a second {{#crossLink "Entity"}}{{/crossLink}}.</li>
- </ul>
+ piped into a {{#crossLink "Texture"}}{{/crossLink}} that's applied to a second {{#crossLink "Entity"}}{{/crossLink}}.
 
  ````javascript
- var depthTarget = new XEO.DepthTarget();
+ var depthTarget = new xeogl.DepthTarget();
 
  // First Entity renders to the DepthTarget
 
- var entity1 = new XEO.Entity({
-    geometry: new XEO.BoxGeometry(),
+ var entity1 = new xeogl.Entity({
+    geometry: new xeogl.BoxGeometry(),
     depthTarget: depthTarget
  });
 
+ // Second Entity is textured with the image of the first Entity
 
- // Second Entity is textured with the
- // image of the first Entity
-
- var entity2 = new XEO.Entity({
-     geometry: new XEO.BoxGeometry()
-     material: new XEO.PhongMaterial({
-         diffuseMap: new XEO.Texture({
+ var entity2 = new xeogl.Entity({
+     geometry: new xeogl.BoxGeometry()
+     material: new xeogl.PhongMaterial({
+         diffuseMap: new xeogl.Texture({
             target: depthTarget
          })
      })
-});
+ });
  ````
- @class DepthTarget
- @module XEO
+
+ @module xeogl
  @submodule rendering
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this DepthTarget within the
@@ -32842,14 +34373,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.DepthTarget = XEO.Component.extend({
+    xeogl.DepthTarget = xeogl.Component.extend({
 
-        type: "XEO.DepthTarget",
+        type: "xeogl.DepthTarget",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.RenderTarget({
-                type: XEO.renderer.RenderTarget.DEPTH,
+            this._state = new xeogl.renderer.RenderTarget({
+                type: xeogl.renderer.RenderTarget.DEPTH,
                 renderBuf: null
             });
 
@@ -32897,7 +34428,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                         var canvas = this.scene.canvas;
 
-                        state.renderBuf = new XEO.renderer.webgl.RenderBuffer({
+                        state.renderBuf = new xeogl.renderer.webgl.RenderBuffer({
                             canvas: canvas.canvas,
                             gl: canvas.gl
                         });
@@ -32941,7 +34472,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             this.scene.canvas.off(this._webglContextRestored);
 
-            this._state.renderBuf.destroy();
+            if (this._state.renderBuf) {
+                this._state.renderBuf.destroy();
+            }
 
             this._state.destroy();
         }
@@ -32949,16 +34482,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
+ A **Modes** toggles various xeogl modes and capabilities for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- A **Modes** toggles various xeoEngine modes and capabilities for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ ## Overview
 
- <ul>
- <li>Though the rendering modes are defined by various different components attached to the {{#crossLink "Entity"}}Entities{{/crossLink}},
- Modes components provide a single point through which you can toggle them on or off.</li>
- <li>A Modes may be shared among multiple {{#crossLink "Entity"}}Entities{{/crossLink}} to toggle
- rendering modes for them as a group.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Modes create within xeoEngine's shaders.</li>
- </ul>
+ * Though the rendering modes are defined by various different components attached to the {{#crossLink "Entity"}}Entities{{/crossLink}},
+ Modes components provide a single point through which you can toggle them on or off.
+ * A Modes may be shared among multiple {{#crossLink "Entity"}}Entities{{/crossLink}} to toggle
+ rendering modes for them as a group.
 
  <img src="../../../assets/images/Modes.png"></img>
 
@@ -32969,38 +34500,38 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  ````javascript
  // Create a Modes with default properties
- var modes = new XEO.Modes(scene, {
+ var modes = new xeogl.Modes(scene, {
     collidable: true,           // Include Entities in boundary calculations
     pickable: true,             // Enable picking
-    clippable true,             // Enable effect of XEO.Clip components
+    clippable true,             // Enable effect of xeogl.Clip components
     transparent : false,        // Disable transparency
     backfaces : true,           // Render backfaces
     frontface : "ccw"
  });
 
- var boxGeometry = new XEO.BoxGeometry();
+ var boxGeometry = new xeogl.BoxGeometry();
 
  // Create two Entities whose rendering modes will be controlled by our Modes
 
- var entity1 = new XEO.Entity({
+ var entity1 = new xeogl.Entity({
      geometry: boxGeometry,
      modes: modes,
-     translate: new XEO.Translate({
+     translate: new xeogl.Translate({
         xyz: [3, 0, 0]
      })
  });
 
- var entity2 = new XEO.Entity(scene, {
+ var entity2 = new xeogl.Entity(scene, {
      geometry: boxGeometry,
      modes: modes,
-     translate: new XEO.Translate({
+     translate: new xeogl.Translate({
         xyz: [3, 0, 0]
      })
  });
  ````
 
  @class Modes
- @module XEO
+ @module xeogl
  @submodule rendering
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Modes in the default {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
@@ -33024,13 +34555,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Modes = XEO.Component.extend({
+    xeogl.Modes = xeogl.Component.extend({
 
-        type: "XEO.Modes",
+        type: "xeogl.Modes",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.Modes({
+            this._state = new xeogl.renderer.Modes({
                 pickable: null,
                 clippable: null,
                 transparent: null,
@@ -33318,31 +34849,29 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 ;/**
  A **Viewport** defines a viewport within the canvas in which attached {{#crossLink "Entity"}}Entities{{/crossLink}} will render.
 
- <ul>
- <li>Make a Viewport automatically size to its {{#crossLink "Scene"}}Scene's{{/crossLink}} {{#crossLink "Canvas"}}{{/crossLink}}
- by setting its {{#crossLink "Viewport/autoBoundary:property"}}{{/crossLink}} property ````true```` (default is ````false````).</li>
- </ul>
+ ## Overview
+
+ * Make a Viewport automatically size to its {{#crossLink "Scene"}}Scene's{{/crossLink}} {{#crossLink "Canvas"}}{{/crossLink}}
+ by setting its {{#crossLink "Viewport/autoBoundary:property"}}{{/crossLink}} property ````true```` (default is ````false````).
 
  ## Examples
 
- <ul>
- <li>[Multiple viewports](../../examples/#canvas_multipleViewports)</li>
- </ul>
+ * [Multiple viewports](../../examples/#canvas_multipleViewports)
 
  ## Usage
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-    geometry: new XEO.SphereGeometry(),
+    geometry: new xeogl.SphereGeometry(),
 
-    material: new XEO.PhongMaterial({
-        diffuseMap: new XEO.Texture({
+    material: new xeogl.PhongMaterial({
+        diffuseMap: new xeogl.Texture({
             src: "textures/diffuse/uvGrid2.jpg"
         })
     }),
 
-    viewport: new XEO.Viewport({
+    viewport: new xeogl.Viewport({
         boundary: [0, 0, 500, 400],
         autoBoundary: false // Don't autosize to canvas (default)
     })
@@ -33350,7 +34879,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````
 
  @class Viewport
- @module XEO
+ @module xeogl
  @submodule rendering
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}{{/crossLink}}, creates this Viewport within the
@@ -33371,13 +34900,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Viewport = XEO.Component.extend({
+    xeogl.Viewport = xeogl.Component.extend({
 
-        type: "XEO.Viewport",
+        type: "xeogl.Viewport",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.Viewport({
+            this._state = new xeogl.renderer.Viewport({
                 boundary: [0, 0, 100, 100]
             });
 
@@ -33522,28 +35051,25 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  A **Stage** is a bin of {{#crossLink "Entity"}}Entities{{/crossLink}} that is rendered in a specified priority with respect to
  other Stages in the same {{#crossLink "Scene"}}{{/crossLink}}.
 
- <ul>
- <li>When the parent {{#crossLink "Scene"}}Scene{{/crossLink}} renders, each Stage renders its bin
- of {{#crossLink "Entity"}}Entities{{/crossLink}} in turn, from the lowest priority Stage to the highest.</li>
- <li>Stages are typically used for ordering the render-to-texture steps in posteffects pipelines.</li>
- <li>You can control the render order of the individual {{#crossLink "Entity"}}Entities{{/crossLink}} ***within*** a Stage
- by associating them with {{#crossLink "Layer"}}Layers{{/crossLink}}.</li>
- <li>{{#crossLink "Layer"}}Layers{{/crossLink}} are typically used to <a href="https://www.opengl.org/wiki/Transparency_Sorting" target="_other">transparency-sort</a> the
- {{#crossLink "Entity"}}Entities{{/crossLink}} within Stages.</li>
- <li>{{#crossLink "Entity"}}Entities{{/crossLink}} not explicitly attached to a Stage are implicitly
+ ## Overview
+
+ * When the parent {{#crossLink "Scene"}}Scene{{/crossLink}} renders, each Stage renders its bin
+ of {{#crossLink "Entity"}}Entities{{/crossLink}} in turn, from the lowest priority Stage to the highest.
+ * Stages are typically used for ordering the render-to-texture steps in posteffects pipelines.
+ * You can control the render order of the individual {{#crossLink "Entity"}}Entities{{/crossLink}} ***within*** a Stage
+ by associating them with {{#crossLink "Layer"}}Layers{{/crossLink}}.
+ * {{#crossLink "Layer"}}Layers{{/crossLink}} are typically used to <a href="https://www.opengl.org/wiki/Transparency_Sorting" target="_other">transparency-sort</a> the
+ {{#crossLink "Entity"}}Entities{{/crossLink}} within Stages.
+ * {{#crossLink "Entity"}}Entities{{/crossLink}} not explicitly attached to a Stage are implicitly
  attached to the {{#crossLink "Scene"}}Scene{{/crossLink}}'s default
  {{#crossLink "Scene/stage:property"}}stage{{/crossLink}}. which has
- a {{#crossLink "Stage/priority:property"}}{{/crossLink}} value of zero.</li>
-
- </ul>
+ a {{#crossLink "Stage/priority:property"}}{{/crossLink}} value of zero.
 
  <img src="../../../assets/images/Stage.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Procedural texture using RTT](../../examples/#materials_texture_procedural)</li>
- </ul>
+ * [Procedural texture using RTT](../../examples/#materials_texture_procedural)
 
  ## Usage
 
@@ -33557,31 +35083,30 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  ````javascript
  // First stage: an Entity that renders to a ColorTarget
- var entity1 = new XEO.Entity({
-    stage: new XEO.Stage({
+ var entity1 = new xeogl.Entity({
+    stage: new xeogl.Stage({
         priority: 0
     }),
-    geometry: new XEO.BoxGeometry(),
-    colorTarget: new XEO.ColorTarget()
-});
-
+    geometry: new xeogl.BoxGeometry(),
+    colorTarget: new xeogl.ColorTarget()
+ });
 
  // Second stage: an Entity with a Texture that sources from the ColorTarget
- var entity2 = new XEO.Entity({
-    stage: new XEO.Stage( {
+ var entity2 = new xeogl.Entity({
+    stage: new xeogl.Stage( {
         priority: 1
     }),
-    material: new XEO.PhongMaterial({
-        diffuseMap: new XEO.Texture({
+    material: new xeogl.PhongMaterial({
+        diffuseMap: new xeogl.Texture({
             target: entity1.colorTarget
         })
     }),
-    geometry: new XEO.BoxGeometry()
-});
+    geometry: new xeogl.BoxGeometry()
+ });
  ````
 
  @class Stage
- @module XEO
+ @module xeogl
  @submodule rendering
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Stage in the default
@@ -33597,13 +35122,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Stage = XEO.Component.extend({
+    xeogl.Stage = xeogl.Component.extend({
 
-        type: "XEO.Stage",
+        type: "xeogl.Stage",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.Stage({
+            this._state = new xeogl.renderer.Stage({
                 priority: null,
                 pickable: true
             });
@@ -33719,23 +35244,18 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
- * Components for defining custom GLSL shaders.
- *
- * @module XEO
- * @submodule shaders
- */;/**
  A **Shader** specifies a custom GLSL shader to apply when rendering attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>Normally you would rely on xeoEngine to automatically generate shaders for you, however the Shader component allows you to author them manually.</li>
- <li>You can use xeoEngine's reserved uniform and variable names in your Shaders to read all the WebGL state that's set by other
- components on the attached {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>Use Shaders in combination with {{#crossLink "ShaderParams"}}ShaderParams{{/crossLink}} components when you need to share
+
+ * Normally you would rely on xeogl to automatically generate shaders for you, however the Shader component allows you to author them manually.
+ * You can use xeogl's reserved uniform and variable names in your Shaders to read all the WebGL state that's set by other
+ components on the attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * Use Shaders in combination with {{#crossLink "ShaderParams"}}ShaderParams{{/crossLink}} components when you need to share
  the same Shaders among multiple {{#crossLink "Entity"}}Entities{{/crossLink}} while setting the Shaders' uniforms
- differently for each {{#crossLink "Entity"}}Entity{{/crossLink}}.</li>
- <li>Use {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}}, {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}}
- and {{#crossLink "Texture"}}Texture{{/crossLink}} components to connect the output of one Shader as input into another Shader.</li>
- </ul>
+ differently for each {{#crossLink "Entity"}}Entity{{/crossLink}}.
+ * Use {{#crossLink "ColorTarget"}}ColorTarget{{/crossLink}}, {{#crossLink "DepthTarget"}}DepthTarget{{/crossLink}}
+ and {{#crossLink "Texture"}}Texture{{/crossLink}} components to connect the output of one Shader as input into another Shader.
+
 
  <img src="../../../assets/images/Shader.png"></img>
 
@@ -33755,7 +35275,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  // which will receive the positions and UVs from the Geometry. Also note the 'time'
  // uniform, which we'll be animating via Shader#setParams.
 
- var shader = new XEO.Shader({
+ var shader = new xeogl.Shader({
 
     // Vertex shading stage
     vertex: [
@@ -33799,7 +35319,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  });
 
  // A screen-aligned quad
- var quad = new XEO.Geometry({
+ var quad = new xeogl.Geometry({
     primitive:"triangles",
     positions:[ 1, 1, 0, -1, 1, 0, -1, -1, 0, 1, -1, 0 ],
     normals:[ -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0 ],
@@ -33807,7 +35327,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
     indices:[ 0, 1, 2, 0, 2, 3 ]
  });
 
- var entity = new XEO.Entity(scene, {
+ var entity = new xeogl.Entity(scene, {
     shader: shader,
     geometry: quad
  });
@@ -33825,7 +35345,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  ## <a name="inputs">Shader Inputs</a>
 
- xeoEngine provides the following inputs for your shaders (work in progress).
+ xeogl provides the following inputs for your shaders (work in progress).
 
  #### Attributes
 
@@ -33887,9 +35407,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  |---|---|---|
 
 
- @class Shader
- @module XEO
- @submodule shaders
+
+ @module xeogl
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Shader in the default
  {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
@@ -33905,13 +35424,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Shader = XEO.Component.extend({
+    xeogl.Shader = xeogl.Component.extend({
 
-        type: "XEO.Shader",
+        type: "xeogl.Shader",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.Shader({
+            this._state = new xeogl.renderer.Shader({
                 vertex: null,
                 fragment: null,
                 params: {}
@@ -34064,10 +35583,10 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 ;/**
  A **ShaderParams** sets uniform values for {{#crossLink "Shader"}}Shaders{{/crossLink}} on attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
- <ul>
- <li>Use ShaderParams components when you need to share the same {{#crossLink "Shader"}}Shaders{{/crossLink}} among multiple {{#crossLink "Entity"}}Entities{{/crossLink}},
- while setting the {{#crossLink "Shader"}}Shaders{{/crossLink}}' uniforms differently for each {{#crossLink "Entity"}}Entity{{/crossLink}}.</li>
- </ul>
+
+ * Use ShaderParams components when you need to share the same {{#crossLink "Shader"}}Shaders{{/crossLink}} among multiple {{#crossLink "Entity"}}Entities{{/crossLink}},
+ while setting the {{#crossLink "Shader"}}Shaders{{/crossLink}}' uniforms differently for each {{#crossLink "Entity"}}Entity{{/crossLink}}.
+
 
  <img src="../../../assets/images/ShaderParams.png"></img>
 
@@ -34087,7 +35606,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  // which will receive the positions and UVs from the Geometry components. Also note the 'time'
  // uniform, which we'll be animating via the ShaderParams components.
 
- var shader = new XEO.Shader({
+ var shader = new xeogl.Shader({
 
     // Vertex shading stage
     vertex: [
@@ -34133,16 +35652,16 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  // First Entity using our Shader, with a quad covering the left half of the canvas,
  // along with its own ShaderParams to independently set its own values for the Shader's uniforms.
 
- var entity1 = new XEO.Entity({
+ var entity1 = new xeogl.Entity({
     shader: shader,
-    geometry: new XEO.Geometry({
+    geometry: new xeogl.Geometry({
         primitive:"triangles",
         positions:[ 1, 1, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0 ],
         normals:[ -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0 ],
         uv:[ 1, 1, 0, 1, 0, 0, 1, 0 ],
         indices:[ 0, 1, 2, 0, 2, 3 ]
     }),
-    shaderParams1: new XEO.ShaderParams({
+    shaderParams1: new xeogl.ShaderParams({
         params: {
             time: 0.0
         }
@@ -34152,16 +35671,16 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  // Second Entity using the Shader, with a quad covering the right half of the canvas,
  // along with its own ShaderParams to independently set its own values for the Shader's uniforms.
 
- var entity2 = new XEO.Entity({
+ var entity2 = new xeogl.Entity({
     shader: shader,
-    geometry: new XEO.Geometry({
+    geometry: new xeogl.Geometry({
         primitive:"triangles",
         positions:[ 1, 1, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0 ],
         normals:[ -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0 ],
         uv:[ 1, 1, 0, 1, 0, 0, 1, 0 ],
         indices:[ 0, 1, 2, 0, 2, 3 ]
     }),
-    shaderParams: new XEO.ShaderParams({
+    shaderParams: new xeogl.ShaderParams({
         params: {
             time: 0.0
         }
@@ -34185,9 +35704,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
     });
 });
  ````
- @class ShaderParams
- @module XEO
- @submodule shaders
+
+ @module xeogl
+
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this ShaderParams in the default
  {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
@@ -34201,13 +35720,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.ShaderParams = XEO.Component.extend({
+    xeogl.ShaderParams = xeogl.Component.extend({
 
-        type: "XEO.ShaderParams",
+        type: "xeogl.ShaderParams",
 
         _init: function (cfg) {
 
-            this._state = new XEO.renderer.ShaderParams({
+            this._state = new xeogl.renderer.ShaderParams({
                 params: {}
             });
 
@@ -34279,32 +35798,31 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 ;/**
  * Components to support spatial queries (eg. collisions etc).
  *
- * @module XEO
+ * @module xeogl
  * @submodule boundaries
  */;/**
  A **Boundary2D** is a Canvas-space 2D boundary.
 
+ <a href="../../examples/#boundaries_flyToBoundary"><img src="http://i.giphy.com/3oriO8fJ8f70AfXdUA.gif"></img></a>
+
+ ## Overview
+
  A Boundary2D provides its spatial info in these properties:
 
- <ul>
- <li>{{#crossLink "Boundary2D/aabb:property"}}{{/crossLink}} - axis-aligned bounding box (AABB)</li>
- <li>{{#crossLink "Boundary2D/center:property"}}{{/crossLink}} - center coordinate </li>
- </ul>
+ * {{#crossLink "Boundary2D/aabb:property"}}{{/crossLink}} - an axis-aligned box (AABB) as a four-element Float32Array
+ containing the min/max extents of the axis-aligned volume, ie. ````[xmin,ymin,xmax,ymax]````, and
+ * {{#crossLink "Boundary2D/center:property"}}{{/crossLink}} - the center point as a two-element Float32Array containing elements ````[x,y]````.
 
  The following components have Boundary2Ds:
 
- <ul>
- <li>An {{#crossLink "Entity"}}{{/crossLink}} provides its Canvas-space boundary via
- its {{#crossLink "Entity/canvasBoundary:property"}}{{/crossLink}} property</li>
- </ul>
+ * An {{#crossLink "Entity"}}{{/crossLink}} provides its Canvas-space boundary via
+ its {{#crossLink "Entity/canvasBoundary:property"}}{{/crossLink}} property
 
  <img src="../../../assets/images/Boundary2D.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Visualizing an Entity's Canvas-space boundary](../../examples/#boundaries_Entity_canvasBoundary)</li>
- </ul>
+ * [Visualizing an Entity's Canvas-space boundary](../../examples/#boundaries_Entity_canvasBoundary_aabb)
 
  ## Usage
 
@@ -34320,9 +35838,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ```` javascript
  // Entity With a Geometry and Transform
 
- var entity = new XEO.Entity({
-        geometry: new XEO.BoxGeometry(),
-        transform: new XEO.Translate({
+ var entity = new xeogl.Entity({
+        geometry: new xeogl.BoxGeometry(),
+        transform: new xeogl.Translate({
             xyz: [-5, 0, 0]
         })
   });
@@ -34351,24 +35869,23 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````
 
  @class Boundary2D
- @module XEO
+ @module xeogl
  @submodule boundaries
  @constructor
- @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Boundary2D within xeoEngine's default {{#crossLink "XEO/scene:property"}}scene{{/crossLink}} by default.
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Boundary2D within xeogl's default {{#crossLink "xeogl/scene:property"}}scene{{/crossLink}} by default.
  @param [cfg] {*} Configs
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Boundary.
- @param [cfg.aabb] {Array of Number} Optional initial canvas-space 2D axis-aligned bounding volume (AABB).
- @param [cfg.center] {Array of Number} Optional initial canvas-space 2D center
+ @param [cfg.aabb] {Float32Array} Optional initial canvas-space 2D axis-aligned bounding volume (AABB).
+ @param [cfg.center] {Float32Array} Optional initial canvas-space 2D center
  @param [cfg.getDirty] {Function} Optional callback to check if parent component has new OBB and matrix.
  @param [cfg.getOBB] {Function} Optional callback to get new view-space 3D OBB from parent.
  @param [cfg.getMatrix] {Function} Optional callback to get new projection matrix from parent.
- @param [cfg.shown] {Boolean} Set true to show a helper DIV that indicates the boundary.
  @extends Component
  */
 
 /**
- * Fired whenever this Boundary2D's {{#crossLink "Boundary2D/abb:property"}}{{/crossLink}} abd {{#crossLink "Boundary2D/center:property"}}{{/crossLink}}.
+ * Fired whenever this Boundary2D's {{#crossLink "Boundary2D/aabb:property"}}{{/crossLink}} and {{#crossLink "Boundary2D/center:property"}}{{/crossLink}}.
  * properties change.
  * @event updated
  */
@@ -34376,16 +35893,11 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Boundary2D = XEO.Component.extend({
+    xeogl.Boundary2D = xeogl.Component.extend({
 
-        type: "XEO.Boundary2D",
+        type: "xeogl.Boundary2D",
 
         _init: function (cfg) {
-
-            // Indicator DIV
-
-            this._div = null;
-            this._shown = false;
 
             // Cached boundaries
 
@@ -34399,18 +35911,19 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             this._getDirty = cfg.getDirty;
             this._getOBB = cfg.getOBB;
             this._getMatrix = cfg.getMatrix;
-
-            this.shown = cfg.shown;
         },
 
         _props: {
 
             /**
-             * 2D Canvas-space axis-aligned bounding box (AABB).
+             * An axis-aligned box (AABB) representation of this 2D boundary.
+             *
+             * The AABB is represented by a four-element Float32Array containing the min/max canvas-space
+             * extents of the axis-aligned volume, ie. ````[xmin,ymin,xmax,ymax]````.
              *
              * @property aabb
              * @final
-             * @type {*}
+             * @type {Float32Array}
              */
             aabb: {
 
@@ -34425,11 +35938,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             },
 
             /**
-             * 2D Canvas-space center point.
+             * The center point of this 2D boundary.
+             *
+             * The center point is represented by a Float32Array containing canvas-space coordinates,
+             * ie. ````[x,y]````.
              *
              * @property center
              * @final
-             * @type {Array of Number}
+             * @type {Float32Array}
              */
             center: {
 
@@ -34441,74 +35957,6 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                     return this._center;
                 }
-            },
-
-            /**
-             * When true, shows a helper DIV that indicates the boundary.
-             *
-             * @property shown
-             * @type {Boolean}
-             */
-            shown: {
-
-                set: function (value) {
-
-                    if (value === this._shown) {
-                        return;
-                    }
-
-                    if (value) {
-                        if (!this._div) {
-
-                            var body = document.getElementsByTagName("body")[0];
-                            var div = document.createElement('div');
-
-                            var style = div.style;
-                            style.position = "absolute";
-                            style.padding = "0";
-                            style.margin = "0";
-                            style.border = "3px solid #99FF99";
-                            style["border-radius"] = "10px";
-                            style["z-index"] = "1000";
-
-                            body.appendChild(div);
-
-                            var self = this;
-
-                            this.on("updated",
-                                function () {
-
-                                    var aabb = self.aabb;
-
-                                    div.style.left = aabb.min[0] + "px";
-                                    div.style.top = aabb.min[1] + "px";
-                                    div.style.width = (aabb.max[0] - aabb.min[0]) + "px";
-                                    div.style.height = (aabb.max[1] - aabb.min[1]) + "px";
-                                });
-
-                            this._div = div;
-                        }
-                    } else {
-                        if (this._div) {
-                            this._div.parentNode.removeChild(this._div);
-                            this._div = null;
-                        }
-                    }
-
-                    this._shown = value;
-
-                    /**
-                     * Fired whenever this Boundary2d's
-                     * {{#crossLink "Boundary2d/shown:property"}}{{/crossLink}} property changes.
-                     * @event shown
-                     * @param value The property's new value
-                     */
-                    this.fire("shown", this._shown);
-                },
-
-                get: function () {
-                    return this._shown;
-                }
             }
         },
 
@@ -34516,7 +35964,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
         _buildBoundary: function () {
 
-            var math = XEO.math;
+            var math = xeogl.math;
 
             var canvas = this.scene.canvas.canvas;
             var width = canvas.width;
@@ -34526,9 +35974,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 // Lazy-allocate
 
-                this._obb = [];
-                this._aabb = XEO.math.AABB2();
-                this._center = XEO.math.vec2();
+                this._obb = math.OBB2();
+                this._aabb = math.AABB2();
+                this._center = math.vec2();
             }
 
             var obb = this._getOBB();
@@ -34536,8 +35984,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             if (obb && matrix) {
 
-                math.transformPoints3(matrix, obb, this._obb);
-                math.points3ToAABB2(this._obb, this._aabb);
+                math.transformOBB3(matrix, obb, this._obb);
+                math.OBB3ToAABB2(this._obb, this._aabb);
                 math.AABB2ToCanvas(this._aabb, width, height);
                 math.getAABB2Center(this._aabb, this._center);
             }
@@ -34550,20 +35998,25 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             };
         }
     });
-
 })();
 ;/**
- A **Boundary3D** provides the axis-aligned and object-aligned extents of its owner component.
+ A **Boundary3D** provides the 3D extents of its parent component in either the Local, World or View coordinate systems.
 
- A Boundary3D provides spatial info in these properties:
+ <a href="../../examples/#animation_CameraFollowAnimation"><img src="http://i.giphy.com/l0HlHcuzAjhMQ8YSY.gif"></img></a>
 
- <ul>
- <li>{{#crossLink "Boundary3D/obb:property"}}{{/crossLink}} - an object-aligned bounding box (OBB), as an array of eight corner vertex positions</li>
- <li>{{#crossLink "Boundary3D/aabb:property"}}{{/crossLink}} - an axis-aligned bounding box (AABB), as minimum and maximum corner vertex positions</li>
- <li>{{#crossLink "Boundary3D/center:property"}}{{/crossLink}} - center coordinate</li>
- </ul>
+ ## Overview
 
- As shown in the diagram below, the following xeoEngine components have Boundary3Ds:
+ A Boundary3D provides its spatial info in these properties:
+
+ * {{#crossLink "Boundary3D/obb:property"}}{{/crossLink}} - an oriented box (OBB) as a 32-element Float32Array
+ containing homogeneous coordinates for the eight corner vertices, ie. each having elements [x,y,z,w].
+ * {{#crossLink "Boundary3D/aabb:property"}}{{/crossLink}} - an axis-aligned box (AABB) in a six-element Float32Array
+ containing the min/max extents of the axis-aligned volume, ie. ````[xmin,ymin,zmin,xmax,ymax,zmax]````,
+ * {{#crossLink "Boundary3D/center:property"}}{{/crossLink}} - the center point as a three-element Float32Array containing elements ````[x,y,z]```` and
+ * {{#crossLink "Boundary3D/sphere:property"}}{{/crossLink}} - a bounding sphere as a four-element Float32Array containing elements````[x,y,z,radius]````.
+
+ As shown in the diagram below, the following xeogl components have Boundary3Ds:
+
  * A {{#crossLink "Scene/worldBoundary:property"}}Scene's worldBoundary{{/crossLink}} provides the **World**-space boundary of all its {{#crossLink "Entity"}}Entities{{/crossLink}}
  * A {{#crossLink "Geometry/localBoundary:property"}}Geometry's localBoundary{{/crossLink}} provides the **Local**-space boundary of its {{#crossLink "Geometry/positions:property"}}positions{{/crossLink}}
  * An {{#crossLink "Entity/localBoundary:property"}}Entity's localBoundary{{/crossLink}} (also) provides the **Local**-space boundary of its {{#crossLink "Geometry"}}{{/crossLink}}
@@ -34573,25 +36026,24 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  * An {{#crossLink "Entity/viewBoundary:property"}}Entity's viewBoundary{{/crossLink}} provides the **View**-space boundary of
  its {{#crossLink "Geometry"}}Geometry's{{/crossLink}} {{#crossLink "Geometry/positions:property"}}{{/crossLink}} after
  their transformation by both the {{#crossLink "Entity/transform:property"}}Entity's Modelling transform{{/crossLink}} **and** {{#crossLink "Camera/view:property"}}Viewing transform{{/crossLink}}.
- * A {{#crossLink "CollectionBoundary/worldBoundary:property"}}CollectionBoundary's worldBoundary{{/crossLink}} provides the **World**-space boundary of all the {{#crossLink "Entity"}}Entities{{/crossLink}} contained within its {{#crossLink "Collection"}}Collection{{/crossLink}}.
+ * A {{#crossLink "Model/worldBoundary:property"}}Model's worldBoundary{{/crossLink}} provides the **World**-space boundary of all its {{#crossLink "Entity"}}Entities{{/crossLink}}
 
  The diagram also shows an {{#crossLink "Entity/canvasBoundary:property"}}Entity's canvasBoundary{{/crossLink}}, which is a {{#crossLink "Boundary2D"}}{{/crossLink}} that provides the **Canvas**-space boundary of the {{#crossLink "Geometry"}}Geometry's{{/crossLink}} {{#crossLink "Geometry/positions:property"}}{{/crossLink}} after
  their transformation by the {{#crossLink "Entity/transform:property"}}Entity's Modelling transform{{/crossLink}}, {{#crossLink "Camera/view:property"}}Viewing transform{{/crossLink}}
  and {{#crossLink "Camera/project:property"}}Projection transform{{/crossLink}}.
 
- <br><br>
+ <br>
  <img src="../../../assets/images/Boundary3D.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Entity World-space boundary](../../examples/#boundaries_Entity_worldBoundary)</li>
- <li>[Entity View-space boundary](../../examples/#boundaries_Entity_viewBoundary)</li>
- <li>[Entity Canvas-space boundary](../../examples/#boundaries_Entity_canvasBoundary)</li>
- <li>[Flying camera to Entity World-space boundaries](../../examples/#boundaries_flyToBoundary)</li>
- <li>[Visualizing a CollectionBoundary](../../examples/#boundaries_CollectionBoundary)</li>
- <li>[Visualizing a CollectionBoundary hierarchy](../../examples/#boundaries_CollectionBoundary_hierarchy)</li>
- </ul>
+ * [Entity World-space boundary](../../examples/#boundaries_Entity_worldBoundary_aabb)
+ * [Entity View-space boundary](../../examples/#boundaries_Entity_viewBoundary_aabb)
+ * [Entity Canvas-space boundary](../../examples/#boundaries_Entity_canvasBoundary_aabb)
+ * [Flying camera to Entity World-space boundaries](../../examples/#boundaries_flyToBoundary)
+ * [Model World-space boundary](../../examples/#boundaries_Model_worldBoundary_aabb)
+ * [Following an Entity with a Camera](../../examples/#animation_CameraFollowAnimation)
+ * [Following an Entity with a Camera, keeping Entity fitted to view volume](../../examples/#animation_CameraFollowAnimation_fitToView)
 
  ## Usage
 
@@ -34602,9 +36054,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ```` javascript
  // Entity With a Geometry and Transform
 
- var entity = new XEO.Entity({
-        geometry: new XEO.BoxGeometry(),
-        transform: new XEO.Translate({
+ var entity = new xeogl.Entity({
+        geometry: new xeogl.BoxGeometry(),
+        transform: new xeogl.Translate({
             xyz: [-5, 0, 0]
         })
   });
@@ -34617,7 +36069,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         obb = worldBoundary.obb;
         aabb = worldBoundary.aabb;
         center = worldBoundary.center;
-
+        sphere = worldBoundary.sphere();
         //...
     });
 
@@ -34634,16 +36086,17 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````
 
  @class Boundary3D
- @module XEO
+ @module xeogl
  @submodule boundaries
  @constructor
- @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Boundary3D within xeoEngine's default {{#crossLink "XEO/scene:property"}}scene{{/crossLink}} by default.
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Boundary3D within xeogl's default {{#crossLink "xeogl/scene:property"}}scene{{/crossLink}} by default.
  @param [cfg] {*} Configs
  @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
  @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this Boundary3D.
- @param [cfg.obb] {Array of Number} Optional initial 3D object-aligned bounding volume (OBB).
- @param [cfg.aabb] {Array of Number} Optional initial 3D axis-aligned bounding volume (AABB).
- @param [cfg.center] {Array of Number} Optional initial 3D center
+ @param [cfg.obb] {Float32Array} Optional initial 3D object-aligned bounding volume (OBB).
+ @param [cfg.aabb] {Float32Array} Optional initial 3D axis-aligned bounding volume (AABB).
+ @param [cfg.center] {Float32Array} Optional initial 3D center
+ @param [cfg.sphere] {Float32Array} Optional initial 3D bounding sphere.
  @param [cfg.getDirty] {Function} Optional callback to check if parent component has new OBB, positions or transform matrix.
  @param [cfg.getOBB] {Function} Optional callback to get new OBB from parent.
  @param [cfg.getMatrix] {Function} Optional callback to get new transform matrix from parent.
@@ -34653,32 +36106,32 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 /**
  * Fired whenever this Boundary3D's {{#crossLink "Boundary3D/obb:property"}}{{/crossLink}},
- * {{#crossLink "Boundary3D/aabb:property"}}{{/crossLink}} or {{#crossLink "Boundary3D/center:property"}}{{/crossLink}}.
- * properties change.
+ * {{#crossLink "Boundary3D/aabb:property"}}{{/crossLink}}, {{#crossLink "Boundary3D/sphere:property"}}{{/crossLink}}
+ * or {{#crossLink "Boundary3D/center:property"}}{{/crossLink}} properties change.
  * @event updated
  */
 (function () {
 
     "use strict";
 
-    XEO.Boundary3D = XEO.Component.extend({
+    xeogl.Boundary3D = xeogl.Component.extend({
 
-        type: "XEO.Boundary3D",
+        type: "xeogl.Boundary3D",
 
         _init: function (cfg) {
 
-            // Cached bounding boxes (oriented and axis-aligned) 
-
+            // Cached bounding boxes (oriented and axis-aligned)
             this._obb = cfg.obb || null;
             this._aabb = cfg.aabb || null;
 
-            // Cached center point
+            // Cached bounding sphere
+            this._sphere = cfg.sphere || null;
 
+            // Cached center point
             this._center = cfg.center || null;
 
             // Owner injected callbacks to provide
             // resources on lazy-rebuild
-
             this._getDirty = cfg.getDirty;
             this._getOBB = cfg.getOBB;
             this._getAABB = cfg.getAABB;
@@ -34689,11 +36142,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         _props: {
 
             /**
-             * 3D oriented bounding box (OBB).
+             * An oriented box (OBB) representation of this 3D boundary.
              *
+             * The OBB is represented by a 32-element Float32Array containing the eight vertices of the box,
+             * where each vertex is a homogeneous coordinate having [x,y,z,w] elements.
+             *i
              * @property obb
              * @final
-             * @type {*}
+             * @type {Float32Array}
              */
             obb: {
 
@@ -34708,11 +36164,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             },
 
             /**
-             * 3D axis-aligned bounding box (AABB).
+             * An axis-aligned box (AABB) representation of this 3D boundary.
+             *
+             * The AABB is represented by a six-element Float32Array containing the min/max extents of the
+             * axis-aligned volume, ie. ````[xmin, ymin,zmin,xmax,ymax, zmax]````.
              *
              * @property aabb
              * @final
-             * @type {*}
+             * @type {Float32Array}
              */
             aabb: {
 
@@ -34727,11 +36186,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             },
 
             /**
-             * 3D center point.
+             * The center point of this 3D boundary.
+             *
+             * The center point is represented by a Float32Array containing elements ````[x,y,z]````.
              *
              * @property center
              * @final
-             * @type {Array of Number}
+             * @type {Float32Array}
              */
             center: {
 
@@ -34743,47 +36204,74 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                     return this._center;
                 }
+            },
+
+            /**
+             * A spherical representation of this 3D boundary.
+             *
+             * The sphere is a four-element Float32Array containing the sphere center and
+             * radius, ie: ````[xcenter, ycenter, zcenter, radius ]````.
+             *
+             * @property sphere
+             * @final
+             * @type {Float32Array}
+             */
+            sphere: {
+
+                get: function () {
+
+                    if (this._getDirty()) {
+                        this._buildBoundary();
+                    }
+
+                    return this._sphere;
+                }
             }
         },
 
-        // (Re)builds the obb, aabb and center.
+        // Builds the obb, aabb, sphere and center.
 
         _buildBoundary: function () {
 
-            var math = XEO.math;
+            var math = xeogl.math;
 
             // Lazy-allocate
 
             if (!this._obb) {
-                this._obb = [];
+                this._obb = xeogl.math.OBB3();
             }
 
             if (!this._aabb) {
-                this._aabb = XEO.math.AABB3();
+                this._aabb = xeogl.math.AABB3();
+            }
+
+            if (!this._sphere) {
+                this._sphere = xeogl.math.vec4();
             }
 
             if (!this._center) {
-                this._center = XEO.math.vec3();
+                this._center = xeogl.math.vec3();
             }
-
+            
             var aabb = this._getAABB ? this._getAABB() : null;
 
             if (aabb) {
 
                 // Got AABB
 
-                // Derive OBB and center
+                // Derive OBB, sphere and center
 
-                this._aabb.min[0] = aabb.min[0];
-                this._aabb.min[1] = aabb.min[1];
-                this._aabb.min[2] = aabb.min[2];
-                this._aabb.max[0] = aabb.max[0];
-                this._aabb.max[1] = aabb.max[1];
-                this._aabb.max[2] = aabb.max[2];
+                this._aabb[0] = aabb[0];
+                this._aabb[1] = aabb[1];
+                this._aabb[2] = aabb[2];
+                this._aabb[3] = aabb[3];
+                this._aabb[4] = aabb[4];
+                this._aabb[5] = aabb[5];
 
                 math.AABB3ToOBB3(this._aabb, this._obb);
-                math.getAABBCenter(this._aabb, this._center);
-
+                math.OBB3ToSphere3(this._obb, this._sphere);
+                math.getSphere3Center(this._sphere, this._center);
+                
                 return;
             }
 
@@ -34803,25 +36291,25 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                     // Got transform matrix
 
-                    // Transform OOBB by matrix,
-                    // derive AABB and center
+                    // Transform OBB by matrix, derive AABB, sphere and center
 
                     math.positions3ToAABB3(positions, this._aabb);
                     math.AABB3ToOBB3(this._aabb, this._obb);
-                    this._obb = math.transformPoints3(matrix, this._obb);
-                    math.points3ToAABB3(this._obb, this._aabb);
-                    math.getAABBCenter(this._aabb, this._center);
+                    math.transformOBB3(matrix, this._obb);
+                    math.OBB3ToAABB3(this._obb, this._aabb);
+                    math.OBB3ToSphere3(this._obb, this._sphere);
+                    math.getSphere3Center(this._sphere, this._center);
 
                     return;
-
                 }
 
                 // No transform matrix
 
                 math.positions3ToAABB3(positions, this._aabb);
                 math.AABB3ToOBB3(this._aabb, this._obb);
-                math.getAABBCenter(this._aabb, this._center);
-
+                math.OBB3ToSphere3(this._obb, this._sphere);
+                math.getSphere3Center(this._sphere, this._center);
+                
                 return
             }
 
@@ -34829,7 +36317,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
             if (obb) {
 
-                // Got OOBB (array of eight four-element subarrays)
+                // Got OBB
 
                 matrix = this._getMatrix ? this._getMatrix() : null;
 
@@ -34837,26 +36325,28 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                     // Got transform matrix
 
-                    // Transform OOBB by matrix,
-                    // derive AABB and center
+                    // Transform OBB by matrix, derive AABB and center
 
-                    math.transformPoints3(matrix, obb, this._obb);
-                    math.points3ToAABB3(this._obb, this._aabb);
-                    math.getAABBCenter(this._aabb, this._center);
+                    math.transformOBB3(matrix, obb, this._obb);
+                    math.OBB3ToAABB3(this._obb, this._aabb);
+                    math.OBB3ToSphere3(this._obb, this._sphere);
+                    math.getSphere3Center(this._sphere, this._center);
 
                     return;
                 }
 
                 // No transform matrix
 
-                // Copy OOBB, derive AABB and center
+                // Copy OBB, derive AABB and center
 
                 for (var i = 0, len = obb.length; i < len; i++) {
                     this._obb[i] = obb[i];
                 }
 
-                math.points3ToAABB3(this._obb, this._aabb);
-                math.getAABBCenter(this._aabb, this._center);
+                math.OBB3ToAABB3(this._obb, this._aabb);
+                math.OBB3ToSphere3(this._obb, this._sphere);
+                math.getSphere3Center(this._sphere, this._center);
+
             }
         },
 
@@ -34864,390 +36354,42 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             return {
                 obb: this.obb,
                 aabb: this.aabb,
-                center: this.center
+                center: this.center,
+                sphere: this.sphere
             };
         }
     });
 
 })();
 ;/**
- A **CollectionBoundary** provides the World-space boundary of the components within a {{#crossLink "Collection"}}{{/crossLink}}.
-
- <ul>
- <li>A CollectionBoundary provides its boundary as a {{#crossLink "Boundary3D"}}{{/crossLink}}.</li>
- <li>The {{#crossLink "Boundary3D"}}{{/crossLink}} dynamically fits to the collective boundary of components
- that provide their own World-space {{#crossLink "Boundary3D"}}Boundar3Ds{{/crossLink}}.</li>
- <li>The {{#crossLink "Boundary3D"}}{{/crossLink}} automatically resizes whenever we add or remove components that
- have World-space {{#crossLink "Boundary3D"}}Boundary3Ds{{/crossLink}}, or whenever
- we cause those components to update their {{#crossLink "Boundary3D"}}Boundary3Ds{{/crossLink}}.</li>
- </ul>
-
- <img src="../../../assets/images/CollectionBoundary.png"></img>
-
- ## Examples
-
- <ul>
- <li>[Visualizing a CollectionBoundary](../../examples/#boundaries_CollectionBoundary)</li>
- <li>[Visualizing a CollectionBoundary hierarchy](../../examples/#boundaries_CollectionBoundary_hierarchy)</li>
- </ul>
-
- ## Usage
-
- Let's create a {{#crossLink "Collection"}}{{/crossLink}} that contains two {{#crossLink "Entity"}}Entities{{/crossLink}}:
-
- ````javascript
- var entity = new XEO.Entity({
-        geometry: new XEO.BoxGeometry(),
-        transform: new XEO.Translate({
-            xyz: [-5, 0, 0]
-        })
-  });
-
- var entity2 = new XEO.Entity({
-        geometry: new XEO.BoxGeometry(),
-        transform: new XEO.Translate({
-            xyz: [0, -5, 0]
-        })
-  });
-
- var collection = new XEO.Collection({
-    components: [
-        entity1,
-        entity2
-    ]
- });
- ````
- Now we'll create a {{#crossLink "CollectionBoundary"}}{{/crossLink}} that provides
- a World-space {{#crossLink "Boundary3D"}}{{/crossLink}} that will dynamically fit to the collective World-space boundary of
- the {{#crossLink "Entity"}}Entities{{/crossLink}}:
-
- ````javascript
- var collectionBoundary = new XEO.CollectionBoundary({
-    collection: collection1
- });
-
- var worldBoundary = collectionBoundary.worldBoundary;
- ````
- The {{#crossLink "Boundary3D"}}{{/crossLink}}
- will automatically update whenever we add, remove or update any Components within the {{#crossLink "Collection"}}{{/crossLink}}
- that have World-space boundaries.
-
- We can subscribe to updates on it like so:
-
- ````javascript
- worldBoundary.on("updated", function() {
-     obb = worldBoundary.obb;
-     aabb = worldBoundary.aabb;
-     center = worldBoundary.center;
-     //...
- });
- ````
-
- Now, if we now remove one of our {{#crossLink "Entity"}}Entities{{/crossLink}} from our {{#crossLink "Collection"}}{{/crossLink}},
- the {{#crossLink "Boundary3D"}}{{/crossLink}} will fire our update handler:
-
- ````javascript
- collection1.add(myEntity);
- ````
-
- @class CollectionBoundary
- @module XEO
- @submodule boundaries
- @constructor
- @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this CollectionBoundary within the
- default {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted.
- @param [cfg] {*} CollectionBoundary configuration
- @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
- @param [cfg.meta] {String:Object} Optional map of user-defined metadata to attach to this CollectionBoundary.
- @param [cfg.collection=null] {Collection} A {{#crossLink "Collection"}}Collection{{/crossLink}} to fit the {{#crossLink "CollectionBoundary/worldBoundary:property"}}{{/crossLink}} to. Must be within the same {{#crossLink "Scene"}}Scene{{/crossLink}} as this CollectionBoundary.
- @extends Component
- */
-(function () {
-
-    "use strict";
-
-    XEO.CollectionBoundary = XEO.Component.extend({
-
-        type: "XEO.CollectionBoundary",
-
-        _init: function (cfg) {
-
-            this._onAdded = {};
-            this._onUpdated = {};
-            this._onRemoved = {};
-
-            this._aabb = null;
-            this._aabbDirty = false;
-            this._worldBoundary = null;
-
-            this.collection = cfg.collection;
-        },
-
-        _props: {
-
-            /**
-             * The {{#crossLink "Collection"}}{{/crossLink}} attached to this CollectionBoundary.
-             *
-             * Fires a {{#crossLink "CollectionBoundary/collection:event"}}{{/crossLink}} event on change.
-             *
-             * @property collection
-             * @type Collection
-             */
-            collection: {
-
-                set: function (value) {
-
-                    var self = this;
-
-                    this._attach({
-                        name: "collection",
-                        type: "XEO.Collection",
-                        component: value, // Converts value from ID to instance if necessary
-                        on: {
-                            added: function (component) {
-                                self._added(component);
-                            },
-                            removed: function (component) {
-                                self._removed(component);
-                            }
-                        },
-                        onAttached: function (collection) {
-                            collection.iterate(self._bind, self);
-                            self._setAABBDirty();
-                        },
-                        onDetached: function (collection) {
-                            collection.iterate(self._unbind, self);
-                        }
-                    });
-
-                    this._setAABBDirty();
-                },
-
-                get: function () {
-                    return this._attached.collection;
-                }
-            },
-
-            /**
-             * World-space 3D boundary enclosing all the components contained in {{#crossLink "CollectionBoundary/collection:property"}}{{/crossLink}}.
-             *
-             * If you call {{#crossLink "Component/destroy:method"}}{{/crossLink}} on this boundary, then
-             * this property will be assigned to a fresh {{#crossLink "Boundary3D"}}{{/crossLink}} instance next
-             * time you reference it.
-             *
-             * @property worldBoundary
-             * @type Boundary3D
-             * @final
-             */
-            worldBoundary: {
-
-                get: function () {
-
-                    if (!this._worldBoundary) {
-
-                        var self = this;
-
-                        this._worldBoundary = new XEO.Boundary3D(this.scene, {
-
-                            getDirty: function () {
-                                if (self._aabbDirty) {
-                                    self._buildAABB();
-                                    self._aabbDirty = false;
-                                    return true;
-                                }
-                                return false;
-                            },
-
-                            getAABB: function () {
-                                return self._aabb;
-                            }
-                        });
-
-                        this._worldBoundary.on("destroyed",
-                            function () {
-                                self._worldBoundary = null;
-                            });
-                    }
-
-                    return this._worldBoundary;
-                }
-            }
-        },
-
-        _added: function (c) {
-            if (c.worldBoundary) {
-                this._bind(c);
-            }
-            if (!this._aabbDirty) {
-                this._setAABBDirty();
-            }
-        },
-
-        _removed: function (c) {
-            if (c.worldBoundary) {
-                this._unbind(c);
-            }
-            if (!this._aabbDirty) {
-                this._setAABBDirty();
-            }
-        },
-
-        _bind: function (c) {
-            var worldBoundary = c.worldBoundary;
-            if (!worldBoundary) {
-                return;
-            }
-            this._onUpdated[c.id] = worldBoundary.on("updated", this._updated, this);
-        },
-
-        _updated: function () {
-            if (!this._aabbDirty) {
-                this._setAABBDirty();
-            }
-        },
-
-        _unbind: function (c) {
-            var worldBoundary = c.worldBoundary;
-            if (!worldBoundary) {
-                return;
-            }
-            worldBoundary.off(this._onUpdated[c.id]);
-            delete this._onUpdated[c.id];
-        },
-
-        _setAABBDirty: function () {
-            this._aabbDirty = true;
-            if (this._worldBoundary) {
-                this._worldBoundary.fire("updated", true);
-            }
-        },
-
-        _buildAABB: function () {
-
-            if (!this._aabb) {
-                this._aabb = XEO.math.AABB3();
-            }
-
-            var xmin = 100000;
-            var ymin = 100000;
-            var zmin = 100000;
-            var xmax = -100000;
-            var ymax = -100000;
-            var zmax = -100000;
-
-            var component;
-            var worldBoundary;
-            var aabb;
-            var min;
-            var max;
-
-            var collection = this.collection;
-
-            if (collection) {
-
-                var components = collection.components;
-
-                for (var componentId in components) {
-                    if (components.hasOwnProperty(componentId)) {
-
-                        component = components[componentId];
-
-                        worldBoundary = component.worldBoundary;
-                        if (worldBoundary) {
-
-                            aabb = worldBoundary.aabb;
-                            min = aabb.min;
-                            max = aabb.max;
-
-                            if (min[0] < xmin) {
-                                xmin = min[0];
-                            }
-
-                            if (min[1] < ymin) {
-                                ymin = min[1];
-                            }
-
-                            if (min[2] < zmin) {
-                                zmin = min[2];
-                            }
-
-                            if (max[0] > xmax) {
-                                xmax = max[0];
-                            }
-
-                            if (max[1] > ymax) {
-                                ymax = max[1];
-                            }
-
-                            if (max[2] > zmax) {
-                                zmax = max[2];
-                            }
-                        }
-                    }
-                }
-            }
-
-            this._aabb.min[0] = xmin;
-            this._aabb.min[1] = ymin;
-            this._aabb.min[2] = zmin;
-            this._aabb.max[0] = xmax;
-            this._aabb.max[1] = ymax;
-            this._aabb.max[2] = zmax;
-        },
-
-        _getJSON: function () {
-            var json = {};
-            if (this.collection) {
-                json.collection = this.collection.id
-            }
-            return json;
-        },
-
-        _destroy: function () {
-
-            this.collection = null; // Unsubscribes from worldBoundary updates on Collection members
-
-            if (this._worldBoundary) {
-                this._worldBoundary.destroy();
-            }
-        }
-    });
-
-})
-();
-;/**
  * Modelling transform components.
  *
- * @module XEO
+ * @module xeogl
  * @submodule transforms
  */;/**
  A **Transform** is a modelling, viewing or projection transformation.
 
- <ul>
- <li>Sub-classes of Transform include: {{#crossLink "Translate"}}{{/crossLink}},
+ ## Overview
+
+ * Sub-classes of Transform include: {{#crossLink "Translate"}}{{/crossLink}},
  {{#crossLink "Scale"}}{{/crossLink}}, {{#crossLink "Rotate"}}{{/crossLink}}, {{#crossLink "Quaternion"}}{{/crossLink}},
  {{#crossLink "Lookat"}}{{/crossLink}}, {{#crossLink "Perspective"}}{{/crossLink}}, {{#crossLink "Frustum"}}{{/crossLink}}
- and {{#crossLink "Ortho"}}{{/crossLink}}.</li>
- <li>Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.</li>
+ and {{#crossLink "Ortho"}}{{/crossLink}}.
+ * Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.
 
- <li>When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
+ * When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
  within a {{#crossLink "Transform"}}{{/crossLink}} hierarchy, it will be transformed by each {{#crossLink "Transform"}}{{/crossLink}}
- on the path up to the root, in that order.</li>
- <li>See <a href="./Shader.html#inputs">Shader Inputs</a> for the variables that Transform create within xeoEngine's shaders.</li>
- </ul>
+ on the path up to the root, in that order.
 
  <img src="../../../assets/images/Transform.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Modelling transform hierarchy](../../examples/#transforms_model_hierarchy)</li>
- <li>[Attaching transforms to Models, via constructor](../../examples/#importing_gltf_techniques_configTransform)</li>
- <li>[Attaching transforms to Models, via property](../../examples/#importing_gltf_techniques_attachTransform)</li>
- </ul>
+ * [Modelling transform hierarchy](../../examples/#transforms_model_hierarchy)
+ * [Attaching transforms to Models, via constructor](../../examples/#importing_gltf_techniques_configTransform)
+ * [Attaching transforms to Models, via property](../../examples/#importing_gltf_techniques_attachTransform)
 
  ## Usage
-
 
  In this example we'll create the table shown below, which consists of five {{#crossLink "Entity"}}Entities{{/crossLink}}
  that share a {{#crossLink "BoxGeometry"}}{{/crossLink}} and each connect to a different leaf within a hierarchy of
@@ -35259,91 +36401,91 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  ````javascript
  // Shared Geometry
- var boxGeometry = new XEO.BoxGeometry();
+ var boxGeometry = new xeogl.BoxGeometry();
 
  // Position of entire table
- var tablePos = new XEO.Translate({
+ var tablePos = new xeogl.Translate({
     xyz: [0, 6, 0]
  });
 
  // Orientation of entire table
- var tableRotate = new XEO.Rotate({
+ var tableRotate = new xeogl.Rotate({
     xyz: [1, 1, 1],
     angle: 0,
     parent: tablePos
  });
 
  // Red table leg
- var tableLeg1 = new XEO.Entity({
+ var tableLeg1 = new xeogl.Entity({
     geometry: boxGeometry,
-    transform: new XEO.Scale({
+    transform: new xeogl.Scale({
         xyz: [1, 3, 1],
-        parent: new XEO.Translate({
+        parent: new xeogl.Translate({
             xyz: [-4, -6, -4],
             parent: tableRotate
         })
     }),
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         diffuse: [1, 0.3, 0.3]
     })
  });
 
  // Green table leg
- var tableLeg2 = new XEO.Entity({
+ var tableLeg2 = new xeogl.Entity({
     geometry: boxGeometry,
-    transform: new XEO.Scale({
+    transform: new xeogl.Scale({
         xyz: [1, 3, 1],
-        parent: new XEO.Translate({
+        parent: new xeogl.Translate({
             xyz: [4, -6, -4],
             parent: tableRotate
         })
     }),
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         diffuse: [0.3, 1.0, 0.3]
     })
  });
 
  // Blue table leg
- var tableLeg3 = new XEO.Entity({
+ var tableLeg3 = new xeogl.Entity({
     geometry: boxGeometry,
-    transform: new XEO.Scale({
+    transform: new xeogl.Scale({
         xyz: [1, 3, 1],
-        parent: new XEO.Translate({
+        parent: new xeogl.Translate({
             xyz: [4, -6, 4],
             parent: tableRotate
         })
     }),
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         diffuse: [0.3, 0.3, 1.0]
     })
  });
 
  // Yellow table leg
- var tableLeg4 = new XEO.Entity({
+ var tableLeg4 = new xeogl.Entity({
     geometry: boxGeometry,
-    transform: new XEO.Scale({
+    transform: new xeogl.Scale({
         xyz: [1, 3, 1],
-        parent: new XEO.Translate({
+        parent: new xeogl.Translate({
             xyz: [-4, -6, 4],
             parent: tableRotate
         })
     }),
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         diffuse: [1.0, 1.0, 0.0]
     })
  });
 
  // Purple table top
- var tableTop = new XEO.Entity({
+ var tableTop = new xeogl.Entity({
     geometry: boxGeometry,
-    transform: new XEO.Scale({
+    transform: new xeogl.Scale({
         xyz: [6, 0.5, 6],
-        parent: new XEO.Translate({
+        parent: new xeogl.Translate({
             xyz: [0, -3, 0],
             parent: tableRotate
         })
     }),
-    material: new XEO.PhongMaterial({
+    material: new xeogl.PhongMaterial({
         diffuse: [1.0, 0.3, 1.0]
     })
  });
@@ -35363,7 +36505,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````
 
  @class Transform
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Transform in the
@@ -35382,25 +36524,25 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Transform = XEO.Component.extend({
+    xeogl.Transform = xeogl.Component.extend({
 
-        type: "XEO.Transform",
+        type: "xeogl.Transform",
 
         _init: function (cfg) {
 
             this._onParentUpdated = null;
             this._onParentDestroyed = null;
 
-            this._matrix = XEO.math.identityMat4(XEO.math.mat4());
-            this._leafMatrix = XEO.math.mat4();
-            this._leafNormalMatrix = XEO.math.mat4();
+            this._matrix = xeogl.math.identityMat4(xeogl.math.mat4());
+            this._leafMatrix = xeogl.math.mat4();
+            this._leafNormalMatrix = xeogl.math.mat4();
 
             this._leafMatrixDirty = true;
             this._leafNormalMatrixDirty = true;
 
             var self = this;
 
-            this._state = new XEO.renderer.Transform({
+            this._state = new xeogl.renderer.Transform({
 
                 // Lazy-generate leaf matrices as we render because it's only
                 // at this point that we actually know that we need them.
@@ -35469,9 +36611,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 // store result in this leaf matrix
 
                 if (this._postMultiply) {
-                    XEO.math.mulMat4(this._parent.leafMatrix, this._matrix, this._leafMatrix);
+                    xeogl.math.mulMat4(this._parent.leafMatrix, this._matrix, this._leafMatrix);
                 } else {
-                    XEO.math.mulMat4(this._matrix, this._parent.leafMatrix, this._leafMatrix);
+                    xeogl.math.mulMat4(this._matrix, this._parent.leafMatrix, this._leafMatrix);
                 }
             }
 
@@ -35487,8 +36629,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 this._buildLeafMatrix();
             }
 
-            XEO.math.inverseMat4(this._leafMatrix, this._leafNormalMatrix);
-            XEO.math.transposeMat4(this._leafNormalMatrix);
+            xeogl.math.inverseMat4(this._leafMatrix, this._leafNormalMatrix);
+            xeogl.math.transposeMat4(this._leafNormalMatrix);
 
             this._renderer.imageDirty = true;
 
@@ -35607,7 +36749,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    this._matrix.set(value || XEO.math.identityMat4());
+                    this._matrix.set(value || xeogl.math.identityMat4());
 
                     this._leafMatrixDirty = true;
 
@@ -35630,27 +36772,6 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                     }
 
                     return this._matrix;
-                }
-            },
-
-            /**
-             * The inverse of the Transform's local matrix.
-             *
-             * @property matrix
-             * @type {Float32Array}
-             * @final
-             */
-            inverseMatrix: {
-
-                get: function () {
-
-                    if (this._updateScheduled) {
-                        this._doUpdate();
-                    } else {
-
-                    }
-
-                    return this._inverseMatrix;
                 }
             },
 
@@ -35701,24 +36822,21 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
- A **Rotate** rotates associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}} about an axis vector.
+ A **Rotate** is a {{#crossLink "Transform"}}{{/crossLink}} that rotates associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}} about an axis vector.
 
- <ul>
- <li>Rotate is a sub-class of {{#crossLink "Transform"}}{{/crossLink}}</li>
- <li>Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.</li>
- <li>When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
+ ## Overview
+
+ * Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.
+ * When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
  within a {{#crossLink "Transform"}}{{/crossLink}} hierarchy, it will be transformed by each {{#crossLink "Transform"}}{{/crossLink}}
- on the path up to the root, in that order.</li>
- <li>See <a href="./Shader.html#inputs">Shader Inputs</a> for the variables that Transform create within xeoEngine's shaders.</li>
- </ul>
+ on the path up to the root, in that order.
+
 
  <img src="../../../assets/images/Rotate.png"></img>
 
  ## Examples
 
- <ul>
- <li>Modeling transform hierarchy](../../examples/#transforms_model_hierarchy)</li>
- </ul>
+ * Modeling transform hierarchy](../../examples/#transforms_model_hierarchy)
 
  ## Usage
 
@@ -35727,45 +36845,45 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  The Entities share the same {{#crossLink "BoxGeometry"}}{{/crossLink}}.<br>
 
  ````javascript
- var rotate = new XEO.Rotate({
+ var rotate = new xeogl.Rotate({
     xyz: [0, 1, 0], // Rotate 30 degrees about Y axis
     angle: 30
  });
 
- var translate1 = new XEO.Translate({
+ var translate1 = new xeogl.Translate({
     parent: rotate,
     xyz: [-5, 0, 0] // Translate along -X axis
  });
 
- var translate2 = new XEO.Translate({
+ var translate2 = new xeogl.Translate({
     parent: rotate,
     xyz: [5, 0, 0] // Translate along +X axis
  });
 
- var scale = new XEO.Scale({
+ var scale = new xeogl.Scale({
     parent: translate2,
     xyz: [1, 2, 1] // Scale x2 on Y axis
  });
 
- var geometry = new XEO.Geometry(scene); // Defaults to a 2x2x2 box
+ var geometry = new xeogl.Geometry(scene); // Defaults to a 2x2x2 box
 
- var Entity1 = new XEO.Entity({
+ var Entity1 = new xeogl.Entity({
     transform: translate1,
     geometry: geometry
  });
 
- var Entity2 = new XEO.Entity({
+ var Entity2 = new xeogl.Entity({
     transform: scale,
     geometry: geometry
  });
  ````
 
- Since everything in xeoEngine is dynamically editable, we can restructure the transform hierarchy at any time.
+ Since everything in xeogl is dynamically editable, we can restructure the transform hierarchy at any time.
 
  Let's insert a {{#crossLink "Scale"}}{{/crossLink}} between the first Translate and the first {{#crossLink "Entity"}}{{/crossLink}}:
 
  ````javascript
- var scale2 = new XEO.Scale({
+ var scale2 = new xeogl.Scale({
     parent: translate1,
     xyz: [1, 1, 2] // Scale x2 on Z axis
  });
@@ -35782,7 +36900,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  });
  ````
  @class Rotate
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Rotate in the default
@@ -35799,9 +36917,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Rotate = XEO.Transform.extend({
+    xeogl.Rotate = xeogl.Transform.extend({
 
-        type: "XEO.Rotate",
+        type: "xeogl.Rotate",
 
         _init: function (cfg) {
 
@@ -35812,7 +36930,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         },
 
         _update: function () {
-            this.matrix = XEO.math.rotationMat4v(this._angle * XEO.math.DEGTORAD, this._xyz, this._matrix);
+            this.matrix = xeogl.math.rotationMat4v(this._angle * xeogl.math.DEGTORAD, this._xyz, this._matrix);
         },
 
         _props: {
@@ -35830,7 +36948,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    (this._xyz = this._xyz || new XEO.math.vec3()).set(value || [0, 1, 0]);
+                    (this._xyz = this._xyz || new xeogl.math.vec3()).set(value || [0, 1, 0]);
 
                     this._scheduleUpdate();
 
@@ -35894,22 +37012,18 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
- A **Quaternion** applies a rotation transformation to associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}}.
+ A **Quaternion** is a {{#crossLink "Transform"}}{{/crossLink}} that rotates associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}}.
 
- <ul>
- <li>Quaternion is a sub-class of {{#crossLink "Transform"}}{{/crossLink}}.</li>
- <li>Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.</li>
- <li>When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a
+ ## Overview
+
+ * Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.
+ * When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a
  leaf {{#crossLink "Transform"}}{{/crossLink}} within a {{#crossLink "Transform"}}{{/crossLink}} hierarchy, it will be
- transformed by each {{#crossLink "Transform"}}{{/crossLink}} on the path up to the root, in that order.</li>
- <li>See <a href="./Shader.html#inputs">Shader Inputs</a> for the variables that Transform create within xeoEngine's shaders.</li>
- </ul>
+ transformed by each {{#crossLink "Transform"}}{{/crossLink}} on the path up to the root, in that order.
 
  <img src="../../../assets/images/Quaternion.png"></img>
 
- <ul>
- <li>Viewing transform hierarchy](../../examples/#transforms_view_hierarchy)</li>
- </ul>
+ * Viewing transform hierarchy](../../examples/#transforms_view_hierarchy)
 
  ## Usage
 
@@ -35918,47 +37032,47 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  The Entities share the same {{#crossLink "BoxGeometry"}}{{/crossLink}}.<br>
 
  ````javascript
- var quaternion = new XEO.Quaternion({
+ var quaternion = new xeogl.Quaternion({
     xyzw: [0, 0, 0, 1], // Unit quaternion
-});
+ });
 
- var translate1 = new XEO.Translate({
+ var translate1 = new xeogl.Translate({
    parent: quaternion,
    xyz: [-5, 0, 0] // Translate along -X axis
-});
+ });
 
- var translate2 = new XEO.Translate({
+ var translate2 = new xeogl.Translate({
    parent: quaternion,
    xyz: [5, 0, 0] // Translate along +X axis
-});
+ });
 
- var scale = new XEO.Scale({
+ var scale = new xeogl.Scale({
    parent: translate2,
    xyz: [1, 2, 1] // Scale x2 on Y axis
-});
+ });
 
- var geometry = new XEO.BoxGeometry();
+ var geometry = new xeogl.BoxGeometry();
 
- var entity1 = new XEO.Entity(scene, {
+ var entity1 = new xeogl.Entity(scene, {
    transform: translate1,
    geometry: geometry
-});
+ });
 
- var entity2 = new XEO.Entity({
+ var entity2 = new xeogl.Entity({
    transform: scale,
    geometry: geometry
-});
+ });
  ````
 
- Since everything in xeoEngine is dynamically editable, we can restructure the transform hierarchy at any time.
+ Since everything in xeogl is dynamically editable, we can restructure the transform hierarchy at any time.
 
  Let's insert a {{#crossLink "Scale"}}{{/crossLink}} between the first Translate and the first {{#crossLink "Entity"}}{{/crossLink}}:
 
  ````javascript
- var scale2 = new XEO.Scale({
+ var scale2 = new xeogl.Scale({
    parent: translate1,
    xyz: [1, 1, 2] // Scale x2 on Z axis
-});
+ });
 
  Entity2.transform = scale2;
  ````
@@ -35967,13 +37081,12 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
  ````javascript
  // Rotate 0.2 degrees about Y-axis on each frame
- scene.on("tick",
- function(e) {
+ scene.on("tick", function(e) {
         quaternion.rotate([0, 1, 0, 0.2]);
     });
  ````
  @class Quaternion
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Quaternion in the default
@@ -35989,9 +37102,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Quaternion = XEO.Transform.extend({
+    xeogl.Quaternion = xeogl.Transform.extend({
 
-        type: "XEO.Quaternion",
+        type: "xeogl.Quaternion",
 
         _init: function (cfg) {
 
@@ -36016,11 +37129,11 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    var math = XEO.math;
+                    var math = xeogl.math;
 
                     (this._xyzw = this._xyzw || new math.vec4()).set(value || math.identityQuaternion());
 
-                    this.matrix = math.quaternionToMat4(this._xyzw, this._matrix || (this._matrix = XEO.math.identityMat4()));
+                    this.matrix = math.quaternionToMat4(this._xyzw, this._matrix || (this._matrix = xeogl.math.identityMat4()));
 
                     /**
                      Fired whenever this Quaternion's {{#crossLink "Quaternion/xyzw:property"}}{{/crossLink}} property changes.
@@ -36045,7 +37158,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
          */
         rotate: (function () {
 
-            var math = XEO.math;
+            var math = xeogl.math;
             var tempAngleAxis = math.vec4();
             var tempQuat = math.vec4();
 
@@ -36075,25 +37188,21 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         }
     });
 })();;/**
- A **Scale** applies a scaling transformation to associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}}.
+ A **Scale** is a {{#crossLink "Transform"}}{{/crossLink}} that scales associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}}.
 
- <ul>
- <li>Scale is a sub-class of {{#crossLink "Transform"}}{{/crossLink}}</li>
- <li>Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.</li>
- <li>When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
+ ## Overview
+
+ * Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.
+ * When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
  within a {{#crossLink "Transform"}}{{/crossLink}} hierarchy, it will be transformed by each {{#crossLink "Transform"}}{{/crossLink}}
- on the path up to the root, in that order.</li>
- <li>See <a href="./Shader.html#inputs">Shader Inputs</a> for the variables that Transform create within xeoEngine's shaders.</li>
- </ul>
+ on the path up to the root, in that order.
 
  <img src="../../../assets/images/Scale.png"></img>
 
  ## Examples
 
- <ul>
- <li>Modeling transform hierarchy](../../examples/#transforms_model_hierarchy)</li>
- <li>Projection transform hierarchy](../../examples/#transforms_project_hierarchy)</li>
- </ul>
+ * Modeling transform hierarchy](../../examples/#transforms_model_hierarchy)
+ * Projection transform hierarchy](../../examples/#transforms_project_hierarchy)
 
  ## Usage
 
@@ -36102,45 +37211,45 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  The Entities share the same {{#crossLink "BoxGeometry"}}{{/crossLink}}.<br>
 
  ````javascript
- var rotate = new XEO.Rotate({
+ var rotate = new xeogl.Rotate({
     xyz: [0, 1, 0], // Rotate 30 degrees about Y axis
     angle: 30
  });
 
- var translate1 = new XEO.Translate({
+ var translate1 = new xeogl.Translate({
     parent: rotate,
     xyz: [-5, 0, 0] // Translate along -X axis
  });
 
- var translate2 = new XEO.Translate({
+ var translate2 = new xeogl.Translate({
     parent: rotate,
     xyz: [5, 0, 0] // Translate along +X axis
  });
 
- var scale = new XEO.Scale({
+ var scale = new xeogl.Scale({
     parent: translate2,
     xyz: [1, 2, 1] // Scale x2 on Y axis
  });
 
- var geometry = new XEO.BoxGeometry();
+ var geometry = new xeogl.BoxGeometry();
 
- var entity1 = new XEO.Entity({
+ var entity1 = new xeogl.Entity({
     transform: translate1,
     geometry: geometry
  });
 
- var entity2 = new XEO.Entity({
+ var entity2 = new xeogl.Entity({
     transform: scale,
     geometry: geometry
  });
  ````
 
- Since everything in xeoEngine is dynamically editable, we can restructure the transform hierarchy at any time.
+ Since everything in xeogl is dynamically editable, we can restructure the transform hierarchy at any time.
 
  Let's insert a {{#crossLink "Scale"}}{{/crossLink}} between the first Translate and the first {{#crossLink "Entity"}}{{/crossLink}}:
 
  ````javascript
- var scale2 = new XEO.Scale({
+ var scale2 = new xeogl.Scale({
     parent: translate1,
     xyz: [1, 1, 2] // Scale x2 on Z axis
  });
@@ -36156,8 +37265,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
     rotate.angle += 0.2;
  });
  ````
+
  @class Scale
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Scale in the default
@@ -36173,9 +37283,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Scale = XEO.Transform.extend({
+    xeogl.Scale = xeogl.Transform.extend({
 
-        type: "XEO.Scale",
+        type: "xeogl.Scale",
 
         _init: function (cfg) {
 
@@ -36185,7 +37295,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         },
 
         _update: function () {
-            this.matrix = XEO.math.scalingMat4v(this._xyz, this._matrix);
+            this.matrix = xeogl.math.scalingMat4v(this._xyz, this._matrix);
         },
 
         _props: {
@@ -36201,7 +37311,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    (this._xyz = this._xyz || new XEO.math.vec3()).set(value || [1, 1, 1]);
+                    (this._xyz = this._xyz || new xeogl.math.vec3()).set(value || [1, 1, 1]);
 
                     this._scheduleUpdate();
 
@@ -36233,24 +37343,20 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
- A **Translate** translates associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}}.
+ A **Translate** is a {{#crossLink "Transform"}}{{/crossLink}} that translates associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}}.
 
- <ul>
- <li>Translate is a sub-class of {{#crossLink "Transform"}}{{/crossLink}}.</li>
- <li>Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.</li>
- <li>When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
+ ## Overview
+
+ * Instances of {{#crossLink "Transform"}}{{/crossLink}} and its sub-classes may be connected into hierarchies.
+ * When an {{#crossLink "Entity"}}{{/crossLink}} or {{#crossLink "Model"}}{{/crossLink}} is connected to a leaf {{#crossLink "Transform"}}{{/crossLink}}
  within a {{#crossLink "Transform"}}{{/crossLink}} hierarchy, it will be transformed by each {{#crossLink "Transform"}}{{/crossLink}}
- on the path up to the root, in that order.</li>
- <li>See <a href="./Shader.html#inputs">Shader Inputs</a> for the variables that Transform create within xeoEngine's shaders.</li>
- </ul>
+ on the path up to the root, in that order.
 
  <img src="../../../assets/images/Translate.png"></img>
 
  ## Examples
 
- <ul>
- <li>Modeling transform hierarchy](../../examples/#transforms_model_hierarchy)</li>
- </ul>
+ * Modeling transform hierarchy](../../examples/#transforms_model_hierarchy)
 
  ## Usage
 
@@ -36259,45 +37365,45 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  The Entities share the same {{#crossLink "BoxGeometry"}}{{/crossLink}}.<br>
 
  ````javascript
- var rotate = new XEO.Rotate({
+ var rotate = new xeogl.Rotate({
     xyz: [0, 1, 0], // Rotate 30 degrees about Y axis
     angle: 30
  });
 
- var translate1 = new XEO.Translate({
+ var translate1 = new xeogl.Translate({
     parent: rotate,
     xyz: [-5, 0, 0] // Translate along -X axis
  });
 
- var translate2 = new XEO.Translate({
+ var translate2 = new xeogl.Translate({
     parent: rotate,
     xyz: [5, 0, 0] // Translate along +X axis
  });
 
- var scale = new XEO.Scale({
+ var scale = new xeogl.Scale({
     parent: translate2,
     xyz: [1, 2, 1] // Scale x2 on Y axis
  });
 
- var geometry = new XEO.BoxGeometry();
+ var geometry = new xeogl.BoxGeometry();
 
- var Entity1 = new XEO.Entity({
+ var Entity1 = new xeogl.Entity({
     transform: translate1,
     geometry: geometry
  });
 
- var Entity2 = new XEO.Entity({
+ var Entity2 = new xeogl.Entity({
     transform: scale,
     geometry: geometry
  });
  ````
 
- Since everything in xeoEngine is dynamically editable, we can restructure the transform hierarchy at any time.
+ Since everything in xeogl is dynamically editable, we can restructure the transform hierarchy at any time.
 
  Let's insert a {{#crossLink "Scale"}}{{/crossLink}} between the first Translate and the first {{#crossLink "Entity"}}{{/crossLink}}:
 
  ````javascript
- var scale2 = new XEO.Scale({
+ var scale2 = new xeogl.Scale({
     parent: translate1,
     xyz: [1, 1, 2] // Scale x2 on Z axis
  });
@@ -36317,7 +37423,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````
 
  @class Translate
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Translate in the default
@@ -36333,9 +37439,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Translate = XEO.Transform.extend({
+    xeogl.Translate = xeogl.Transform.extend({
 
-        type: "XEO.Translate",
+        type: "xeogl.Translate",
 
         _init: function (cfg) {
 
@@ -36345,7 +37451,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         },
 
         _update: function () {
-            this.matrix = XEO.math.translationMat4v(this._xyz, this._matrix);
+            this.matrix = xeogl.math.translationMat4v(this._xyz, this._matrix);
         },
 
         _props: {
@@ -36361,7 +37467,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 set: function (value) {
 
-                    (this._xyz = this._xyz || new XEO.math.vec3()).set(value || [0, 0, 0]);
+                    (this._xyz = this._xyz || new xeogl.math.vec3()).set(value || [0, 0, 0]);
 
                     this._scheduleUpdate();
 
@@ -36392,70 +37498,69 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
- A **Billboard** causes associated {{#crossLink "Entity"}}Entities{{/crossLink}} to be always oriented towards the Camera.
+ A **Billboard** is a modelling {{#crossLink "Transform"}}{{/crossLink}} that causes associated {{#crossLink "Entity"}}Entities{{/crossLink}} to be always oriented towards the Camera.
 
- <ul>
- <li>**Spherical** billboards are free to rotate their {{#crossLink "Entity"}}Entities{{/crossLink}} in any direction and always face the {{#crossLink "Camera"}}{{/crossLink}} perfectly.</li>
- <li>**Cylindrical** billboards rotate their {{#crossLink "Entity"}}Entities{{/crossLink}} towards the {{#crossLink "Camera"}}{{/crossLink}}, but only around the Y-axis.</li>
- <li>A Billboard will cause {{#crossLink "Scale"}}{{/crossLink}} transformations to have no effect on its {{#crossLink "Entity"}}Entities{{/crossLink}}</li>
- </ul>
+ <a href="../../examples/#billboards_spherical"><img src="http://i.giphy.com/l3vR13LcnTuQGMInu.gif"></img></a>
+
+ ## Overview
+
+ * **Spherical** billboards are free to rotate their {{#crossLink "Entity"}}Entities{{/crossLink}} in any direction and always face the {{#crossLink "Camera"}}{{/crossLink}} perfectly.
+ * **Cylindrical** billboards rotate their {{#crossLink "Entity"}}Entities{{/crossLink}} towards the {{#crossLink "Camera"}}{{/crossLink}}, but only about the Y-axis.
+ * A Billboard will cause {{#crossLink "Scale"}}{{/crossLink}} transformations to have no effect on its {{#crossLink "Entity"}}Entities{{/crossLink}}
 
  <img src="../../../assets/images/Billboard.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Spherical billboards](../../examples/#billboards_spherical)</li>
- <li>[Cylindrical billboards](../../examples/#billboards_cylindrical)</li>
- <li>[Clouds using billboards](../../examples/#billboards_spherical_clouds)</li>
- <li>[Billboards with video textures](../../examples/#billboards_spherical_video)</li>
- </ul>
+ * [Spherical billboards](../../examples/#billboards_spherical)
+ * [Cylindrical billboards](../../examples/#billboards_cylindrical)
+ * [Clouds using billboards](../../examples/#billboards_spherical_clouds)
+ * [Spherical billboards with video textures](../../examples/#billboards_spherical_video)
 
  ## Usage
 
- Let's create 1000 {{#crossLink "Entity"}}Entities{{/crossLink}} that always face towards the viewpoint as we orbit the {{#crossLink "Camera"}}{{/crossLink}} about the X and Y axis:
+ Let's create 1000 randomly-positioned {{#crossLink "Entity"}}Entities{{/crossLink}} that always face towards the
+ viewpoint as we orbit the {{#crossLink "Camera"}}{{/crossLink}} about the X and Y axis:
 
  ```` javascript
- // Create 1000 Entities in default Scene with shared Geometry,
- // PhongMaterial and Billboard
+ // Create 1000 Entities in default Scene with shared Geometry, PhongMaterial and Billboard
 
- var geometry = new XEO.Geometry({
-        primitive: "triangles",
-        positions: [3, 3, 0, -3, 3, 0, -3, -3, 0, 3, -3, 0],
-        normals: [-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0],
-        uv: [1, 1, 0, 1, 0, 0, 1, 0],
-        indices: [2, 1, 0, 3, 2, 0] // Ensure these will be front-faces
-    });
+ var geometry = new xeogl.Geometry({
+     primitive: "triangles",
+     positions: [3, 3, 0, -3, 3, 0, -3, -3, 0, 3, -3, 0],
+     normals: [-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0],
+     uv: [1, 1, 0, 1, 0, 0, 1, 0],
+     indices: [2, 1, 0, 3, 2, 0] // Ensure these will be front-faces
+ });
 
- var material = new XEO.PhongMaterial({
-        emissiveMap: new XEO.Texture({
-            src: "textures/diffuse/teapot.jpg"
-        })
-    });
+ var material = new xeogl.PhongMaterial({
+     emissiveMap: new xeogl.Texture({
+         src: "textures/diffuse/teapot.jpg"
+     })
+ });
 
- var billboard = new XEO.Billboard({
-        spherical: true
-    });
+ var billboard = new xeogl.Billboard({
+     spherical: true
+ });
 
  for (var i = 0; i < 1000; i++) {
-        new XEO.Entity({
-            geometry: geometry,
-            material: material,
-            billboard: billboard,
-            transform: new XEO.Translate({
-                xyz: [Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50]
-            })
-        });
-  }
+     new xeogl.Entity({
+         geometry: geometry,
+         material: material,
+         billboard: billboard,
+         transform: new xeogl.Translate({
+             xyz: [Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50]
+         })
+     });
+ }
 
- // Move eye back to see everything, then orbit Camera
+ // Move eye back to see everything, then orbit the Camera
 
- var scene = XEO.scene;
+ var scene = xeogl.scene;
 
  scene.camera.view.zoom(120);
 
- scene.on("tick",
-     function () {
+ scene.on("tick", function () {
 
           var view = scene.camera.view;
 
@@ -36465,7 +37570,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  ````
 
  @class Billboard
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Billboard in the default
@@ -36481,15 +37586,15 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Billboard = XEO.Component.extend({
+    xeogl.Billboard = xeogl.Component.extend({
 
-        type: "XEO.Billboard",
+        type: "xeogl.Billboard",
 
         _init: function (cfg) {
 
             this._super(cfg);
 
-            this._state = new XEO.renderer.Billboard({
+            this._state = new xeogl.renderer.Billboard({
                 active: true,
                 spherical: true,
                 hash: "a;s;"
@@ -36593,13 +37698,13 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  A **Stationary** disables the effect of {{#crossLink "Lookat"}}view transform{{/crossLink}} translations for
  associated {{#crossLink "Entity"}}Entities{{/crossLink}} or {{#crossLink "Model"}}Models{{/crossLink}}.
 
+ ## Overview
+
  <img src="../../../assets/images/Stationary.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Custom Skybox using a Stationary component](../../examples/#skyboxes_customSkybox)</li>
- </ul>
+ * [Custom Skybox using a Stationary component](../../examples/#skyboxes_customSkybox)
 
  ## Usage
 
@@ -36607,28 +37712,28 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  the viewpoint, as if far away.
 
  ````javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     geometry: new XEO.BoxGeometry({
+     geometry: new xeogl.BoxGeometry({
          xSize: 1,
          ySize: 1,
          zSize: 1
      }),
 
-     material: new XEO.PhongMaterial({
-         diffuseMap: new XEO.Texture({
+     material: new xeogl.PhongMaterial({
+         diffuseMap: new xeogl.Texture({
             src: "textures/diffuse/uvGrid2.jpg"
          })
      }),
 
-     stationary: new XEO.Stationary({ // Locks position with respect to viewpoint
+     stationary: new xeogl.Stationary({ // Locks position with respect to viewpoint
          active: true
      })
  });
  ````
 
  @class Stationary
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Stationary in the default
@@ -36643,15 +37748,15 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Stationary = XEO.Component.extend({
+    xeogl.Stationary = xeogl.Component.extend({
 
-        type: "XEO.Stationary",
+        type: "xeogl.Stationary",
 
         _init: function (cfg) {
 
             this._super(cfg);
 
-            this._state = new XEO.renderer.Stationary({
+            this._state = new xeogl.renderer.Stationary({
                 active: true
             });
 
@@ -36712,45 +37817,41 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
- A **Frustum** defines a perspective projection as a frustum-shaped view volume.
+ A **Frustum** is a {{#crossLink "Transform"}}{{/crossLink}} that defines a perspective projection as a frustum-shaped view volume.
 
- <ul>
- <li>Frustum is a sub-class of {{#crossLink "Transform"}}{{/crossLink}}.</li>
- <li>{{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with viewing transform components, such as
- {{#crossLink "Lookat"}}Lookat{{/crossLink}}, to define viewpoints for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>A Frustum lets us explicitly set the positions of the left, right, top, bottom, near and far planes, which is useful
- for asymmetrical view volumes, such as those used for stereo viewing.</li>
- <li>An Frustum's {{#crossLink "Frustum/near:property"}}{{/crossLink}} and {{#crossLink "Frustum/far:property"}}{{/crossLink}} properties
- specify the distances to the WebGL clipping planes.</li>
- <li>Use {{#crossLink "Ortho"}}{{/crossLink}} if you just want to specify the X,Y frustum extents with a single scale factor,
- ie. without individually specifying the distance to each frustum plane.</li>
- <li>Use {{#crossLink "Perspective"}}{{/crossLink}} if you need perspective projection.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Ortho components create within xeoEngine's shaders.</li>
- </ul>
+ ## Overview
+
+ * {{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with viewing transform components, such as
+ {{#crossLink "Lookat"}}Lookat{{/crossLink}}, to define viewpoints for attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * A Frustum lets us explicitly set the positions of the left, right, top, bottom, near and far planes, which is useful
+ for asymmetrical view volumes, such as those used for stereo viewing.
+ * An Frustum's {{#crossLink "Frustum/near:property"}}{{/crossLink}} and {{#crossLink "Frustum/far:property"}}{{/crossLink}} properties
+ specify the distances to the WebGL clipping planes.
+ * Use {{#crossLink "Ortho"}}{{/crossLink}} if you just want to specify the X,Y frustum extents with a single scale factor,
+ ie. without individually specifying the distance to each frustum plane.
+ * Use {{#crossLink "Perspective"}}{{/crossLink}} if you need perspective projection.
 
  <img src="../../../assets/images/Frustum.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Camera with frustum projection](../../examples/#transforms_project_frustum)</li>
- <li>[Stereo viewing with frustum projection](../../examples/#effects_stereo)</li>
- </ul>
+ * [Camera with frustum projection](../../examples/#transforms_project_frustum)
+ * [Stereo viewing with frustum projection](../../examples/#effects_stereo)
 
  ## Usage
 
  ````Javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     camera: XEO.Camera({
+     camera: xeogl.Camera({
 
-        view: new XEO.Lookat({
+        view: new xeogl.Lookat({
             eye: [0, 0, -4],
             look: [0, 0, 0],
             up: [0, 1, 0]
         }),
 
-        project: new XEO.Frustum(scene, {
+        project: new xeogl.Frustum(scene, {
             left: -0.1,
             right: 0.1,
             bottom: -0.1,
@@ -36760,12 +37861,12 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         })
      }),
 
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
  ````
 
  @class Frustum
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this Frustum within the
@@ -36785,9 +37886,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Frustum = XEO.Transform.extend({
+    xeogl.Frustum = xeogl.Transform.extend({
 
-        type: "XEO.Frustum",
+        type: "xeogl.Frustum",
 
         _init: function (cfg) {
 
@@ -36811,7 +37912,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         },
 
         _update: function () {
-            this.matrix = XEO.math.frustumMat4(
+            this.matrix = xeogl.math.frustumMat4(
                 this._left,
                 this._right,
                 this._bottom,
@@ -37027,51 +38128,47 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
     });
 })();
 ;/**
- A **Lookat** defines a viewing transform as an {{#crossLink "Lookat/eye:property"}}eye{{/crossLink}} position, a
+ A **Lookat** is a {{#crossLink "Transform"}}{{/crossLink}} that defines a viewing transform as an {{#crossLink "Lookat/eye:property"}}eye{{/crossLink}} position, a
  {{#crossLink "Lookat/look:property"}}look{{/crossLink}} position and an {{#crossLink "Lookat/up:property"}}up{{/crossLink}}
  vector.
 
- <ul>
- <li>Lookat is a sub-class of {{#crossLink "Transform"}}{{/crossLink}}.</li>
- <li>{{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with projection transforms such as
- {{#crossLink "Perspective"}}Perspective{{/crossLink}}, to define viewpoints on attached {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Lookat components create within xeoEngine's shaders.</li>
- </ul>
+ ## Overview
+
+ * {{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with projection transforms such as
+ {{#crossLink "Perspective"}}Perspective{{/crossLink}}, to define viewpoints on attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
 
  <img src="../../../assets/images/Lookat.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Camera with Lookat and Perspective](../../examples/#transforms_project_perspective)</li>
- </ul>
+ * [Camera with Lookat and Perspective](../../examples/#transforms_project_perspective)
 
  ## Usage
 
  ````Javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     camera: XEO.Camera({
+     camera: xeogl.Camera({
 
-        view: new XEO.Lookat({
+        view: new xeogl.Lookat({
             eye: [0, 0, 4],
             look: [0, 0, 0],
             up: [0, 1, 0]
         }),
 
-        project: new XEO.Perspective({
+        project: new xeogl.Perspective({
             fovy: 60,
             near: 0.1,
             far: 1000
         })
      }),
 
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
  ````
 
  @class Lookat
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}} - creates this Lookat in the default
@@ -37083,7 +38180,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
  @param [cfg.eye=[0,0,10]] {Array of Number} Eye position.
  @param [cfg.look=[0,0,0]] {Array of Number} The position of the point-of-interest we're looking at.
  @param [cfg.up=[0,1,0]] {Array of Number} The "up" vector.
- @param [cfg.gimbalLockY=false] {Boolean} Whether Y-axis rotation is about the World-space Y-axis or the View-space Y-axis.
+ @param [cfg.gimbalLockY=false] {Boolean} Effectively whether Y-axis rotation is about the World-space Y-axis or the View-space Y-axis.
  @extends Transform
  @author xeolabs / http://xeolabs.com/
  */
@@ -37091,24 +38188,26 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    var tempVec3 = XEO.math.vec3();
-    var tempVec3b = XEO.math.vec3();
-    var tempVec3c = XEO.math.vec3();
-    var tempVec3d = XEO.math.vec3();
-    var tempVec3e = XEO.math.vec3();
-    var tempVec3f = XEO.math.vec3();
+    var math = xeogl.math;
 
-    XEO.Lookat = XEO.Transform.extend({
+    var tempVec3 = math.vec3();
+    var tempVec3b = math.vec3();
+    var tempVec3c = math.vec3();
+    var tempVec3d = math.vec3();
+    var tempVec3e = math.vec3();
+    var tempVec3f = math.vec3();
 
-        type: "XEO.Lookat",
+    xeogl.Lookat = xeogl.Transform.extend({
+
+        type: "xeogl.Lookat",
 
         _init: function (cfg) {
 
             this._super(cfg);
 
-            this._eye = XEO.math.vec3([0, 0, 10.0]);
-            this._look = XEO.math.vec3([0, 0, 0]);
-            this._up = XEO.math.vec3([0, 1, 0]);
+            this._eye = math.vec3([0, 0, 10.0]);
+            this._look = math.vec3([0, 0, 0]);
+            this._up = math.vec3([0, 1, 0]);
 
             this.eye = cfg.eye;
             this.look = cfg.look;
@@ -37116,9 +38215,18 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             this.gimbalLockY = cfg.gimbalLockY;
         },
 
-        _update: function () {
-            this.matrix = XEO.math.lookAtMat4v(this._eye, this._look, this._up, this._matrix);
-        },
+        _update: (function () {
+
+            var lookatMat = math.mat4();
+
+            return function () {
+
+                math.lookAtMat4v(this._eye, this._look, this._up, lookatMat);
+
+                this.matrix = lookatMat;
+            };
+        })(),
+
 
         /**
          * Rotate 'eye' about 'look', around the 'up' vector
@@ -37128,18 +38236,18 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         rotateEyeY: function (angle) {
 
             // Get 'look' -> 'eye' vector
-            var eye2 = XEO.math.subVec3(this._eye, this._look, tempVec3);
+            var eye2 = math.subVec3(this._eye, this._look, tempVec3);
 
-            var mat = XEO.math.rotationMat4v(angle * 0.0174532925, this._gimbalLockY ? XEO.math.vec3([0, 1, 0]) : this._up);
-            eye2 = XEO.math.transformPoint3(mat, eye2, tempVec3b);
+            var mat = math.rotationMat4v(angle * 0.0174532925, this._gimbalLockY ? math.vec3([0, 1, 0]) : this._up);
+            eye2 = math.transformPoint3(mat, eye2, tempVec3b);
 
             // Set eye position as 'look' plus 'eye' vector
-            this.eye = XEO.math.addVec3(eye2, this._look, tempVec3c);
+            this.eye = math.addVec3(eye2, this._look, tempVec3c);
 
             if (this._gimbalLockY) {
 
                 // Rotate 'up' vector about orthogonal vector
-                this.up = XEO.math.transformPoint3(mat, this._up, tempVec3d);
+                this.up = math.transformPoint3(mat, this._up, tempVec3d);
             }
         },
 
@@ -37151,20 +38259,20 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         rotateEyeX: function (angle) {
 
             // Get 'look' -> 'eye' vector
-            var eye2 = XEO.math.subVec3(this._eye, this._look, tempVec3);
+            var eye2 = math.subVec3(this._eye, this._look, tempVec3);
 
             // Get orthogonal vector from 'eye' and 'up'
-            var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(eye2, tempVec3b), XEO.math.normalizeVec3(this._up, tempVec3c));
+            var left = math.cross3Vec3(math.normalizeVec3(eye2, tempVec3b), math.normalizeVec3(this._up, tempVec3c));
 
             // Rotate 'eye' vector about orthogonal vector
-            var mat = XEO.math.rotationMat4v(angle * 0.0174532925, left);
-            eye2 = XEO.math.transformPoint3(mat, eye2, tempVec3d);
+            var mat = math.rotationMat4v(angle * 0.0174532925, left);
+            eye2 = math.transformPoint3(mat, eye2, tempVec3d);
 
             // Set eye position as 'look' plus 'eye' vector
-            this.eye = XEO.math.addVec3(eye2, this._look, tempVec3e);
+            this.eye = math.addVec3(eye2, this._look, tempVec3e);
 
             // Rotate 'up' vector about orthogonal vector
-            this.up = XEO.math.transformPoint3(mat, this._up, tempVec3f);
+            this.up = math.transformPoint3(mat, this._up, tempVec3f);
         },
 
         /**
@@ -37177,14 +38285,14 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         rotateLookY: function (angle) {
 
             // Get 'look' -> 'eye' vector
-            var look2 = XEO.math.subVec3(this._look, this._eye, tempVec3);
+            var look2 = math.subVec3(this._look, this._eye, tempVec3);
 
             // Rotate 'look' vector about 'up' vector
-            var mat = XEO.math.rotationMat4v(angle * 0.0174532925, this._up);
-            look2 = XEO.math.transformPoint3(mat, look2, tempVec3b);
+            var mat = math.rotationMat4v(angle * 0.0174532925, this._up);
+            look2 = math.transformPoint3(mat, look2, tempVec3b);
 
             // Set look position as 'look' plus 'eye' vector
-            this.look = XEO.math.addVec3(look2, this._eye, tempVec3c);
+            this.look = math.addVec3(look2, this._eye, tempVec3c);
         },
 
         /**
@@ -37195,20 +38303,20 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         rotateLookX: function (angle) {
 
             // Get 'look' -> 'eye' vector
-            var look2 = XEO.math.subVec3(this._look, this._eye, tempVec3);
+            var look2 = math.subVec3(this._look, this._eye, tempVec3);
 
             // Get orthogonal vector from 'eye' and 'up'
-            var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(look2, tempVec3b), XEO.math.normalizeVec3(this._up, tempVec3c));
+            var left = math.cross3Vec3(math.normalizeVec3(look2, tempVec3b), math.normalizeVec3(this._up, tempVec3c));
 
             // Rotate 'look' vector about orthogonal vector
-            var mat = XEO.math.rotationMat4v(angle * 0.0174532925, left);
-            look2 = XEO.math.transformPoint3(mat, look2, tempVec3d);
+            var mat = math.rotationMat4v(angle * 0.0174532925, left);
+            look2 = math.transformPoint3(mat, look2, tempVec3d);
 
             // Set eye position as 'look' plus 'eye' vector
-            this.look = XEO.math.addVec3(look2, this._eye, tempVec3e);
+            this.look = math.addVec3(look2, this._eye, tempVec3e);
 
             // Rotate 'up' vector about orthogonal vector
-            this.up = XEO.math.transformPoint3(mat, this._up, tempVecf);
+            this.up = math.transformPoint3(mat, this._up, tempVecf);
         },
 
         /**
@@ -37218,7 +38326,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
         pan: function (pan) {
 
             // Get 'look' -> 'eye' vector
-            var eye2 = XEO.math.subVec3(this._eye, this._look, tempVec3);
+            var eye2 = math.subVec3(this._eye, this._look, tempVec3);
 
             // Building this pan vector
             var vec = [0, 0, 0];
@@ -37228,9 +38336,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 // Pan along orthogonal vector to 'look' and 'up'
 
-                var left = XEO.math.cross3Vec3(XEO.math.normalizeVec3(eye2, []), XEO.math.normalizeVec3(this._up, tempVec3b));
+                var left = math.cross3Vec3(math.normalizeVec3(eye2, []), math.normalizeVec3(this._up, tempVec3b));
 
-                v = XEO.math.mulVec3Scalar(left, pan[0]);
+                v = math.mulVec3Scalar(left, pan[0]);
 
                 vec[0] += v[0];
                 vec[1] += v[1];
@@ -37241,7 +38349,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 // Pan along 'up' vector
 
-                v = XEO.math.mulVec3Scalar(XEO.math.normalizeVec3(this._up, tempVec3c), pan[1]);
+                v = math.mulVec3Scalar(math.normalizeVec3(this._up, tempVec3c), pan[1]);
 
                 vec[0] += v[0];
                 vec[1] += v[1];
@@ -37252,15 +38360,15 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
                 // Pan along 'eye'- -> 'look' vector
 
-                v = XEO.math.mulVec3Scalar(XEO.math.normalizeVec3(eye2, tempVec3d), pan[2]);
+                v = math.mulVec3Scalar(math.normalizeVec3(eye2, tempVec3d), pan[2]);
 
                 vec[0] += v[0];
                 vec[1] += v[1];
                 vec[2] += v[2];
             }
 
-            this.eye = XEO.math.addVec3(this._eye, vec, tempVec3e);
-            this.look = XEO.math.addVec3(this._look, vec, tempVec3f);
+            this.eye = math.addVec3(this._eye, vec, tempVec3e);
+            this.look = math.addVec3(this._look, vec, tempVec3f);
         },
 
         /**
@@ -37269,19 +38377,19 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
          */
         zoom: function (delta) {
 
-            var vec = XEO.math.subVec3(this._eye, this._look, tempVec3); // Get vector from eye to look
-            var lenLook = Math.abs(XEO.math.lenVec3(vec, tempVec3b));    // Get len of that vector
+            var vec = math.subVec3(this._eye, this._look, tempVec3); // Get vector from eye to look
+            var lenLook = Math.abs(math.lenVec3(vec, tempVec3b));    // Get len of that vector
             var newLenLook = Math.abs(lenLook + delta);         // Get new len after zoom
 
-            var dir = XEO.math.normalizeVec3(vec, tempVec3c);  // Get normalised vector
+            var dir = math.normalizeVec3(vec, tempVec3c);  // Get normalised vector
 
-            this.eye = XEO.math.addVec3(this._look, XEO.math.mulVec3Scalar(dir, newLenLook), tempVec3d);
+            this.eye = math.addVec3(this._look, math.mulVec3Scalar(dir, newLenLook), tempVec3d);
         },
 
         _props: {
 
             /**
-             * Whether Y-axis rotation is about the World-space Y-axis or the View-space Y-axis.
+             * Effectively whether Y-axis rotation is about the World-space Y-axis or the View-space Y-axis.
              *
              * Fires a {{#crossLink "Lookat/gimbalLockY:event"}}{{/crossLink}} event on change.
              *
@@ -37405,9 +38513,10 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
         _getJSON: function () {
             var json = {
-                eye: this._eye,
-                look: this._look,
-                up: this._up
+                eye: this._eye.slice(),
+                look: this._look.slice(),
+                up: this._up.slice(),
+                gimbalLockY: this._gimbalLockY
             };
             if (this._parent) {
                 json.parent = this._parent.id;
@@ -37418,57 +38527,53 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
- An **Ortho** component defines an orthographic projection transform.
+ An **Ortho** is a {{#crossLink "Transform"}}{{/crossLink}} that defines an orthographic projection transform.
 
- <ul>
- <li>Ortho is a sub-class of {{#crossLink "Transform"}}{{/crossLink}}.</li>
- <li>{{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with viewing transform components, such as
- {{#crossLink "Lookat"}}Lookat{{/crossLink}}, to define viewpoints on attached {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>An Ortho works like Blender's orthographic projection, where the positions of the left, right, top and bottom planes are
+ ## Overview
+
+ * {{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with viewing transform components, such as
+ {{#crossLink "Lookat"}}Lookat{{/crossLink}}, to define viewpoints on attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * An Ortho works like Blender's orthographic projection, where the positions of the left, right, top and bottom planes are
  implicitly specified with a single {{#crossLink "Ortho/scale:property"}}{{/crossLink}} property, which causes the frustum to be symmetrical on X and Y axis, large enough to
- contain the number of units given by {{#crossLink "Ortho/scale:property"}}{{/crossLink}}.</li>
- <li>An Ortho's {{#crossLink "Ortho/near:property"}}{{/crossLink}} and {{#crossLink "Ortho/far:property"}}{{/crossLink}} properties
- specify the distances to the WebGL clipping planes.</li>
- <li>Use {{#crossLink "Frustum"}}{{/crossLink}} if you need to individually specify the position of each of the frustum
- planes, eg. for an asymmetrical view volume, such as those used for stereo viewing.</li>
- <li>Use {{#crossLink "Perspective"}}{{/crossLink}} if you need perspective projection.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Ortho components create within xeoEngine's shaders.</li>
- </ul>
+ contain the number of units given by {{#crossLink "Ortho/scale:property"}}{{/crossLink}}.
+ * An Ortho's {{#crossLink "Ortho/near:property"}}{{/crossLink}} and {{#crossLink "Ortho/far:property"}}{{/crossLink}} properties
+ specify the distances to the WebGL clipping planes.
+ * Use {{#crossLink "Frustum"}}{{/crossLink}} if you need to individually specify the position of each of the frustum
+ planes, eg. for an asymmetrical view volume, such as those used for stereo viewing.
+ * Use {{#crossLink "Perspective"}}{{/crossLink}} if you need perspective projection.
 
  <img src="../../../assets/images/Ortho.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Camera with orthographic projection](../../examples/#transforms_project_ortho)</li>
- </ul>
+ * [Camera with orthographic projection](../../examples/#transforms_project_ortho)
 
  ## Usage
 
  ````Javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     camera: XEO.Camera({
+     camera: xeogl.Camera({
 
-         view: new XEO.Lookat({
+         view: new xeogl.Lookat({
              eye: [0, 0, -4],
              look: [0, 0, 0],
              up: [0, 1, 0]
          }),
 
-         project: new XEO.Ortho(scene, {
+         project: new xeogl.Ortho(scene, {
              scale: 100.0,  // Fit at least 100 units within the ortho volume X & Y extents
              near: 0.1,
              far: 1000
          })
      }),
 
-     geometry: new XEO.BoxGeometry()
+     geometry: new xeogl.BoxGeometry()
  });
  ````
 
  @class Ortho
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this Ortho within the
@@ -37486,9 +38591,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Ortho = XEO.Transform.extend({
+    xeogl.Ortho = xeogl.Transform.extend({
 
-        type: "XEO.Ortho",
+        type: "xeogl.Ortho",
 
         _init: function (cfg) {
 
@@ -37529,8 +38634,8 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
                 bottom = -halfSize;
             }
 
-            this.matrix = XEO.math.orthoMat4c( // Assign to XEO.Projection#matrix
-                left, right, bottom, top, this._near, this._far, this.__tempMat || (this.__tempMat = XEO.math.mat4()));
+            this.matrix = xeogl.math.orthoMat4c( // Assign to xeogl.Projection#matrix
+                left, right, bottom, top, this._near, this._far, this.__tempMat || (this.__tempMat = xeogl.math.mat4()));
         },
 
         _props: {
@@ -37649,50 +38754,46 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
 })();
 ;/**
- A **Perspective** component defines a perspective projection transform.
+ A **Perspective** is a {{#crossLink "Transform"}}{{/crossLink}} that defines a perspective projection transform.
 
- <ul>
- <li>Perspective is a sub-class of {{#crossLink "Transform"}}{{/crossLink}}.</li>
- <li>{{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with viewing transform components, such as
- {{#crossLink "Lookat"}}Lookat{{/crossLink}}, to define viewpoints on attached {{#crossLink "Entity"}}Entities{{/crossLink}}.</li>
- <li>Alternatively, use {{#crossLink "Ortho"}}{{/crossLink}} if you need a orthographic projection.</li>
- <li>See <a href="Shader.html#inputs">Shader Inputs</a> for the variables that Perspective components create within xeoEngine's shaders.</li>
- </ul>
+ ## Overview
+
+ * {{#crossLink "Camera"}}Camera{{/crossLink}} components pair these with viewing transform components, such as
+ {{#crossLink "Lookat"}}Lookat{{/crossLink}}, to define viewpoints on attached {{#crossLink "Entity"}}Entities{{/crossLink}}.
+ * Alternatively, use {{#crossLink "Ortho"}}{{/crossLink}} if you need a orthographic projection.
 
  <img src="../../../assets/images/Perspective.png"></img>
 
  ## Examples
 
- <ul>
- <li>[Camera with perspective projection](../../examples/#transforms_project_perspective)</li>
- </ul>
+ * [Camera with perspective projection](../../examples/#transforms_project_perspective)
 
  ## Usage
 
  ````Javascript
- new XEO.Entity({
+ new xeogl.Entity({
 
-     camera: XEO.Camera({
+     camera: xeogl.Camera({
 
-        view: new XEO.Lookat({
+        view: new xeogl.Lookat({
             eye: [0, 0, -4],
             look: [0, 0, 0],
             up: [0, 1, 0]
         }),
 
-        project: new XEO.Perspective({
+        project: new xeogl.Perspective({
             fovy: 60,
             near: 0.1,
             far: 1000
         })
      }),
 
-     perspective: new XEO.BoxGeometry()
+     perspective: new xeogl.BoxGeometry()
  });
  ````
 
  @class Perspective
- @module XEO
+ @module xeogl
  @submodule transforms
  @constructor
  @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this Perspective within the
@@ -37710,9 +38811,9 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
 
     "use strict";
 
-    XEO.Perspective = XEO.Transform.extend({
+    xeogl.Perspective = xeogl.Transform.extend({
 
-        type: "XEO.Perspective",
+        type: "xeogl.Perspective",
 
         _init: function (cfg) {
 
@@ -37736,7 +38837,7 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
             var canvas = this.scene.canvas.canvas;
             var aspect = canvas.clientWidth / canvas.clientHeight;
 
-            this.matrix = XEO.math.perspectiveMat4(this._fovy * (Math.PI / 180.0), aspect, this._near, this._far, this._matrix);
+            this.matrix = xeogl.math.perspectiveMat4(this._fovy * (Math.PI / 180.0), aspect, this._near, this._far, this._matrix);
         },
 
         _props: {
@@ -37861,4 +38962,4 @@ XEO.GLTFLoaderUtils = Object.create(Object, {
     });
 
 })();
-XEO.version="0.1.0";
+xeogl.version="1.0.0";

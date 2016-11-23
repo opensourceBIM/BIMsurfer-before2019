@@ -5,17 +5,18 @@ define(function () {
     /**
      Custom xeoEngine component that shows a wireframe box representing an axis-aligned 3D boundary.
      */
-    XEO.BIMBoundaryHelper = XEO.Entity.extend({
+    xeogl.BIMBoundaryHelper = xeogl.Entity.extend({
 
-        type: "XEO.BIMBoundaryHelper",
+        type: "xeogl.BIMBoundaryHelper",
 
         _init: function (cfg) {
 
-            this._super(XEO._apply({
+            this._super(xeogl._apply({
 
-                geometry: this.create(XEO.BoundaryGeometry), // http://xeoengine.org/docs/classes/BoundaryGeometry.html
+                geometry: this.create({ type:"xeogl.AABBGeometry" }), // http://xeoengine.org/docs/classes/AABBGeometry.html
 
-                material: this.create(XEO.PhongMaterial, {
+                material: this.create({
+                    type: "xeogl.PhongMaterial",
                     diffuse: [0, 0, 0],
                     ambient: [0, 0, 0],
                     specular: [0, 0, 0],
@@ -23,22 +24,26 @@ define(function () {
                     lineWidth: 2
                 }),
 
-                visibility: this.create(XEO.Visibility, {
+                visibility: this.create({
+                    type: "xeogl.Visibility",
                     visible: false // Initially invisible
                 }),
 
-                modes: this.create(XEO.Modes, {
+                modes: this.create({
+                    type: "xeogl.Modes",
                     collidable: false // This helper has no collision boundary of its own
                 }),
 
                 // Causes this entity to render after all other entities
-                stage: this.create(XEO.Stage, {
+                stage: this.create({
+                    type: "xeogl.Stage",
                     priority: 3
                 }),
 
                 // Disables depth-testing so that this entity
                 // appears to "float" over other entities
-                depthBuf: this.create(XEO.DepthBuf, {
+                depthBuf: this.create({
+                    type: "xeogl.DepthBuf",
                     active: false
                 })
 
