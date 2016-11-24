@@ -1118,8 +1118,8 @@ define([
 
                 aabb = worldBoundary.aabb;
 
-                min = aabb.min;
-                max = aabb.max;
+                min = aabb.slice(0);
+                max = aabb.slice(3);
 
                 if (min[0] < xmin) {
                     xmin = min[0];
@@ -1148,12 +1148,12 @@ define([
 
             var result = xeogl.math.AABB3();
 
-            result.min[0] = xmin;
-            result.min[1] = ymin;
-            result.min[2] = zmin;
-            result.max[0] = xmax;
-            result.max[1] = ymax;
-            result.max[2] = zmax;
+            result[0+0] = xmin;
+            result[1+0] = ymin;
+            result[2+0] = zmin;
+            result[0+3] = xmax;
+            result[1+3] = ymax;
+            result[2+3] = zmax;
 
             return result;
         }
