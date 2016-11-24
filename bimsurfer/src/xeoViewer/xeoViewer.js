@@ -989,20 +989,12 @@ define([
 
             if (params.animate) {
 
-                // Show the boundary we are flying to
-                boundaryHelper.geometry.aabb = aabb;
-                boundaryHelper.visibility.visible = true;
-
                 cameraFlight.flyTo({
                         aabb: aabb,
                         fitFOV: params.fitFOV,
                         duration: params.duration
                     },
                     function () {
-
-                        // Hide the boundary again
-                        boundaryHelper.visibility.visible = false;
-
                         if (ok) {
                             ok();
                         }

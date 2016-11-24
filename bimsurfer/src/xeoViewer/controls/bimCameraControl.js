@@ -346,6 +346,23 @@ define(function () {
             }
 
             var tempVecHover = math.vec3();
+            
+            var updateHoverDistanceAndCursor = function(canvasPos) {
+                var hit = scene.pick({
+                    canvasPos: canvasPos || lastCanvasPos,
+                    pickSurface: true
+                });
+
+                if (hit) {
+                    setCursor("pointer", true);
+                    if (hit.worldPos) {
+                        // TODO: This should be somehow hit.viewPos.z, but doesn't seem to be
+                        lastHoverDistance = math.lenVec3(math.subVec3(hit.worldPos, view.eye, tempVecHover));
+                    }
+                } else {
+                    setCursor("auto", true);
+                }
+            };
 
             input.on("mousemove",
                 function (canvasPos) {
@@ -360,21 +377,8 @@ define(function () {
 
                     if (!mouseDown) {
 
-                        var hit = scene.pick({
-                            canvasPos: canvasPos,
-                            pickSurface: true
-                        });
-
-                        if (hit) {
-                            setCursor("pointer", true);
-                            if (hit.worldPos) {
-                                // TODO: This should be somehow hit.viewPos.z, but doesn't seem to be
-                                lastHoverDistance = math.lenVec3(math.subVec3(hit.worldPos, view.eye, tempVecHover));
-                            }
-                        } else {
-                            setCursor("auto", true);
-                        }
-
+                        updateHoverDistanceAndCursor(canvasPos);
+                        
                         lastCanvasPos[0] = canvasPos[0];
                         lastCanvasPos[1] = canvasPos[1];
 
@@ -698,6 +702,8 @@ define(function () {
                             newTarget = true;
                         }
                     });
+                    
+                var updateTimeout = null;
 
                 scene.on("tick",
                     function (e) {
@@ -713,11 +719,19 @@ define(function () {
                         if (flying) {
                             return;
                         }
+                        
+                        if (updateTimeout) {
+                            clearTimeout(updateTimeout);
+                        }
+                        updateTimeout = setTimeout(function() {
+                            updateHoverDistanceAndCursor();
+                            updateTimeout = null;
+                        }, 50);
 
                         var zoomTimeInSeconds = 0.2;
                         var viewDistance = getSceneDiagSize();
                         if (lastHoverDistance) {
-                            viewDistance = viewDistance * 0.1 + 0.9 * lastHoverDistance;
+                            viewDistance = viewDistance * 0.02 + lastHoverDistance;
                         }
 
                         var tickDeltaSecs = e.deltaTime / 1000.0;
