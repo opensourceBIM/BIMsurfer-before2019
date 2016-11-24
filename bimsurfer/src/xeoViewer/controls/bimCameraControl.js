@@ -348,9 +348,6 @@ define(function () {
             var tempVecHover = math.vec3();
             
             var updateHoverDistanceAndCursor = function(canvasPos) {
-            
-                console.log("updateHoverDistanceAndCursor");
-                
                 var hit = scene.pick({
                     canvasPos: canvasPos || lastCanvasPos,
                     pickSurface: true
