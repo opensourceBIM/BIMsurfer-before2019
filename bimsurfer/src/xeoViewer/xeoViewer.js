@@ -68,7 +68,7 @@ define([
 
         // Flies cameras to objects
         var cameraFlight = new xeogl.CameraFlightAnimation(scene, { // http://xeoengine.org/docs/classes/CameraFlightAnimation.html
-            fitFOV: 45,
+            fitFOV: 25,
             duration: 1
         });
 
@@ -1319,7 +1319,7 @@ define([
          * @param params
          * @param {Boolean} [params.mouseRayPick=true] When true, camera flies to orbit each clicked point, otherwise
          * it flies to the boundary of the object that was clicked on.
-         * @param [params.viewFitFOV=45] {Number} How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
+         * @param [params.viewFitFOV=25] {Number} How much of field-of-view, in degrees, that a target {{#crossLink "Entity"}}{{/crossLink}} or its AABB should
          * fill the canvas when calling {{#crossLink "CameraFlightAnimation/flyTo:method"}}{{/crossLink}} or {{#crossLink "CameraFlightAnimation/jumpTo:method"}}{{/crossLink}}.
          * @param [params.viewFitDuration=1] {Number} Flight duration, in seconds, when calling {{#crossLink "CameraFlightAnimation/flyTo:method"}}{{/crossLink}}.
          */
