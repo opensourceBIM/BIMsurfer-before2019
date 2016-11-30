@@ -224,6 +224,32 @@ define([
         };
 
         /**
+         * Notifies the viewer that a task (such as loading a model) has started. Use #taskFinished
+         * to signal that the task has finished.
+         *
+         * Whenever the number of tasks is greater than zero, the viewer will display a spinner,
+         * and reduce rendering speed so as to allow scene updates to happen faster.
+         */
+        this.taskStarted = function() {
+            scene.canvas.spinner.processes++;
+                scene.ticksPerRender = 15; // Tweak this if necessary
+        };
+
+        /**
+         * Signals that a task has finished (see #taskStarted).
+         */
+        this.taskFinished = function() {
+            var spinner = scene.canvas.spinner;
+            if (spinner.processes === 0) {
+                return;
+            }
+            spinner.processes--;
+            if (spinner.processes === 0) {
+                scene.ticksPerRender = 1; // Back to max speed, one render per tick
+            }
+        };
+
+        /**
          * Loads random objects into the viewer for testing.
          *
          * Subsequent calls to #reset will then set the viewer to the state right after the model was loaded.

@@ -221,6 +221,10 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 // TODO: Ugh. Undecorate some of the newly created classes
                 models[model.model.roid] = model.model;
 
+                // Notify viewer that things are loading, so viewer can
+                // reduce rendering speed and show a spinner.
+                viewer.taskStarted();
+
                 viewer.createModel(model.model.roid);
 
                 var loader = new GeometryLoader(model.api, models, viewer);
@@ -232,6 +236,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 					} else if (progress == "done") {
 						console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
 						self.fire("loading-finished");
+                        viewer.taskFinished();
 					}
                 });
 
