@@ -1,12 +1,13 @@
 define([
-    "bimsurfer/src/DefaultMaterials",
-    "bimsurfer/src/EventHandler",
-    "bimsurfer/src/xeoViewer/controls/bimCameraControl",
-    "bimsurfer/src/xeoViewer/entities/bimModel",
-    "bimsurfer/src/xeoViewer/entities/bimObject",
-    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper",
-    "bimsurfer/src/xeoViewer/effects/highlightEffect",
-    "bimsurfer/src/xeoViewer/utils/collection"
+    "../DefaultMaterials",
+    "../EventHandler",
+    "../../lib/xeogl",
+    "./controls/bimCameraControl",
+    "./entities/bimModel",
+    "./entities/bimObject",
+    "./helpers/bimBoundaryHelper",
+    "./effects/highlightEffect",
+    "./utils/collection"
 ], function (DefaultMaterials, EventHandler) {
 
     "use strict";

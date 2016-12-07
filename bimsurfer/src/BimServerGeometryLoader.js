@@ -1,4 +1,4 @@
-define(["bimsurfer/src/DataInputStreamReader"], function (DataInputStreamReader) {
+define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
     function BimServerGeometryLoader(bimServerApi, models, viewer) {
 
