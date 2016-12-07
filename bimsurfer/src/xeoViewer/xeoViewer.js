@@ -326,6 +326,7 @@ define([
          * @param normals
          * @param colors
          * @param indices
+         * @returns {xeogl.Geometry} The new geometry
          * @private
          */
         this.createGeometry = function (geometryId, positions, normals, colors, indices) {
@@ -339,6 +340,8 @@ define([
             });
 
             collection.add(geometry);
+
+            return geometry;
         };
 
 
@@ -374,6 +377,7 @@ define([
          * @param geometryIds
          * @param type
          * @param matrix
+         * @returns {xeogl.BIMObject} The new object
          * @private
          */
         this.createObject = function (modelId, roid, oid, objectId, geometryIds, type, matrix) {
