@@ -1379,6 +1379,13 @@ define([
                 return {name: n, visible: hiddenTypes.indexOf(n) === -1};
             });
         };
+
+        /**
+         * Destroys the viewer
+         */
+        this.destroy = function() {
+            scene.destroy();
+        }
     }
 
     xeoViewer.prototype = Object.create(EventHandler.prototype);

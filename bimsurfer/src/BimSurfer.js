@@ -391,6 +391,13 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.getTypes = function() {
             return viewer.getTypes();
         };
+
+        /**
+         * Destroys the object
+         */
+        this.destroy = function() {
+            viewer.destroy();
+        }
     }
 
     BimSurfer.prototype = Object.create(EventHandler.prototype);
