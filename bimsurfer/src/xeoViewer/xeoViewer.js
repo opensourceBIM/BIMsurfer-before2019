@@ -807,7 +807,7 @@ define([
 
             var opacity = params.opacity;
 
-            if (!opacity) {
+            if (opacity === undefined) {
                 console.error("Param expected: 'opacity'");
                 return;
             }
