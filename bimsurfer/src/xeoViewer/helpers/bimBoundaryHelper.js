@@ -3,51 +3,88 @@ define(["../../../lib/xeogl"], function () {
     "use strict";
 
     /**
-     Custom xeoEngine component that shows a wireframe box representing an axis-aligned 3D boundary.
+     Custom xeoEngine component that shows a wireframe box representing an non axis-aligned 3D boundary.
      */
-    xeogl.BIMBoundaryHelper = xeogl.Entity.extend({
+    var BIMBoundaryHelperEntity = xeogl.Entity.extend({
 
-        type: "xeogl.BIMBoundaryHelper",
+        type: "xeogl.BIMBoundaryHelperEntity",
 
         _init: function (cfg) {
-
+        
+            var g = this.create({
+                type: "xeogl.OBBGeometry"
+            });
+            
+            var m = this.create({
+                type: "xeogl.PhongMaterial",
+                diffuse: [0.5, 0.5, 0.5],
+                ambient: [0, 0, 0],
+                specular: [0, 0, 0],
+                lineWidth: 2,
+            });
+            
+            var v = this.create({
+                type: "xeogl.Visibility",
+                visible: false // Initially invisible
+            });
+            
+            var md = this.create({
+                type: "xeogl.Modes",
+                collidable: false // This helper has no collision boundary of its own
+            });
+            
+            // Causes this entity to render after all other entities
+            var st = this.create({
+                type: "xeogl.Stage",
+                priority: 3
+            });
+            
+            // Disables depth-testing so that this entity
+            // appears to "float" over other entities
+            var db = this.create({
+                type: "xeogl.DepthBuf",
+                active: false
+            });
+            
             this._super(xeogl._apply({
-
-                geometry: this.create({ type:"xeogl.AABBGeometry" }), // http://xeoengine.org/docs/classes/AABBGeometry.html
-
-                material: this.create({
-                    type: "xeogl.PhongMaterial",
-                    diffuse: [0, 0, 0],
-                    ambient: [0, 0, 0],
-                    specular: [0, 0, 0],
-                    //emissive: [1.0, 1.0, 0.6], // Glowing
-                    lineWidth: 2
-                }),
-
-                visibility: this.create({
-                    type: "xeogl.Visibility",
-                    visible: false // Initially invisible
-                }),
-
-                modes: this.create({
-                    type: "xeogl.Modes",
-                    collidable: false // This helper has no collision boundary of its own
-                }),
-
-                // Causes this entity to render after all other entities
-                stage: this.create({
-                    type: "xeogl.Stage",
-                    priority: 3
-                }),
-
-                // Disables depth-testing so that this entity
-                // appears to "float" over other entities
-                depthBuf: this.create({
-                    type: "xeogl.DepthBuf",
-                    active: false
-                })
-
+                geometry: g,
+                material: m,
+                visibility: v,
+                modes: md,                
+                stage: st,
+                depthBuf: db
             }, cfg));
+            
         }
     });
+    
+    xeogl.BIMBoundaryHelper = function(cfg) {
+        
+        var self = this;
+        
+        self.entities = {};
+        
+        self.setSelected = function(ids) {
+            var old_ids = Object.keys(self.entities);
+            console.log("ids", ids, "old", old_ids);
+            ids.forEach(function(id) {
+                if (!self.entities[id]) {
+                    var h = self.entities[id] = new BIMBoundaryHelperEntity(cfg.scene);
+                    h.geometry.boundary = cfg.viewer.getObject(id).worldBoundary;
+                    h.visibility.visible = true;
+                }
+                var old_idx = old_ids.indexOf(id);
+                if (old_idx !== -1) {
+                    old_ids.splice(old_idx, 1);
+                }
+            });
+            console.log("old", old_ids);
+            old_ids.forEach(function(id) {
+                self.entities[id].destroy();
+                delete self.entities[id];
+            });
+        };
+    
+    };
+    
 });

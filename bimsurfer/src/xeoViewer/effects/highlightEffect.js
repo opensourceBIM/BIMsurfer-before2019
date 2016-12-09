@@ -46,12 +46,11 @@ define(["../../../lib/xeogl"], function () {
                     transform: entity.transform,
                     material:    this.create({
                         type: "xeogl.PhongMaterial",
-                        emissive: [1.0, 1.0, 0.0],
-                        diffuse: [0,0,0],
-                        ambient: [0,0,0],
-                     //   diffuse: [1,1,0],
-                        //ambient: entity.material.ambient,
-                        opacity: 0.3
+                        emissive: [0.2, 0.9, 0.2],
+                        specular: [0, 0, 0],
+                        diffuse:  [0, 0, 0],
+                        ambient:  [0, 0, 0],
+                        opacity:  0.25
                     }),
                     modes: this._modes,
                     stage: this._stage,
