@@ -2,12 +2,20 @@ define(["./EventHandler"], function(EventHandler) {
     
     function Row(args) {
         var self = this;
+        var num_names = 0;
+        var num_values = 0;
         
         this.setName = function(name) {
+            if (num_names++ > 0) {
+                args.name.appendChild(document.createTextNode(" "));
+            }
             args.name.appendChild(document.createTextNode(name));
         }
         
         this.setValue = function(value) {
+            if (num_values++ > 0) {
+                args.value.appendChild(document.createTextNode(", "));
+            }
             args.value.appendChild(document.createTextNode(value));
         }
     }
@@ -78,15 +86,23 @@ define(["./EventHandler"], function(EventHandler) {
             pset.getName(function(name) {
                 s.setName(name);
             });
-            pset.getHasProperties(function(prop) {
-                var r = s.addRow();
+            var render = function(prop, row) {
+                var r = row || s.addRow();
                 prop.getName(function(name) {
                     r.setName(name);
                 });
-                prop.getNominalValue(function(value) {
-                    r.setValue(value._v);
-                });
-            });
+                if (prop.getNominalValue) {
+                    prop.getNominalValue(function(value) {
+                        r.setValue(value._v);
+                    });
+                }
+                if (prop.getHasProperties) {
+                    prop.getHasProperties(function(prop) {
+                        render(prop, r);
+                    });
+                }
+            };
+            pset.getHasProperties(render);
         };
         
         this.setSelected = function(oid) {
