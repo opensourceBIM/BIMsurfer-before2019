@@ -23,11 +23,6 @@ define(["../../../lib/xeogl"], function () {
                 lineWidth: 2,
             });
             
-            var v = this.create({
-                type: "xeogl.Visibility",
-                visible: false // Initially invisible
-            });
-            
             var md = this.create({
                 type: "xeogl.Modes",
                 collidable: false // This helper has no collision boundary of its own
@@ -49,7 +44,6 @@ define(["../../../lib/xeogl"], function () {
             this._super(xeogl._apply({
                 geometry: g,
                 material: m,
-                visibility: v,
                 modes: md,                
                 stage: st,
                 depthBuf: db
@@ -72,7 +66,6 @@ define(["../../../lib/xeogl"], function () {
                 if (!self.entities[id]) {
                     var h = self.entities[id] = new BIMBoundaryHelperEntity(cfg.scene);
                     h.geometry.boundary = cfg.viewer.getObject(id).worldBoundary;
-                    h.visibility.visible = true;
                 }
                 
                 var old_idx = old_ids.indexOf(id);
