@@ -1,5 +1,5 @@
 // Backwards compatibility
-var deps = ["bimsurfer/src/Notifier", "bimsurfer/src/BimServerModel", "bimsurfer/src/PreloadQuery", "bimsurfer/src/BimServerGeometryLoader", "bimsurfer/src/xeoViewer/xeoViewer", "bimsurfer/src/EventHandler"];
+var deps = ["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./xeoViewer/xeoViewer", "./EventHandler"];
 
 /*
 if (typeof(BimServerClient) == 'undefined') {
@@ -391,6 +391,13 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.getTypes = function() {
             return viewer.getTypes();
         };
+
+        /**
+         * Destroys the object
+         */
+        this.destroy = function() {
+            viewer.destroy();
+        }
     }
 
     BimSurfer.prototype = Object.create(EventHandler.prototype);

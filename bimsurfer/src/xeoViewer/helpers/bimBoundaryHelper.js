@@ -1,4 +1,4 @@
-define(function () {
+define(["../../../lib/xeogl"], function () {
 
     "use strict";
 

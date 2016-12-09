@@ -1,4 +1,4 @@
-define(["bimsurfer/src/EventHandler"], function(EventHandler) {
+define(["./EventHandler"], function(EventHandler) {
     
     function Row(args) {
         var self = this;

@@ -1,12 +1,13 @@
 define([
-    "bimsurfer/src/DefaultMaterials",
-    "bimsurfer/src/EventHandler",
-    "bimsurfer/src/xeoViewer/controls/bimCameraControl",
-    "bimsurfer/src/xeoViewer/entities/bimModel",
-    "bimsurfer/src/xeoViewer/entities/bimObject",
-    "bimsurfer/src/xeoViewer/helpers/bimBoundaryHelper",
-    "bimsurfer/src/xeoViewer/effects/highlightEffect",
-    "bimsurfer/src/xeoViewer/utils/collection"
+    "../DefaultMaterials",
+    "../EventHandler",
+    "../../lib/xeogl",
+    "./controls/bimCameraControl",
+    "./entities/bimModel",
+    "./entities/bimObject",
+    "./helpers/bimBoundaryHelper",
+    "./effects/highlightEffect",
+    "./utils/collection"
 ], function (DefaultMaterials, EventHandler) {
 
     "use strict";
@@ -326,6 +327,7 @@ define([
          * @param normals
          * @param colors
          * @param indices
+         * @returns {xeogl.Geometry} The new geometry
          * @private
          */
         this.createGeometry = function (geometryId, positions, normals, colors, indices) {
@@ -339,6 +341,8 @@ define([
             });
 
             collection.add(geometry);
+
+            return geometry;
         };
 
 
@@ -374,6 +378,7 @@ define([
          * @param geometryIds
          * @param type
          * @param matrix
+         * @returns {xeogl.BIMObject} The new object
          * @private
          */
         this.createObject = function (modelId, roid, oid, objectId, geometryIds, type, matrix) {
@@ -807,7 +812,7 @@ define([
 
             var opacity = params.opacity;
 
-            if (!opacity) {
+            if (opacity === undefined) {
                 console.error("Param expected: 'opacity'");
                 return;
             }
@@ -1374,6 +1379,13 @@ define([
                 return {name: n, visible: hiddenTypes.indexOf(n) === -1};
             });
         };
+
+        /**
+         * Destroys the viewer
+         */
+        this.destroy = function() {
+            scene.destroy();
+        }
     }
 
     xeoViewer.prototype = Object.create(EventHandler.prototype);
