@@ -65,21 +65,25 @@ define(["../../../lib/xeogl"], function () {
         self.entities = {};
         
         self.setSelected = function(ids) {
+            
             var old_ids = Object.keys(self.entities);
-            console.log("ids", ids, "old", old_ids);
+            
             ids.forEach(function(id) {
                 if (!self.entities[id]) {
                     var h = self.entities[id] = new BIMBoundaryHelperEntity(cfg.scene);
                     h.geometry.boundary = cfg.viewer.getObject(id).worldBoundary;
                     h.visibility.visible = true;
                 }
+                
                 var old_idx = old_ids.indexOf(id);
                 if (old_idx !== -1) {
                     old_ids.splice(old_idx, 1);
                 }
             });
-            console.log("old", old_ids);
+            
             old_ids.forEach(function(id) {
+                // TODO: Don't destroy, but toggle visibility to save resources,
+                // then the variables above (`db`, `st`, ...) can also be shared.
                 self.entities[id].destroy();
                 delete self.entities[id];
             });
