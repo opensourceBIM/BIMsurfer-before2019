@@ -77,7 +77,7 @@ define([
         var collection = new xeogl.Collection(scene); // http://xeoengine.org/docs/classes/Collection.html
 
         // Shows a wireframe box at the given boundary
-        var boundaryHelper = new xeogl.BIMBoundaryHelper({scene: scene, viewer:self});
+        var boundaryHelper = new xeogl.BIMBoundaryHelper(scene, self);
 
         var highlightEffect = new xeogl.HighlightEffect(scene);
 
