@@ -61,6 +61,8 @@ define(["../../../lib/xeogl"], function () {
 
             var lastHoverDistance = null;
 
+            this._defaultDragAction = "orbit";
+
             // Returns the inverse of the camera's current view transform matrix
             var getInverseViewMat = (function () {
                 var viewMatDirty = true;
@@ -427,7 +429,11 @@ define(["../../../lib/xeogl"], function () {
                     var A = unproject(canvasPos);
                     var B = unproject(lastCanvasPos);
 
-                    var panning = input.keyDown[input.KEY_SHIFT] || input.mouseDownMiddle || (input.mouseDownLeft && input.mouseDownRight);
+                    var panning = self._defaultDragAction === "pan";
+
+                    if (input.keyDown[input.KEY_SHIFT] || input.mouseDownMiddle || (input.mouseDownLeft && input.mouseDownRight)) {
+                        panning = !panning;
+                    }
 
                     if (panning) {
                         // TODO: view.pan is in view space? We have a world coord vector.
@@ -960,7 +966,15 @@ define(["../../../lib/xeogl"], function () {
                         this._rotatePos.set(value);
                     }
                 }
-            }
+            },
+
+            defaultDragAction: {
+                set: function (value) {
+                    if (value === "pan" || value === "orbit") {
+                        this._defaultDragAction = value;
+                    }
+                }
+			}
         }
     });
 });

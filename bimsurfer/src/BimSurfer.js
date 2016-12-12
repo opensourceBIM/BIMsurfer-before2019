@@ -393,6 +393,16 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         /**
+         * Sets the default behaviour of mouse and touch drag input
+         *
+         * @method setDefaultDragAction
+         * @param {String} action ("pan" | "orbit")
+         */
+        this.setDefaultDragAction = function (action) {
+            viewer.setDefaultDragAction(action);
+        };
+
+        /**
          * Destroys the object
          */
         this.destroy = function() {

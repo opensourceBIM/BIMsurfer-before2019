@@ -215,6 +215,16 @@ define([
             });
 
         /**
+         * Sets the default behaviour of mouse and touch drag input
+         *
+         * @method setDefaultDragAction
+         * @param {String} action ("pan" | "orbit")
+         */
+        this.setDefaultDragAction = function (action) {
+            cameraControl.defaultDragAction = action;
+        };
+
+        /**
          * Sets the global scale for models loaded into the viewer.
          *
          * @method setScale
