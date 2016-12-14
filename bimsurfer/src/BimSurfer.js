@@ -403,7 +403,19 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         /**
-         * Destroys the object
+         * Returns the world boundary of an object
+         *
+         * @method getWorldBoundary
+         * @param {String} objectId id of object
+         * @param {Object} result Existing boundary object
+         * @returns {Object} World boundary of object, containing {obb, aabb, center, sphere} properties. See xeogl.Boundary3D
+         */
+        this.getWorldBoundary = function(objectId, result) {
+            return viewer.getWorldBoundary(objectId, result);
+        };
+
+       /**
+         * Destroys the BIMSurfer
          */
         this.destroy = function() {
             viewer.destroy();
