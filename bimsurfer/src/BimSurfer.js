@@ -393,6 +393,17 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         /**
+         * Returns the world boundary of an object
+         *
+         * @method getWorldBoundary
+         * @param {String} objectId id of object
+         * @returns {xeogl.Boundary3D} World boundary of object
+         */
+        this.getWorldBoundary = function(objectId) {
+            return viewer.getWorldBoundary(objectId);
+        };
+
+       /**
          * Destroys the object
          */
         this.destroy = function() {

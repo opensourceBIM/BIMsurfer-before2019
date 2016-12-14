@@ -1379,6 +1379,39 @@ define([
                 return {name: n, visible: hiddenTypes.indexOf(n) === -1};
             });
         };
+        
+        /**
+         * Returns the world boundary of an object
+         *
+         * @method getWorldBoundary
+         * @param {String} objectId id of object
+         * @returns {xeogl.Boundary3D} World boundary of object
+         */
+        this.getWorldBoundary = function(objectId) {
+            let object = objects[objectId];
+
+            if (object === undefined) {
+                return null;
+            } else {
+                // the boundary needs to be scaled back to real world units
+                let s = 1 / scale.xyz[0],
+                    scaled = object.worldBoundary,
+                    aabb = [scaled.aabb[0] * s, scaled.aabb[1] * s, scaled.aabb[2] * s, scaled.aabb[3] * s, scaled.aabb[4] * s, scaled.aabb[5] * s],
+                    sphere = [scaled.sphere[0] * s, scaled.sphere[1] * s, scaled.sphere[2] * s, scaled.sphere[3] * s],
+                    center = xeogl.math.vec3(), 
+                    obb = xeogl.math.mat4();
+
+                xeogl.math.mulVec3Scalar(scaled.center, s, center);
+                xeogl.math.mulMat4Scalar(scaled.obb, s, obb);
+
+                return {
+                    obb: obb,	
+                    aabb: aabb,	
+                    center: center,	
+                    sphere: sphere	
+                };
+            }
+        };
 
         /**
          * Destroys the viewer
