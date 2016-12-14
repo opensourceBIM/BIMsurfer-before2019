@@ -1396,8 +1396,8 @@ define([
             } else {
                 if (result === undefined) {
                     result = {
-					    obb: xeogl.math.mat4(),
-                   	    aabb: new Float32Array(6),
+                        obb: xeogl.math.mat4(),
+                        aabb: new Float32Array(6),
                         center: xeogl.math.vec3(),
                         sphere: xeogl.math.vec4()
                     };
