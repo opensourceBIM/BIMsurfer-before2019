@@ -1385,31 +1385,40 @@ define([
          *
          * @method getWorldBoundary
          * @param {String} objectId id of object
-         * @returns {xeogl.Boundary3D} World boundary of object
+         * @param {Object} result Existing boundary object
+         * @returns {Object} World boundary of object, containing {obb, aabb, center, sphere} properties. See xeogl.Boundary3D
          */
-        this.getWorldBoundary = function(objectId) {
+        this.getWorldBoundary = function(objectId, result) {
             let object = objects[objectId];
 
             if (object === undefined) {
                 return null;
             } else {
+                if (result === undefined) {
+                    result = {
+					    obb: xeogl.math.mat4(),
+                   	    aabb: new Float32Array(6),
+                        center: xeogl.math.vec3(),
+                        sphere: xeogl.math.vec4()
+                    };
+                }
+
                 // the boundary needs to be scaled back to real world units
                 let s = 1 / scale.xyz[0],
-                    scaled = object.worldBoundary,
-                    aabb = [scaled.aabb[0] * s, scaled.aabb[1] * s, scaled.aabb[2] * s, scaled.aabb[3] * s, scaled.aabb[4] * s, scaled.aabb[5] * s],
-                    sphere = [scaled.sphere[0] * s, scaled.sphere[1] * s, scaled.sphere[2] * s, scaled.sphere[3] * s],
-                    center = xeogl.math.vec3(), 
-                    obb = xeogl.math.mat4();
+                    scaled = object.worldBoundary;
 
-                xeogl.math.mulVec3Scalar(scaled.center, s, center);
-                xeogl.math.mulMat4Scalar(scaled.obb, s, obb);
+                result.aabb[0] = scaled.aabb[0] * s;
+                result.aabb[1] = scaled.aabb[1] * s;
+                result.aabb[2] = scaled.aabb[2] * s;
+                result.aabb[3] = scaled.aabb[3] * s;
+                result.aabb[4] = scaled.aabb[4] * s;
+                result.aabb[5] = scaled.aabb[5] * s;
 
-                return {
-                    obb: obb,	
-                    aabb: aabb,	
-                    center: center,	
-                    sphere: sphere	
-                };
+                xeogl.math.mulVec3Scalar(scaled.center, s, result.center);
+                xeogl.math.mulVec4Scalar(scaled.sphere, s, result.sphere);
+                xeogl.math.mulMat4Scalar(scaled.obb, s, result.obb);
+
+                return result;
             }
         };
 

@@ -397,10 +397,11 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          *
          * @method getWorldBoundary
          * @param {String} objectId id of object
-         * @returns {xeogl.Boundary3D} World boundary of object
+         * @param {Object} result Existing boundary object
+         * @returns {Object} World boundary of object, containing {obb, aabb, center, sphere} properties. See xeogl.Boundary3D
          */
-        this.getWorldBoundary = function(objectId) {
-            return viewer.getWorldBoundary(objectId);
+        this.getWorldBoundary = function(objectId, result) {
+            return viewer.getWorldBoundary(objectId, result);
         };
 
        /**
