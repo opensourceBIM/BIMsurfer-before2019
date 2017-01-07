@@ -77,7 +77,7 @@ define([
         var collection = new xeogl.Collection(scene); // http://xeoengine.org/docs/classes/Collection.html
 
         // Shows a wireframe box at the given boundary
-        var boundaryHelper = new xeogl.BIMBoundaryHelper(scene);
+        var boundaryHelper = new xeogl.BIMBoundaryHelper(scene, self);
 
         var highlightEffect = new xeogl.HighlightEffect(scene);
 
@@ -1057,11 +1057,10 @@ define([
         function setBoundaryState(params) {
 
             if (params.aabb) {
-                boundaryHelper.geometry.aabb = params.aabb;
-
+                throw new Error("Not supported");
             } else if (params.ids) {
-                boundaryHelper.geometry.aabb = getObjectsAABB(params.ids);
-
+                boundaryHelper.setSelected(params.ids);
+                
                 highlightEffect.clear();
 
                 var ids = params.ids;
@@ -1078,8 +1077,7 @@ define([
                     }
                 }
             }
-
-            boundaryHelper.visibility.visible = !!params.show;
+            
         }
 
         // Returns an axis-aligned bounding box (AABB) that encloses the given objects
@@ -1197,6 +1195,10 @@ define([
          */
         this.saveReset = function () {
             resetBookmark = this.getBookmark();
+        };
+        
+        this.getObject = function(id) {
+            return objects[id];
         };
 
         /**
