@@ -469,7 +469,7 @@ define([
 
             this.clear();
 
-            var model = new xeogl.Model(scene, {
+            var model = new xeogl.GLTFModel(scene, {
                 src: src
             });
 
@@ -482,7 +482,7 @@ define([
 
                     // TODO: viewFit, but boundaries not yet ready on Model Entities
 
-                    model.collection.iterate(function (component) {
+                    model.iterate(function (component) {
                         if (component.isType("xeogl.Entity")) {
                             self._addObject("DEFAULT", component);
                         }
