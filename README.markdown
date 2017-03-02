@@ -1,103 +1,295 @@
 
-    Copyright 2016, bimsurfer.org
-    BIM Surfer will be licensed under the MIT License.
+    Copyright 2017, bimsurfer.org
+    BIM Surfer is licensed under the MIT License.
 
-# New version 2016 
-In 2016 a new version of BIM Surfer will be released.
-The code will be build from scratch into a component that can be re-used in other softwaretools. 
-The license will change to MIT license to allow liberal re-use in commercial applications.
+#Table of Contents
 
-At this moment an API is being designed. This file will elaborate about this API and the intended implementation.
+- [Introduction](#introduction)
+- [Usage](#usage)
+  - [BIMSurfer](#bimsurfer)
+  - [Objects](#objects)
+    - [Selecting and deselecting objects](#selecting-and-deselecting-objects)
+    - [Showing and hiding objects](#showing-and-hiding-objects)
+    - [Changing color and transparency of objects](#changing-color-and-transparency-of-objects)
+  - [Camera](#camera)
+    - [Controlling the camera](#controlling-the-camera)
+    - [Fitting objects in view](#fitting-objects-in-view)
+  - [Resetting](#resetting)
+    - [Camera](#camera-1)
+    - [Objects](#objects-1)
 
-# Design rationale
-A BIM viewer module that can be used by 3d-novices without extensive knowledge on either web-frameworks or 3d frameworks. The example below serves to minimize boilerplate code, but is implemented on top of modular classes that can be instantiated manually as well. Legibility is prefered at all times. Hence, whenever sensible, methods take dictionaries rather than positional arguments
+# Introduction
 
-```javascript
-var viewer = new BimSurfer();
+BIMSurfer is a WebGL-based 3D viewer for [BIMServer]() that's built on [xeoEngine](http://xeoengine.org).
+ 
+TODO: More info
+     
+# Usage
 
-// Alternative 1: Load a model from an on-line BIMserver with existing bimserverapi/model:
-var bimServerApi = ...// existing bimserverapi
-var model = ...// existing bimserverapi model
-var viewerModel = viewer.load({bimserverapi: bimserverapi, model: model, query: …});
+## BIMSurfer
 
-// Alternative 2: Let bimsurfer create a bimsererapi and model
-// The load()'ing of a model happens asynchronously. Hence, it
-// returns a Promise with a then() function that accepts a 
-// method in case of success and (optionally) in case of error.
-viewer.load({bimserver: …, username: …, password: …,
-             poid: …, roid: …, query: …}).then(
-    function(model) { … },
-    function(error) { … }
-);
+Creating a [BIMSurfer](bimsurfer/src/BimSurfer.js): 
 
-// Alternatively 3: load a model from file:
-var model = viewer.load({url: "/path/to/file.glTF"}).then(function(model) {
-
-// getTree() returns a javascript notation of the tree.
-// `guid` and `nlevels` allow to only return a subset 
-// of the tree for performance reasons.
-var tree = model.getTree({guid: …, nlevels: …}).then(function(tree) {
-
-// Creating a DOM tree is framework specific, but examples
-// are provided for various frameworks [1]
-// [1] https://github.com/opensourceBIM/bimvie.ws-viewer/
-//             blob/master/index.html#L108
-var domtree = …;
-
-domtree.on("click", function(oid) {
-    viewer.viewFit({ids: [oid]});
+````javascript
+var bimSurfer = new BimSurfer({
+    domNode: "viewerContainer"
 });
+````
 
-domtree.on("eye-click", function(oid) {
-    viewer.hide([oid]);
+Loading a model from BIMServer:
+ 
+````javascript
+bimSurfer.load({
+        bimserver: ADDRESS,
+        username: USERNAME,
+        password: PASSWORD,
+        poid: 131073,
+        roid: 65539,
+        schema: "ifc2x3tc1" // < TODO: Deduce automatically
+    })
+        .then(function (model) {
+        
+                // Model is now loaded and rendering.
+                // The following sections show what you can do with BIMSurfer at this point.
+                //...
+            });
+````
+
+Generate a random test model if you want to test BIMSurfer without loading anything from BIMServer:   
+
+````javascript
+bimSurfer.loadRandom();
+````
+
+The following usage examples in this guide will refer to objects from the generated test model.
+
+## Objects
+
+### Selecting and deselecting objects
+
+Selecting four objects:
+
+````javascript
+bimSurfer.setSelection({ids: ["object3", "object2", "object4", "object6"], selected: true });
+````
+
+then querying which objects are selected:
+
+````javascript
+bimSurfer.getSelection()
+````
+
+The result shows that those four objects are currently selected:
+
+````json
+["object3", "object2", "object4", "object6"]
+````
+
+If we then deselect two objects, then query the selection again:
+
+````javascript
+bimSurfer.setSelection({ids: ["object3", "object6"], selected: false });
+bimSurfer.getSelection()
+````
+
+The result shows that only two objects are now selected:
+
+````json
+["object2", "object4"]  
+````
+
+Subscribing to selection updates:
+
+````javascript
+bimSurfer.on("selection-changed", 
+    function() {
+         var selected = bimSurfer.getSelection();
+         console.log("selection = " + JSON.stringify(selected));
+    });
+````
+
+### Showing and hiding objects
+
+Hiding three objects by ID:
+
+````javascript
+bimSurfer.setVisibility({ids: ["object3", "object1", "object6"], visible: false });
+````
+
+Setting two objects visible by ID:
+
+````javascript
+bimSurfer.setVisibility({ids: ["object1", "object6"], visible: true });
+````
+
+Hiding all objects of IFC types "IfcSlab" and "IfcWall":
+
+````javascript
+bimSurfer.setVisibility({ids: ["IfcSlab", "IfcWall"], visible: false });
+````
+
+### Changing color and transparency of objects
+
+Making two objects pink:
+
+````javascript
+bimSurfer.setColor({ids: ["object3", "object6"], color: [1, 0, 1] })
+````
+
+An optional fourth element may be specified in the color to set opacity: 
+
+````javascript
+bimSurfer.setColor({ids: ["object3", "object6"], color: [1, 0, 1, 0.5] })
+````
+
+## Camera
+  
+### Controlling the camera
+
+Setting the camera position:
+
+````javascript
+bimSurfer.setCamera({ 
+    eye: [-20,0,20],
+    target: [0,10,0],
+    up: [0,1,0]
 });
+````
 
-// Event handlers on the viewer can be subscribed to using the 
-// on() method.
+Then "target" will then be the position we'll orbit about with the mouse or arrow keys (until we double-click an object to 
+ select a different orbit position).
 
-function selectionChanged(currentlySelected, selectionChanged) {
+Setting the camera projection to orthographic:
 
+````javascript
+bimSurfer.setCamera({ 
+    type:"ortho"
+});
+````
+
+Setting the view volume size for orthographic, switching to orthographic projection first if necessary:
+
+````javascript
+bimSurfer.setCamera({ 
+    type:"ortho", 
+    scale: 100
+});
+````
+This uses the same technique as Blender, where the scale argument relates to the "real world" size of the model, meaning 
+that if you set scale to 100, then your view would at most encompass an element of 100 units size.    
+
+Setting the camera projection to perspective:
+
+````javascript
+bimSurfer.setCamera({ 
+    type:"persp"
+});
+````
+
+Setting the FOV on Y-axis for perspective, switching to perspective projection first if necessary:
+
+````javascript
+bimSurfer.setCamera({ 
+    type:"persp", 
+    fovy: 65
+});
+````
+
+Querying camera state:
+
+````javascript
+var camera = bimSurfer.getCamera();
+````
+
+The returned value would be:
+
+````json
+{
+    "type": "persp",
+    "eye": [-20,0,20],
+    "target": [0,10,0],
+    "up": [0,1,0],
+    "fovy": 65
 }
+````
 
-viewer.on("selection-changed", selectionChanged);
+Subscribing to camera updates:
 
-// Event handler can be canceled using the off() method. Possibly
-// by using a wildcard to cancel all handlers on a particular
-// event.
-viewer.off("selection-changed", selectionChanged);
-viewer.off("selection-changed", "*");
-```
+````javascript
+bimSurfer.on("camera-changed", 
+    function() {
+         var camera = bimSurfer.getCamera();
+         console.log(JSON.stringify(camera));
+    });
+````
+ 
+### Fitting objects in view
 
-### Advanced usage
-The example above favours ease of use over modularity and extensibility. In fact, the code above are merely shortcuts providing sensible defaults to functionally identical behaviour.
+Flying the camera to fit the specified objects in view:
 
-```javascript
-var viewer = BimSurfer.Viewer();
-// Still not so sure what to do with this
-var tree_view = BimSurfer.DojoTreeView();
-var canvas = BimSurfer.XeoEngineViewer();
-var loader = BimSurfer.BimServerLoader();
-var query = BimSurfer.RubenQueryEngine();
-var painter = BimSurfer.MaterialColorByEntity();
+````javascript
+bimSurfer.viewFit({ ids: ["object3", "object1", "object6"], animate: true });
+````
 
-viewer.addTreeView(tree_view);
-viewer.addViewer(canvas);
-viewer.addLoader(loader);
-viewer.setPainter(painter);
+Jumping the camera to fit the specified objects in view:
 
-loader.load({bimserver: …, username: …, password: …,
-             poid: …, roid: …, query: …});
-```
+````javascript
+bimSurfer.viewFit({ids: ["object1", "object6"], animate: false });
+````
 
-# API reference
+Flying to fit all objects in view:
 
-NB: This is the “simple” viewer API
-NB2: What do we prefer? select/deselect or setSelectionState
+````javascript
+bimSurfer.viewFit({ animate: true });
+````
 
-The type <id> refers to
-- A numeric identifier (“oid” / objectID in BIMserver jargon)
-- A textual guid (“GUID” / Globally Unique IDentifier in IFC jargon)
-Users are free to mix and match these types of ids and the viewer will translate between them. Use of numeric identifiers is more efficient, hence numeric ids are returned by the viewer. The user can translate between them with toId() toGuid() respectively.
+Jumping to fit all objects in view:
 
-![API concept](https://raw.githubusercontent.com/opensourceBIM/BIMsurfer/master/API-1.png)
-Sorry that this is a picture. We wanted to get the API out asap, and the markdown syntax dialect for tables just took too long.
+````javascript
+bimSurfer.viewFit({ animate: false });
+````
+
+## Resetting
+
+### Camera
+
+Resetting the camera to initial position:  
+
+````javascript
+bimSurfer.reset({ cameraPosition: true });
+````
+
+### Objects
+
+Resetting all objects to initial visibilities:
+
+````javascript
+bimSurfer.reset({ visibility: true });
+````
+
+Resetting two objects to their initial visibilities:  
+
+````javascript
+bimSurfer.reset({ ids: ["object3", "object6"], visibility: true });
+````
+
+Resetting all objects to their initial colors:  
+
+````javascript
+bimSurfer.reset({ elementColors: true });
+````
+
+Resetting two objects to their initial colors:  
+
+````javascript
+bimSurfer.reset({ ids: ["object3", "object6"], elementColors: true });
+````
+
+Deselecting all objects:  
+
+````javascript
+bimSurfer.reset({ selectionState: true });
+````
+
+ 
+
