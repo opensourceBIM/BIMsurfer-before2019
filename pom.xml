@@ -6,6 +6,8 @@
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssZ</maven.build.timestamp.format>	
 	</properties>
 	<description>BIMsurfer2</description>
 	<build>
@@ -44,27 +46,15 @@
 									<type>xml</type>
 									<classifier>plugin</classifier>
 								</artifact>
-							</artifacts>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-icon</id>
-						<phase>package</phase>
-						<goals>
-							<goal>attach-artifact</goal>
-						</goals>
-						<configuration>
-							<artifacts>
 								<artifact>
 									<file>icon.png</file>
 									<type>png</type>
 									<classifier>icon</classifier>
+								</artifact>
+								<artifact>
+									<file>${project.build.outputDirectory}/plugin/version.properties</file>
+									<type>properties</type>
+									<classifier>version</classifier>
 								</artifact>
 							</artifacts>
 						</configuration>
