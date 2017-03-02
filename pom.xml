@@ -19,6 +19,7 @@
 			<resource>
 				<directory>plugin</directory>
 				<targetPath>plugin</targetPath>
+				<filtering>true</filtering>
 			</resource>
 			<resource>
 				<directory>images</directory>
