@@ -57,7 +57,7 @@
 									<classifier>plugin</classifier>
 								</artifact>
 								<artifact>
-									<file>icon.png</file>
+									<file>plugin/icon.png</file>
 									<type>png</type>
 									<classifier>icon</classifier>
 								</artifact>
