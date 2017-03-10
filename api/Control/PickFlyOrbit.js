@@ -1,6 +1,5 @@
 "use strict"
 
-
 // Some helper functions to deal with the camera math: Note the these
 // operate on vectors represented as JavaScript objects {x:, y:, z:} not
 // arrays or typed arrays.
@@ -36,6 +35,9 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	pitch: 0,
 	zoom: 0,
 	prevZoom: 0,
+
+	scale: 1,
+	prevScale: 1,
 
     rate: 40,
 
@@ -122,6 +124,8 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 			this.SYSTEM.events.register('touchEnd', this.touchEnd, this);
 			this.SYSTEM.events.register('pick', this.pick, this);
 			this.SYSTEM.events.register('tick', this.tick, this);
+			this.SYSTEM.events.register('touchPinch', this.touchPinch, this);
+			this.SYSTEM.events.register('touchPan', this.touchPan, this);
 		} else {
 			this.SYSTEM.events.unregister('mouseDown', this.mouseDown, this);
 			this.SYSTEM.events.unregister('mouseUp', this.mouseUp, this);
@@ -132,6 +136,8 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 			this.SYSTEM.events.unregister('touchEnd', this.touchEnd, this);
 			this.SYSTEM.events.unregister('pick', this.pick, this);
 			this.SYSTEM.events.unregister('tick', this.tick, this);
+			this.SYSTEM.events.unregister('touchPinch', this.touchPinch, this);
+			this.SYSTEM.events.unregister('touchPan', this.touchPan, this);
 		}
 		return this;
 	},
@@ -465,10 +471,12 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	 * @param {touchEvent} e Touch event
 	 */
 	touchStart: function(e) {
-		this.lastX = this.downX = e.targetTouches[0].clientX;
-		this.lastY = this.downY = e.targetTouches[0].clientY;
-		this.orbitDragging = true;
-		this.touching = true;
+		if (e.targetTouches.length == 1) {
+			this.lastX = this.downX = e.targetTouches[0].clientX;
+			this.lastY = this.downY = e.targetTouches[0].clientY;
+			this.orbitDragging = true;
+			this.touching = true;
+		}
 	},
 
 	/**
@@ -477,8 +485,9 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	 * @param {touchEvent} e Touch event
 	 */
 	touchMove: function(e) {
-		this.actionMove(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
-
+		if (e.targetTouches.length == 1) {
+			this.actionMove(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
+		}
 	},
 
 	/**
@@ -487,9 +496,57 @@ BIMSURFER.Control.PickFlyOrbit = BIMSURFER.Class(BIMSURFER.Control, {
 	 * @param {touchEvent} e Touch event
 	 */
 	touchEnd: function(e) {
+		if (e.targetTouches.length == 1) {
+			this.orbitDragging = false;
+			this.panDragging = false;
+			this.touching = false;
+		}
+		else {
+			this.prevScale = 1;
+		}
+	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {touchEvent} e Touch event
+	 */
+	touchPinch: function(e) {
+		var delta = 0;
+		var event = e;
+		if (event.scale) {
+			this.scale = event.scale;
+			delta = this.prevScale - this.scale;
+		}
+
+		if (delta) {
+			if (delta > 0.1  && this.zoom > -25) {
+				this.zoom -= 1;
+				this.prevScale = this.scale;
+			} else if (delta < -0.1) {
+				this.zoom += 1;
+				this.prevScale = this.scale;
+			}
+		}
+
+		if (event.preventDefault) {
+			event.preventDefault();
+		}
+
+		event.preventDefault();
+		this.orbiting = true;
+	},
+
+	/**
+	 * Event listener
+	 *
+	 * @param {touchEvent} e Touch event
+	 */
+	touchPan: function(e) {
 		this.orbitDragging = false;
+		this.panDragging = true;
+		this.actionMove(this.downX+e.deltaX, this.downY+e.deltaY);
 		this.panDragging = false;
-		this.touching = false;
 	},
 
 });

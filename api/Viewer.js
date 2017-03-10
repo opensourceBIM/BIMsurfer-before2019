@@ -229,7 +229,22 @@ BIMSURFER.Viewer = BIMSURFER.Class({
 	 */
 	initEvents: function() {
 		var _this = this;
+//		TouchEmulator();
+		
 		var canvas = this.scene.getCanvas();
+		var hammer = new Hammer(canvas, { inputClass: Hammer.TouchInput });
+
+        hammer.on('pinch', function(e) { 
+        	_this.events.trigger('touchPinch', [e]); 
+        });
+        hammer.get('pinch').set({ threshold: 0.1 });
+        hammer.get('pinch').set({ enable: true });
+
+        hammer.on('pan', function(e) { 
+        	_this.events.trigger('touchPan', [e]); 
+        });
+        hammer.get('pan').set({ pointers: 2 });
+
 		canvas.addEventListener('mousedown', function(e) { _this.events.trigger('mouseDown', [e]); }, true);
 		canvas.addEventListener('mousemove', function(e) { _this.events.trigger('mouseMove', [e]); }, true);
 		canvas.addEventListener('mouseup', function(e) { _this.events.trigger('mouseUp', [e]); }, true);
