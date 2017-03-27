@@ -125,7 +125,7 @@ bimSurfer.setVisibility({ids: ["object1", "object6"], visible: true });
 Hiding all objects of IFC types "IfcSlab" and "IfcWall":
 
 ````javascript
-bimSurfer.setVisibility({ids: ["IfcSlab", "IfcWall"], visible: false });
+bimSurfer.setVisibility({types: ["IfcSlab", "IfcWall"], visible: false });
 ````
 
 ### Changing color and transparency of objects
