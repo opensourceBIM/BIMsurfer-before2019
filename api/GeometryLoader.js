@@ -177,13 +177,14 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				});
 			}
 		} else if (geometryType == 3) {
+			debugger;
 			var coreIds = [];
 			var geometryDataOid = data.readLong();
 			var nrParts = data.readInt();
 			//var objectBounds = data.readFloatArray(6);
 			
 			for (var i=0; i<nrParts; i++) {
-				var coreId = data.readLong();
+				var coreId = data.readLong() + 1;
 				coreIds.push(coreId);
 				var nrIndices = data.readInt();
 				o.stats.nrPrimitives += nrIndices / 3;
