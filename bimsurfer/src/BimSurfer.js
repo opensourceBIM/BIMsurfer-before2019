@@ -174,17 +174,17 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                         // TODO: Preload not necessary combined with the bruteforce tree
                         var fired = false;
 
-//                        model.query(PreloadQuery,
-//                            function () {
-//                                if (!fired) {
+                        model.query(PreloadQuery,
+                            function () {
+                                if (!fired) {
                                     fired = true;
                                     var vmodel = new Model(params.api, model);
 
                                     self._loadModel(vmodel);
 
                                     resolve(vmodel);
-//                                }
-//                            });
+                                }
+                            });
                     });
             });
         };

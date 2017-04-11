@@ -13,6 +13,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
         o.prepareReceived = false;
         o.todo = [];
 		o.geometryIds = {};
+		o.dataToInfo = {};
+		
+		o.roid = Object.keys(models)[0];
 
         this.addProgressListener = function (progressListener) {
             o.progressListeners.push(progressListener);
@@ -80,33 +83,52 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 });
 
             } else {
+            	var obj = [];
 
                 o.groupId = o.options.roids[0];
                 o.infoToOid = o.options.oids;
 
+            	for (var k in o.infoToOid) {
+            		var oid = parseInt(o.infoToOid[k]);
+            		models[o.options.roids[0]].get(oid, function(object){
+            			if (object.object._rgeometry != null) {
+							if (object.model.objects[object.object._rgeometry] != null) {
+								// Only if this data is preloaded, otherwise just don't include any gi
+								object.getGeometry(function(geometryInfo){
+									obj.push({gid: object.object._rgeometry, oid: object.oid, object: object, info: geometryInfo.object});
+								});
+							} else {
+								obj.push({gid: object.object._rgeometry, oid: object.oid, object: object});
+							}
+            			}
+            		});
+            	}
+            	obj.sort(function(a, b){
+        			if (a.info != null && b.info != null) {
+        				var topa = (a.info._emaxBounds.z + a.info._eminBounds.z) / 2;
+        				var topb = (b.info._emaxBounds.z + b.info._eminBounds.z) / 2;
+        				return topa - topb;
+        			} else {
+        				// Resort back to type
+        				// TODO this is dodgy when some objects do have info, and others don't
+        				return a.object.getType().localeCompare(b.object.getType());
+        			}
+        		});
+
                 var oids = [];
-                for (var k in o.infoToOid) {
-                    if (o.infoToOid.hasOwnProperty(k)) {
-                        if (k != null && k != "undefined") {
-                            oids.push(parseInt(o.infoToOid[k], 10));
-                        }
-                    }
-                }
+                obj.forEach(function(wrapper){
+               		oids.push(wrapper.object.object._rgeometry);
+                });
 
                 var query = {
-                    type: "IfcProduct",
-                    includeAllSubtypes: true,
+                    type: "GeometryInfo",
                     oids: oids,
                     include: {
-                        type: "IfcProduct",
-                        field: "geometry",
-                        include: {
-                            type: "GeometryInfo",
-                            field: "data"
-                        }
+                    	type: "GeometryInfo",
+                        field: "data"
                     }
                 };
-                o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin2", function (serializer) {
+                o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin3", function (serializer) {
                     o.bimServerApi.call("ServiceInterface", "download", {
                         roids: o.options.roids,
                         query: JSON.stringify(query),
@@ -306,7 +328,6 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
             var i;
 
-
             if (geometryType == 1) {
                 geometryId = stream.readLong();
                 numIndices = stream.readInt();
@@ -327,14 +348,24 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
 				o.geometryIds[geometryId] = [geometryId];
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
+                
+    			if (o.dataToInfo[geometryId] != null) {
+    				o.dataToInfo[geometryId].forEach(function(oid){
+    					var ob = o.viewer.getObject(o.roid + ":" + oid);
+    					ob.add(geometryId);
+    				});
+    				delete o.dataToInfo[geometryId];
+    			}
             } else if (geometryType == 2) {
+            	console.log("Unimplemented", 2);
             } else if (geometryType == 3) {
      			var geometryDataOid = stream.readLong();
                 numParts = stream.readInt();
 				o.geometryIds[geometryDataOid] = [];
 				
+				var geometryIds = [];
                 for (i = 0; i < numParts; i++) {
-                    geometryId = stream.readLong();
+                    geometryId = stream.readLong() + 1;
                     numIndices = stream.readInt();
 
                     if (BIMSERVER_VERSION == "1.4") {
@@ -353,10 +384,21 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     	colors = stream.readFloatArray(numColors);
                     }
 
+                    geometryIds.push(geometryId);
 					o.geometryIds[geometryDataOid].push(geometryId);
                     this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
                 }
+                if (o.dataToInfo[geometryDataOid] != null) {
+                	o.dataToInfo[geometryDataOid].forEach(function(oid){
+                		var ob = o.viewer.getObject(o.roid + ":" + oid);
+                		geometryIds.forEach(function(geometryId){
+                			ob.add(geometryId);
+                		});
+                	});
+                	delete o.dataToInfo[geometryDataOid];
+                }
             } else if (geometryType == 4) {
+            	console.log("Unimplemented", 4);
             } else if (geometryType == 5) {
             	var roid = stream.readLong();
     			var geometryInfoOid = stream.readLong();
@@ -364,7 +406,16 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
     			var matrix = stream.readDoubleArray(16);
     			var geometryDataOid = stream.readLong();
 				var geometryDataOids = o.geometryIds[geometryDataOid];
-    			var oid = o.infoToOid[geometryInfoOid];
+				var oid = o.infoToOid[geometryInfoOid];
+				if (geometryDataOids == null) {
+					geometryDataOids = [];
+					var list = o.dataToInfo[geometryDataOid];
+					if (list == null) {
+						list = [];
+						o.dataToInfo[geometryDataOid] = list;
+					}
+					list.push(oid);
+				}
     			if (oid == null) {
     				console.error("Not found", o.infoToOid, geometryInfoOid);
     			} else {
@@ -375,8 +426,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
     				});
     			}
             } else {
-
-                //this.warn("Unsupported geometry type: " + geometryType);
+                this.warn("Unsupported geometry type: " + geometryType);
                 return;
             }
 

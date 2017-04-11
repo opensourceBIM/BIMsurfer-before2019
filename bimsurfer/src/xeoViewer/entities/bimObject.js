@@ -106,6 +106,24 @@ define(["../../../lib/xeogl"], function () {
                 this.entities.push(entity);
             }
         },
+        
+        add: function(geometryId){
+            var entity = this.create({ // http://xeoengine.org/docs/classes/Entity.html
+                type: "xeogl.Entity",
+                meta: {
+                    objectId: this.id
+                },
+                geometry: "geometry." + geometryId,
+                transform: this.transform,
+                visibility: this.visibility,
+                material: this.material,
+                modes: this.modes,
+                stage: this.stage,
+                depthBuf: this.depthBuf
+            });
+
+            this.entities.push(entity);
+        },
 
         // Define read-only properties of xeogl.BIMObject
 
