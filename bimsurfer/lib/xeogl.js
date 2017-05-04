@@ -15532,7 +15532,12 @@ var Canvas2Image = (function () {
                 y += (e.offsetTop-e.scrollTop);
                 e = e.offsetParent;
             }
-            return {x: x, y: y};
+
+            var bodyRect = document.body.getBoundingClientRect();
+            return {
+                x: (x - bodyRect.left),
+                y: (y - bodyRect.top)
+            };
         },
 
         /**
