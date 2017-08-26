@@ -17,7 +17,7 @@ define(["../../../lib/xeogl"], function () {
             
             var phongMaterial = this.create({
                 type: "xeogl.PhongMaterial",
-                diffuse: [0.5, 0.5, 0.5],
+                diffuse: cfg.color || [0.5, 0.5, 0.5],
                 ambient: [0, 0, 0],
                 specular: [0, 0, 0],
                 lineWidth: 2,
@@ -58,7 +58,7 @@ define(["../../../lib/xeogl"], function () {
         }
     });
     
-    xeogl.BIMBoundaryHelper = function(scene, viewer) {
+    xeogl.BIMBoundaryHelper = function(scene, viewer, cfg) {
         
         var self = this;
         
@@ -76,7 +76,7 @@ define(["../../../lib/xeogl"], function () {
                         h = self._entities[id] = self._pool.shift();
                         h.visibility.visible = true;
                     } else {
-                        h = self._entities[id] = new BIMBoundaryHelperEntity(scene);
+                        h = self._entities[id] = new BIMBoundaryHelperEntity(scene, cfg);
                     }
                     h.geometry.boundary = viewer.getObject(id).worldBoundary;
                 }

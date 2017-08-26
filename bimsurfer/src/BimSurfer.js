@@ -30,9 +30,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
         cfg = cfg || {};
 
-        var viewer = this.viewer = new xeoViewer({
-            domNode: cfg.domNode
-        });
+        var viewer = this.viewer = new xeoViewer(cfg);
 
         /**
          * Fired whenever this BIMSurfer's camera changes.

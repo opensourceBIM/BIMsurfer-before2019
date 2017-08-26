@@ -77,9 +77,9 @@ define([
         var collection = new xeogl.Collection(scene); // http://xeoengine.org/docs/classes/Collection.html
 
         // Shows a wireframe box at the given boundary
-        var boundaryHelper = new xeogl.BIMBoundaryHelper(scene, self);
+        var boundaryHelper = new xeogl.BIMBoundaryHelper(scene, self, {color: cfg.selectionBorderColor});
 
-        var highlightEffect = new xeogl.HighlightEffect(scene);
+        var highlightEffect = new xeogl.HighlightEffect(scene, {color: cfg.selectionColor});
 
         // Models mapped to their IDs
         var models = {};

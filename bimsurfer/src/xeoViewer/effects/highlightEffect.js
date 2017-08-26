@@ -23,6 +23,9 @@ define(["../../../lib/xeogl"], function () {
                 type: "xeogl.DepthBuf",
                 active: false
             });
+            
+            this._emissiveColor = (cfg.color || [0.2, 0.9, 0.2]).slice(0,3);
+            this._opacity = cfg.color && cfg.color.length > 3 ? cfg.color[3] : 0.25;
 
             this._helpers = {};
             this._freeHelpers = [];
@@ -46,11 +49,11 @@ define(["../../../lib/xeogl"], function () {
                     transform: entity.transform,
                     material:    this.create({
                         type: "xeogl.PhongMaterial",
-                        emissive: [0.2, 0.9, 0.2],
+                        emissive: this._emissiveColor,
                         specular: [0, 0, 0],
                         diffuse:  [0, 0, 0],
                         ambient:  [0, 0, 0],
-                        opacity:  0.25
+                        opacity:  this._opacity
                     }),
                     modes: this._modes,
                     stage: this._stage,
