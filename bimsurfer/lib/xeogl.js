@@ -28821,13 +28821,16 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                 var specularVal = values.specular;
                 var shininessVal = values.shininess;
                 var emissiveVal = values.emission;
+                var transparencyVal = values.transparency;
 
                 var cfg = {
                     id: this._makeID(entryID),
                     meta: {
                         userInfo: userInfo
                     },
-                    shininess: shininessVal
+                    shininess: shininessVal,
+                    opacity: transparencyVal,
+                    transparent: transparencyVal < 1.
                 };
 
                 var entry;
