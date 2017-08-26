@@ -1,6 +1,7 @@
 define([
     "../DefaultMaterials",
     "../EventHandler",
+    "../Utils",
     "../../lib/xeogl",
     "./controls/bimCameraControl",
     "./entities/bimModel",
@@ -8,7 +9,7 @@ define([
     "./helpers/bimBoundaryHelper",
     "./effects/highlightEffect",
     "./utils/collection"
-], function (DefaultMaterials, EventHandler) {
+], function (DefaultMaterials, EventHandler, Utils) {
 
     "use strict";
 
@@ -29,7 +30,7 @@ define([
         domNode.appendChild(canvas);
 
         // Create a Scene
-        var scene = new xeogl.Scene({ // http://xeoengine.org/docs/classes/Scene.html
+        var scene = self.scene = new xeogl.Scene({ // http://xeoengine.org/docs/classes/Scene.html
             canvas: canvas,
 			transparent: true
         });
@@ -86,6 +87,8 @@ define([
 
         // Objects mapped to IDs
         var objects = {};
+        
+        var objects_by_guid = {};
 
         // For each RFC type, a map of objects mapped to their IDs
         var rfcTypes = {};
@@ -437,11 +440,15 @@ define([
          * @private
          */
         this._addObject = function (type, object) {
-
+            var guid;
+            if (object.id.indexOf("#") !== -1) {
+                guid = Utils.CompressGuid(object.id.split("#")[1].substr(8, 36).replace(/-/g, ""));
+            }
             collection.add(object);
 
             // Register object against ID
             objects[object.id] = object;
+            (objects_by_guid[guid] || (objects_by_guid[guid] = [])).push(object);
 
             // Register object against IFC type
             var types = (rfcTypes[type] || (rfcTypes[type] = {}));
@@ -449,11 +456,16 @@ define([
 
             var color = DefaultMaterials[type] || DefaultMaterials["DEFAULT"];
 
-            object.material.diffuse = [color[0], color[1], color[2]];
+            if (!guid) {
+                object.material.diffuse = [color[0], color[1], color[2]];
+            }
             object.material.specular = [0, 0, 0];
 
             if (color[3] < 1) { // Transparent object
                 object.material.opacity = color[3];
+                object.modes.transparent = true;
+            }
+            if (object.material.opacity < 1) { // Transparent object
                 object.modes.transparent = true;
             }
         };
@@ -608,13 +620,13 @@ define([
 
             for (i = 0, len = ids.length; i < len; i++) {
                 id = ids[i];
-                object = objects[id];
-                if (!object) {
-                    console.error("RFC type or object not found: '" + id + "'");
-                } else {
+                var fn = function(object) {
                     object.visibility.visible = visible;
                     changed = true;
                 }
+                var object_ = objects[id];
+                if (!object_) objects_by_guid[id].forEach(fn)
+                else fn(object_);
             }
 
             if (changed) {
@@ -674,13 +686,9 @@ define([
 
                 for (var i = 0, len = ids.length; i < len; i++) {
 
-                    objectId = ids[i];
-                    object = objects[objectId];
-
-                    if (!object) {
-                        console.error("Object not found: '" + objectId + "'");
-
-                    } else {
+                    var fn = function(object) {
+                    
+                        var objectId = object.id;
 
                         if (!!selectedObjects[objectId] !== selected) {
                             changed = true;
@@ -695,7 +703,14 @@ define([
                         }
 
                         selectedObjectList = null; // Now needs lazy-rebuild
+                    
                     }
+                    
+                    objectId = ids[i];
+                    var object_ = objects[objectId];
+                    if (!object_) objects_by_guid[objectId].forEach(fn)
+                    else fn(object_);
+                        
                 }
             }
 
@@ -773,7 +788,7 @@ define([
             for (var i = 0, len = ids.length; i < len; i++) {
 
                 objectId = ids[i];
-                object = objects[objectId];
+                object = objects[objectId] || objects_by_guid[objectId];
 
                 if (!object) {
                     // No return on purpose to continue changing color of
@@ -841,7 +856,7 @@ define([
             for (var i = 0, len = ids.length; i < len; i++) {
 
                 objectId = ids[i];
-                object = objects[objectId];
+                object = objects[objectId] || objects_by_guid[objectId];
 
                 if (!object) {
                     // No return on purpose to continue changing opacity of
@@ -1048,7 +1063,7 @@ define([
 
                 cameraFlight.jumpTo({
                     aabb: aabb,
-                    fitFOV: params.fitFOV
+                    fitFOV: 50.
                 });
             }
         };
@@ -1081,7 +1096,19 @@ define([
         }
 
         // Returns an axis-aligned bounding box (AABB) that encloses the given objects
-        function getObjectsAABB(ids) {
+        function getObjectsAABB(ids_) {
+        
+            var ids;
+            if (Object.keys(objects_by_guid).length) {
+                ids = [];
+                ids_.forEach(function(i) {
+                    objects_by_guid[i].forEach(function(o) {
+                        ids.push(o.id);
+                    });
+                });
+            } else {
+                ids = ids_;
+            }
 
             if (ids.length === 0) {
 
@@ -1098,7 +1125,7 @@ define([
                 // One object ID given
 
                 objectId = ids[0];
-                object = objects[objectId];
+                object = objects[objectId] || objects_by_guid[objectId];
 
                 if (object) {
                     worldBoundary = object.worldBoundary;
@@ -1135,7 +1162,7 @@ define([
             for (i = 0, len = ids.length; i < len; i++) {
 
                 objectId = ids[i];
-                object = objects[objectId];
+                object = objects[objectId] || objects_by_guid[objectId];
 
                 if (!object) {
                     continue;
@@ -1238,7 +1265,7 @@ define([
                 for (objectId in objects) {
                     if (objects.hasOwnProperty(objectId)) {
 
-                        object = objects[objectId];
+                        object = objects[objectId] || objects_by_guid[objectId];
 
                         if (getVisible && object.visibility.visible) {
                             visible.push(objectId);
@@ -1256,7 +1283,7 @@ define([
 
                 for (objectId in objects) {
                     if (objects.hasOwnProperty(objectId)) {
-                        object = objects[objectId];
+                        object = objects[objectId] || objects_by_guid[objectId];
                         colors[objectId] = object.material.diffuse.slice(); // RGB
                         opacities[objectId] = object.modes.transparent ? object.material.opacity : 1.0;
                     }
@@ -1302,7 +1329,7 @@ define([
 
                 for (objectId in colors) {
                     if (colors.hasOwnProperty(objectId)) {
-                        object = objects[objectId];
+                        object = objects[objectId] || objects_by_guid[objectId];
                         if (object) {
                             this._setObjectColor(object, colors[objectId]);
                             this._setObjectOpacity(object, opacities[objectId]);
@@ -1401,7 +1428,7 @@ define([
          * @returns {Object} World boundary of object, containing {obb, aabb, center, sphere} properties. See xeogl.Boundary3D
          */
         this.getWorldBoundary = function(objectId, result) {
-            let object = objects[objectId];
+            let object = objects[objectId] || objects_by_guid[objectId];
 
             if (object === undefined) {
                 return null;
