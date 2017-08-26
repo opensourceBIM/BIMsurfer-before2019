@@ -33,10 +33,14 @@ define(["../../../lib/xeogl"], function () {
 
         add: function (bimObject) {
             var entities = bimObject.entities;
-            var entity;
-            for (var i = 0, len = entities.length; i < len; i++) {
-                entity = entities[i];
-                this._createHelper(entity);
+            if (entities) {
+                var entity;
+                for (var i = 0, len = entities.length; i < len; i++) {
+                    entity = entities[i];
+                    this._createHelper(entity);
+                }
+            } else {
+                this._createHelper(bimObject);
             }
         },
 
