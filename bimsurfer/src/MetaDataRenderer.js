@@ -1,4 +1,4 @@
-define(["./EventHandler"], function(EventHandler) {
+define(["./EventHandler", "./Request", "./Utils"], function(EventHandler, Request, Utils) {
     
     function Row(args) {
         var self = this;
@@ -23,7 +23,7 @@ define(["./EventHandler"], function(EventHandler) {
     function Section(args) {
         var self = this;
         
-        var div = document.createElement("div");
+        var div = self.div = document.createElement("div");
         var nameh = document.createElement("h3");
         var table = document.createElement("table");
         
@@ -56,6 +56,55 @@ define(["./EventHandler"], function(EventHandler) {
         }
     };
     
+    function loadModelFromSource(src) {
+        return new Promise(function (resolve, reject) {
+            Request.Make({url: src}).then(function(xml) {
+                var json = Utils.XmlToJson(xml, {'Name': 'name', 'id': 'guid'});
+                
+                var psets = Utils.FindNodeOfType(json, "properties")[0];
+                var project = Utils.FindNodeOfType(json, "decomposition")[0].children[0];
+                var types = Utils.FindNodeOfType(json, "types")[0];
+                
+                var objects = {};
+                var typeObjects = {};
+                var properties = {};
+                psets.children.forEach(function(pset) {
+                    properties[pset.guid] = pset;
+                });
+                
+                var visitObject = function(parent, node) {
+                    var props = [];
+                    var o = (parent && parent.ObjectPlacement) ? objects : typeObjects;
+                    
+                    if (node["xlink:href"]) {
+                        if (!o[parent.guid]) {
+                            var p = Utils.Clone(parent);
+                            p.GlobalId = p.guid;
+                            o[p.guid] = p;
+                            o[p.guid].properties = []
+                        }
+                        var g = node["xlink:href"].substr(1);
+                        var p = properties[g];
+                        if (p) {
+                            o[parent.guid].properties.push(p);
+                        } else if (typeObjects[g]) {
+                            // If not a pset, it is a type, so concatenate type props
+                            o[parent.guid].properties = o[parent.guid].properties.concat(typeObjects[g].properties);
+                        }
+                    }
+                    node.children.forEach(function(n) {
+                        visitObject(node, n);
+                    });
+                };
+                
+                visitObject(null, types);
+                visitObject(null, project);
+                
+                resolve({model: {objects: objects, source: 'XML'}});
+            });
+        });
+    }
+    
     function MetaDataRenderer(args) {
         
         var self = this;        
@@ -65,44 +114,71 @@ define(["./EventHandler"], function(EventHandler) {
         var domNode = document.getElementById(args['domNode']);
         
         this.addModel = function(args) {
-            models[args.id] = args.model;
+            return new Promise(function (resolve, reject) {
+                if (args.model) {
+                    models[args.id] = args.model;
+                    resolve(args.model);
+                } else {
+                    loadModelFromSource(args.src).then(function(m) {
+                        models[args.id] = m;
+                        resolve(m);
+                    });
+                }
+            });
         };
         
         var renderAttributes = function(elem) {
             var s = new Section({domNode:domNode});
-            s.setName(elem.getType());
+            s.setName(elem.type || elem.getType());
             ["GlobalId", "Name", "OverallWidth", "OverallHeight", "Tag"].forEach(function(k) {
-                var fn = elem["get"+k];
-                if (fn) {
+                var v = elem[k];
+                if (typeof(v) === 'undefined') {
+                    var fn = elem["get"+k];
+                    if (fn) {
+                        v = fn.apply(elem);
+                    }
+                }
+                if (typeof(v) !== 'undefined') {
                     r = s.addRow();
                     r.setName(k);
-                    r.setValue(fn.apply(elem));
+                    r.setValue(v);
                 }
             });
+            return s;
         };
         
         var renderPSet = function(pset) {
             var s = new Section({domNode:domNode});
-            pset.getName(function(name) {
-                s.setName(name);
-            });
-            var render = function(prop, row) {
-                var r = row || s.addRow();
-                prop.getName(function(name) {
-                    r.setName(name);
+            if (pset.name && pset.children) {
+                s.setName(pset.name);
+                pset.children.forEach(function(v) {
+                    var r = s.addRow();
+                    r.setName(v.name);
+                    r.setValue(v.NominalValue);
                 });
-                if (prop.getNominalValue) {
-                    prop.getNominalValue(function(value) {
-                        r.setValue(value._v);
+            } else {
+                pset.getName(function(name) {
+                    s.setName(name);
+                });
+                var render = function(prop, row) {
+                    var r = row || s.addRow();
+                    prop.getName(function(name) {
+                        r.setName(name);
                     });
-                }
-                if (prop.getHasProperties) {
-                    prop.getHasProperties(function(prop) {
-                        render(prop, r);
-                    });
-                }
-            };
-            pset.getHasProperties(render);
+                    if (prop.getNominalValue) {
+                        prop.getNominalValue(function(value) {
+                            r.setValue(value._v);
+                        });
+                    }
+                    if (prop.getHasProperties) {
+                        prop.getHasProperties(function(prop) {
+                            render(prop, r);
+                        });
+                    }
+                };
+                pset.getHasProperties(render);
+            }
+            return s;
         };
         
         this.setSelected = function(oid) {
@@ -113,20 +189,30 @@ define(["./EventHandler"], function(EventHandler) {
             
             domNode.innerHTML = "";
             
-            oid = oid[0].split(':');
-            var o = models[oid[0]].model.objects[oid[1]];
+            oid = oid[0];
             
-            renderAttributes(o);
+            if (oid.indexOf(':') !== -1) {
+                oid = oid.split(':');
+                var o = models[oid[0]].model.objects[oid[1]];
             
-            o.getIsDefinedBy(function(isDefinedBy){
-                if (isDefinedBy.getType() == "IfcRelDefinesByProperties") {
-                    isDefinedBy.getRelatingPropertyDefinition(function(pset){
-                        if (pset.getType() == "IfcPropertySet") {
-                            renderPSet(pset);
-                        }
-                    });
-                }
-            });
+                renderAttributes(o);
+                
+                o.getIsDefinedBy(function(isDefinedBy){
+                    if (isDefinedBy.getType() == "IfcRelDefinesByProperties") {
+                        isDefinedBy.getRelatingPropertyDefinition(function(pset){
+                            if (pset.getType() == "IfcPropertySet") {
+                                renderPSet(pset);
+                            }
+                        });
+                    }
+                });
+            } else {
+                var o = models["1"].model.objects[oid];
+                renderAttributes(o);
+                o.properties.forEach(function(pset) {
+                    renderPSet(pset);
+                });
+            }
         };
         
         self.setSelected([]);

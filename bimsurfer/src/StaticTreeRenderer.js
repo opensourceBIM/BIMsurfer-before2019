@@ -1,4 +1,4 @@
-define(["./EventHandler"], function(EventHandler) {
+define(["./EventHandler", "./Request", "./Utils"], function(EventHandler, Request, Utils) {
     
     function StaticTreeRenderer(args) {
         
@@ -9,6 +9,8 @@ define(["./EventHandler"], function(EventHandler) {
         var SELECT = self.SELECT = 1;
         var SELECT_EXCLUSIVE = self.SELECT_EXCLUSIVE = 2;
         var DESELECT = self.DESELECT = 3;
+        
+        var fromXml = false;
         
         var domNodes = {};
         var selectionState = {};
@@ -85,15 +87,22 @@ define(["./EventHandler"], function(EventHandler) {
         
         this.addModel = function(args) {
             models.push(args);
+            if (args.src) {
+                fromXml = true;
+            }
         };
         
         this.qualifyInstance = function(modelId, id) {
-            return modelId + ":" + id;
+            if (fromXml) {
+                return id;
+            } else {
+                return modelId + ":" + id;
+            }
         };
         
         this.build = function() {
             var build = function(modelId, d, n) {
-                var qid = self.qualifyInstance(modelId, n.id);
+                var qid = self.qualifyInstance(modelId, fromXml ? n.guid : n.id);
                 var label = document.createElement("div");
                 var children = document.createElement("div");
                 
@@ -113,16 +122,29 @@ define(["./EventHandler"], function(EventHandler) {
                 };
                 
                 for (var i = 0; i < (n.children || []).length; ++i) {
+                    var child = n.children[i];
+                    if (fromXml) {
+                        if (child["xlink:href"]) continue;
+                        if (child.type === "IfcOpeningElement") continue;
+                    }
                     var d2 = document.createElement("div");
                     d2.className = "item";
                     children.appendChild(d2);
-                    build(modelId, d2, n.children[i]);
+                    build(modelId, d2, child);
                 }
             }
             models.forEach(function(m) {
                 var d = document.createElement("div");
                 d.className = "item";
-                build(m['id'], d, m['tree']);
+                if (m.tree) {
+                    build(m.id, d, m.tree);
+                } else if (m.src) {
+                    Request.Make({url: m.src}).then(function(xml) {
+                        var json = Utils.XmlToJson(xml, {'Name': 'name', 'id': 'guid'});
+                        var project = Utils.FindNodeOfType(json.children[0], "decomposition")[0].children[0];
+                        build(m.id || i, d, project);
+                    });
+                }
                 document.getElementById(args['domNode']).appendChild(d);
             });
         }
