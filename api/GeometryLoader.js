@@ -128,10 +128,11 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 						nodes : [{
 							type: "enable",
 							enabled: enabled,
-							nodes : [{
-								type : "material",
-								baseColor: material,
-								alpha: 1,
+							nodes : [
+//								{
+//								type : "material",
+//								baseColor: material,
+//								alpha: 1,
 //								nodes : [{}]
 //								nodes : [{
 //									type: "translate",
@@ -149,7 +150,8 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 //										}]
 //									}]
 //								}]
-							}, {
+//							}, {
+							{
 								type : "material",
 								baseColor: material,
 								alpha: material.a,
@@ -188,6 +190,10 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				var nrIndices = data.readInt();
 				o.stats.nrPrimitives += nrIndices / 3;
 				var indices = data.readShortArray(nrIndices);
+				var b = data.readInt();
+				if (b == 1) {
+					var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
+				}
 				data.align4();
 				var nrVertices = data.readInt();
 				o.stats.nrVertices += nrVertices;
@@ -203,6 +209,17 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 					type: "geometry",
 					primitive: o.type
 				};
+				
+				if (color != null) {
+					// Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
+					geometry.colors = [];
+					for (var i=0; i<nrVertices; i++) {
+						geometry.colors.push(color.r);
+						geometry.colors.push(color.g);
+						geometry.colors.push(color.b);
+						geometry.colors.push(color.a);
+					}
+				}
 				
 				geometry.coreId = coreId;
 				
@@ -239,6 +256,10 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var nrIndices = data.readInt();
 			var indices = data.readShortArray(nrIndices);
 			o.stats.nrPrimitives += nrIndices / 3;
+			var b = data.readInt();
+			if (b == 1) {
+				var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
+			}
 			data.align4();
 			var nrVertices = data.readInt();
 			var vertices = data.readFloatArray(nrVertices);
@@ -255,6 +276,17 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				primitive: o.type
 			};
 			
+			if (color != null) {
+				// Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
+				geometry.colors = [];
+				for (var i=0; i<nrVertices; i++) {
+					geometry.colors.push(color.r);
+					geometry.colors.push(color.g);
+					geometry.colors.push(color.b);
+					geometry.colors.push(color.a);
+				}
+			}
+			
 			geometry.coreId = geometryDataOid;
 			if (o.type == "lines") {
 				geometry.indices = o.convertToLines(indices);
@@ -267,6 +299,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			if (colors != null && colors.length > 0) {
 				geometry.colors = colors;
 			}
+			
 			o.library.add("node", geometry);
 			
 			o.loadedGeometry[geometryDataOid] = true;
@@ -413,7 +446,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 10) {
+		if (version != 11) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
