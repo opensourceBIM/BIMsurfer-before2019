@@ -448,7 +448,9 @@ define([
 
             // Register object against ID
             objects[object.id] = object;
-            (objects_by_guid[guid] || (objects_by_guid[guid] = [])).push(object);
+            if (guid) {
+                (objects_by_guid[guid] || (objects_by_guid[guid] = [])).push(object);
+            }
 
             // Register object against IFC type
             var types = (rfcTypes[type] || (rfcTypes[type] = {}));
