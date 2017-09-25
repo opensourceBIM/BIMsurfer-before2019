@@ -240,7 +240,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
                 loader.setLoadOids([model.model.roid], oids);
 
-                viewer.clear(); // For now, until we support multiple models through the API
+                // viewer.clear(); // For now, until we support multiple models through the API
 
                 viewer.on("tick", function () { // TODO: Fire "tick" event from xeoViewer
                     loader.process();
