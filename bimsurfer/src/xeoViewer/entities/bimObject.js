@@ -63,7 +63,7 @@ define(["../../../lib/xeogl"], function () {
             this.modes = this.create({
                 type: "xeogl.Modes", // http://xeoengine.org/docs/classes/Modes.html
                 transparent: false,
-                backfaces: false
+                backfaces: true
             });
 
             // When highlighting, causes this object to render after non-highlighted objects
