@@ -200,7 +200,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 return false;
             }
 
-            var version = data.readByte();
+            o.protocolVersion = data.readByte();
 
             if (BIMSERVER_VERSION == "1.4") {
 	            if (version != 4 && version != 5 && version != 6) {
@@ -208,7 +208,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 	                return false;
 	            }
             } else {
-	            if (version != 10) {
+	            if (o.protocolVersion != 10 && o.protocolVersion != 11) {
 	                console.error("Unimplemented version");
 	                return false;
 	            }
@@ -335,8 +335,14 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 	indices = stream.readIntArray(numIndices);
                 } else {
                 	indices = stream.readShortArray(numIndices);
-                	stream.align4();
                 }
+                if (o.protocolVersion == 11) {
+                	var b = stream.readInt();
+    				if (b == 1) {
+    					var color = {r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat()};
+    				}
+                }
+                stream.align4();
                 numPositions = stream.readInt();
                 positions = stream.readFloatArray(numPositions);
                 numNormals = stream.readInt();
@@ -372,9 +378,16 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     	indices = stream.readIntArray(numIndices);
                     } else {
                     	indices = stream.readShortArray(numIndices);
-                    	stream.align4();
                     }
 
+                    if (o.protocolVersion == 11) {
+                    	var b = stream.readInt();
+        				if (b == 1) {
+        					var color = {r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat()};
+        				}
+                    }
+                	stream.align4();
+                    
                     numPositions = stream.readInt();
                     positions = stream.readFloatArray(numPositions);
                     numNormals = stream.readInt();
