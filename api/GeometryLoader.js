@@ -190,7 +190,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				var nrIndices = data.readInt();
 				o.stats.nrPrimitives += nrIndices / 3;
 				var indices = data.readShortArray(nrIndices);
-				if (o.version == 11) {
+				if (o.state.version == 11) {
 					var b = data.readInt();
 					if (b == 1) {
 						var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
@@ -258,7 +258,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var nrIndices = data.readInt();
 			var indices = data.readShortArray(nrIndices);
 			o.stats.nrPrimitives += nrIndices / 3;
-			if (o.version == 11) {
+			if (o.state.version == 11) {
 				var b = data.readInt();
 				if (b == 1) {
 					var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
