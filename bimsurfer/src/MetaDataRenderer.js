@@ -160,7 +160,7 @@ define(["./EventHandler", "./Request", "./Utils"], function(EventHandler, Reques
                 pset.getName(function(name) {
                     s.setName(name);
                 });
-                var render = function(prop, row) {
+                var render = function(prop, index, row) {
                     var r = row || s.addRow();
                     prop.getName(function(name) {
                         r.setName(name);
@@ -171,8 +171,8 @@ define(["./EventHandler", "./Request", "./Utils"], function(EventHandler, Reques
                         });
                     }
                     if (prop.getHasProperties) {
-                        prop.getHasProperties(function(prop) {
-                            render(prop, r);
+                        prop.getHasProperties(function(prop, index) {
+                            render(prop, index, r);
                         });
                     }
                 };
