@@ -1437,7 +1437,7 @@ define([
             } else {
                 if (result === undefined) {
                     result = {
-                        obb: xeogl.math.mat4(),
+                        obb: new Float32Array(32),
                         aabb: new Float32Array(6),
                         center: xeogl.math.vec3(),
                         sphere: xeogl.math.vec4()
@@ -1457,7 +1457,14 @@ define([
 
                 xeogl.math.mulVec3Scalar(scaled.center, s, result.center);
                 xeogl.math.mulVec4Scalar(scaled.sphere, s, result.sphere);
-                xeogl.math.mulMat4Scalar(scaled.obb, s, result.obb);
+
+                var obb = scaled.obb;
+                var buffer = result.obb.buffer;
+                for (var i = 0; i < 32; i += 4) {
+                    var v = new Float32Array(buffer, 4 * i);
+                    xeogl.math.mulVec3Scalar(obb.slice(i), s, v);
+                    v[3] = 1.;
+                }
 
                 return result;
             }
