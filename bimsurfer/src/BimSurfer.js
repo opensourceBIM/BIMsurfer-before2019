@@ -116,14 +116,22 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 					resolve(params);
 				} else {
 					params.api.call("ServiceInterface", "getAllRelatedProjects", {poid: params.poid}, function(data) {
-						if (data.length > 0) {
-							var projectData = data[0];
-							params.roid = projectData.lastRevisionId;
-							params.schema = projectData.schema;
-							self.models = [projectData];
-							
-							resolve(params);
-						} else {
+                        var resolved = false;
+                        
+                        data.forEach(function(projectData) {
+                            if (projectData.oid == params.poid) {
+                                params.roid = projectData.lastRevisionId;
+                                params.schema = projectData.schema;
+                                if (!self.models) {
+                                    self.models = [];
+                                }
+                                self.models.push(projectData);
+                                resolved = true;
+                                resolve(params);
+                            }
+                        });
+                        
+                        if (!resolved) {
 							reject();
 						}
 					}, reject);
