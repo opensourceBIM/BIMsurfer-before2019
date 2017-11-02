@@ -185,7 +185,8 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			//var objectBounds = data.readFloatArray(6);
 			
 			for (var i=0; i<nrParts; i++) {
-				var coreId = data.readLong() + 1;
+				var partId = data.readLong();
+				var coreId = geometryDataOid + "_" + i;
 				coreIds.push(coreId);
 				var nrIndices = data.readInt();
 				o.stats.nrPrimitives += nrIndices / 3;
