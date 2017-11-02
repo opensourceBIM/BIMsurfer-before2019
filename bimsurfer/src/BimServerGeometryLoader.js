@@ -371,7 +371,8 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 				
 				var geometryIds = [];
                 for (i = 0; i < numParts; i++) {
-                    geometryId = stream.readLong() + 1;
+                	var partId = stream.readLong();
+                    geometryId = geometryDataOid + "_" + i;
                     numIndices = stream.readInt();
 
                     if (BIMSERVER_VERSION == "1.4") {
