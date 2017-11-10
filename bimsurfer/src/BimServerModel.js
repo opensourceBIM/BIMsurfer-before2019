@@ -13,10 +13,10 @@ define(["../lib/text"], function(text) {
     };
     */
     
-    function BimServerModel(api, model) {
-    
-        this.api = api;
-        this.model = model;
+    function BimServerModel(apiModel) {
+    	
+        this.api = apiModel.bimServerApi;
+        this.apiModel = apiModel;
         this.tree = null;
         this.treePromise = null;
     
@@ -115,7 +115,7 @@ define(["../lib/text"], function(text) {
 					};
 				
                 // Perform the download
-				model.query(query, function(o) {}).done(function(){		
+				apiModel.query(query, function(o) {}).done(function(){		
 					
 					// A list of entities that define parent-child relationships
 					var entities = {
@@ -130,10 +130,10 @@ define(["../lib/text"], function(text) {
 					var instance_by_id = {};
 					var objects = [];
 					
-					for (var e in model.objects) {
+					for (var e in apiModel.objects) {
 						// The root node in a dojo store should have its parent
 						// set to null, not just something that evaluates to false
-						var o = model.objects[e].object;
+						var o = apiModel.objects[e].object;
 						o.parent = null;
 						instance_by_id[o._i] = o;
 						objects.push(o);

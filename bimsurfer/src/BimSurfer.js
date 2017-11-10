@@ -221,7 +221,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 
                 self._idMapping.toGuid.push(oidToGuid);
                 self._idMapping.toId.push(guidToOid);
-
+                
                 var models = {};
 
                 // TODO: Ugh. Undecorate some of the newly created classes

@@ -1,10 +1,9 @@
 define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
-    function BimServerGeometryLoader(bimServerApi, models, viewer) {
+    function BimServerGeometryLoader(bimServerApi, viewer, model, roid) {
 
         var o = this;
 
-        o.models = models;
         o.bimServerApi = bimServerApi;
         o.viewer = viewer;
         o.state = {};
@@ -15,7 +14,8 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 		o.geometryIds = {};
 		o.dataToInfo = {};
 		
-		o.roid = Object.keys(models)[0];
+		o.model = model;
+		o.roid = roid;
 
         this.addProgressListener = function (progressListener) {
             o.progressListeners.push(progressListener);
@@ -45,16 +45,8 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             }
         };
 
-        this.setLoadRevision = function (roid) {
-            o.options = {type: "revision", roid: roid};
-        };
-
-        this.setLoadTypes = function (roid, schema, types) {
-            o.options = {type: "types", schema: schema, roid: roid, types: types};
-        };
-
-        this.setLoadOids = function (roids, oids) {
-            o.options = {type: "oids", roids: roids, oids: oids};
+        this.setLoadOids = function (oids) {
+            o.options = {type: "oids", oids: oids};
         };
 
         /**
@@ -67,11 +59,11 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
             if (BIMSERVER_VERSION == "1.4") {
 
-                o.groupId = o.options.roids[0];
+                o.groupId = o.roid;
                 o.oids = o.options.oids;
                 o.bimServerApi.getMessagingSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingSerializerPlugin", function (serializer) {
                     o.bimServerApi.call("Bimsie1ServiceInterface", "downloadByOids", {
-                        roids: o.options.roids,
+                        roids: [o.roid],
                         oids: o.options.oids,
                         serializerOid: serializer.oid,
                         sync: false,
@@ -85,12 +77,12 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             } else {
             	var obj = [];
 
-                o.groupId = o.options.roids[0];
+                o.groupId = o.roid;
                 o.infoToOid = o.options.oids;
 
             	for (var k in o.infoToOid) {
             		var oid = parseInt(o.infoToOid[k]);
-            		models[o.options.roids[0]].get(oid, function(object){
+            		o.model.apiModel.get(oid, function(object){
             			if (object.object._rgeometry != null) {
 							if (object.model.objects[object.object._rgeometry] != null) {
 								// Only if this data is preloaded, otherwise just don't include any gi
@@ -130,7 +122,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 };
                 o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin3", function (serializer) {
                     o.bimServerApi.call("ServiceInterface", "download", {
-                        roids: o.options.roids,
+                        roids: [o.roid],
                         query: JSON.stringify(query),
                         serializerOid : serializer.oid,
                         sync : false
@@ -433,9 +425,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
     			if (oid == null) {
     				console.error("Not found", o.infoToOid, geometryInfoOid);
     			} else {
-    				o.models[roid].get(oid, function(object){
+    				o.model.apiModel.get(oid, function(object){
     					object.gid = geometryInfoOid;
-    					var modelId = roid; // TODO: set to the model ID
+    					var modelId = o.roid; // TODO: set to the model ID
     					o._createObject(modelId, roid, oid, oid, geometryDataOids, object.getType(), matrix);
     				});
     			}
