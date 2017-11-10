@@ -207,40 +207,101 @@
 			                
 			                // For this example, we'll fetch all the latest revisions of all the subprojects of the main project
 			                var poid = QueryString.poid;
+			                
+			                var nrProjects;
+			                
+			                function loadModels(models, totalBounds) {
+			                	var center = [
+			                		(totalBounds.min[0] + totalBounds.max[0]) / 2,
+			                		(totalBounds.min[1] + totalBounds.max[1]) / 2,
+			                		(totalBounds.min[2] + totalBounds.max[2]) / 2
+			                	];
+			                		
+			                	var globalTransformationMatrix = [
+			                		1, 0, 0, 0,
+			                		0, 1, 0, 0,
+			                		0, 0, 1, 0,
+			                		-center[0], -center[1], -center[2], 1
+			                	];
+			                	console.log(totalBounds);
+			                	for (var roid in models) {
+			                		var model = models[roid];
+				                	// Example 1: Load a full model
+				                	modelLoader.setGlobalTransformationMatrix(globalTransformationMatrix);
+					                modelLoader.loadFullModel(model).then(function(bimSurferModel){
+					                    processBimSurferModel(bimSurferModel);
+					                });
+				                	
+				                	// Example 2: Load a list of objects (all walls and subtypes)
+//				                	var objects = [];
+//				                	model.getAllOfType("IfcWall", true, function(wall){
+//				                		objects.push(wall);
+//				                	}).done(function(){
+//						                modelLoader.loadObjects(model, objects).then(function(bimSurferModel){
+//						                    processBimSurferModel(bimSurferModel);
+//						                });
+//				                	});
+				                	
+				                	// Example 3: Load the results of a query
+//				                	var objects = [];
+//				                	var query = {
+//				                		types: ["IfcDoor", "IfcWindow"]
+//				                	};
+//				                	model.query(query, function(object){
+//				                		objects.push(object);
+//				                	}).done(function(){
+//						                modelLoader.loadObjects(model, objects).then(function(bimSurferModel){
+//						                    processBimSurferModel(bimSurferModel);
+//						                });
+//				                	});
+			                	}
+			                }
+			                
 			                bimServerClient.call("ServiceInterface", "getAllRelatedProjects", {poid: poid}, function(projects){
+			                	nrProjects = projects.length;
+			                	
+			                	var totalBounds = {
+			                		min: [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE],
+			                		max: [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE]
+			                	};
+			                	
 			                	projects.forEach(function(project){
 			                		if (project.lastRevisionId != -1 && project.oid != poid) {
 			                			bimServerClient.getModel(project.oid, project.lastRevisionId, project.schema, false, function (model) {
 						                	models[project.lastRevisionId] = model;
 						                	
-						                	// Example 1: Load a full model
-							                modelLoader.loadFullModel(model).then(function(bimSurferModel){
-							                    processBimSurferModel(bimSurferModel);
-							                });
-						                	
-						                	// Example 2: Load a list of objects (all walls and subtypes)
-//						                	var objects = [];
-//						                	model.getAllOfType("IfcWall", true, function(wall){
-//						                		objects.push(wall);
-//						                	}).done(function(){
-//								                modelLoader.loadObjects(model, objects).then(function(bimSurferModel){
-//								                    processBimSurferModel(bimSurferModel);
-//								                });
-//						                	});
-						                	
-						                	// Example 3: Load the results of a query
-//						                	var objects = [];
-//						                	var query = {
-//						                		types: ["IfcDoor", "IfcWindow"]
-//						                	};
-//						                	model.query(query, function(object){
-//						                		objects.push(object);
-//						                	}).done(function(){
-//								                modelLoader.loadObjects(model, objects).then(function(bimSurferModel){
-//								                    processBimSurferModel(bimSurferModel);
-//								                });
-//						                	});
+						                	bimServerClient.call("ServiceInterface", "getModelMinBounds", {roid: project.lastRevisionId}, function(minBounds){
+							                	bimServerClient.call("ServiceInterface", "getModelMaxBounds", {roid: project.lastRevisionId}, function(maxBounds){
+							                		if (minBounds.x < totalBounds.min[0]) {
+							                			totalBounds.min[0] = minBounds.x;
+							                		}
+							                		if (minBounds.y < totalBounds.min[1]) {
+							                			totalBounds.min[1] = minBounds.y;
+							                		}
+							                		if (minBounds.z < totalBounds.min[2]) {
+							                			totalBounds.min[2] = minBounds.z;
+							                		}
+							                		if (maxBounds.x > totalBounds.max[0]) {
+							                			totalBounds.max[0] = maxBounds.x;
+							                		}
+							                		if (maxBounds.y > totalBounds.max[1]) {
+							                			totalBounds.max[1] = maxBounds.y;
+							                		}
+							                		if (maxBounds.z > totalBounds.max[2]) {
+							                			totalBounds.max[2] = maxBounds.z;
+							                		}
+							                		nrProjects--;
+							                		if (nrProjects == 0) {
+							                			loadModels(models, totalBounds);
+							                		}
+							                	});
+						                	});
 						                });
+			                		} else {
+			                			nrProjects--;
+				                		if (nrProjects == 0) {
+				                			loadModels(models, totalBounds);
+				                		}
 			                		}
 			                	});
 			                });							

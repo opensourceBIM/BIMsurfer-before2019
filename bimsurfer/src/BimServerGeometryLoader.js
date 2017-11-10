@@ -1,6 +1,6 @@
 define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
-    function BimServerGeometryLoader(bimServerApi, viewer, model, roid) {
+    function BimServerGeometryLoader(bimServerApi, viewer, model, roid, globalTransformationMatrix) {
 
         var o = this;
 
@@ -16,6 +16,8 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 		
 		o.model = model;
 		o.roid = roid;
+		
+		console.log(globalTransformationMatrix);
 
         this.addProgressListener = function (progressListener) {
             o.progressListeners.push(progressListener);
@@ -132,7 +134,6 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     });
                 });
             }
-
         };
 
         this._progressHandler = function (topicId, state) {
@@ -342,6 +343,15 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 numColors = stream.readInt();
                 if (numColors > 0) {
                 	colors = stream.readFloatArray(numColors);
+                } else if (color != null) {
+					// Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
+					colors = new Array(numPositions * 4);
+					for (var i=0; i<numPositions; i++) {
+						colors[i * 4 + 0] = color.r;
+						colors[i * 4 + 1] = color.g;
+						colors[i * 4 + 2] = color.b;
+						colors[i * 4 + 3] = color.a;
+					}
                 }
 
 				o.geometryIds[geometryId] = [geometryId];
@@ -388,6 +398,15 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     numColors = stream.readInt();
                     if (numColors > 0) {
                     	colors = stream.readFloatArray(numColors);
+                    } else if (color != null) {
+    					// Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
+    					colors = new Array(numPositions * 4);
+    					for (var i=0; i<numPositions; i++) {
+    						colors[i * 4 + 0] = color.r;
+    						colors[i * 4 + 1] = color.g;
+    						colors[i * 4 + 2] = color.b;
+    						colors[i * 4 + 3] = color.a;
+    					}
                     }
 
                     geometryIds.push(geometryId);
@@ -410,6 +429,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
     			var geometryInfoOid = stream.readLong();
     			var objectBounds = stream.readDoubleArray(6);
     			var matrix = stream.readDoubleArray(16);
+    			if (globalTransformationMatrix != null) {
+    				xeogl.math.mulMat4(matrix, matrix, globalTransformationMatrix);
+    			}
     			var geometryDataOid = stream.readLong();
 				var geometryDataOids = o.geometryIds[geometryDataOid];
 				var oid = o.infoToOid[geometryInfoOid];

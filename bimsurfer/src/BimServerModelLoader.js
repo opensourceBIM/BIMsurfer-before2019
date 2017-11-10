@@ -58,7 +58,7 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
 	
     		viewer.createModel(model.apiModel.roid);
 	
-	        var loader = new BimServerGeometryLoader(model.api, viewer, model, model.apiModel.roid);
+	        var loader = new BimServerGeometryLoader(model.api, viewer, model, model.apiModel.roid, o.globalTransformationMatrix);
 	
 	        loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
 				if (progress == "start") {
@@ -80,6 +80,10 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
 	        });
 	
 	        loader.start();
+    	}
+    	
+    	this.setGlobalTransformationMatrix = function(globalTransformationMatrix) {
+    		o.globalTransformationMatrix = globalTransformationMatrix;
     	}
     }
     
