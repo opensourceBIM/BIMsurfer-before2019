@@ -117,7 +117,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
                 var oids = [];
                 obj.forEach(function(wrapper){
-               		oids.push(wrapper.object.object._rgeometry);
+               		oids.push(wrapper.object.object._rgeometry._i);
                 });
 
                 var query = {

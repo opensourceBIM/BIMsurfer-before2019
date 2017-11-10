@@ -169,8 +169,8 @@ define(["../lib/text"], function(text) {
 						for (var i = 0; i < ps.length; ++i) {
 							for (var j = 0; j < cs.length; ++j) {
 								// Lookup the instance ids in the mapping
-								var p = instance_by_id[ps[i]];
-								var c = instance_by_id[cs[j]];
+								var p = instance_by_id[ps[i]._i];
+								var c = instance_by_id[cs[j]._i];
 
 								// parent, id, hasChildren are significant attributes in a dojo store
 								c.parent = p.id = p._i;
@@ -190,7 +190,7 @@ define(["../lib/text"], function(text) {
 					});
 					
 					var make_element = function (o) {
-						return {name: o.Name, id: o.id, guid: o.GlobalId, parent: o.parent, gid: o._rgeometry};
+						return {name: o.Name, id: o.id, guid: o.GlobalId, parent: o.parent, gid: (o._rgeometry == null ? null : o._rgeometry._i)};
 					};
 					
 					var fold = (function() {
