@@ -216,12 +216,10 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             data.align8();
 
             if (BIMSERVER_VERSION == "1.4") {
-                var boundary = data.readFloatArray(6);
+                this._boundary = data.readFloatArray(6);
             } else {
-                var boundary = data.readDoubleArray(6);
+                this._boundary = data.readDoubleArray(6);
             }
-
-            this._initCamera(boundary);
 
             o.state.mode = 1;
 
@@ -235,7 +233,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             //o._updateProgress();
         };
 
-        this._initCamera = function (boundary) {
+        this._initCamera = function (boundary, offset) {
 
             if (!this._gotCamera) {
 
@@ -249,6 +247,15 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 var xmax = boundary[3];
                 var ymax = boundary[4];
                 var zmax = boundary[5];
+                
+                if (offset) {
+                   xmin -= offset[0];
+                   ymin -= offset[1];
+                   zmin -= offset[2];
+                   xmax -= offset[0];
+                   ymax -= offset[1];
+                   zmax -= offset[2];
+                }
 
                 var diagonal = Math.sqrt(
                     Math.pow(xmax - xmin, 2) +
@@ -417,6 +424,12 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
     			var geometryInfoOid = stream.readLong();
     			var objectBounds = stream.readDoubleArray(6);
     			var matrix = stream.readDoubleArray(16);
+                
+                if (!this._gotCamera) {
+                    var offset = matrix.slice(12);
+                    this._initCamera(this._boundary, offset);
+                }
+                
     			var geometryDataOid = stream.readLong();
 				var geometryDataOids = o.geometryIds[geometryDataOid];
 				var oid = o.infoToOid[geometryInfoOid];

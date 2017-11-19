@@ -394,6 +394,9 @@ define([
          * @returns {xeogl.BIMObject} The new object
          * @private
          */
+         
+        var modelTranslationMatrix = null;
+         
         this.createObject = function (modelId, roid, oid, objectId, geometryIds, type, matrix) {
         	
             if (modelId) {
@@ -409,6 +412,13 @@ define([
                 console.log("Object with id " + objectId + " already exists, won't recreate");
                 return;
             }
+            
+            if (modelTranslationMatrix === null) {
+                var temp = xeogl.math.vec3();
+                modelTranslationMatrix = xeogl.math.translationMat4v(xeogl.math.mulVec3Scalar(matrix.slice(12), -1., temp));
+            }
+            
+            xeogl.math.mulMat4(modelTranslationMatrix, matrix, matrix);
 
             var object = new xeogl.BIMObject(scene, {
                 id: objectId,
@@ -555,6 +565,8 @@ define([
             visibleObjectList = null;
             selectedObjects = {};
             selectedObjectList = null;
+            
+            modelTranslationMatrix = null;
 
             this.saveReset();
         };
