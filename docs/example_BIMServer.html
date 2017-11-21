@@ -43,17 +43,16 @@
         // Loads a model from BIMServer, builds an explorer tree UI.
         // Clicking on a tree node fits the view to its scene object.
 
-        loadScripts(address + "/apps/bimserverjavascriptapi/js/", [
-             "bimserverclient.js",
-             "model.js",
-             "bimserverapiwebsocket.js",
-             "bimserverapipromise.js",
-             "geometry.js",
-             "ifc2x3tc1.js",
-             "ifc4.js",
-             "translations_en.js",
-        ], function(){
-            require(["bimsurfer/src/BimSurfer","bimsurfer/src/BimServerModelLoader","bimsurfer/src/StaticTreeRenderer","bimsurfer/src/MetaDataRenderer","bimsurfer/lib/domReady!"],
+        var bimserverapi = {};
+        
+		Promise.all([
+			address + "/apps/bimserverjavascriptapi/js/" + "/bimserverclient.js",
+			address + "/apps/bimserverjavascriptapi/js/" + "/bimserverapipromise.js"
+		].map(x => import(x)))
+		.then(([BimServerClient, BimServerApiPromise]) => {
+			bimserverapi.BimServerClient = BimServerClient.BimServerClient;
+			bimserverapi.BimServerApiPromise = BimServerApiPromise.BimServerApiPromise;
+	            require(["bimsurfer/src/BimSurfer","bimsurfer/src/BimServerModelLoader","bimsurfer/src/StaticTreeRenderer","bimsurfer/src/MetaDataRenderer","bimsurfer/lib/domReady!"],
 	            function (BimSurfer, BimServerModelLoader, StaticTreeRenderer, MetaDataRenderer) {
             	
             		function processBimSurferModel(bimSurferModel) {
@@ -197,7 +196,7 @@
 	                window.bimSurfer = bimSurfer;
 
 	                // Create a BIMserver API, we only need one of those for every server we connect to
-	                var bimServerClient = new BimServerClient(address, null);
+	                var bimServerClient = new bimserverapi.BimServerClient(address, null);
 	                bimServerClient.init(function(){
 						bimServerClient.setToken(token, function() {
 			                // Create a model loader, this one is able to load models from a BIMserver and therefore can have BIMserver specific calls
@@ -223,7 +222,8 @@
 			                		0, 0, 1, 0,
 			                		-center[0], -center[1], -center[2], 1
 			                	];
-			                	console.log(totalBounds);
+			                	console.log(totalBounds, models);
+			                	
 			                	for (var roid in models) {
 			                		var model = models[roid];
 				                	// Example 1: Load a full model
@@ -266,7 +266,7 @@
 			                	};
 			                	
 			                	projects.forEach(function(project){
-			                		if (project.lastRevisionId != -1 && project.oid != poid) {
+			                		if (project.lastRevisionId != -1 && (project.nrSubProjects == 0 || project.oid != poid)) {
 			                			bimServerClient.getModel(project.oid, project.lastRevisionId, project.schema, false, function (model) {
 						                	models[project.lastRevisionId] = model;
 						                	
