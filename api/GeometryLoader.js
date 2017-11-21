@@ -215,12 +215,12 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				
 				if (color != null) {
 					// Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
-					geometry.colors = [];
+					geometry.colors = new Array(nrVertices * 4);
 					for (var i=0; i<nrVertices; i++) {
-						geometry.colors.push(color.r);
-						geometry.colors.push(color.g);
-						geometry.colors.push(color.b);
-						geometry.colors.push(color.a);
+						geometry.colors[i * 4 + 0] = color.r;
+						geometry.colors[i * 4 + 1] = color.g;
+						geometry.colors[i * 4 + 2] = color.b;
+						geometry.colors[i * 4 + 3] = color.a;
 					}
 				}
 				
@@ -283,12 +283,12 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			
 			if (color != null) {
 				// Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
-				geometry.colors = [];
+				geometry.colors = new Array(nrVertices * 4);
 				for (var i=0; i<nrVertices; i++) {
-					geometry.colors.push(color.r);
-					geometry.colors.push(color.g);
-					geometry.colors.push(color.b);
-					geometry.colors.push(color.a);
+					geometry.colors[i * 4 + 0] = color.r;
+					geometry.colors[i * 4 + 1] = color.g;
+					geometry.colors[i * 4 + 2] = color.b;
+					geometry.colors[i * 4 + 3] = color.a;
 				}
 			}
 			
