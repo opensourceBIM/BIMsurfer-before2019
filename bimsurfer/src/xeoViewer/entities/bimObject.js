@@ -1,6 +1,4 @@
-define(["../../../lib/xeogl"], function () {
-
-    "use strict";
+import 'xeogl';
 
     /**
      Custom xeoEngine component that represents a BIMSurfer object within a xeoEngine scene.
@@ -160,4 +158,3 @@ define(["../../../lib/xeogl"], function () {
             }
         }
     });
-});

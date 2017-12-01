@@ -1,6 +1,4 @@
-define(["../../../lib/xeogl"], function () {
-
-    "use strict";
+import 'xeogl';
 
     xeogl.HighlightEffect = xeogl.Component.extend({
 
@@ -110,4 +108,4 @@ define(["../../../lib/xeogl"], function () {
         }
 
     });
-});
+

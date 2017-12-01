@@ -9,12 +9,14 @@
     <link rel="stylesheet" href="css/apiref.css"/>
     <link rel="stylesheet" href="../css/tree.css"/>
     <link rel="stylesheet" href="../css/metadata.css"/>
-    
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
     
     <script type="text/javascript" src="js/utils.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-    
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+    <script type="text/javascript" src="../bimsurfer/lib/xeogl.min.js"></script>
+    <script type="text/javascript" src="../build/bimsurfer.js"></script>
+
     <script>
         var address = QueryString.address;
         var token = QueryString.token;
@@ -23,38 +25,15 @@
          When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
          To facilitate proper caching
         */
-        var version = new Date().getTime();
-
-        // This has been moved to bimserverapi, can be removed in a day
-        String.prototype.firstUpper = function () {
-            return this.charAt(0).toUpperCase() + this.slice(1);
-        }
-        
-        // Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
-        var require = {
-            baseUrl: "../",
-            urlArgs: "bust=" + version
-        };
-    </script>
-
-    <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
-    <script type="text/javascript">
+		var version = new Date().getTime();
 
         // Loads a model from BIMServer, builds an explorer tree UI.
         // Clicking on a tree node fits the view to its scene object.
-
-        var bimserverapi = {};
-        
-		Promise.all([
-			address + "/apps/bimserverjavascriptapi/js/" + "/bimserverclient.js",
-			address + "/apps/bimserverjavascriptapi/js/" + "/bimserverapipromise.js"
-		].map(x => import(x)))
-		.then(([BimServerClient, BimServerApiPromise]) => {
-			bimserverapi.BimServerClient = BimServerClient.BimServerClient;
-			bimserverapi.BimServerApiPromise = BimServerApiPromise.BimServerApiPromise;
-	            require(["bimsurfer/src/BimSurfer","bimsurfer/src/BimServerModelLoader","bimsurfer/src/StaticTreeRenderer","bimsurfer/src/MetaDataRenderer","bimsurfer/lib/domReady!"],
-	            function (BimSurfer, BimServerModelLoader, StaticTreeRenderer, MetaDataRenderer) {
-            	
+		
+		loadScripts(address + "/apps/bimserverjavascriptapi/js/", [
+			"bimserverclient.js",
+			"bimserverapipromise.js"
+		], function () {
             		function processBimSurferModel(bimSurferModel) {
             			bimSurferModel.getTree().then(function (tree) {
 	                        // Build a tree view of the elements in the model. The fact that it
@@ -163,7 +142,7 @@
 	                    });
             		}
             	
-	                var bimSurfer = new BimSurfer({
+	                var bimSurfer = new bimsurfer.BimSurfer({
 	                    domNode: "viewerContainer"
 	                });
 	                
@@ -196,7 +175,7 @@
 	                window.bimSurfer = bimSurfer;
 
 	                // Create a BIMserver API, we only need one of those for every server we connect to
-	                var bimServerClient = new bimserverapi.BimServerClient(address, null);
+	                var bimServerClient = new BimServerClient(address, null);
 	                bimServerClient.init(function(){
 						bimServerClient.setToken(token, function() {
 			                // Create a model loader, this one is able to load models from a BIMserver and therefore can have BIMserver specific calls
@@ -307,7 +286,6 @@
 			                });							
 			            });
 	                });
-	            });
         });
     </script>
 </head>

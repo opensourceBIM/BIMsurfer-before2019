@@ -1,0 +1,15 @@
+{
+	"esversion": 6,
+	"undef": true,
+	"unused": true,
+	"curly": true,
+	"varstmt": true,
+	"maxdepth": 5,
+	"devel": true,
+	"browser": true,
+	"maxerr": 500,
+	"-W041": false,
+	"globals": {
+		"xeogl": true
+	}
+}

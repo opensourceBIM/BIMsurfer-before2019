@@ -1,93 +1,101 @@
-define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./BimSurfer"], function(BimServerModel, PreloadQuery, BimServerGeometryLoader, BimSufer) { 
-    
-    function BimServerModelLoader(bimServerClient, bimSurfer) {
-    	
-    	var o = this;
-    	
-    	this.loadFullModel = function(apiModel){
-    		return new Promise(function(resolve, reject) {
-    			var model = new BimServerModel(apiModel);
+import BimServerModel from './BimServerModel.js';
+import PreloadQuery from './PreloadQuery.js';
+import BimServerGeometryLoader from './BimServerGeometryLoader.js';
 
-    			apiModel.query(PreloadQuery, function () {}).done(function(){
-    				var oids = [];
-    				apiModel.getAllOfType("IfcProduct", true, function(object){
-    					oids.push(object.oid);
-    				});
-    				o.loadOids(model, oids);
-    				resolve(model);
-                });
-    		});
-    	};
-    	
-    	this.loadObjects = function(apiModel, objects){
-    		return new Promise(function(resolve, reject) {
-    			var model = new BimServerModel(apiModel);
+export default class BimServerModelLoader {
 
-				var oids = [];
-				objects.forEach(function(object){
+	//define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./BimSurfer"], function(BimServerModel, PreloadQuery, BimServerGeometryLoader, BimSufer) { 
+
+	constructor(bimServerClient, bimSurfer) {
+		this.bimServerClient = bimServerClient;
+		this.bimSurfer = bimSurfer;
+		this.globalTransformationMatrix = [
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		];
+	}
+
+	loadFullModel(apiModel) {
+		return new Promise((resolve, reject) => {
+			const model = new BimServerModel(apiModel);
+
+			apiModel.query(PreloadQuery, () => { }).done(() => {
+				const oids = [];
+				apiModel.getAllOfType("IfcProduct", true, (object) => {
 					oids.push(object.oid);
 				});
-				o.loadOids(model, oids);
+				this.loadOids(model, oids);
 				resolve(model);
-    		});
-    	};
-    	
-    	this.loadOids = function(model, oids){
-            var oidToGuid = {};
-            var guidToOid = {};
+			});
+		});
+	}
 
-            var oidGid = {};
-            
-            oids.forEach(function(oid){
-            	model.apiModel.get(oid, function(object){
-            		if (object.object._rgeometry != null) {
-            			var gid = object.object._rgeometry._i;
-            			var guid = object.object.GlobalId;
-            			oidToGuid[oid] = guid;
-            			guidToOid[guid] = oid;
-            			oidGid[gid] = oid;
-            		}
-            	});
-            });
-            
-            bimSurfer._idMapping.toGuid.push(oidToGuid);
-            bimSurfer._idMapping.toId.push(guidToOid);
-    		
-    		var viewer = bimSurfer.viewer;
-    		viewer.taskStarted();
-	
-    		viewer.createModel(model.apiModel.roid);
-	
-	        var loader = new BimServerGeometryLoader(model.api, viewer, model, model.apiModel.roid, o.globalTransformationMatrix);
-	
-	        loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
-				if (progress == "start") {
-					console.log("Started loading geometries");
-//					self.fire("loading-started");
-				} else if (progress == "done") {
-					console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
-//					self.fire("loading-finished");
-	                viewer.taskFinished();
+	loadObjects(apiModel, objects) {
+		return new Promise((resolve, reject) => {
+			const model = new BimServerModel(apiModel);
+
+			const oids = [];
+			objects.forEach((object) => {
+				oids.push(object.oid);
+			});
+			this.loadOids(model, oids);
+			resolve(model);
+		});
+	}
+
+	loadOids(model, oids) {
+		const oidToGuid = {};
+		const guidToOid = {};
+
+		const oidGid = {};
+
+		oids.forEach((oid) => {
+			model.apiModel.get(oid, (object) => {
+				if (object.object._rgeometry != null) {
+					const gid = object.object._rgeometry;//._i;
+					const guid = object.object.GlobalId;
+					oidToGuid[oid] = guid;
+					guidToOid[guid] = oid;
+					oidGid[gid] = oid;
 				}
-	        });
-	
-	        loader.setLoadOids(oidGid);
-	
-	        // viewer.clear(); // For now, until we support multiple models through the API
-	
-	        viewer.on("tick", function () { // TODO: Fire "tick" event from xeoViewer
-	            loader.process();
-	        });
-	
-	        loader.start();
-    	}
-    	
-    	this.setGlobalTransformationMatrix = function(globalTransformationMatrix) {
-    		o.globalTransformationMatrix = globalTransformationMatrix;
-    	}
-    }
-    
-    BimServerModelLoader.prototype = Object.create(BimServerModelLoader.prototype);
+			});
+		});
 
-    return BimServerModelLoader;
-});
+		this.bimSurfer._idMapping.toGuid.push(oidToGuid);
+		this.bimSurfer._idMapping.toId.push(guidToOid);
+
+		const viewer = this.bimSurfer.viewer;
+		viewer.taskStarted();
+
+		viewer.createModel(model.apiModel.roid);
+
+		const loader = new BimServerGeometryLoader(model.apiModel.bimServerApi, viewer, model, model.apiModel.roid, this.globalTransformationMatrix);
+
+		loader.addProgressListener((progress, nrObjectsRead, totalNrObjects) => {
+			if (progress == "start") {
+				console.log("Started loading geometries");
+				this.bimSurfer.fire("loading-started");
+			} else if (progress == "done") {
+				console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
+				this.bimSurfer.fire("loading-finished");
+				viewer.taskFinished();
+			}
+		});
+
+		loader.setLoadOids(oidGid);
+
+		// viewer.clear(); // For now, until we support multiple models through the API
+
+		viewer.on("tick", () => { // TODO: Fire "tick" event from xeoViewer
+			loader.process();
+		});
+
+		loader.start();
+	}
+
+	setGlobalTransformationMatrix(globalTransformationMatrix) {
+		this.globalTransformationMatrix = globalTransformationMatrix;
+	}
+}

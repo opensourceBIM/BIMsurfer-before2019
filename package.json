@@ -1,0 +1,26 @@
+{
+  "name": "bimsurfer",
+  "description": "",
+  "main": "build/bimsurfer.js",
+  "module": "bimsurfer/src/index.js",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "bimserverapi": "git+https://github.com/opensourceBIM/BIMserver-JavaScript-API",
+    "xeogl": "git+https://github.com/xeolabs/xeogl.git"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.6.1",
+    "rollup": "^0.50.0",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-commonjs": "^8.2.3",
+    "rollup-plugin-ignore": "^1.0.3",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.1.0",
+    "rollup-plugin-node-resolve": "^3.0.0"
+  }
+}

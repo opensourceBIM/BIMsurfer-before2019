@@ -1,6 +1,4 @@
-define(["../../../lib/xeogl"], function () {
-
-    "use strict";
+import 'xeogl';
 
     /**
 
@@ -974,7 +972,6 @@ define(["../../../lib/xeogl"], function () {
                         this._defaultDragAction = value;
                     }
                 }
-			}
+            }
         }
     });
-});
