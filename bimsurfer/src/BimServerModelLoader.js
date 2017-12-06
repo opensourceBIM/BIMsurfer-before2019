@@ -2,7 +2,15 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
     
     function BimServerModelLoader(bimServerClient, bimSurfer) {
     	
-    	var o = this;
+		var o = this;
+		
+		// set default transformation matrix
+		this.globalTransformationMatrix = [
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		];
     	
     	this.loadFullModel = function(apiModel){
     		return new Promise(function(resolve, reject) {
