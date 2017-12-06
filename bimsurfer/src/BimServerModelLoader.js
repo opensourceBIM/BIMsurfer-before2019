@@ -74,7 +74,6 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
 //					self.fire("loading-started");
 				} else if (progress == "done") {
 					console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
-//					self.fire("loading-finished");
 	                viewer.taskFinished();
 				}
 	        });

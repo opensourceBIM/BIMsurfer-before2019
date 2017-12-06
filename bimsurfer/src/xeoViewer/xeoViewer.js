@@ -260,6 +260,7 @@ define([
             spinner.processes--;
             if (spinner.processes === 0) {
                 scene.ticksPerRender = 1; // Back to max speed, one render per tick
+                this.fire("loading-finished");
             }
         };
 
