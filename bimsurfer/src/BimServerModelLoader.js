@@ -66,7 +66,7 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
 	
     		viewer.createModel(model.apiModel.roid);
 	
-	        var loader = new BimServerGeometryLoader(model.api, viewer, model, model.apiModel.roid, o.globalTransformationMatrix);
+	        var loader = new BimServerGeometryLoader(model.apiModel.bimServerApi, viewer, model, model.apiModel.roid, o.globalTransformationMatrix);
 	
 	        loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
 				if (progress == "start") {
