@@ -8,8 +8,6 @@
     "build": "rollup -c"
   },
   "dependencies": {
-    "bimserverapi": "git+https://github.com/opensourceBIM/BIMserver-JavaScript-API",
-    "xeogl": "git+https://github.com/xeolabs/xeogl.git"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
