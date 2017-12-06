@@ -245,7 +245,8 @@ export default class xeoViewer extends EventHandler {
 		}
 		spinner.processes--;
 		if (spinner.processes === 0) {
-			this.scene.ticksPerRender = 1; // Back to max speed, one render per tick
+            this.scene.ticksPerRender = 1; // Back to max speed, one render per tick
+            this.fire("loading-finished");
 		}
 	}
 
