@@ -7,7 +7,7 @@ export default [{
 	input: 'bimsurfer/src/index.js',
 	name: 'bimsurfer',
 	output: {
-		file: 'build/bimsurfer.js',
+		file: 'build/bimsurfer.umd.js',
 		format: 'umd'
 	},
 	external: ['bimserverapi', 'xeogl'],

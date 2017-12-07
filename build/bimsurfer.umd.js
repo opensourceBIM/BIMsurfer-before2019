@@ -4512,6 +4512,7 @@ var xeoViewer = function (_EventHandler) {
 
 			var material = object.material;
 			material.diffuse = [color[0], color[1], color[2]];
+			material.emissive = [color[0], color[1], color[2]];
 
 			var opacity = color.length > 3 ? color[3] : 1;
 			if (opacity !== material.opacity) {

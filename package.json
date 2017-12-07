@@ -1,9 +1,17 @@
 {
   "name": "bimsurfer",
-  "description": "",
-  "main": "build/bimsurfer.js",
+  "description": "The first open source WebGL based IFC viewer",
+  "organization": "OpenSource BIM",
+  "main": "build/bimsurfer.umd.js",
   "module": "bimsurfer/src/index.js",
-  "version": "0.0.1",
+  "version": "0.0.44",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opensourceBIM/BIMsurfer"
+  },
+  "bugs": {
+    "url": "https://github.com/opensourceBIM/BIMsurfer/issues"
+  },
   "scripts": {
     "build": "rollup -c"
   },
@@ -20,5 +28,7 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.1.0",
     "rollup-plugin-node-resolve": "^3.0.0"
-  }
+  },
+  "readmeFilename": "README.markdown",
+  "license": "MIT"
 }
