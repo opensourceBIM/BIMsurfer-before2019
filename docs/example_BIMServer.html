@@ -15,7 +15,7 @@
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 
     <script type="text/javascript" src="../bimsurfer/lib/xeogl.min.js"></script>
-    <script type="text/javascript" src="../build/bimsurfer.js"></script>
+    <script type="text/javascript" src="../build/bimsurfer.umd.js"></script>
 
     <script>
         var address = QueryString.address;
@@ -39,7 +39,7 @@
 	                        // Build a tree view of the elements in the model. The fact that it
 	                        // is 'static' refers to the fact that all branches are loaded and
 	                        // rendered immediately.
-	                        var domtree = new StaticTreeRenderer({
+	                        var domtree = new bimsurfer.StaticTreeRenderer({
 	                            domNode: 'treeContainer'
 	                        });
 	                        domtree.addModel({name: "", id:QueryString.roid, tree:tree});
@@ -47,7 +47,7 @@
 	                        
 	                        // Add a widget that displays metadata (IfcPropertySet and instance
 	                        // attributes) of the selected element.
-	                        var metadata = new MetaDataRenderer({
+	                        var metadata = new bimsurfer.MetaDataRenderer({
 	                            domNode: 'dataContainer'
 	                        });
 	                        metadata.addModel({name: "", id:QueryString.roid, model:bimSurferModel});
@@ -179,7 +179,7 @@
 	                bimServerClient.init(function(){
 						bimServerClient.setToken(token, function() {
 			                // Create a model loader, this one is able to load models from a BIMserver and therefore can have BIMserver specific calls
-			                var modelLoader = new BimServerModelLoader(bimServerClient, bimSurfer);
+			                var modelLoader = new bimsurfer.BimServerModelLoader(bimServerClient, bimSurfer);
 			                
 			                var models = {}; // roid -> Model
 			                

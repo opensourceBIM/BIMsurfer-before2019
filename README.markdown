@@ -2,70 +2,126 @@
     Copyright 2017, bimsurfer.org
     BIM Surfer is licensed under the MIT License.
 
-#Table of Contents
+# Table of Contents
 
 - [Introduction](#introduction)
 - [Usage](#usage)
-  - [BIMSurfer](#bimsurfer)
-  - [Objects](#objects)
-    - [Selecting and deselecting objects](#selecting-and-deselecting-objects)
-    - [Showing and hiding objects](#showing-and-hiding-objects)
-    - [Changing color and transparency of objects](#changing-color-and-transparency-of-objects)
+  - [Basic usage](#basic-usage)
+  - [Import as a module](#import-as-a-module)
+  - [Loading a test model](#loading-a-test-model)
+  - [Loading a model from BIMserver](#loading-a-model-from-bimserver)
+  - [Loading a model from a glTF file](#loading-a-model-from-a-gltf-file)
+- [API documentation](#api-documentation)
+  - [Selecting and deselecting objects](#selecting-and-deselecting-objects)
+  - [Showing and hiding objects](#showing-and-hiding-objects)
+  - [Changing color and transparency of objects](#changing-color-and-transparency-of-objects)
   - [Camera](#camera)
     - [Controlling the camera](#controlling-the-camera)
     - [Fitting objects in view](#fitting-objects-in-view)
   - [Resetting](#resetting)
     - [Camera](#camera-1)
     - [Objects](#objects-1)
+- [Build BIMsurfer](#build-bimsurfer)
 
 # Introduction
 
-BIMSurfer is a WebGL-based 3D viewer for [BIMServer]() that's built on [xeoEngine](http://xeoengine.org).
+BIMSurfer is a WebGL-based 3D viewer for [BIMServer](https://github.com/opensourceBIM/BIMserver) that is built on the [xeogl](http://xeogl.org) engine.
  
 TODO: More info
      
 # Usage
 
-## BIMSurfer
+## Basic usage
 
-Creating a [BIMSurfer](bimsurfer/src/BimSurfer.js): 
+Download the [combined minified library](https://raw.githubusercontent.com/opensourceBIM/BIMsurfer/master/build/bimsurfer.umd.js) and include it in your HTML.
 
-````javascript
-var bimSurfer = new BimSurfer({
+```html
+<script type="module" src="bimsurfer.umd.js"></script>
+```
+
+BIMsurfer components are loaded under the ``bimsurfer`` namespace. Instanciate the components as follow:
+
+```javascript
+var bimSurfer = new bimsurfer.BimSurfer({
     domNode: "viewerContainer"
 });
-````
 
-Loading a model from BIMServer:
- 
-````javascript
-bimSurfer.load({
-        bimserver: ADDRESS,
-        username: USERNAME,
-        password: PASSWORD,
-        poid: 131073,
-        roid: 65539,
-        schema: "ifc2x3tc1" // < TODO: Deduce automatically
-    })
-        .then(function (model) {
-        
-                // Model is now loaded and rendering.
-                // The following sections show what you can do with BIMSurfer at this point.
-                //...
-            });
-````
+var domtree = new bimsurfer.StaticTreeRenderer({
+    domNode: 'treeContainer'
+});
 
-Generate a random test model if you want to test BIMSurfer without loading anything from BIMServer:   
+var metadata = new bimsurfer.MetaDataRenderer({
+    domNode: 'dataContainer'
+});
+```
 
-````javascript
+## Import as a module
+If you are using a transpiler such as [Typescript](https://www.typescriptlang.org/) or [Babel](http://babeljs.io/), or a bundler such as [Webpack](https://webpack.js.org/) or [Rollup](https://rollupjs.org/), you can import the module using the [Import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) syntax.
+
+It is also possible to load the module directly into the browser, however not all browser support this yet.
+
+```javascript
+import { Bimsurfer, BimServerModelLoader, StaticTreeRenderer, MetaDataRenderer } from './bimsurfer/src/index.js';
+```
+
+## Loading a test model
+Generate a random test model if you want to test BIMsurfer without loading anything from BIMserver:   
+
+```javascript
+var bimSurfer = new bimsurfer.BimSurfer({
+    domNode: "viewerContainer"
+});
+
 bimSurfer.loadRandom();
-````
+```
+
+## Loading a model from BIMServer
+You need to load the [BIMserver javascript API](https://github.com/opensourceBIM/BIMserver-JavaScript-API) first.
+
+```javascript
+var bimSurfer = new bimsurfer.BimSurfer({
+    domNode: "viewerContainer"
+});
+
+var bimServerClient = new bimserverapi.BimServerClient(BIMSERVER_ADDRESS, null);
+
+bimServerClient.init(function() {
+    bimServerClient.login(BIMSERVER_USERNAME, BIMSERVER_PASSWORD, function() {
+        var modelLoader = new bimsurfer.BimServerModelLoader(bimServerClient, bimSurfer);
+
+        bimServerClient.call("ServiceInterface", "getAllRelatedProjects", { poid: POID }, (projects) => {
+            projects.forEach(function(project) {
+                if (project.lastRevisionId != -1 && (project.nrSubProjects == 0 || project.oid != POID)) {
+                    bimServerClient.getModel(project.oid, project.lastRevisionId, project.schema, false, function(model) {
+                        modelLoader.loadFullModel(model).then(function (bimSurferModel) {
+                            // Model is now loaded and rendering.
+                        });
+                    });
+                }
+            });
+        });
+    });
+});
+```
+
+## Loading a model from a glTF file
+```javascript
+var bimSurfer = new bimsurfer.BimSurfer({
+    domNode: "viewerContainer"
+});
+
+bimSurfer.load({
+    src: "model_file_name.gltf"
+}).then(function (bimSurferModel) {
+    // Model is now loaded and rendering.
+});
+```
+
+# API documentation
 
 The following usage examples in this guide will refer to objects from the generated test model.
 
-## Objects
-
-### Selecting and deselecting objects
+## Selecting and deselecting objects
 
 Selecting four objects:
 
@@ -108,7 +164,7 @@ bimSurfer.on("selection-changed",
     });
 ````
 
-### Showing and hiding objects
+## Showing and hiding objects
 
 Hiding three objects by ID:
 
@@ -128,7 +184,7 @@ Hiding all objects of IFC types "IfcSlab" and "IfcWall":
 bimSurfer.setVisibility({types: ["IfcSlab", "IfcWall"], visible: false });
 ````
 
-### Changing color and transparency of objects
+## Changing color and transparency of objects
 
 Making two objects pink:
 
@@ -291,5 +347,22 @@ Deselecting all objects:
 bimSurfer.reset({ selectionState: true });
 ````
 
- 
-
+# Build BIMsurfer
+* Install [Node.js](https://nodejs.org/)
+* Clone (or download and unzip) the project to your file system:
+```
+git clone https://github.com/opensourceBIM/BIMsurfer.git
+```
+* Go to the project directory
+```
+cd BIMsurfer
+```
+* Install build dependencies
+```
+npm install
+```
+* Run the build script
+```
+npm run build
+```
+The compiled file is located at ``build/bimsurfer.umd.js``
