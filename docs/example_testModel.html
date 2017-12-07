@@ -2,66 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>Example</title>
+    <title>BIMsurfer example</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
-    <script>
-	    /* Generating a new version based on the current time, this way resources are never cached
-	    When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
-	    To facilitate proper caching
-	   	*/
-		var version = new Date().getTime();
-    
-    	// Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
-        var require = {
-            baseUrl: "../",
-            urlArgs: "bust=" + version
-        };
-    </script>
+	<link rel="stylesheet" href="css/demo.css"/>
 
-    <link rel="stylesheet" href="css/demo.css"/>
-
-    <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
-    <script type="text/javascript">
-
-        require([
-                    "bimsurfer/src/BimSurfer",
-                    "bimsurfer/src/StaticTreeRenderer",
-                    "bimsurfer/lib/domReady"
-                ],
-                function (BimSurfer, StaticTreeRenderer) {
-
-                    var bimSurfer = new BimSurfer({
-                        domNode: "viewerContainer"
-                    });
-
-                    // Viewer's local test mode, loads randomly generated objects
-
-                    bimSurfer.load({
-                        test: true
-                    });
-
-                    // Lets us play with the Surfer in the console
-                    window.bimSurfer = bimSurfer;
-
-                    // Create array of object IDs that match our test objects
-
-                    var objectIds = [];
-                    for (var i = 0, len = 100; i < len; i++) {
-                        objectIds.push("object" + i);
-                    }
-
-                    var idx = 0;
-
-//                    window.setInterval(
-//                            function () { // Dirty, but OK for demos
-//                                bimSurfer.viewFit({
-//                                    ids: [objectIds[idx++ % objectIds.length]],
-//                                    animate: true
-//                                });
-//                            }, 1000)
-                });
-    </script>
-
+    <script type="text/javascript" src="../bimsurfer/lib/xeogl.min.js"></script>
+    <script type="text/javascript" src="../build/bimsurfer.umd.js"></script>
 </head>
 <body>
 <div id="maincontainer">
@@ -83,6 +29,39 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+	/* Generating a new version based on the current time, this way resources are never cached
+	When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
+	To facilitate proper caching
+	   */
+	   var version = new Date().getTime();
 
+		var bimSurfer = new bimsurfer.BimSurfer({
+			domNode: "viewerContainer"
+		});
+
+		// Viewer's local test mode, loads randomly generated objects
+
+		bimSurfer.load({
+			test: true
+		});
+
+		// Create array of object IDs that match our test objects
+
+		var objectIds = [];
+		for (var i = 0, len = 100; i < len; i++) {
+			objectIds.push("object" + i);
+		}
+
+		var idx = 0;
+
+//                    window.setInterval(
+//                            function () { // Dirty, but OK for demos
+//                                bimSurfer.viewFit({
+//                                    ids: [objectIds[idx++ % objectIds.length]],
+//                                    animate: true
+//                                });
+//                            }, 1000)
+</script>
 </body>
 </html>

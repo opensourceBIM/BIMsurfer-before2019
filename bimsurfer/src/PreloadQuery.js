@@ -1,4 +1,4 @@
-define({
+const PreloadQuery = {
 	defines: {
 		Representation: {
 			type: "IfcProduct",
@@ -32,51 +32,53 @@ define({
 		}
 	},
 	queries: [
-	    {
+		{
 			type: "IfcProject",
 			includes: [
 				"IsDecomposedByDefine",
 				"ContainsElementsDefine"
 			]
-	    },
-	    {
-	    	type: "IfcRepresentation",
-	    	includeAllSubtypes: true
-	    },
-	    {
-	    	type: "IfcProductRepresentation"
-	    },
-	    {
-	    	type: "IfcPresentationLayerWithStyle"
-	    },
-	    {
-	    	type: "IfcProduct",
-	    	includeAllSubtypes: true
-	    },
-	    {
-	    	type: "IfcProductDefinitionShape"
-	    },
-	    {
-	    	type: "IfcPresentationLayerAssignment"
-	    },
-	    {
-	    	type: "IfcRelAssociatesClassification",
-	    	includes: [
-	    		{
-	    			type: "IfcRelAssociatesClassification",
-	    			field: "RelatedObjects"
-	    		},
-	    		{
-	    			type: "IfcRelAssociatesClassification",
-	    			field: "RelatingClassification"
-	    		}
-	    	]
-	    },
-	    {
-	    	type: "IfcSIUnit"
-	    },
-	    {
-	    	type: "IfcPresentationLayerAssignment"
-	    }
+		},
+		{
+			type: "IfcRepresentation",
+			includeAllSubtypes: true
+		},
+		{
+			type: "IfcProductRepresentation"
+		},
+		{
+			type: "IfcPresentationLayerWithStyle"
+		},
+		{
+			type: "IfcProduct",
+			includeAllSubtypes: true
+		},
+		{
+			type: "IfcProductDefinitionShape"
+		},
+		{
+			type: "IfcPresentationLayerAssignment"
+		},
+		{
+			type: "IfcRelAssociatesClassification",
+			includes: [
+				{
+					type: "IfcRelAssociatesClassification",
+					field: "RelatedObjects"
+				},
+				{
+					type: "IfcRelAssociatesClassification",
+					field: "RelatingClassification"
+				}
+			]
+		},
+		{
+			type: "IfcSIUnit"
+		},
+		{
+			type: "IfcPresentationLayerAssignment"
+		}
 	]
-});
+};
+
+export default PreloadQuery;

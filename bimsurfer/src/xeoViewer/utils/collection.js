@@ -141,9 +141,7 @@
  @param [cfg.components] {{Array of String|Component}} Array of {{#crossLink "Component"}}{{/crossLink}} IDs or instances.
  @extends Component
  */
-define(["../../../lib/xeogl"], function () {
-
-    "use strict";
+import 'xeogl';
 
     xeogl.Collection = xeogl.Component.extend({
 
@@ -476,5 +474,3 @@ define(["../../../lib/xeogl"], function () {
             this.clear();
         }
     });
-
-});

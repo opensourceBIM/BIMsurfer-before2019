@@ -1,35 +1,29 @@
-define(function() { 
-    
-    function Notifier() {
-        this.setSelector = function(selector) {
-            console.log('setSelector', arguments);
-        };
+export default class Notifier {
+	setSelector(selector) {
+		console.log('setSelector', arguments);
+	}
 
-        this.clear = function() {
-            console.log('clear', arguments);
-        };
+	clear() {
+		console.log('clear', arguments);
+	}
 
-        this.resetStatus = function(){
-            console.log('status', arguments);
-        };
+	resetStatus() {
+		console.log('status', arguments);
+	}
 
-        this.resetStatusQuick = function(){
-            console.log('status', arguments);
-        };
+	resetStatusQuick() {
+		console.log('status', arguments);
+	}
 
-        this.setSuccess = function(status, timeToShow) {
-            console.log('success', arguments);
-        };
-        
-        this.setInfo = function(status, timeToShow) {
-            console.log('info', arguments);
-        };
+	setSuccess(status, timeToShow) {
+		console.log('success', arguments);
+	}
 
-        this.setError = function(error) {
-            console.log('error', arguments);
-        };
-    };
-    
-    return Notifier;
-    
-});
+	setInfo(status, timeToShow) {
+		console.log('info', arguments);
+	}
+
+	setError(error) {
+		console.log('error', arguments);
+	}
+}

@@ -1,6 +1,4 @@
-define(["../../../lib/xeogl"], function () {
-
-    "use strict";
+import 'xeogl';
 
     /**
      Custom xeoEngine component that shows a wireframe box representing an non axis-aligned 3D boundary.
@@ -96,5 +94,3 @@ define(["../../../lib/xeogl"], function () {
         };
     
     };
-    
-});
