@@ -29,7 +29,7 @@ function loadScript(url, callback) {
         });
     }
     else {
-        alert("Jquery is missing");
+        console.log("Jquery is missing");
         var script = document.createElement("script")
         script.type = "text/javascript";
         if (script.readyState) { //IE
