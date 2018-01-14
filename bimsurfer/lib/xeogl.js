@@ -28115,7 +28115,9 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
 					"accessors": true,
 					"nodes": true,
 					"meshes": true,
-				};				
+				};
+				
+				var t0 = performance.now();
 
                 var success = true;
                 while (this._state.categoryIndex !== -1) {
@@ -28160,6 +28162,10 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
                         this._stepToNextDescription();
                     }
                 }
+				
+				var dt = (performance.now() - t0) / 1000.;
+				
+				console.log("glTF parsed in " + dt + "s");
 
                 if (this.handleLoadCompleted) {
                     this.handleLoadCompleted(success);
