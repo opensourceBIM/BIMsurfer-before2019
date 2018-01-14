@@ -28110,10 +28110,23 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
                     "videos": this.handleVideo,
                     "extensions": this.handleExtension
                 };
+				
+				var dontParse = {
+					"accessors": true,
+					"nodes": true,
+					"meshes": true,
+				};				
 
                 var success = true;
                 while (this._state.categoryIndex !== -1) {
                     var category = categoriesDepsOrder[this._state.categoryIndex];
+					
+					// TK: Don't copy over all these items individually
+					if (dontParse[category]) {
+						this._stepToNextCategory();
+						continue;
+					}
+					
                     var categoryState = this._state.categoryState;
                     var keys = categoryState.keys;
                     if (!keys) {
@@ -28899,6 +28912,8 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                     log("MISSING_PRIMITIVES for mesh:" + entryID);
                     return false;
                 }
+				
+				var accessors = this._rootDescription.accessors;
 
                 for (var i = 0; i < primitivesDescription.length; i++) {
                     var primitiveDescription = primitivesDescription[i];
@@ -28924,15 +28939,15 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                         // count them first, async issues otherwise
                         geometry.totalAttributes += allAttributes.length;
 
-                        var indices = this.resources.getEntry(primitiveDescription.indices);
-                        var bufferEntry = this.resources.getEntry(indices.description.bufferView);
+                        var indices = accessors[primitiveDescription.indices];
+                        var bufferEntry = this.resources.getEntry(indices.bufferView);
                         var indicesObject = {
                             bufferView: bufferEntry,
-                            byteOffset: indices.description.byteOffset,
-                            count: indices.description.count,
-                            id: indices.entryID,
-                            componentType: indices.description.componentType,
-                            type: indices.description.type
+                            byteOffset: indices.byteOffset,
+                            count: indices.count,
+                            id: primitiveDescription.indices,
+                            componentType: indices.componentType,
+                            type: indices.type
                         };
 
                         var indicesContext = new IndicesContext(indicesObject, geometry);
@@ -28943,24 +28958,8 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
 
                             var attribute;
                             var attributeID = primitiveDescription.attributes[semantic];
-                            var attributeEntry = this.resources.getEntry(attributeID);
-                            var bufferEntry;
-
-                            if (!attributeEntry) {
-
-                                //let's just use an anonymous object for the attribute
-                                attribute = description.attributes[attributeID];
-                                attribute.id = attributeID;
-                                this.resources.setEntry(attributeID, attribute, attribute);
-
-                                bufferEntry = this.resources.getEntry(attribute.bufferView);
-                                attributeEntry = this.resources.getEntry(attributeID);
-
-                            } else {
-                                attribute = attributeEntry.object;
-                                attribute.id = attributeID;
-                                bufferEntry = this.resources.getEntry(attribute.bufferView);
-                            }
+                            var attributeEntry = attribute = accessors[attributeID];
+                            var bufferEntry = this.resources.getEntry(attribute.bufferView);
 
                             var attributeObject = {
                                 bufferView: bufferEntry,
@@ -29120,7 +29119,8 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                         mesh = this.resources.getEntry(meshes[imeshes]);
 
                         if (!mesh) {
-                            continue;
+							this.handleMesh(meshes[imeshes], this._rootDescription["meshes"][meshes[imeshes]]);
+							mesh = this.resources.getEntry(meshes[imeshes]);
                         }
 
                         mesh = mesh.object;
