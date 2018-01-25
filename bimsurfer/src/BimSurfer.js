@@ -1,18 +1,6 @@
-// Backwards compatibility
-var deps = ["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./xeoViewer/xeoViewer", "./EventHandler"];
-
-/*
-if (typeof(BimServerClient) == 'undefined') {
-    window.BIMSERVER_VERSION = "1.4";
-    deps.push("bimserverapi_BimServerApi");
-} else {
-    window.BIMSERVER_VERSION = "1.5";
-}
-*/
-
 window.BIMSERVER_VERSION = "1.5";
 
-define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, EventHandler, _BimServerApi) {
+define(["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./xeoViewer/xeoViewer", "./EventHandler"], function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, EventHandler, _BimServerApi) {
 	
     // Backwards compatibility
     var BimServerApi;

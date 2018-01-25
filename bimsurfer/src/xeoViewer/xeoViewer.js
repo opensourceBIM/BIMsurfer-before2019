@@ -2,7 +2,7 @@ define([
     "../DefaultMaterials",
     "../EventHandler",
     "../Utils",
-    "../../lib/xeogl.min",
+    "../../lib/xeogl",
     "./controls/bimCameraControl",
     "./entities/bimModel",
     "./entities/bimObject",
