@@ -27956,6 +27956,12 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
         "scenes",
         "animations"
     ];
+	
+	var dontParse = {
+		"accessors": true,
+		"nodes": true,
+		"meshes": true,
+	};
 
     xeogl.glTFParser = Object.create(Object.prototype, {
 
@@ -28089,49 +28095,28 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
         _handleState: {
             value: function () {
 
-                var methodForType = {
-                    "buffers": this.handleBuffer,
-                    "bufferViews": this.handleBufferView,
-                    "shaders": this.handleShader,
-                    "programs": this.handleProgram,
-                    "techniques": this.handleTechnique,
-                    "materials": this.handleMaterial,
-                    "meshes": this.handleMesh,
-                    "cameras": this.handleCamera,
-                    "lights": this.handleLight,
-                    "nodes": this.handleNode,
-                    "scenes": this.handleScene,
-                    "images": this.handleImage,
-                    "animations": this.handleAnimation,
-                    "accessors": this.handleAccessor,
-                    "skins": this.handleSkin,
-                    "samplers": this.handleSampler,
-                    "textures": this.handleTexture,
-                    "videos": this.handleVideo,
-                    "extensions": this.handleExtension
-                };
-				
-				var dontParse = {
-					"accessors": true,
-					"nodes": true,
-					"meshes": true,
-				};
-				
-				var t0 = performance.now();
+                var t0 = performance.now();
 
                 var success = true;
-                while (this._state.categoryIndex !== -1) {
-                    var category = categoriesDepsOrder[this._state.categoryIndex];
+                
+				var category = categoriesDepsOrder[this._state.categoryIndex];
+                var categoryFunction = this.handlers[category];
+				
+				while (this._state.categoryIndex !== -1) {
 					
 					// TK: Don't copy over all these items individually
 					if (dontParse[category]) {
 						this._stepToNextCategory();
+						category = categoriesDepsOrder[this._state.categoryIndex];
+						categoryFunction = this.handlers[category];
 						continue;
 					}
 					
                     var categoryState = this._state.categoryState;
                     var keys = categoryState.keys;
                     if (!keys) {
+						category = categoriesDepsOrder[this._state.categoryIndex];
+						categoryFunction = this.handlers[category];
                         categoryState.keys = keys = Object.keys(this.rootDescription[category]);
                         if (keys) {
                             if (keys.length === 0) {
@@ -28141,9 +28126,8 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
                         }
                     }
 
-                    var type = category;
                     var entryID = keys[categoryState.index];
-                    var description = this.getEntryDescription(entryID, type);
+                    var description = this.getEntryDescription(entryID, category);
                     if (!description) {
                         if (this.handleError) {
                             this.handleError("INCONSISTENCY ERROR: no description found for entry " + entryID);
@@ -28152,8 +28136,8 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
                         }
                     } else {
 
-                        if (methodForType[type]) {
-                            if (methodForType[type].call(this, entryID, description, this._state.userInfo) === false) {
+                        if (categoryFunction) {
+                            if (categoryFunction.call(this, entryID, description, this._state.userInfo) === false) {
                                 success = false;
                                 break;
                             }
@@ -28179,7 +28163,7 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
             value: function (callback) {
                 var self = this;
                 //FIXME: handle error
-                if (!this._json) {
+                if (!this.json) {
                     var jsonPath = this._path;
                     var i = jsonPath.lastIndexOf("/");
                     this.baseURL = (i !== 0) ? jsonPath.substring(0, i + 1) : '';
@@ -28777,17 +28761,16 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                 return this._idPrefix + "#" + entryID;
             }
         },
+		
+		handlers: { value: {
 
-        handleBuffer: {
-            value: function (entryID, description, userInfo) {
+            buffers: function (entryID, description, userInfo) {
                 this.resources.setEntry(entryID, null, description);
                 description.type = "ArrayBuffer";
                 return true;
-            }
-        },
+            },
 
-        handleBufferView: {
-            value: function (entryID, description, userInfo) {
+			bufferViews: function (entryID, description, userInfo) {
                 this.resources.setEntry(entryID, null, description);
 
                 var buffer = this.resources.getEntry(description.buffer);
@@ -28796,18 +28779,14 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                 var bufferViewEntry = this.resources.getEntry(entryID);
                 bufferViewEntry.buffer = buffer;
                 return true;
-            }
-        },
+            },
 
-        handleAccessor: {
-            value: function (entryID, description, userInfo) {
+            accessors: function (entryID, description, userInfo) {
                 this.resources.setEntry(entryID, description, description);
                 return true;
-            }
-        },
+            },
 
-        handleTexture: {
-            value: function (entryID, description, userInfo) {
+			textures: function (entryID, description, userInfo) {
 
                 if (!description.source) {
                     return;
@@ -28826,11 +28805,9 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                 this.resources.setEntry(entryID, texture, description);
 
                 return true;
-            }
-        },
+            },
 
-        handleMaterial: {
-            value: function (entryID, description, userInfo) {
+			materials: function (entryID, description, userInfo) {
 
                 //   log("material", entryID, description);
 
@@ -28894,18 +28871,14 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                 this.resources.setEntry(entryID, material, description);
 
                 return true;
-            }
-        },
-
-        handleLight: {
-            value: function (entryID, description, userInfo) {
+            },
+			
+            lights: function (entryID, description, userInfo) {
                 log("light", entryID, description);
                 return true;
-            }
-        },
-
-        handleMesh: {
-            value: function (entryID, description, userInfo) {
+            },
+			
+            meshes: function (entryID, description, userInfo) {
 
                 var mesh = [];
 
@@ -28992,18 +28965,14 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                 }
 
                 return true;
-            }
-        },
+            },
 
-        handleCamera: {
-            value: function (entryID, description, userInfo) {
+            cameras: function (entryID, description, userInfo) {
                 //log("camera", entryID, description);
                 return true;
-            }
-        },
+            },
 
-        handleScene: {
-            value: function (entryID, description, userInfo) {
+            scenes: function (entryID, description, userInfo) {
 
                 var nodes = description.nodes;
 
@@ -29023,7 +28992,7 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                     }
                 }
             }
-        },
+        } },
 
         _parseNode: {
             value: function (nodeId, transform) {
@@ -29125,7 +29094,7 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                         mesh = this.resources.getEntry(meshes[imeshes]);
 
                         if (!mesh) {
-							this.handleMesh(meshes[imeshes], this._rootDescription["meshes"][meshes[imeshes]]);
+							this.handlers.meshes.call(this, meshes[imeshes], this._rootDescription["meshes"][meshes[imeshes]]);
 							mesh = this.resources.getEntry(meshes[imeshes]);
                         }
 
