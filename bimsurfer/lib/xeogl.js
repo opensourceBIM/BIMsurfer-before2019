@@ -28900,7 +28900,7 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                     if (primitiveDescription.mode === WebGLRenderingContext.TRIANGLES) {
 
                         var geometry = new xeogl.Geometry(this.model.scene, {
-                            id: this._makeID(entryID)
+                            id: this._makeID(entryID + i)
                         });
 
                         this.model.add(geometry);
@@ -29105,7 +29105,7 @@ xeogl.GLTFLoaderUtils = Object.create(Object, {
                             material = mesh[i].material;
                             geometry = mesh[i].geometry;
 
-                            entityId = this._makeID(nodeId + ".entity." + i);
+                            entityId = this._makeID(nodeId + ".entity." + imeshes + "." + i);
 
                             //// Fake ID when clashing with existing entity ID
                             //for  (j = 0; entities[entityId]; j++) {
