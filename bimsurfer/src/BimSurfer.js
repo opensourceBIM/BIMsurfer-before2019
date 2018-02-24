@@ -129,6 +129,8 @@ define(["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometry
 
         this._loadFrom_glTF = function (params) {
             if (params.src) {
+                var maxActiveProcessesEncountered = 0;
+                var oldProgress = 0;
                 return new Promise(function (resolve, reject) {
                     var m = viewer.loadglTF(params.src);
                     m.on("loaded", function() {						
@@ -137,6 +139,14 @@ define(["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometry
                                 viewer.viewFit({});
                                 resolve(m);
                             }
+                            if (n > maxActiveProcessesEncountered) {
+                                maxActiveProcessesEncountered = n;
+                            }
+                            var progress = parseInt((maxActiveProcessesEncountered - n) * 100 / maxActiveProcessesEncountered);
+                            if (oldProgress != progress) {
+                                self.fire("progress", [progress]);
+                            }
+                            oldProgress = progress;
 						});                        
                     });
                 });
