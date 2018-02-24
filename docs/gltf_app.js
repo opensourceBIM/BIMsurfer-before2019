@@ -51,25 +51,21 @@ function (BimSurfer, StaticTreeRenderer, MetaDataRenderer, Request, Utils) {
         src: modelName + ".gltf"
     }).then(function (model) {
         
-        // Really make sure everything is loaded.
-        Utils.Delay(100).then(function() {
+        var scene = bimSurfer.viewer.scene;
         
-            var scene = bimSurfer.viewer.scene;
-            
-            var aabb = scene.worldBoundary.aabb;
-            var diag = xeogl.math.subVec3(aabb.slice(3), aabb, xeogl.math.vec3());
-            var modelExtent = xeogl.math.lenVec3(diag);
+        var aabb = scene.worldBoundary.aabb;
+        var diag = xeogl.math.subVec3(aabb.slice(3), aabb, xeogl.math.vec3());
+        var modelExtent = xeogl.math.lenVec3(diag);
+    
+        scene.camera.project.near = modelExtent / 1000.;
+        scene.camera.project.far = modelExtent * 100.;
+       
+        scene.camera.view.eye = [-1,-1,5];
+        scene.camera.view.up = [0,0,1];
+        bimSurfer.viewFit({centerModel:true});
         
-            scene.camera.project.near = modelExtent / 1000.;
-            scene.camera.project.far = modelExtent * 100.;
-           
-            scene.camera.view.eye = [-1,-1,5];
-            scene.camera.view.up = [0,0,1];
-            bimSurfer.viewFit({centerModel:true});
-            
-            bimSurfer.viewer.scene.canvas.canvas.style.display = 'block';
-        });
-        
+        bimSurfer.viewer.scene.canvas.canvas.style.display = 'block';
+
     });
 
     bimSurfer.on("selection-changed", function(selected) {

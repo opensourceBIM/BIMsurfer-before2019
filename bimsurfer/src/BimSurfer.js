@@ -131,28 +131,13 @@ define(["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometry
             if (params.src) {
                 return new Promise(function (resolve, reject) {
                     var m = viewer.loadglTF(params.src);
-                    m.on("loaded", function() {
-                    
-                        var numComponents = 0, componentsLoaded = 0;
-
-                        m.iterate(function (component) {
-                            if (component.isType("xeogl.Entity")) {
-                                ++ numComponents;
-                                (function(c) {
-                                    var timesUpdated = 0;
-                                    c.worldBoundary.on("updated", function() {
-                                        if (++timesUpdated == 2) {
-                                            ++ componentsLoaded;
-                                            if (componentsLoaded == numComponents) {
-                                                viewer.viewFit({});
-                                                
-                                                resolve(m);
-                                            }
-                                        }
-                                    });
-                                })(component);
+                    m.on("loaded", function() {						
+						viewer.scene.canvas.spinner.on('processes', function(n) {
+							if (n === 0) {
+                                viewer.viewFit({});
+                                resolve(m);
                             }
-                        });
+						});                        
                     });
                 });
             }
