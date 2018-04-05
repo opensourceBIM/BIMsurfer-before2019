@@ -47,7 +47,7 @@
             "bimsurfer/src/MetaDataRenderer",
             "bimsurfer/src/Request",
             "bimsurfer/src/Utils",
-            "bimsurfer/lib/domReady!",
+            "bimsurfer/lib/domReady!"
         ],
         function (BimSurfer, StaticTreeRenderer, MetaDataRenderer, Request, Utils) {
             var bimSurfer = new BimSurfer({
@@ -56,7 +56,7 @@
             
             var modelName = window.location.hash;
             if (modelName.length < 1) {
-                modelName = "Duplex_A_20110907_optimized";
+                modelName = "schependomlaan";
             } else {
                 modelName = modelName.substr(1);
             }
@@ -65,7 +65,7 @@
             var tree = new StaticTreeRenderer({
                 domNode: "treeContainer"
             });
-            tree.addModel({id: 1, src: modelName + ".xml"});
+            tree.addModel({id: 1, src: modelName + "/model.xml"});
             tree.build();
             
             tree.on("click", highlight);
@@ -73,10 +73,10 @@
             var data = new MetaDataRenderer({
                 domNode: "dataContainer"
             });
-            data.addModel({id: 1, src: modelName + ".xml"});
+            data.addModel({id: 1, src: modelName + "/model.xml"});
             
             bimSurfer.load({
-                src: modelName + ".gltf"
+                src: modelName + "/model.gltf"
             }).then(function (model) {
                 
                 // Really make sure everything is loaded.
@@ -84,15 +84,15 @@
                 
                     var scene = bimSurfer.viewer.scene;
                     
-                    var aabb = scene.worldBoundary.aabb;
+                    var aabb = scene.aabb;
                     var diag = xeogl.math.subVec3(aabb.slice(3), aabb, xeogl.math.vec3());
                     var modelExtent = xeogl.math.lenVec3(diag);
                 
                     scene.camera.project.near = modelExtent / 1000.;
                     scene.camera.project.far = modelExtent * 100.;
                    
-                    scene.camera.view.eye = [-1,-1,5];
-                    scene.camera.view.up = [0,0,1];
+                    scene.camera.eye = [-1,-1,5];
+                    scene.camera.up = [0,0,1];
                     bimSurfer.viewFit({centerModel:true});
                     
                     bimSurfer.viewer.scene.canvas.canvas.style.display = 'block';
