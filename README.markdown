@@ -58,7 +58,7 @@ bimSurfer.load({
 Generate a random test model if you want to test BIMSurfer without loading anything from BIMServer:   
 
 ````javascript
-bimSurfer.loadRandom();
+bimSurfer.createTestModel();
 ````
 
 The following usage examples in this guide will refer to objects from the generated test model.
