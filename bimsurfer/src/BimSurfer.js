@@ -1,27 +1,27 @@
 // Backwards compatibility
-var deps = ["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./xeoViewer/xeoViewer", "./EventHandler"];
+var deps = ["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./xeoViewer", "./EventHandler"];
 
 /*
-if (typeof(BimServerClient) == 'undefined') {
-    window.BIMSERVER_VERSION = "1.4";
-    deps.push("bimserverapi_BimServerApi");
-} else {
-    window.BIMSERVER_VERSION = "1.5";
-}
-*/
+ if (typeof(BimServerClient) == 'undefined') {
+ window.BIMSERVER_VERSION = "1.4";
+ deps.push("bimserverapi_BimServerApi");
+ } else {
+ window.BIMSERVER_VERSION = "1.5";
+ }
+ */
 
 window.BIMSERVER_VERSION = "1.5";
 
 define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, EventHandler, _BimServerApi) {
-	
+
     // Backwards compatibility
     var BimServerApi;
     if (_BimServerApi) {
-		BimServerApi = _BimServerApi;
-	} else {
+        BimServerApi = _BimServerApi;
+    } else {
         BimServerApi = window.BimServerClient;
-	}
-    
+    }
+
     function BimSurfer(cfg) {
 
         var self = this;
@@ -37,7 +37,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @event camera-changed
          */
         viewer.on("camera-changed", function() {
-           self.fire("camera-changed", arguments);
+            self.fire("camera-changed", arguments);
         });
 
         /**
@@ -47,7 +47,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         viewer.on("selection-changed", function() {
             self.fire("selection-changed", arguments);
         });
-        
+
         // This are arrays as multiple models might be loaded or unloaded.
         this._idMapping = {
             'toGuid': [],
@@ -61,7 +61,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.load = function (params) {
 
             if (params.test) {
-                viewer.loadRandom(params);
+                viewer.createTestModel("testModel", params);
                 return null;
 
             } else if (params.bimserver) {
@@ -79,45 +79,45 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
             var notifier = new Notifier();
             var bimServerApi = new BimServerApi(params.bimserver, notifier);
-			
-			params.api = bimServerApi; // TODO: Make copy of params
+
+            params.api = bimServerApi; // TODO: Make copy of params
 
             return self._initApi(params)
-				.then(self._loginToServer)
-				.then(self._getRevisionFromServer)
-				.then(self._loadFromAPI);
+                .then(self._loginToServer)
+                .then(self._getRevisionFromServer)
+                .then(self._loadFromAPI);
         };
-		
-		this._initApi = function(params) {
-			return new Promise(function(resolve, reject) {
-				params.api.init(function () {
-					resolve(params);
-				});
-			});
-		};
-		
-		this._loginToServer = function (params) {
-			return new Promise(function(resolve, reject) {
-				if (params.token) {
-					params.api.setToken(params.token, function() {
-						resolve(params)
-					}, reject);
-				} else {
-					params.api.login(params.username, params.password, function() {
-						resolve(params)
-					}, reject);
-				}
-			});
-		};
-		
-		this._getRevisionFromServer = function (params) {
-			return new Promise(function(resolve, reject) {
-				if (params.roid) {
-					resolve(params);
-				} else {
-					params.api.call("ServiceInterface", "getAllRelatedProjects", {poid: params.poid}, function(data) {
+
+        this._initApi = function(params) {
+            return new Promise(function(resolve, reject) {
+                params.api.init(function () {
+                    resolve(params);
+                });
+            });
+        };
+
+        this._loginToServer = function (params) {
+            return new Promise(function(resolve, reject) {
+                if (params.token) {
+                    params.api.setToken(params.token, function() {
+                        resolve(params)
+                    }, reject);
+                } else {
+                    params.api.login(params.username, params.password, function() {
+                        resolve(params)
+                    }, reject);
+                }
+            });
+        };
+
+        this._getRevisionFromServer = function (params) {
+            return new Promise(function(resolve, reject) {
+                if (params.roid) {
+                    resolve(params);
+                } else {
+                    params.api.call("ServiceInterface", "getAllRelatedProjects", {poid: params.poid}, function(data) {
                         var resolved = false;
-                        
+
                         data.forEach(function(projectData) {
                             if (projectData.oid == params.poid) {
                                 params.roid = projectData.lastRevisionId;
@@ -130,41 +130,23 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                                 resolve(params);
                             }
                         });
-                        
+
                         if (!resolved) {
-							reject();
-						}
-					}, reject);
-				}
-			});
-		};
+                            reject();
+                        }
+                    }, reject);
+                }
+            });
+        };
 
         this._loadFrom_glTF = function (params) {
             if (params.src) {
                 return new Promise(function (resolve, reject) {
-                    var m = viewer.loadglTF(params.src);
-                    m.on("loaded", function() {
-                    
-                        var numComponents = 0, componentsLoaded = 0;
-
-                        m.iterate(function (component) {
-                            if (component.isType("xeogl.Entity")) {
-                                ++ numComponents;
-                                (function(c) {
-                                    var timesUpdated = 0;
-                                    c.worldBoundary.on("updated", function() {
-                                        if (++timesUpdated == 2) {
-                                            ++ componentsLoaded;
-                                            if (componentsLoaded == numComponents) {
-                                                viewer.viewFit({});
-                                                
-                                                resolve(m);
-                                            }
-                                        }
-                                    });
-                                })(component);
-                            }
-                        });
+                    viewer.loadGLTFModel(params.id || "theModel", params.src, function () {
+                        viewer.viewFit({});
+                        resolve(params);
+                    }, function() {
+                        reject();
                     });
                 });
             }
@@ -196,7 +178,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         this._loadModel = function (model) {
-        
+
             model.getTree().then(function (tree) {
 
                 var oids = [];
@@ -211,17 +193,17 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                     }
                     oidToGuid[n.id] = n.guid;
                     guidToOid[n.guid] = n.id;
-                    
+
                     for (var i = 0; i < (n.children || []).length; ++i) {
                         visit(n.children[i]);
                     }
                 };
 
                 visit(tree);
-                
+
                 self._idMapping.toGuid.push(oidToGuid);
                 self._idMapping.toId.push(guidToOid);
-                
+
                 var models = {};
 
                 // TODO: Ugh. Undecorate some of the newly created classes
@@ -236,14 +218,14 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 var loader = new GeometryLoader(model.api, models, viewer);
 
                 loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
-					if (progress == "start") {
-						console.log("Started loading geometries");
-						self.fire("loading-started");
-					} else if (progress == "done") {
-						console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
-						self.fire("loading-finished");
+                    if (progress == "start") {
+                        console.log("Started loading geometries");
+                        self.fire("loading-started");
+                    } else if (progress == "done") {
+                        console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
+                        self.fire("loading-finished");
                         viewer.taskFinished();
-					}
+                    }
                 });
 
                 loader.setLoadOids([model.model.roid], oids);
@@ -257,7 +239,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                 loader.start();
             });
         };
-        
+
         // Helper function to traverse over the mappings for individually loaded models
         var _traverseMappings = function(mappings) {
             return function(k) {
@@ -279,7 +261,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         /**
-         * Returns a list of guids (GlobalId) for the list of object ids (oid) 
+         * Returns a list of guids (GlobalId) for the list of object ids (oid)
          *
          * @param ids List of internal object ids from the BIMserver / glTF file
          */
@@ -323,8 +305,8 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.setColor = function (params) {
             viewer.setColor(params);
         };
-		
-		/**
+
+        /**
          * Sets opacity of objects specified by ids or entity type, e.g IfcWall.
          **
          * @param params
@@ -359,26 +341,26 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         this.setCamera = function (params) {
             viewer.setCamera(params);
         };
-		
-		/**
+
+        /**
          * Redefines light sources.
-         * 
+         *
          * @param params Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
-		 * See http://xeoengine.org/docs/classes/Lights.html for possible params for each light type
+         * See http://xeogl.org/docs/classes/Lights.html for possible params for each light type
          */
-		this.setLights = function (params) {
-			viewer.setLights(params);
-		};
-		
-		
+        this.setLights = function (params) {
+            viewer.setLights(params);
+        };
+
+
         /**
          * Returns light sources.
-         * 
+         *
          * @returns Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
          */
-		this.getLights = function () {
-			return viewer.getLights;
-		};
+        this.getLights = function () {
+            return viewer.getLights;
+        };
 
         /**
          *
@@ -386,14 +368,14 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          */
         this.reset = function (params) {
             viewer.reset(params);
-        }
-        
-         /**
-          * Returns a list of loaded IFC entity types in the model.
-          * 
-          * @method getTypes
-          * @returns {Array} List of loaded IFC entity types, with visibility flag
-          */
+        };
+
+        /**
+         * Returns a list of loaded IFC entity types in the model.
+         *
+         * @method getTypes
+         * @returns {Array} List of loaded IFC entity types, with visibility flag
+         */
         this.getTypes = function() {
             return viewer.getTypes();
         };
@@ -420,7 +402,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
             return viewer.getWorldBoundary(objectId, result);
         };
 
-       /**
+        /**
          * Destroys the BIMSurfer
          */
         this.destroy = function() {
