@@ -15990,10 +15990,10 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
 
                 get: function () {
 
-                    if (this._aabbDirty) {
+                    if (this._aabbDirty || !this._center) {
 
                         if (!this._center) {
-                            this._center = xeogl.math.AABB3();
+                            this._center = xeogl.math.vec3();
                         }
 
                         var aabb = this.aabb;
@@ -35274,9 +35274,9 @@ TODO
              */
             center: {
                 get: function () {
-                    if (this._aabbDirty) {
+                    if (this._aabbDirty || !this._center) {
                         if (!this._center) {
-                            this._center = xeogl.math.AABB3();
+                            this._center = xeogl.math.vec3();
                         }
                         var aabb = this.aabb;
                         this._center[0] = (aabb[0] + aabb[3] ) / 2;
