@@ -1,4 +1,4 @@
-define(["../../../lib/xeogl"], function () {
+define(["../lib/xeogl/xeogl"], function () {
 
     "use strict";
 
@@ -28,10 +28,8 @@ define(["../../../lib/xeogl"], function () {
 
             var pitchMat = math.mat4();
 
-            var camera = cfg.camera;
-            var view = camera.view;
-            var project = camera.project;
             var scene = this.scene;
+            var camera = scene.camera;
             var input = scene.input;
 
             // Camera position on last mouse click
@@ -39,7 +37,7 @@ define(["../../../lib/xeogl"], function () {
             var rotateStartLook;
             var rotateStartUp = math.vec3();
 
-            var orbitPitchAxis = math.vec3([1, 0, 0]); // The current axis for vertical orbit  
+            var orbitPitchAxis = math.vec3([1, 0, 0]); // The current axis for vertical orbit
 
             var pickHit; // Hit record from the most recent pick
             var pickClicks = 0; // Number of times we've clicked on same spot on entity
@@ -72,7 +70,7 @@ define(["../../../lib/xeogl"], function () {
                 var inverseViewMat = math.mat4();
                 return function () {
                     if (viewMatDirty) {
-                        math.inverseMat4(view.matrix, inverseViewMat);
+                        math.inverseMat4(camera.viewMatrix, inverseViewMat);
                     }
                     return inverseViewMat;
                 }
@@ -81,13 +79,13 @@ define(["../../../lib/xeogl"], function () {
             // Returns the inverse of the camera's current projection transform matrix
             var getInverseProjectMat = (function () {
                 var projMatDirty = true;
-                camera.on("projectMatrix", function () {
+                camera.on("projMatrix", function () {
                     projMatDirty = true;
                 });
                 var inverseProjectMat = math.mat4();
                 return function () {
                     if (projMatDirty) {
-                        math.inverseMat4(project.matrix, inverseProjectMat);
+                        math.inverseMat4(camera.projMatrix, inverseProjectMat);
                     }
                     return inverseProjectMat;
                 }
@@ -96,13 +94,13 @@ define(["../../../lib/xeogl"], function () {
             // Returns the transposed copy the camera's current projection transform matrix
             var getTransposedProjectMat = (function () {
                 var projMatDirty = true;
-                camera.on("projectMatrix", function () {
+                camera.on("projMatrix", function () {
                     projMatDirty = true;
                 });
                 var transposedProjectMat = math.mat4();
                 return function () {
                     if (projMatDirty) {
-                        math.transposeMat4(project.matrix, transposedProjectMat);
+                        math.transposeMat4(camera.projMatrix, transposedProjectMat);
                     }
                     return transposedProjectMat;
                 }
@@ -112,12 +110,12 @@ define(["../../../lib/xeogl"], function () {
             var getSceneDiagSize = (function () {
                 var sceneSizeDirty = true;
                 var diag = 1; // Just in case
-                scene.worldBoundary.on("updated", function () {
+                scene.on("boundary", function () {
                     sceneSizeDirty = true;
                 });
                 return function () {
                     if (sceneSizeDirty) {
-                        diag = math.getAABB3Diag(scene.worldBoundary.aabb);
+                        diag = math.getAABB3Diag(scene.aabb);
                     }
                     return diag;
                 };
@@ -155,14 +153,8 @@ define(["../../../lib/xeogl"], function () {
                     type: "xeogl.Translate",
                     xyz: [0, 0, 0]
                 }),
-                visibility: this.create({
-                    type: "xeogl.Visibility",
-                    visible: false // Initially invisible
-                }),
-                modes: this.create({
-                    type: "xeogl.Modes",
-                    collidable: false // This helper has no collision boundary of its own
-                })
+                visible: false,
+                collidable: false
             });
 
             // Shows the rotation point indicator
@@ -175,7 +167,7 @@ define(["../../../lib/xeogl"], function () {
                 return function (pos) {
 
                     pickHelper.transform.xyz = pos;
-                    pickHelper.visibility.visible = true;
+                    pickHelper.visible = true;
 
                     if (pickHelperHide) {
                         clearTimeout(pickHelperHide);
@@ -183,7 +175,7 @@ define(["../../../lib/xeogl"], function () {
                     }
 
                     pickHelperHide = setTimeout(function () {
-                            pickHelper.visibility.visible = false;
+                            pickHelper.visible = false;
                             pickHelperHide = null;
                         },
                         1000)
@@ -221,15 +213,15 @@ define(["../../../lib/xeogl"], function () {
                 rotationDeltas[0] = 0;
                 rotationDeltas[1] = 0;
 
-                rotateStartEye = view.eye.slice();
-                rotateStartLook = view.look.slice();
-                math.addVec3(rotateStartEye, view.up, rotateStartUp);
+                rotateStartEye = camera.eye.slice();
+                rotateStartLook = camera.look.slice();
+                math.addVec3(rotateStartEye, camera.up, rotateStartUp);
 
                 setOrbitPitchAxis();
             }
 
             function setOrbitPitchAxis() {
-                math.cross3Vec3(math.normalizeVec3(math.subVec3(view.eye, view.look, math.vec3())), view.up, orbitPitchAxis);
+                math.cross3Vec3(math.normalizeVec3(math.subVec3(camera.eye, camera.look, math.vec3())), camera.up, orbitPitchAxis);
             }
 
             var setCursor = (function () {
@@ -240,11 +232,11 @@ define(["../../../lib/xeogl"], function () {
 
                     clearTimeout(t);
 
-                    self.scene.canvas.overlay.style["cursor"] = cursor;
+                    self.scene.canvas.canvas.style["cursor"] = cursor;
 
                     if (!persist) {
                         t = setTimeout(function () {
-                            self.scene.canvas.overlay.style["cursor"] = "auto";
+                            self.scene.canvas.canvas.style["cursor"] = "auto";
                         }, 100);
                     }
                 };
@@ -271,9 +263,9 @@ define(["../../../lib/xeogl"], function () {
 
                     setOrbitPitchAxis();
 
-                    rotateStartEye = view.eye.slice();
-                    rotateStartLook = view.look.slice();
-                    math.addVec3(rotateStartEye, view.up, rotateStartUp);
+                    rotateStartEye = camera.eye.slice();
+                    rotateStartLook = camera.look.slice();
+                    math.addVec3(rotateStartEye, camera.up, rotateStartUp);
 
                     pickHit = scene.pick({
                         canvasPos: canvasPos,
@@ -348,7 +340,7 @@ define(["../../../lib/xeogl"], function () {
             }
 
             var tempVecHover = math.vec3();
-            
+
             var updateHoverDistanceAndCursor = function(canvasPos) {
                 var hit = scene.pick({
                     canvasPos: canvasPos || lastCanvasPos,
@@ -359,7 +351,7 @@ define(["../../../lib/xeogl"], function () {
                     setCursor("pointer", true);
                     if (hit.worldPos) {
                         // TODO: This should be somehow hit.viewPos.z, but doesn't seem to be
-                        lastHoverDistance = math.lenVec3(math.subVec3(hit.worldPos, view.eye, tempVecHover));
+                        lastHoverDistance = math.lenVec3(math.subVec3(hit.worldPos, camera.eye, tempVecHover));
                     }
                 } else {
                     setCursor("auto", true);
@@ -380,7 +372,7 @@ define(["../../../lib/xeogl"], function () {
                     if (!mouseDown) {
 
                         updateHoverDistanceAndCursor(canvasPos);
-                        
+
                         lastCanvasPos[0] = canvasPos[0];
                         lastCanvasPos[1] = canvasPos[1];
 
@@ -436,14 +428,14 @@ define(["../../../lib/xeogl"], function () {
                     }
 
                     if (panning) {
-                        // TODO: view.pan is in view space? We have a world coord vector.
+                        // TODO: camera.pan is in view space? We have a world coord vector.
 
                         // Subtract model space unproject points
                         math.subVec3(A[1], B[1], tempVecHover);
-                        view.eye = math.addVec3(view.eye, tempVecHover);
-                        view.look = math.addVec3(view.look, tempVecHover);
+                        camera.eye = math.addVec3(camera.eye, tempVecHover);
+                        camera.look = math.addVec3(camera.look, tempVecHover);
                     } else {
-                        // If not panning, we are orbiting                        
+                        // If not panning, we are orbiting
 
                         // Subtract camera space unproject points
                         math.subVec3(A[0], B[0], tempVecHover);
@@ -457,9 +449,9 @@ define(["../../../lib/xeogl"], function () {
 
                         math.rotationMat4v(rotationDeltas[1] * math.DEGTORAD, orbitPitchAxis, pitchMat);
 
-                        view.eye = rotate(rotateStartEye);
-                        view.look = rotate(rotateStartLook);
-                        view.up = math.subVec3(rotate(rotateStartUp), view.eye, math.vec3());
+                        camera.eye = rotate(rotateStartEye);
+                        camera.look = rotate(rotateStartLook);
+                        camera.up = math.subVec3(rotate(rotateStartUp), camera.eye, math.vec3());
                     }
 
                     lastCanvasPos[0] = canvasPos[0];
@@ -594,9 +586,9 @@ define(["../../../lib/xeogl"], function () {
 
                             math.rotationMat4v(rotationDeltas[1] * math.DEGTORAD, orbitPitchAxis, pitchMat);
 
-                            view.eye = rotate(rotateStartEye);
-                            view.look = rotate(rotateStartLook);
-                            view.up = math.subVec3(rotate(rotateStartUp), view.eye, math.vec3());
+                            camera.eye = rotate(rotateStartEye);
+                            camera.look = rotate(rotateStartLook);
+                            camera.up = math.subVec3(rotate(rotateStartUp), camera.eye, math.vec3());
                         }
                     }
                 });
@@ -648,19 +640,17 @@ define(["../../../lib/xeogl"], function () {
                                     delta = -elapsed * rate;
                                 }
 
-                                var eye = view.eye;
-                                var look = view.look;
+                                var eye = camera.eye;
+                                var look = camera.look;
 
                                 // Get vector from eye to center of rotation
                                 math.mulVec3Scalar(math.normalizeVec3(math.subVec3(eye, rotatePos, tempVec3a), tempVec3b), delta, eyePivotVec);
 
                                 // Move eye and look along the vector
-                                view.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
-                                view.look = math.addVec3(look, eyePivotVec, tempVec3c);
+                                camera.eye = math.addVec3(eye, eyePivotVec, tempVec3c);
+                                camera.look = math.addVec3(look, eyePivotVec, tempVec3c);
 
-                                if (project.isType("xeogl.Ortho")) {
-                                    project.scale += delta * orthoScaleRate;
-                                }
+                                camera.ortho.scale += delta * orthoScaleRate;
 
                                 resetRotate();
                             }
@@ -670,7 +660,7 @@ define(["../../../lib/xeogl"], function () {
 
             //---------------------------------------------------------------------------------------------------------
             // Mouse zoom
-            // Roll mouse wheel to move eye and look closer or further from center of rotationDeltas 
+            // Roll mouse wheel to move eye and look closer or further from center of rotationDeltas
             //---------------------------------------------------------------------------------------------------------
 
             (function () {
@@ -708,7 +698,7 @@ define(["../../../lib/xeogl"], function () {
                             newTarget = true;
                         }
                     });
-                    
+
                 var updateTimeout = null;
 
                 scene.on("tick",
@@ -725,7 +715,7 @@ define(["../../../lib/xeogl"], function () {
                         if (flying) {
                             return;
                         }
-                        
+
                         if (updateTimeout) {
                             clearTimeout(updateTimeout);
                         }
@@ -762,10 +752,10 @@ define(["../../../lib/xeogl"], function () {
 
                             if (targeting) {
 
-                                var eye = view.eye;
-                                var look = view.look;
-                                
-                                math.mulVec3Scalar(xeogl.math.transposeMat4(view.matrix).slice(8), f, eyePivotVec);
+                                var eye = camera.eye;
+                                var look = camera.look;
+
+                                math.mulVec3Scalar(xeogl.math.transposeMat4(camera.viewMatrix).slice(8), f, eyePivotVec);
                                 math.addVec3(eye, eyePivotVec, newEye);
                                 math.addVec3(look, eyePivotVec, newLook);
 
@@ -774,13 +764,12 @@ define(["../../../lib/xeogl"], function () {
 
                                 // if (lenEyePivotVec < currentEyePivotDist - 10) {
 
-                                    // Move eye and look along the vector
-                                    view.eye = newEye;
-                                    view.look = newLook;
+                                // Move eye and look along the vector
+                                camera.eye = newEye;
+                                camera.look = newLook;
 
-                                    if (project.isType("xeogl.Ortho")) {
-                                        project.scale += delta * orthoScaleRate;
-                                    }
+                                camera.ortho.scale += delta * orthoScaleRate;
+
                                 // }
 
                                 resetRotate();
@@ -791,14 +780,13 @@ define(["../../../lib/xeogl"], function () {
 
             //---------------------------------------------------------------------------------------------------------
             // Keyboard axis view
-            // Press 1,2,3,4,5 or 6 to view center of model from along an axis 
+            // Press 1,2,3,4,5 or 6 to view center of model from along an axis
             //---------------------------------------------------------------------------------------------------------
 
             (function () {
 
                 var flight = self.create({
                     type:"xeogl.CameraFlightAnimation",
-                    camera: camera,
                     duration: 1.0 // One second to fly to each new target
                 });
 
@@ -842,9 +830,8 @@ define(["../../../lib/xeogl"], function () {
                             return;
                         }
 
-                        var boundary = scene.worldBoundary;
-                        var aabb = boundary.aabb;
-                        var center = boundary.center;
+                        var aabb = scene.aabb;
+                        var center = scene.center;
                         var diag = math.getAABB3Diag(aabb);
                         var fitFOV = 55;
                         var dist = Math.abs((diag) / Math.tan(fitFOV/2));
@@ -883,7 +870,7 @@ define(["../../../lib/xeogl"], function () {
 
             //---------------------------------------------------------------------------------------------------------
             // Keyboard pan camera
-            // Press W,S,A or D to pan the camera 
+            // Press W,S,A or D to pan the camera
             //---------------------------------------------------------------------------------------------------------
 
             scene.on("tick", (function () {
@@ -946,7 +933,7 @@ define(["../../../lib/xeogl"], function () {
                             tempVec3[1] = y;
                             tempVec3[2] = z;
 
-                            view.pan(tempVec3);
+                            camera.pan(tempVec3);
 
                             resetRotate();
                         }
@@ -974,7 +961,7 @@ define(["../../../lib/xeogl"], function () {
                         this._defaultDragAction = value;
                     }
                 }
-			}
+            }
         }
     });
 });
