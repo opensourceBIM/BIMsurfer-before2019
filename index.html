@@ -1,14 +1,7 @@
 <!DOCTYPE html>
 <html>
-<title>BIMsurfer V2 - Demo index</title>
 <head>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapiwebsocket.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverclient.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/bimserverapipromise.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc2x3tc1.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/ifc4.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/model.js"></script>
-	<script type="text/javascript" src="https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi/js/translations_en.js"></script>
+	<title>BIMsurfer V2 - Demo index</title>
 </head>
 <body>
 <h1>BIMservers</h1>
@@ -76,22 +69,50 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			});
 		});
 	}
-
-	try {
-		loadFromBimserver("https://thisisanexperimentalserver.com", "bimsurfer@logic-labs.nl", "bimsurfer", document.getElementById("expserver"));
-	} catch (e) {
-		console.log(e);
+	
+	function loadBimServerApi(apiAddress, loadUmd) {
+		var p = new Promise(function(resolve, reject){
+			if (loadUmd) {
+				// TODO
+				LazyLoad.js([Settings.getBimServerApiAddress() + "/bimserverapi.umd.js?_v=" + apiVersion], function(){
+					window.BimServerClient = bimserverapi.default;
+					window.BimServerApiPromise = bimserverapi.BimServerApiPromise;
+					
+					resolve(bimserverapi);
+				});
+			} else {
+				// Using eval here, so we don't trip the browsers that don't understand "import"
+				// The reason for using it this way is so we can develop this library and test it without having to transpile.
+				// Obviously developers need to have a browser that understands "import" (i.e. a recent version of Chrome, Firefox etc...)
+				
+				// TODO One remaining problem here is that dependencies are not loaded with the "apiVersion" attached, so you need to have your browser on "clear cache" all the time
+				
+				var apiVersion = new Date().getTime();
+				
+				var str = "import(\"" + apiAddress + "\" + \"/bimserverclient.js?_v=" + apiVersion + "\").then((bimserverapi) => {	window.BimServerClient = bimserverapi.default; window.BimServerApiPromise = bimserverapi.BimServerApiPromise; resolve(bimserverapi);});";
+				eval(str);
+			}
+		});
+		return p;
 	}
-	try {
-		loadFromBimserver("http://localhost:8080", "admin@bimserver.org", "admin", document.getElementById("localhost8080"));
-	} catch (e) {
-		console.log(e);
-	}
-	try {
-		loadFromBimserver("http://localhost:8082", "admin@bimserver.org", "admin", document.getElementById("localhost8082"));
-	} catch (e) {
-		console.log(e);
-	}
+	
+	loadBimServerApi("https://thisisanexperimentalserver.com/apps/bimserverjavascriptapi", false).then(() => {
+		try {
+			loadFromBimserver("https://thisisanexperimentalserver.com", "bimsurfer@logic-labs.nl", "bimsurfer", document.getElementById("expserver"));
+		} catch (e) {
+			console.log(e);
+		}
+		try {
+			loadFromBimserver("http://localhost:8080", "admin@bimserver.org", "admin", document.getElementById("localhost8080"));
+		} catch (e) {
+			console.log(e);
+		}
+		try {
+			loadFromBimserver("http://localhost:8082", "admin@bimserver.org", "admin", document.getElementById("localhost8082"));
+		} catch (e) {
+			console.log(e);
+		}		
+	});
 	
 	var loadLink = document.getElementById("loadFromOtherBimServer");
 	loadLink.onclick = function(){
