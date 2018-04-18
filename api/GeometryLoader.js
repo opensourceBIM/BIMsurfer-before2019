@@ -42,6 +42,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 		if (geometryType == 5) {
 			var roid = data.readLong();
 			var geometryInfoOid = data.readLong();
+			var hasTransparency = data.readLong() == 1;
 			var objectBounds = data.readDoubleArray(6);
 //			if (objectBounds[0] < o.modelBounds.min.x) {
 //				o.modelBounds.min.x = objectBounds[0];
@@ -179,6 +180,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				});
 			}
 		} else if (geometryType == 3) {
+			var hasTransparency = data.readLong() == 1;
 			var coreIds = [];
 			var geometryDataOid = data.readLong();
 			var nrParts = data.readInt();
@@ -191,7 +193,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				var nrIndices = data.readInt();
 				o.stats.nrPrimitives += nrIndices / 3;
 				var indices = data.readShortArray(nrIndices);
-				if (o.state.version == 11) {
+				if (o.state.version >= 11) {
 					var b = data.readInt();
 					if (b == 1) {
 						var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
@@ -255,11 +257,12 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				delete o.dataToInfo[geometryDataOid];
 			}
 		} else if (geometryType == 1) {
+			var hasTransparency = data.readLong() == 1;
 			var geometryDataOid = data.readLong();
 			var nrIndices = data.readInt();
 			var indices = data.readShortArray(nrIndices);
 			o.stats.nrPrimitives += nrIndices / 3;
-			if (o.state.version == 11) {
+			if (o.state.version >= 11) {
 				var b = data.readInt();
 				if (b == 1) {
 					var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
@@ -451,7 +454,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 10 && version != 11) {
+		if (version != 12) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
