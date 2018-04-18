@@ -201,7 +201,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 	                return false;
 	            }
             } else {
-	            if (o.protocolVersion != 10 && o.protocolVersion != 11) {
+	            if (o.protocolVersion != 10 && o.protocolVersion != 11 && o.protocolVersion != 12) {
 	                console.error("Unimplemented version");
 	                return false;
 	            }
@@ -322,6 +322,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             var i;
 
             if (geometryType == 1) {
+            	if (o.protocolVersion == 12) {
+            		var hasTransparency = stream.readLong() == 1;
+            	}
                 geometryId = stream.readLong();
                 numIndices = stream.readInt();
                 if (BIMSERVER_VERSION == "1.4") {
@@ -329,7 +332,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 } else {
                 	indices = stream.readShortArray(numIndices);
                 }
-                if (o.protocolVersion == 11) {
+                if (o.protocolVersion >= 11) {
                 	var b = stream.readInt();
     				if (b == 1) {
     					var color = {r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat()};
@@ -367,6 +370,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             } else if (geometryType == 2) {
             	console.log("Unimplemented", 2);
             } else if (geometryType == 3) {
+            	if (o.protocolVersion == 12) {
+            		var hasTransparency = stream.readLong() == 1;
+            	}
      			var geometryDataOid = stream.readLong();
                 numParts = stream.readInt();
 				o.geometryIds[geometryDataOid] = [];
@@ -383,7 +389,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     	indices = stream.readShortArray(numIndices);
                     }
 
-                    if (o.protocolVersion == 11) {
+                    if (o.protocolVersion >= 11) {
                     	var b = stream.readInt();
         				if (b == 1) {
         					var color = {r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat()};
@@ -427,6 +433,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             } else if (geometryType == 5) {
             	var roid = stream.readLong();
     			var geometryInfoOid = stream.readLong();
+    			if (o.protocolVersion == 12) {
+    				var hasTransparency = stream.readLong() == 1;
+    			}
     			var objectBounds = stream.readDoubleArray(6);
     			var matrix = stream.readDoubleArray(16);
     			if (globalTransformationMatrix != null) {
