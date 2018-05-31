@@ -5,13 +5,14 @@
     <title>Example</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
     <script>
-	    /* Generating a new version based on the current time, this way resources are never cached
-	    When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
-	    To facilitate proper caching
-	   	*/
-		var version = new Date().getTime();
-    
-    	// Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
+        /* Generating a new version based on the current time, this way resources are never cached
+         When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
+         To facilitate proper caching
+         */
+        //var version = new Date().getTime();
+        var version = "";
+
+        // Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
         var require = {
             baseUrl: "../",
             urlArgs: "bust=" + version
@@ -30,35 +31,22 @@
                 ],
                 function (BimSurfer, StaticTreeRenderer) {
 
-                    var bimSurfer = new BimSurfer({
-                        domNode: "viewerContainer"
+                    window.bimSurfer = new BimSurfer({
+                        domNode: "maincontainer"
                     });
-
-                    // Viewer's local test mode, loads randomly generated objects
 
                     bimSurfer.load({
-                        test: true
+                        test: true,
+                        numObjects: 20000,
+                        sameObject: true,
+                        size: 1000
                     });
 
-                    // Lets us play with the Surfer in the console
-                    window.bimSurfer = bimSurfer;
+                    bimSurfer.viewFit({
+                        ids: bimSurfer.getObjects(),
+                        animate: true
+                    });
 
-                    // Create array of object IDs that match our test objects
-
-                    var objectIds = [];
-                    for (var i = 0, len = 100; i < len; i++) {
-                        objectIds.push("object" + i);
-                    }
-
-                    var idx = 0;
-
-//                    window.setInterval(
-//                            function () { // Dirty, but OK for demos
-//                                bimSurfer.viewFit({
-//                                    ids: [objectIds[idx++ % objectIds.length]],
-//                                    animate: true
-//                                });
-//                            }, 1000)
                 });
     </script>
 
@@ -66,22 +54,7 @@
 <body>
 <div id="maincontainer">
 
-    <div id="topsection"><h1>BIMSurfer example</h1></div>
 
-    <div id="contentwrapper">
-        <div class="inner">
-            <div id="viewerContainer">
-
-            </div>
-        </div>
-    </div>
-
-    <div id="leftcolumn">
-        <div class="inner">
-            <div id="treeContainer"></div>
-
-        </div>
-    </div>
 </div>
 
 </body>
