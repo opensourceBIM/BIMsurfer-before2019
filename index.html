@@ -24,8 +24,6 @@
 <button id="loadProjectsBtn">Load projects</button>
 <div id="otherProjects"></div>
 </div>
-<h3>glTF</h3>
-<a href="docs/example_glTF.html">glTF</a>
 <h3>Other</h3>
 <a href="docs/example_testModel.html">Test Model</a>
 <script>
@@ -77,16 +75,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		});
 	}
 
-	try {
-		loadFromBimserver("https://thisisanexperimentalserver.com", "bimsurfer@logic-labs.nl", "bimsurfer", document.getElementById("expserver"));
-	} catch (e) {
-		console.log(e);
-	}
-	try {
-		loadFromBimserver("http://localhost:8080", "admin@bimserver.org", "admin", document.getElementById("localhost8080"));
-	} catch (e) {
-		console.log(e);
-	}
+//	try {
+//		loadFromBimserver("https://thisisanexperimentalserver.com", "bimsurfer@logic-labs.nl", "bimsurfer", document.getElementById("expserver"));
+//	} catch (e) {
+//		console.log(e);
+//	}
+//	try {
+//		loadFromBimserver("http://localhost:8080", "admin@bimserver.org", "admin", document.getElementById("localhost8080"));
+//	} catch (e) {
+//		console.log(e);
+//	}
 	try {
 		loadFromBimserver("http://localhost:8082", "admin@bimserver.org", "admin", document.getElementById("localhost8082"));
 	} catch (e) {
