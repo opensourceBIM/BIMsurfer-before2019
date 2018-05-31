@@ -1,5 +1,5 @@
 // Backwards compatibility
-var deps = ["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./xeoViewer", "./EventHandler"];
+var deps = ["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./xeoglViewer", "./EventHandler"];
 
 /*
  if (typeof(BimServerClient) == 'undefined') {
@@ -12,7 +12,7 @@ var deps = ["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeom
 
 window.BIMSERVER_VERSION = "1.5";
 
-define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer, EventHandler, _BimServerApi) {
+define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoglViewer, EventHandler, _BimServerApi) {
 
     // Backwards compatibility
     var BimServerApi;
@@ -30,13 +30,13 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
         cfg = cfg || {};
 
-        var viewer = this.viewer = new xeoViewer(cfg);
+        var viewer = this.viewer = new xeoglViewer(cfg);
 
         /**
          * Fired whenever this BIMSurfer's camera changes.
          * @event camera-changed
          */
-        viewer.on("camera-changed", function() {
+        viewer.on("camera-changed", function () {
             self.fire("camera-changed", arguments);
         });
 
@@ -44,14 +44,14 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * Fired whenever this BIMSurfer's selection changes.
          * @event selection-changed
          */
-        viewer.on("selection-changed", function() {
+        viewer.on("selection-changed", function () {
             self.fire("selection-changed", arguments);
         });
 
         // This are arrays as multiple models might be loaded or unloaded.
         this._idMapping = {
             'toGuid': [],
-            'toId'  : []
+            'toId': []
         };
 
         /**
@@ -59,37 +59,28 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
          * @param params
          */
         this.load = function (params) {
-
             if (params.test) {
                 viewer.createTestModel("testModel", params);
                 return null;
-
             } else if (params.bimserver) {
                 return this._loadFromServer(params);
-
             } else if (params.api) {
                 return this._loadFromAPI(params);
-
-            } else if (params.src) {
-                return this._loadFrom_glTF(params);
             }
         };
 
         this._loadFromServer = function (params) {
-
             var notifier = new Notifier();
             var bimServerApi = new BimServerApi(params.bimserver, notifier);
-
             params.api = bimServerApi; // TODO: Make copy of params
-
             return self._initApi(params)
                 .then(self._loginToServer)
                 .then(self._getRevisionFromServer)
                 .then(self._loadFromAPI);
         };
 
-        this._initApi = function(params) {
-            return new Promise(function(resolve, reject) {
+        this._initApi = function (params) {
+            return new Promise(function (resolve, reject) {
                 params.api.init(function () {
                     resolve(params);
                 });
@@ -97,13 +88,13 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         this._loginToServer = function (params) {
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 if (params.token) {
-                    params.api.setToken(params.token, function() {
+                    params.api.setToken(params.token, function () {
                         resolve(params)
                     }, reject);
                 } else {
-                    params.api.login(params.username, params.password, function() {
+                    params.api.login(params.username, params.password, function () {
                         resolve(params)
                     }, reject);
                 }
@@ -111,14 +102,14 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         this._getRevisionFromServer = function (params) {
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 if (params.roid) {
                     resolve(params);
                 } else {
-                    params.api.call("ServiceInterface", "getAllRelatedProjects", {poid: params.poid}, function(data) {
+                    params.api.call("ServiceInterface", "getAllRelatedProjects", {poid: params.poid}, function (data) {
                         var resolved = false;
 
-                        data.forEach(function(projectData) {
+                        data.forEach(function (projectData) {
                             if (projectData.oid == params.poid) {
                                 params.roid = projectData.lastRevisionId;
                                 params.schema = projectData.schema;
@@ -137,19 +128,6 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
                     }, reject);
                 }
             });
-        };
-
-        this._loadFrom_glTF = function (params) {
-            if (params.src) {
-                return new Promise(function (resolve, reject) {
-                    viewer.loadGLTFModel(params.id || "theModel", params.src, function () {
-                        viewer.viewFit({});
-                        resolve(params);
-                    }, function() {
-                        reject();
-                    });
-                });
-            }
         };
 
         this._loadFromAPI = function (params) {
@@ -230,9 +208,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
 
                 loader.setLoadOids([model.model.roid], oids);
 
-                // viewer.clear(); // For now, until we support multiple models through the API
-
-                viewer.on("tick", function () { // TODO: Fire "tick" event from xeoViewer
+                viewer.on("tick", function () { // TODO: Fire "tick" event from xeoglViewer
                     loader.process();
                 });
 
@@ -241,8 +217,8 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         // Helper function to traverse over the mappings for individually loaded models
-        var _traverseMappings = function(mappings) {
-            return function(k) {
+        var _traverseMappings = function (mappings) {
+            return function (k) {
                 for (var i = 0; i < mappings.length; ++i) {
                     var v = mappings[i][k];
                     if (v) return v;
@@ -252,160 +228,185 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, xeoViewer,
         };
 
         /**
-         * Returns a list of object ids (oid) for the list of guids (GlobalId)
-         *
-         * @param guids List of globally unique identifiers from the IFC model
+         Returns a list of object ids (oid) for the list of guids (GlobalId)
+
+         @param guids List of globally unique identifiers from the IFC model
          */
-        this.toId = function(guids) {
+        this.toId = function (guids) {
             return guids.map(_traverseMappings(self._idMapping.toId));
         };
 
         /**
-         * Returns a list of guids (GlobalId) for the list of object ids (oid)
-         *
-         * @param ids List of internal object ids from the BIMserver / glTF file
+         Returns a list of guids (GlobalId) for the list of object ids (oid)
+
+         @param ids List of internal object ids from the BIMserver.
          */
-        this.toGuid = function(ids) {
+        this.toGuid = function (ids) {
             return ids.map(_traverseMappings(self._idMapping.toGuid));
         };
 
         /**
-         * Shows/hides objects specified by id or entity type, e.g IfcWall.
-         *
-         * When recursive is set to true, hides children (aggregates, spatial structures etc) or
-         * subtypes (IfcWallStandardCase ⊆ IfcWall).
-         *
-         * @param params
+         Gets IDs of objects.
+         @return {Array} Array of IDs.
          */
-        this.setVisibility = function (params) {
-            viewer.setVisibility(params);
+        this.getObjects = viewer.getObjects;
+
+        /**
+         Shows or hides IFC types, objects and/or models.
+
+         @param params {*}
+         @param [params.types] {Array} IFC types of objects to update.
+         @param [params.ids] {Array} IDs or GUIDs of objects/models to update.
+         @param [params.visible=true] {Boolean} Whether to show or hide.
+         */
+        this.setVisibility = viewer.setVisibility;
+
+        /**
+         Returns array of IDs of objects that are currently visible.
+         @return {Array} Array of IDs.
+         */
+        this.getVisibility = viewer.getVisibility;
+
+        /**
+         Ghosts or un-ghosts IFC types, objects and/or models.
+
+         @param params {*}
+         @param [params.types] {Array} IFC types of objects to update.
+         @param [params.ids] {Array} IDs or GUIDs of objects/models to update.
+         @param [params.ghosted=false] {Boolean} Whether to ghost or un-ghost.
+         */
+        this.setGhosted = viewer.setGhosted;
+
+        /**
+         Returns array of IDs of objects that are currently ghosted.
+         @return {Array} Array of IDs.
+         */
+        this.getGhosted = viewer.getGhosted;
+
+        /**
+         Selects or de-selects IFC types, objects and/or models.
+
+         @param params {*}
+         @param [params.types] {Array} IFC types of objects to update.
+         @param [params.ids] {Array} IDs or GUIDs of objects/models to update.
+         @param [params.selected=false] {Boolean} Whether to select or deselect.
+         */
+        this.setSelection = viewer.setSelection;
+
+        /**
+         Returns array of IDs of objects that are currently selected
+         @return {Array} Array of IDs.
+         */
+        this.getSelection = viewer.getSelection;
+
+        /**
+         Sets the color of IFC types, objects and/or models.
+
+         Note that this will override the colors that are already assigned to those objects.
+
+         @param params {*}
+         @param [params.types] {Array} IFC types of objects to update.
+         @param [params.ids] {Array} IDs or GUIDs of objects/models to update.
+         @param [params.color=(1,1,1)] {Float32Array} RGB colorize factors, multiplied by rendered pixel colors.
+         */
+        this.setColor = viewer.setColor;
+
+        /**
+         Sets opacity of objects, models and/or IFC types.
+
+         Note that this will override the opacities of those objects.
+
+         @param params {*}
+         @param [params.types] {Array} IFC types of objects to update.
+         @param [params.ids] {Array} IDs or GUIDs of objects/models to update.
+         @param [params.opacity=1] {Number} Opacity factor in range ````[0..1]````, multiplies by the rendered pixel alphas.
+         */
+        this.setOpacity = viewer.setOpacity;
+
+        /**
+         Fits the elements into view.
+
+         Fits the entire model into view if ids is an empty array, null or undefined.
+         Animate allows to specify a transition period in milliseconds in which the view is altered.
+
+         @param params
+         */
+        this.viewFit = viewer.viewFit;
+
+        /**
+         Gets camera state.
+         */
+        this.getCamera = viewer.getCamera;
+
+        /**
+         Sets camera state.
+
+         @param params
+         */
+        this.setCamera = viewer.setCamera;
+
+        /**
+         Redefines light sources.
+
+         @param params Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
+         See http://xeogl.org/docs/classes/Lights.html for possible params for each light type
+         */
+        this.setLights = viewer.setLights;
+
+        /**
+         Returns light sources.
+
+         @returns Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
+         */
+        this.getLights = viewer.getLights;
+
+        /**
+
+         @param params
+         */
+        this.reset = viewer.reset;
+
+        /**
+         Returns a list of loaded IFC entity types in the model.
+
+         @method getTypes
+         @returns {Array} List of loaded IFC entity types, with visibility flag
+         */
+        this.getTypes = viewer.getTypes;
+
+        /**
+         Sets the default behaviour of mouse and touch drag input
+
+         @method setDefaultDragAction
+         @param {String} action ("pan" | "orbit")
+         */
+        this.setDefaultDragAction = viewer.setDefaultDragAction;
+
+        /**
+         Returns the world boundary of an object
+
+         @method getWorldBoundary
+         @param {String} objectId id of object
+         @param {Object} result Existing boundary object
+         @returns {Object} World boundary of object, containing {obb, aabb, center, sphere} properties. See xeogl.Boundary3D
+         */
+        this.getWorldBoundary = viewer.getWorldBoundary;
+
+        this.getBookmark = function (mask) {
+            var bookmark = viewer.getBookmark;
+            // TODO: include loaded models
+            return bookmark;
+        };
+
+        this.setBookmark = function(bookmark, mask) {
+            // TODO: include loaded models
+            viewer.setBookmark(bookmark);
         };
 
         /**
-         * Selects/deselects objects specified by id.
-         **
-         * @param params
+         Destroys the BIMSurfer
          */
-        this.setSelection = function (params) {
-            return viewer.setSelection(params);
-        };
-
-        /**
-         * Gets a list of selected elements.
-         */
-        this.getSelection = function () {
-            return viewer.getSelection();
-        };
-
-        /**
-         * Sets color of objects specified by ids or entity type, e.g IfcWall.
-         **
-         * @param params
-         */
-        this.setColor = function (params) {
-            viewer.setColor(params);
-        };
-
-        /**
-         * Sets opacity of objects specified by ids or entity type, e.g IfcWall.
-         **
-         * @param params
-         */
-        this.setOpacity = function (params) {
-            viewer.setOpacity(params);
-        };
-
-        /**
-         * Fits the elements into view.
-         *
-         * Fits the entire model into view if ids is an empty array, null or undefined.
-         * Animate allows to specify a transition period in milliseconds in which the view is altered.
-         *
-         * @param params
-         */
-        this.viewFit = function (params) {
-            viewer.viewFit(params);
-        };
-
-        /**
-         *
-         */
-        this.getCamera = function () {
-            return viewer.getCamera();
-        };
-
-        /**
-         *
-         * @param params
-         */
-        this.setCamera = function (params) {
-            viewer.setCamera(params);
-        };
-
-        /**
-         * Redefines light sources.
-         *
-         * @param params Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
-         * See http://xeogl.org/docs/classes/Lights.html for possible params for each light type
-         */
-        this.setLights = function (params) {
-            viewer.setLights(params);
-        };
-
-
-        /**
-         * Returns light sources.
-         *
-         * @returns Array of lights {type: "ambient"|"dir"|"point", params: {[...]}}
-         */
-        this.getLights = function () {
-            return viewer.getLights;
-        };
-
-        /**
-         *
-         * @param params
-         */
-        this.reset = function (params) {
-            viewer.reset(params);
-        };
-
-        /**
-         * Returns a list of loaded IFC entity types in the model.
-         *
-         * @method getTypes
-         * @returns {Array} List of loaded IFC entity types, with visibility flag
-         */
-        this.getTypes = function() {
-            return viewer.getTypes();
-        };
-
-        /**
-         * Sets the default behaviour of mouse and touch drag input
-         *
-         * @method setDefaultDragAction
-         * @param {String} action ("pan" | "orbit")
-         */
-        this.setDefaultDragAction = function (action) {
-            viewer.setDefaultDragAction(action);
-        };
-
-        /**
-         * Returns the world boundary of an object
-         *
-         * @method getWorldBoundary
-         * @param {String} objectId id of object
-         * @param {Object} result Existing boundary object
-         * @returns {Object} World boundary of object, containing {obb, aabb, center, sphere} properties. See xeogl.Boundary3D
-         */
-        this.getWorldBoundary = function(objectId, result) {
-            return viewer.getWorldBoundary(objectId, result);
-        };
-
-        /**
-         * Destroys the BIMSurfer
-         */
-        this.destroy = function() {
+        this.destroy = function () {
             viewer.destroy();
         }
     }
