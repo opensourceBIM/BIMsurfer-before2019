@@ -17255,17 +17255,17 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
                 var id = ids[i];
                 var object = this.objects[id];
                 if (object) {
-                    changed = changed || callback(object);
+                    changed = callback(object) || changed;
                 } else {
                     object = this.guidObjects[id];
                     if (object) {
-                        changed = changed || callback(object);
+                        changed = callback(object) || changed;
                     } else {
                         var objects = this.entityTypes[id];
                         if (objects) {
-                            for (id in objects) {
-                                if (objects.hasOwnProperty(id)) {
-                                    changed = changed || callback(objects[id]);
+                            for (var objectId in objects) {
+                                if (objects.hasOwnProperty(objectId)) {
+                                    changed = callback(objects[objectId]) || changed;
                                 }
                             }
                         }
