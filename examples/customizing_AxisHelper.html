@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Example</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
+    <script>
+        /* Generating a new version based on the current time, this way resources are never cached
+         When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
+         To facilitate proper caching
+         */
+        //var version = new Date().getTime();
+        var version = "";
+
+        // Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
+        var require = {
+            baseUrl: "../",
+            urlArgs: "bust=" + version
+        };
+    </script>
+
+    <link rel="stylesheet" href="css/styles.css"/>
+
+    <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
+    <script type="text/javascript">
+
+        require(["bimsurfer/src/BimSurfer"],
+                function (BimSurfer) {
+
+                    requirejs([
+                                "examples/js/xeogl/extras/vectorTextGeometry",
+                                "examples/js/xeogl/extras/axisHelper"
+                            ],
+                            function () {
+                                window.bimSurfer = new BimSurfer({
+                                    domNode: "fullPageContainer"
+                                });
+
+                                bimSurfer.createTestModel("testModel1", {
+                                    numObjects: 3000,
+                                    sameGeometry: false,
+                                    size: 1000
+                                });
+
+                                bimSurfer.viewFit();
+
+                                var axisHelper = new xeogl.AxisHelper({ camera: bimSurfer.scene.camera });
+                                axisHelper.setVisible(true);
+                            });
+                });
+    </script>
+
+</head>
+<body>
+<div id="info">
+    <h1>Using a xeogl.AxisHelper with BIMSurfer</h1>
+    <ul>
+        <li>This is really just to demonstrate extensibility of BIMSurfer using xeogl components
+
+        </li>
+    </ul>
+
+</div>
+<div style="position: absolute; top: 0; left: 0; width:100%; height: 100%;" id="fullPageContainer"></div>
+
+</body>
+</html>

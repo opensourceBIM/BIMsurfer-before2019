@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Example</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
+    <script>
+        /* Generating a new version based on the current time, this way resources are never cached
+         When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
+         To facilitate proper caching
+         */
+        //var version = new Date().getTime();
+        var version = "";
+
+        // Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
+        var require = {
+            baseUrl: "../",
+            urlArgs: "bust=" + version
+        };
+    </script>
+
+    <link href="css/styles.css" rel="stylesheet"/>
+
+    <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
+    <script type="text/javascript">
+
+        require(["bimsurfer/src/BimSurfer"],
+                function (BimSurfer) {
+
+                    requirejs([
+                                "examples/js/xeogl/extras/glTFModel"
+                            ],
+                            function () {
+
+                                //--------------------------------------------------------------------------------------
+                                // Create a BIMSurfer
+                                //--------------------------------------------------------------------------------------
+
+                                window.bimSurfer = new BimSurfer({
+                                    domNode: "fullPageContainer"
+                                });
+
+                                //--------------------------------------------------------------------------------------
+                                // Use a xeogl.GLTFModel to load a glTF model from the file system into
+                                // BIMSurfer's xeogl.Scene.
+                                //
+                                // BIMSurfer can then work with the model's objects as if they were loaded from BIMServer.
+                                //
+                                // The objects will get IFC type "DEFAULT", since no IFC info is available for them.
+                                //--------------------------------------------------------------------------------------
+
+                                var model = new xeogl.GLTFModel(bimSurfer.scene, {
+                                    id: "schependomlaan",
+                                    src: "models/gltf/schependomlaan/schependomlaan.gltf",
+                                    entities: true // Loads BIM objects
+                                });
+
+                                //--------------------------------------------------------------------------------------
+                                // When model loaded, orient camera and ghost all objects with IFC type "DEFAULT"
+                                //--------------------------------------------------------------------------------------
+
+                                model.on("loaded", function () {
+
+                                    bimSurfer.camera.eye = [-14.63, 22.88, 10.04];
+                                    bimSurfer.camera.look = [10.98, 5.82, -11.23];
+                                    bimSurfer.camera.up = [0.35, 0.88, -0.29];
+
+                                    bimSurfer.scene.ghostMaterial.preset = "defaultWhiteBG";
+
+                                    bimSurfer.setGhosted({
+                                        types: ["DEFAULT"],
+                                        ghosted: true,
+                                        clear: true
+                                    });
+                                });
+                            });
+                });
+    </script>
+
+</head>
+<body>
+<div id="info">
+    <h1>Using a xeog.lGLTFModel with BIMSurfer</h1>
+    <ul>
+        <li>glTF is not served by BIMServer - this is really just to demonstrate extensibility of BIMSurfer using xeogl
+            components, and to test camera controls.
+
+        </li>
+    </ul>
+</div>
+<div style="position: absolute; top: 0; left: 0; width:100%; height: 100%;" id="fullPageContainer"></div>
+
+</body>
+</html>

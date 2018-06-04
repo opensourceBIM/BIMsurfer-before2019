@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Example</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
+    <script>
+        /* Generating a new version based on the current time, this way resources are never cached
+         When building a version of BIMsurfer V2 this should be replaced by an actual version number in order
+         To facilitate proper caching
+         */
+        //var version = new Date().getTime();
+        var version = "";
+
+        // Because the demo is in a subfolder compared to the BIMsurfer API, we tell require JS to use the "../" baseUrl
+        var require = {
+            baseUrl: "../",
+            urlArgs: "bust=" + version
+        };
+    </script>
+
+    <link rel="stylesheet" href="css/styles.css"/>
+
+    <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
+    <script type="text/javascript">
+
+        require(["bimsurfer/src/BimSurfer"],
+                function (BimSurfer) {
+
+                    requirejs([
+                                "examples/js/xeogl/extras/glTFModel"
+                            ],
+                            function () {
+
+                                //--------------------------------------------------------------------------------------
+                                // Create a BIMSurfer
+                                //--------------------------------------------------------------------------------------
+
+                                window.bimSurfer = new BimSurfer({
+                                    domNode: "fullPageContainer"
+                                });
+
+                                //--------------------------------------------------------------------------------------
+                                // Use a xeogl.GLTFModel to load a glTF models from the file system into
+                                // BIMSurfer's xeogl.Scene.
+                                //
+                                // BIMSurfer can then work with the model's objects as if they were loaded from BIMServer.
+                                //
+                                // The objects will get IFC type "DEFAULT", since no IFC info is available for them.
+                                //--------------------------------------------------------------------------------------
+
+                                var structure = new xeogl.GLTFModel(bimSurfer.scene, {
+                                    id: "structure",
+                                    src: "models/gltf/WestRiverSideHospital/structure.gltf",
+                                    lambertMaterials: true,
+                                    entities: true,
+                                    entityType: "IFCStructure",
+                                    colorize: [0.8, 0.3, 0],
+                                    events: {
+                                        loaded: function () {
+                                            bimSurfer.setHighlighted({types: ["IFCStructure"], highlighted: true})
+                                        }
+                                    }
+                                });
+
+//                                var sprinklers = new xeogl.GLTFModel(bimSurfer.scene, {
+//                                    id: "sprinklers",
+//                                    src: "models/gltf/WestRiverSideHospital/sprinklers.gltf",
+//                                    lambertMaterials: true,
+//                                    entities: true,
+//                                    entityType: "IFCSSprinklers",
+//                                    colorize: [0, 0.6, 0]
+//                                });
+//
+//                                var fireAlarms = new xeogl.GLTFModel(bimSurfer.scene, {
+//                                    id: "fireAlarms",
+//                                    src: "models/gltf/WestRiverSideHospital/fireAlarms.gltf",
+//                                    lambertMaterials: true,
+//                                    entities: true,
+//                                    entityType: "IFCSAlarms",
+//                                    colorize: [0, 0, 0.6]
+//                                });
+
+                                var electrical = new xeogl.GLTFModel(bimSurfer.scene, {
+                                    id: "electrical",
+                                    src: "models/gltf/WestRiverSideHospital/electrical.gltf",
+                                    lambertMaterials: true,
+                                    entities: true,
+                                    entityType: "IFCSElectrical",
+                                    colorize: [0, 0.8, 0.6]
+                                });
+
+                                var plumbing = new xeogl.GLTFModel(bimSurfer.scene, {
+                                    id: "plumbing",
+                                    src: "models/gltf/WestRiverSideHospital/plumbing.gltf",
+                                    lambertMaterials: true,
+                                    entities: true,
+                                    entityType: "IFCPlumbing",
+                                    colorize: [0.8, 0, 0.8]
+                                });
+
+                                bimSurfer.scene.camera.eye = [20.29768180847168, 181.75579833984375, 27.05446434020996];
+                                bimSurfer.scene.camera.look = [42.360652923583984, 170.71444702148438, -96.96727752685547];
+                                bimSurfer.scene.camera.up = [0.015293178148567677, 0.9961805939674377, -0.08596695959568024];
+
+                            });
+                });
+    </script>
+
+</head>
+<body>
+<div id="info">
+    <h1>Using a xeogl.GLTFModel with BIMSurfer</h1>
+    <ul>
+        <li>glTF is not served by BIMServer - this is really just to demonstrate extensibility of BIMSurfer using xeogl
+            components, and to test camera controls and rendering.
+
+        </li>
+    </ul>
+</div>
+<div style="position: absolute; top: 0; left: 0; width:100%; height: 100%;" id="fullPageContainer"></div>
+
+</body>
+</html>

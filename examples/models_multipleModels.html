@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Example</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
+    <script>
+        var require = {
+            baseUrl: "../",
+            urlArgs: "bust=" + new Date().getTime()
+        };
+    </script>
+
+    <link rel="stylesheet" href="css/styles.css"/>
+
+    <script type="text/javascript" src="../bimsurfer/lib/require.js"></script>
+    <script type="text/javascript">
+
+        require([
+            "bimsurfer/src/BimSurfer"
+        ], function (BimSurfer) {
+
+            window.bimSurfer = new BimSurfer({
+                domNode: "fullPageContainer"
+            });
+
+            // Generate test models using BIMSurfer
+
+            bimSurfer.createTestModel("testModel1", {
+                numObjects: 3000,
+                sameGeometry: false,
+                size: 1000
+            });
+
+            bimSurfer.createTestModel("testModel2", {
+                numObjects: 3000,
+                sameGeometry: false,
+                size: 1000
+            });
+
+            // Translate the models using xeogl
+
+            bimSurfer.scene.models["testModel1"].position = [-600, 0, 0];
+            bimSurfer.scene.models["testModel2"].position = [+600, 0, 0];
+
+            bimSurfer.cameraFlight.fitFOV = 45;
+
+            bimSurfer.viewFit({
+                ids: bimSurfer.getObjects(),
+                animate: true
+            });
+
+            // Orbit the camera using xeogl
+
+            bimSurfer.scene.on("tick", function () {
+                bimSurfer.scene.camera.orbitYaw(0.2);
+            })
+        });
+    </script>
+
+</head>
+<body>
+<div id="info">
+    <h1>Creating multiple mock test models</h1>
+</div>
+<div style="position: absolute; top: 0; left: 0; width:100%; height: 100%;" id="fullPageContainer"></div>
+</body>
+</html>
