@@ -56,6 +56,8 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, EventHandl
 
         var domNode = document.getElementById(cfg.domNode);
         var canvas = document.createElement("canvas");
+        canvas.style.width="100%";
+        canvas.style.height="100%";
         domNode.appendChild(canvas);
 
         /**
