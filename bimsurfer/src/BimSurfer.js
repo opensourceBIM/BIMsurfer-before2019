@@ -56,8 +56,8 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, EventHandl
 
         var domNode = document.getElementById(cfg.domNode);
         var canvas = document.createElement("canvas");
-        canvas.style.width="100%";
-        canvas.style.height="100%";
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
         domNode.appendChild(canvas);
 
         /**
@@ -68,18 +68,18 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, EventHandl
          @type {xeogl.Scene}
          */
         this.scene = new xeogl.Scene({canvas: canvas, transparent: true});
-        this.scene.lights.lights = [
-            new xeogl.AmbientLight(this.scene, {
-                color: [0.65, 0.65, 0.75],
-                intensity: 1
-            }),
-            new xeogl.DirLight(this.scene, {
-                dir: [0.0, 0.0, -1.0],
-                color: [1.0, 1.0, 1.0],
-                intensity: 1.0,
-                space: "view"
-            })
-        ];
+        // this.scene.lights.lights = [
+        //     new xeogl.AmbientLight(this.scene, {
+        //         color: [0.65, 0.65, 0.75],
+        //         intensity: 1
+        //     }),
+        //     new xeogl.DirLight(this.scene, {
+        //         dir: [0.0, 0.0, -1.0],
+        //         color: [1.0, 1.0, 1.0],
+        //         intensity: 1.0,
+        //         space: "view"
+        //     })
+        // ];
 
         /**
          The xeogl.Camera, which defines the current viewpoint and projection.
@@ -363,8 +363,13 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, EventHandl
             modelObjects[model.id][objectId] = object;
             var lambertMaterial = this.scene.components["__lambertMaterial"] || new xeogl.LambertMaterial(this.scene, {id: "__lambertMaterial"}); // Same material for all meshes, which are individually colorized
             for (var i = 0, len = geometryIds.length; i < len; i++) { // Create child Meshes of Object
+                var geometry = this.scene.components[modelId + "." + geometryIds[i]];
+                if (!geometry || !geometry.isType("xeogl.Geometry")) {
+                    this.log("Can't create object mesh - geometry with id " + objectId + " not found");
+                    continue;
+                }
                 var mesh = new xeogl.Mesh(model, { // Each Mesh will be destroyed with the Model
-                    geometry: modelId + "." + geometryIds[i],
+                    geometry: geometry,
                     material: lambertMaterial
                 });
                 mesh.colorize = color; // HACK: Overrides state inheritance
