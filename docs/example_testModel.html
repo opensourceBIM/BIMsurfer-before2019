@@ -36,11 +36,23 @@
                     });
 
                     bimSurfer.load({
+                        modelId: "testModel1",
                         test: true,
-                        numObjects: 10000,
-                        sameGeometry: true,
+                        numObjects: 3000,
+                        sameGeometry: false,
                         size: 1000
                     });
+
+                    bimSurfer.load({
+                        modelId: "testModel2",
+                        test: true,
+                        numObjects: 3000,
+                        sameGeometry: false,
+                        size: 1000
+                    });
+
+                    bimSurfer.setPosition({ids: ["testModel1"], position: [-600, 0, 0]});
+                    bimSurfer.setPosition({ids: ["testModel2"], position: [+600, 0, 0]});
 
                     bimSurfer.viewFit({
                         ids: bimSurfer.getObjects(),
