@@ -38,8 +38,10 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 	};
 	
 	this.readObject = function(data, geometryType) {
-		data.align8();
 		if (geometryType == 5) {
+			var oid = data.readLong();
+			var type = data.readUTF8();
+			data.align8();
 			var roid = data.readLong();
 			var geometryInfoOid = data.readLong();
 			var hasTransparency = data.readLong() == 1;
@@ -180,6 +182,8 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				});
 			}
 		} else if (geometryType == 3) {
+			var reused = data.readInt();
+			data.align8();
 			var hasTransparency = data.readLong() == 1;
 			var coreIds = [];
 			var geometryDataOid = data.readLong();
@@ -257,6 +261,8 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				delete o.dataToInfo[geometryDataOid];
 			}
 		} else if (geometryType == 1) {
+			var reused = data.readInt();
+			data.align8();
 			var hasTransparency = data.readLong() == 1;
 			var geometryDataOid = data.readLong();
 			var nrIndices = data.readInt();
@@ -454,7 +460,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 12) {
+		if (version != 14) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
@@ -596,7 +602,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 						field: "data"
 					}
 				};
-				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin3", function(serializer){
+				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin3").then(function(serializer){
 					o.bimServerApi.call("ServiceInterface", "download", {
 						roids: o.options.roids,
 						serializerOid : serializer.oid,
