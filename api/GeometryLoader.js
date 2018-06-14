@@ -183,6 +183,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			}
 		} else if (geometryType == 3) {
 			var reused = data.readInt();
+			var type = data.readUTF8();
 			data.align8();
 			var hasTransparency = data.readLong() == 1;
 			var coreIds = [];
@@ -262,6 +263,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			}
 		} else if (geometryType == 1) {
 			var reused = data.readInt();
+			var type = data.readUTF8();
 			data.align8();
 			var hasTransparency = data.readLong() == 1;
 			var geometryDataOid = data.readLong();
