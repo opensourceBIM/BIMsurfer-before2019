@@ -4,7 +4,7 @@
  * A WebGL-based 3D visualization engine from xeoLabs
  * http://xeogl.org/
  *
- * Built on 2018-06-06
+ * Built on 2018-06-18
  *
  * MIT License
  * Copyright 2018, Lindsay Kay
@@ -471,8 +471,6 @@
          * @param {Object} [scope] Scope for the callback.
          */
         scheduleTask: function (callback, scope) {
-            // callback.call(scope);
-            // return;
             this._taskQueue.push(callback);
             this._taskQueue.push(scope);
         },
@@ -1227,8 +1225,8 @@ xeogl.utils.Map = function (items, baseId) {
      */
     var math = xeogl.math = {
 
-        MAX_DOUBLE: +100000000,
-        MIN_DOUBLE: -100000000,
+        MAX_DOUBLE: Number.MAX_VALUE,
+        MIN_DOUBLE: Number.MIN_VALUE,
 
         /**
          * The number of radiians in a degree (0.0174532925).
@@ -3110,8 +3108,8 @@ xeogl.utils.Map = function (items, baseId) {
         composeMat4: function (position, quaternion, scale, mat) {
             mat = mat || math.mat4();
             math.quaternionToRotationMat4(quaternion, mat);
-            math.translateMat4v(position, mat);
             math.scaleMat4v(scale, mat);
+            math.translateMat4v(position, mat);
 
             return mat;
         },
@@ -5061,7 +5059,7 @@ xeogl.utils.Map = function (items, baseId) {
      *
      * @private
      */
-    math.rayTriangleIntersect = (function() {
+    math.rayTriangleIntersect = (function () {
 
         var tempVec3 = new Float32Array(3);
         var tempVec3b = new Float32Array(3);
@@ -5110,7 +5108,7 @@ xeogl.utils.Map = function (items, baseId) {
      *
      * @private
      */
-    math.rayPlaneIntersect = (function() {
+    math.rayPlaneIntersect = (function () {
 
         var tempVec3 = new Float32Array(3);
         var tempVec3b = new Float32Array(3);
@@ -5147,7 +5145,7 @@ xeogl.utils.Map = function (items, baseId) {
      *
      * @private
      */
-    math.cartesianToBarycentric = (function() {
+    math.cartesianToBarycentric = (function () {
 
         var tempVec3 = new Float32Array(3);
         var tempVec3b = new Float32Array(3);
@@ -5221,6 +5219,76 @@ xeogl.utils.Map = function (items, baseId) {
 
         return cartesian;
     };
+
+    /**
+     * Given geometry defined as an array of positions, optional normals, option uv and an array of indices, returns
+     * modified arrays that have duplicate vertices removed.
+     *
+     * Note: does not work well when co-incident vertices have same positions but different normals and UVs.
+     *
+     * @param positions
+     * @param normals
+     * @param uv
+     * @param indices
+     * @returns {{positions: Array, indices: Array}}
+     * @private
+     */
+    math.mergeVertices = function (positions, normals, uv, indices) {
+        var positionsMap = {}; // Hashmap for looking up vertices by position coordinates (and making sure they are unique)
+        var indicesLookup = [];
+        var uniquePositions = [];
+        var uniqueNormals = normals ? [] : null;
+        var uniqueUV = uv ? [] : null;
+        var indices2 = [];
+        var vx;
+        var vy;
+        var vz;
+        var key;
+        var precisionPoints = 4; // number of decimal points, e.g. 4 for epsilon of 0.0001
+        var precision = Math.pow(10, precisionPoints);
+        var i;
+        var len;
+        var uvi = 0;
+        for (i = 0, len = positions.length; i < len; i += 3) {
+            vx = positions[i];
+            vy = positions[i + 1];
+            vz = positions[i + 2];
+            key = Math.round(vx * precision) + '_' + Math.round(vy * precision) + '_' + Math.round(vz * precision);
+            if (positionsMap[key] === undefined) {
+                positionsMap[key] = uniquePositions.length / 3;
+                uniquePositions.push(vx);
+                uniquePositions.push(vy);
+                uniquePositions.push(vz);
+                if (normals) {
+                    uniqueNormals.push(normals[i]);
+                    uniqueNormals.push(normals[i + 1]);
+                    uniqueNormals.push(normals[i + 2]);
+                }
+                if (uv) {
+                    uniqueUV.push(uv[uvi]);
+                    uniqueUV.push(uv[uvi + 1]);
+                }
+            }
+            indicesLookup[i / 3] = positionsMap[key];
+            uvi += 2;
+        }
+        for (i = 0, len = indices.length; i < len; i++) {
+            indices2[i] = indicesLookup[indices[i]];
+        }
+        var result = {
+            positions: uniquePositions,
+            indices: indices2
+        };
+        if (uniqueNormals) {
+            result.normals = uniqueNormals;
+        }
+        if (uniqueUV) {
+            result.uv = uniqueUV;
+
+        }
+        return result;
+    }
+
 
 })();;/**
  * Boundary math functions.
@@ -5488,99 +5556,99 @@ xeogl.utils.Map = function (items, baseId) {
      * Removes duplicate vertices from a triangle mesh.
      * @returns {{positions: Array, uv: *, normals: *,indices: *}}
      */
-    math.mergeVertices = function (positions, uv, normals, colors, indices) {
-
-        var positionsMap = {}; // Hashmap for looking up vertices by position coordinates (and making sure they are unique)
-        var uniquePositions = [];
-        var uniqueUV = uv ? [] : null;
-        var uniqueNormals = normals ? [] : null;
-        var changes = [];
-        var vx;
-        var vy;
-        var vz;
-        var key;
-        var precisionPoints = 4; // number of decimal points, e.g. 4 for epsilon of 0.0001
-        var precision = Math.pow(10, precisionPoints);
-        var i;
-        var il;
-
-        for (i = 0, il = positions.length; i < il; i += 3) {
-
-            vx = positions[i];
-            vy = positions[i + 1];
-            vz = positions[i + 2];
-
-            key = Math.round(vx * precision) + '_' + Math.round(vy * precision) + '_' + Math.round(vz * precision);
-
-            if (positionsMap[key] === undefined) {
-
-                positionsMap[key] = i / 3;
-
-                uniquePositions.push(vx);
-                uniquePositions.push(vy);
-                uniquePositions.push(vz);
-
-                if (uv) {
-                    // uniqueUV.push(uv[i]);
-                    // uniqueUV.push(uv[i + 1]);
-                    // uniqueUV.push(uv[i + 2]);
-                }
-
-                if (normals) {
-                    uniqueNormals.push(normals[i]);
-                    uniqueNormals.push(normals[i + 1]);
-                    uniqueNormals.push(normals[i + 2]);
-                }
-
-                changes[i / 3] = (uniquePositions.length - 3) / 3;
-
-            } else {
-
-                changes[i / 3] = changes[positionsMap[key]];
-            }
-        }
-
-        var faceIndicesToRemove = [];
-
-        for (i = 0, il = indices.length; i < il; i += 3) {
-
-            indices[i + 0] = changes[indices[i + 0]];
-            indices[i + 1] = changes[indices[i + 1]];
-            indices[i + 2] = changes[indices[i + 2]];
-
-            var indicesDup = [indices[i + 0], indices[i + 1], indices[i + 2]];
-
-            for (var n = 0; n < 3; n++) {
-                if (indicesDup[n] === indicesDup[( n + 1 ) % 3]) {
-                    faceIndicesToRemove.push(i);
-                    break;
-                }
-            }
-        }
-
-        if (faceIndicesToRemove.length > 0) {
-            indices = Array.prototype.slice.call(indices); // splice is not available on typed arrays
-            for (i = faceIndicesToRemove.length - 1; i >= 0; i--) {
-                var idx = faceIndicesToRemove[i];
-                indices.splice(idx, 3);
-            }
-        }
-
-        var result = {
-            positions: uniquePositions,
-            indices: indices
-        };
-
-        if (uv) {
-            result.uv = uniqueUV;
-        }
-
-        if (normals) {
-            result.normals = uniqueNormals;
-        }
-
-        return result;
-    };
+    // math.mergeVertices = function (positions, uv, normals, colors, indices) {
+    //
+    //     var positionsMap = {}; // Hashmap for looking up vertices by position coordinates (and making sure they are unique)
+    //     var uniquePositions = [];
+    //     var uniqueUV = uv ? [] : null;
+    //     var uniqueNormals = normals ? [] : null;
+    //     var changes = [];
+    //     var vx;
+    //     var vy;
+    //     var vz;
+    //     var key;
+    //     var precisionPoints = 4; // number of decimal points, e.g. 4 for epsilon of 0.0001
+    //     var precision = Math.pow(10, precisionPoints);
+    //     var i;
+    //     var il;
+    //
+    //     for (i = 0, il = positions.length; i < il; i += 3) {
+    //
+    //         vx = positions[i];
+    //         vy = positions[i + 1];
+    //         vz = positions[i + 2];
+    //
+    //         key = Math.round(vx * precision) + '_' + Math.round(vy * precision) + '_' + Math.round(vz * precision);
+    //
+    //         if (positionsMap[key] === undefined) {
+    //
+    //             positionsMap[key] = i / 3;
+    //
+    //             uniquePositions.push(vx);
+    //             uniquePositions.push(vy);
+    //             uniquePositions.push(vz);
+    //
+    //             if (uv) {
+    //                 // uniqueUV.push(uv[i]);
+    //                 // uniqueUV.push(uv[i + 1]);
+    //                 // uniqueUV.push(uv[i + 2]);
+    //             }
+    //
+    //             if (normals) {
+    //                 uniqueNormals.push(normals[i]);
+    //                 uniqueNormals.push(normals[i + 1]);
+    //                 uniqueNormals.push(normals[i + 2]);
+    //             }
+    //
+    //             changes[i / 3] = (uniquePositions.length - 3) / 3;
+    //
+    //         } else {
+    //
+    //             changes[i / 3] = changes[positionsMap[key]];
+    //         }
+    //     }
+    //
+    //     var faceIndicesToRemove = [];
+    //
+    //     for (i = 0, il = indices.length; i < il; i += 3) {
+    //
+    //         indices[i + 0] = changes[indices[i + 0]];
+    //         indices[i + 1] = changes[indices[i + 1]];
+    //         indices[i + 2] = changes[indices[i + 2]];
+    //
+    //         var indicesDup = [indices[i + 0], indices[i + 1], indices[i + 2]];
+    //
+    //         for (var n = 0; n < 3; n++) {
+    //             if (indicesDup[n] === indicesDup[( n + 1 ) % 3]) {
+    //                 faceIndicesToRemove.push(i);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //
+    //     if (faceIndicesToRemove.length > 0) {
+    //         indices = Array.prototype.slice.call(indices); // splice is not available on typed arrays
+    //         for (i = faceIndicesToRemove.length - 1; i >= 0; i--) {
+    //             var idx = faceIndicesToRemove[i];
+    //             indices.splice(idx, 3);
+    //         }
+    //     }
+    //
+    //     var result = {
+    //         positions: uniquePositions,
+    //         indices: indices
+    //     };
+    //
+    //     if (uv) {
+    //         result.uv = uniqueUV;
+    //     }
+    //
+    //     if (normals) {
+    //         result.normals = uniqueNormals;
+    //     }
+    //
+    //     return result;
+    // };
 
     /**
      * Converts surface-perpendicular face normals to vertex normals. Assumes that the mesh contains disjoint triangles
@@ -6048,8 +6116,6 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
     var objects = {};
     var shadowLightObjects = {};
     var canvasTransparent = options.transparent === true;
-    var ambient = null; // The current ambient light, if available
-    var ambientColor = xeogl.math.vec4([0, 0, 0, 1]);
     var objectList = [];
     var objectListLen = 0;
     var objectPickList = [];
@@ -6084,10 +6150,6 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
 
     this.setImageForceDirty = function () {
         this.imageForceDirty = true;
-    };
-
-    this.getAmbientColor = function () {
-        return ambientColor;
     };
 
     this.setBlendOneMinusSrcAlpha = function (value) {
@@ -6137,11 +6199,15 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
 
     this.lights = new (function () {
 
+        const DEFAULT_AMBIENT = xeogl.math.vec3([0, 0, 0]);
+        var ambientColor = xeogl.math.vec3();
+
         this.lights = [];
         this.reflectionMaps = [];
         this.lightMaps = [];
 
         var hash = null;
+        var ambientLight = null;
 
         this.getHash = function () {
             if (hash) {
@@ -6172,13 +6238,18 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
 
         this.addLight = function (light) {
             this.lights.push(light);
+            ambientLight = null;
             hash = null;
         };
 
-        this.removeLight = function (light) {
+        this.removeLight = function (oldLight) {
             for (var i = 0, len = this.lights.length; i < len; i++) {
-                if (this.lights[i].id === light.id) {
+                var light = this.lights[i];
+                if (light.id === oldLight.id) {
                     this.lights.splice(i, 1);
+                    if (ambientLight && ambientLight.id === light.id) {
+                        ambientLight = null;
+                    }
                     hash = null;
                     return;
                 }
@@ -6214,6 +6285,29 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
                 }
             }
         };
+
+        this.getAmbientColor = function () {
+            if (!ambientLight) {
+                for (var i = 0, len = this.lights.length; i < len; i++) {
+                    var light = this.lights[i];
+                    if (light.type === "ambient") {
+                        ambientLight = light;
+                        break;
+                    }
+                }
+            }
+            if (ambientLight) {
+                var color = ambientLight.color;
+                var intensity = ambientLight.intensity;
+                ambientColor[0] = color[0] * intensity;
+                ambientColor[1] = color[1] * intensity;
+                ambientColor[2] = color[2] * intensity;
+                return ambientColor;
+            } else {
+                return DEFAULT_AMBIENT;
+            }
+        };
+
     })();
 
 
@@ -6227,9 +6321,9 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
         // imageDirty = true;
     };
 
-    this.createObject = function (meshId, material, ghostMaterial, outlineMaterial, highlightMaterial, selectedMaterial, vertexBufs, geometry, modelTransform, modes) {
+    this.createObject = function (meshId, material, ghostMaterial, outlineMaterial, highlightMaterial, selectedMaterial, edgeMaterial, vertexBufs, geometry, modelTransform, modes) {
         var objectId = ids.addItem({});
-        var object = new xeogl.renderer.Object(objectId, meshId, gl, self, material, ghostMaterial, outlineMaterial, highlightMaterial, selectedMaterial, vertexBufs, geometry, modelTransform, modes);
+        var object = new xeogl.renderer.Object(objectId, meshId, gl, self, material, ghostMaterial, outlineMaterial, highlightMaterial, selectedMaterial, edgeMaterial, vertexBufs, geometry, modelTransform, modes);
         if (object.errors) {
             object.destroy();
             ids.removeItem(objectId);
@@ -6240,22 +6334,10 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
         objects[objectId] = object;
         objectListDirty = true;
         stateSortDirty = true;
-        setAmbientLights(this.lights); // TODO: Is self the best place for self?
         return {
             objectId: objectId
         };
     };
-
-    function setAmbientLights(state) {
-        // var lights = state.lights;
-        // var light;
-        // for (var i = 0, len = lights.length; i < len; i++) {
-        //     light = lights[i];
-        //     if (light.type === "ambient") {
-        //         ambient = light;
-        //     }
-        // }
-    }
 
     this.destroyObject = function (objectId) {
         var object = objects[objectId];
@@ -6282,7 +6364,7 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
         if (canvasTransparent) { // Canvas is transparent
             gl.clearColor(0, 0, 0, 0);
         } else {
-            var color = params.ambientColor || ambientColor;
+            var color = params.ambientColor || this.lights.getAmbientColor();
             gl.clearColor(color[0], color[1], color[2], 1.0);
         }
 
@@ -6448,6 +6530,9 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
         var transparentSelectedVerticesObjects = [];
         var transparentSelectedEdgesObjects = [];
 
+        var opaqueEdgesObjects = [];
+        var transparentEdgesObjects = [];
+
         var outlinedObjects = [];
         var highlightObjects = [];
         var selectedObjects = [];
@@ -6456,17 +6541,7 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
 
         return function (params) {
 
-            if (ambient) {
-                var color = ambient.color;
-                var intensity = ambient.intensity;
-                ambientColor[0] = color[0] * intensity;
-                ambientColor[1] = color[1] * intensity;
-                ambientColor[2] = color[2] * intensity;
-            } else {
-                ambientColor[0] = 0;
-                ambientColor[1] = 0;
-                ambientColor[2] = 0;
-            }
+            var ambientColor = self.lights.getAmbientColor();
 
             frame.reset();
             frame.pass = params.pass;
@@ -6512,6 +6587,7 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
             var numTransparentGhostFillObjects = 0;
             var numTransparentGhostVerticesObjects = 0;
             var numTransparentGhostEdgesObjects = 0;
+
             var numOutlinedObjects = 0;
             var numHighlightObjects = 0;
             var numSelectedObjects = 0;
@@ -6529,6 +6605,9 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
             var numTransparentSelectedFillObjects = 0;
             var numTransparentSelectedVerticesObjects = 0;
             var numTransparentSelectedEdgesObjects = 0;
+
+            var numOpaqueEdgesObjects = 0;
+            var numTransparentEdgesObjects = 0;
 
             numTransparentObjects = 0;
 
@@ -6643,6 +6722,15 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
                         highlightObjects[numHighlightObjects++] = object;
                     }
                 }
+
+                if (modes.edges) {
+                    var edgeMaterial = object.edgeMaterial;
+                    if (edgeMaterial.edgeAlpha < 1.0) {
+                        transparentEdgesObjects[numTransparentEdgesObjects++] = object;
+                    } else {
+                        opaqueEdgesObjects[numOpaqueEdgesObjects++] = object;
+                    }
+                }
             }
 
             // Render opaque outlined objects
@@ -6674,6 +6762,14 @@ xeogl.renderer.Renderer = function (stats, canvas, gl, options) {
                 }
 
                 gl.disable(gl.STENCIL_TEST);
+            }
+
+            // Render opaque edges objects
+
+            if (numOpaqueEdgesObjects > 0) {
+                for (i = 0; i < numOpaqueEdgesObjects; i++) {
+                    opaqueEdgesObjects[i].drawEdges(frame);
+                }
             }
 
             // Render opaque ghosted objects
@@ -7173,7 +7269,7 @@ xeogl.renderer.webgl = {
  * @author xeolabs / https://github.com/xeolabs
  */
 
-xeogl.renderer.Object = function (id, meshId, gl, scene, material, ghostMaterial, outlineMaterial, highlightMaterial, selectedMaterial, vertexBufs, geometry, modelTransform, modes) {
+xeogl.renderer.Object = function (id, meshId, gl, scene, material, ghostMaterial, outlineMaterial, highlightMaterial, selectedMaterial, edgeMaterial, vertexBufs, geometry, modelTransform, modes) {
 
     this.id = id;
     this.meshId = meshId;
@@ -7185,6 +7281,7 @@ xeogl.renderer.Object = function (id, meshId, gl, scene, material, ghostMaterial
     this.outlineMaterial = outlineMaterial;
     this.highlightMaterial = highlightMaterial;
     this.selectedMaterial = selectedMaterial;
+    this.edgeMaterial = edgeMaterial;
     this.vertexBufs = vertexBufs;
     this.geometry = geometry;
     this.modelTransform = modelTransform;
@@ -7341,6 +7438,18 @@ xeogl.renderer.Object.prototype.drawSelectedVertices = function (frame) {
         }
     }
     this._ghostVertices.drawObject(frame, this, 2); // 2 == selected
+};
+
+xeogl.renderer.Object.prototype.drawEdges = function (frame) {
+    if (!this._ghostEdges) {
+        this._ghostEdges = xeogl.renderer.GhostEdgesRenderer.create(this.gl, [this.gl.canvas.id, this._getSceneHash(), this.scene.clips.getHash(), this.geometry.hash, this.modes.hash].join(";"), this.scene, this);
+        if (this._ghostEdges.errors) {
+            this.errors = (this.errors || []).concat(this._ghostEdges.errors);
+            console.error(this._ghostEdges.errors.join("\n"));
+            return;
+        }
+    }
+    this._ghostEdges.drawObject(frame, this, 3); // 3 == edges
 };
 
 xeogl.renderer.Object.prototype.drawShadow = function (frame, light) {
@@ -7734,6 +7843,7 @@ xeogl.renderer.SpecularMaterial = xeogl.renderer.State.extend({_ids: new xeogl.u
 xeogl.renderer.MetallicMaterial = xeogl.renderer.State.extend({_ids: new xeogl.utils.Map({})});
 xeogl.renderer.VerticesMaterial = xeogl.renderer.State.extend({_ids: new xeogl.utils.Map({})});
 xeogl.renderer.EmphasisMaterial = xeogl.renderer.State.extend({_ids: new xeogl.utils.Map({})});
+xeogl.renderer.EdgeMaterial = xeogl.renderer.State.extend({_ids: new xeogl.utils.Map({})});
 xeogl.renderer.OutlineMaterial = xeogl.renderer.State.extend({_ids: new xeogl.utils.Map({})});
 xeogl.renderer.HighlightMaterial = xeogl.renderer.State.extend({_ids: new xeogl.utils.Map({})});
 xeogl.renderer.ViewTransform = xeogl.renderer.State.extend({_ids: new xeogl.utils.Map({})});
@@ -13605,7 +13715,22 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
         }
 
         var gl = this._gl;
-        var material = mode === 0 ? object.ghostMaterial : (mode === 1 ? object.highlightMaterial : object.selectedMaterial);
+        var material;
+        switch (mode) {
+            case 0:
+                material = object.ghostMaterial;
+                break;
+            case 1:
+                material = object.highlightMaterial;
+                break;
+            case 2:
+                material = object.selectedMaterial;
+                break;
+            case 3:
+            default:
+                material = object.edgeMaterial;
+                break;
+        }
         var modelTransform = object.modelTransform;
         var geometry = object.geometry;
 
@@ -14353,7 +14478,7 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
                 this._eventSubs = {};
             }
             if (forget !== true) {
-                this._events[event] = value; // Save notification
+                this._events[event] = value || true; // Save notification
             }
             var subs = this._eventSubs[event];
             var sub;
@@ -14414,7 +14539,7 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
             }
             return handle;
         },
-
+        
         /**
          * Cancels an event subscription that was previously made with {{#crossLink "Component/on:method"}}Component#on(){{/crossLink}} or
          * {{#crossLink "Component/once:method"}}Component#once(){{/crossLink}}.
@@ -14793,6 +14918,17 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
         },
 
         _checkComponent: function (expectedType, component) {
+            if (xeogl._isObject(component)) {
+                if (component.type) {
+                    if (!xeogl._isComponentType(component.type, expectedType)) {
+                        this.error("Expected a " + expectedType + " type or subtype: " + component.type + " " + xeogl._inQuotes(component.id));
+                        return;
+                    }
+                } else {
+                    component.type = "xeogl.Component";
+                }
+                component = new window[component.type](this.scene, component);
+            }
             if (component.scene.id !== this.scene.id) {
                 this.error("Not in same scene: " + component.type + " " + xeogl._inQuotes(component.id));
                 return;
@@ -14988,6 +15124,9 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
          * @protected
          */
         _destroy: function () {
+
+            this.scene._componentDestroyed(this);
+
             // Memory leak avoidance
             this._attached = {};
             this._attachments = null;
@@ -15793,30 +15932,25 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
 
             types[c.id] = c;
 
-            c.on("destroyed", function () {
-                this._componentDestroyed(c);
-            }, this);
-
             if (c.isType("xeogl.Clip")) {
                 this._needRecompileMeshes = true;
                 this.clips[c.id] = c;
 
-            } else if (c.isType("xeogl.PointLight") || c.isType("xeogl.DirLight") || c.isType("xeogl.SpotLight")) {
+            } else if (c.isType("xeogl.PointLight") || c.isType("xeogl.DirLight") || c.isType("xeogl.SpotLight") || c.isType("xeogl.AmbientLight")) {
                 this._needRecompileMeshes = true;
                 this.lights[c.id] = c;
 
-            } else if (c.isType("xeogl.LightLight")) {
+            } else if (c.isType("xeogl.LightMap")) {
                 this._needRecompileMeshes = true;
                 this.lightMaps[c.id] = c;
 
-            } else if (c.isType("xeogl.ReflectionLight")) {
+            } else if (c.isType("xeogl.ReflectionMap")) {
                 this._needRecompileMeshes = true;
                 this.reflectionMaps[c.id] = c;
 
             } else {
 
                 if (c.isType("xeogl.Mesh")) {
-                    c.on("boundary", this._setBoundaryDirty, this);
                     this.meshes[c.id] = c;
                     xeogl.stats.components.meshes++;
                 }
@@ -15917,15 +16051,15 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
                 delete this.clips[c.id];
                 this._needRecompileMeshes = true;
 
-            } else if (c.isType("xeogl.PointLight") || c.isType("xeogl.DirLight") || c.isType("xeogl.SpotLight")) {
+            } else if (c.isType("xeogl.PointLight") || c.isType("xeogl.DirLight") || c.isType("xeogl.SpotLight") || c.isType("xeogl.AmbientLight")) {
                 delete this.lights[c.id];
                 this._needRecompileMeshes = true;
 
-            } else if (c.isType("xeogl.LightLight")) {
+            } else if (c.isType("xeogl.LightMap")) {
                 delete this.lightMaps[c.id];
                 this._needRecompileMeshes = true;
 
-            } else if (c.isType("xeogl.ReflectionLight")) {
+            } else if (c.isType("xeogl.ReflectionMap")) {
                 delete this.reflectionMaps[c.id];
                 this._needRecompileMeshes = true;
 
@@ -16039,11 +16173,10 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
             }
         },
 
-
         _saveAmbientColor: function () {
             var canvas = this.canvas;
             if (!canvas.transparent && !canvas.backgroundImage && !canvas.backgroundColor) {
-                var ambientColor = this._renderer.getAmbientColor();
+                var ambientColor = this._renderer.lights.getAmbientColor();
                 if (!this._lastAmbientColor ||
                     this._lastAmbientColor[0] !== ambientColor[0] ||
                     this._lastAmbientColor[1] !== ambientColor[1] ||
@@ -16175,27 +16308,19 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
              @type Number
              */
             ticksPerRender: {
-
                 set: function (value) {
-
                     if (value === undefined || value === null) {
                         value = 1;
-
                     } else if (!xeogl._isNumeric(value) || value <= 0) {
-
                         this.error("Unsupported value for 'ticksPerRender': '" + value +
                             "' - should be an integer greater than zero.");
-
                         value = 1;
                     }
-
                     if (value === this._ticksPerRender) {
                         return;
                     }
-
                     this._ticksPerRender = value;
                 },
-
                 get: function () {
                     return this._ticksPerRender;
                 }
@@ -16209,29 +16334,20 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
              @type Number
              */
             passes: {
-
                 set: function (value) {
-
                     if (value === undefined || value === null) {
                         value = 1;
-
                     } else if (!xeogl._isNumeric(value) || value <= 0) {
-
                         this.error("Unsupported value for 'passes': '" + value +
                             "' - should be an integer greater than zero.");
-
                         value = 1;
                     }
-
                     if (value === this._passes) {
                         return;
                     }
-
                     this._passes = value;
-
                     this._renderer.imageDirty();
                 },
-
                 get: function () {
                     return this._passes;
                 }
@@ -16246,20 +16362,14 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
              @type Boolean
              */
             clearEachPass: {
-
                 set: function (value) {
-
                     value = !!value;
-
                     if (value === this._clearEachPass) {
                         return;
                     }
-
                     this._clearEachPass = value;
-
                     this._renderer.imageDirty();
                 },
-
                 get: function () {
                     return this._clearEachPass;
                 }
@@ -16273,20 +16383,14 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
              @type Boolean
              */
             gammaInput: {
-
                 set: function (value) {
-
                     value = value !== false;
-
                     if (value === this._renderer.gammaInput) {
                         return;
                     }
-
                     this._renderer.gammaInput = value;
-
                     this._needRecompileMeshes = true;
                 },
-
                 get: function () {
                     return this._renderer.gammaInput;
                 }
@@ -16300,20 +16404,14 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
              @type Boolean
              */
             gammaOutput: {
-
                 set: function (value) {
-
                     value = value !== false;
-
                     if (value === this._renderer.gammaOutput) {
                         return;
                     }
-
                     this._renderer.gammaOutput = value;
-
                     this._needRecompileMeshes = true;
                 },
-
                 get: function () {
                     return this._renderer.gammaOutput;
                 }
@@ -16327,20 +16425,14 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
              @type Number
              */
             gammaFactor: {
-
                 set: function (value) {
-
                     value = (value === undefined || value === null) ? 2.2 : value;
-
                     if (value === this._renderer.gammaFactor) {
                         return;
                     }
-
                     this._renderer.gammaFactor = value;
-
                     this._renderer.imageDirty();
                 },
-
                 get: function () {
                     return this._renderer.gammaFactor;
                 }
@@ -16464,6 +16556,33 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
             },
 
             /**
+             The Scene's default {{#crossLink "EdgeMaterial"}}EmphasisMaterial{{/crossLink}} for the appearance of {{#crossLink "Meshes"}}Meshes{{/crossLink}} when edges are emphasized.
+
+             This {{#crossLink "EdgeMaterial"}}EdgeMaterial{{/crossLink}} has
+             an {{#crossLink "Component/id:property"}}id{{/crossLink}} equal to "default.edgeMaterial", with all
+             other properties initialised to their default values.
+
+             {{#crossLink "Mesh"}}Meshes{{/crossLink}} in this Scene are attached to this
+             {{#crossLink "EdgeMaterial"}}EdgeMaterial{{/crossLink}} by default.
+             @property edgeMaterial
+             @final
+             @type EdgeMaterial
+             */
+            edgeMaterial: {
+                get: function () {
+                    return this.components["default.edgeMaterial"] ||
+                        new xeogl.EdgeMaterial(this, {
+                            id: "default.edgeMaterial",
+                            preset: "default",
+                            edgeColor: [0.0, 0.0, 0.0],
+                            edgeAlpha: 1.0,
+                            edgeWidth: 1,
+                            isDefault: true
+                        });
+                }
+            },
+
+            /**
              The Scene's default {{#crossLink "OutlineMaterial"}}OutlineMaterial{{/crossLink}} for the appearance of {{#crossLink "Meshes"}}Meshes{{/crossLink}} when they are outlined.
 
              This {{#crossLink "OutlineMaterial"}}OutlineMaterial{{/crossLink}} has
@@ -16520,22 +16639,16 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
              @type {Float32Array}
              */
             center: {
-
                 get: function () {
-
                     if (this._aabbDirty || !this._center) {
-
                         if (!this._center || !this._center) {
                             this._center = xeogl.math.vec3();
                         }
-
                         var aabb = this.aabb;
-
                         this._center[0] = (aabb[0] + aabb[3] ) / 2;
                         this._center[1] = (aabb[1] + aabb[4] ) / 2;
                         this._center[2] = (aabb[2] + aabb[5] ) / 2;
                     }
-
                     return this._center;
                 }
             },
@@ -16551,43 +16664,28 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
              @type {Float32Array}
              */
             aabb: {
-
                 get: function () {
-
+                    //   console.log("get aabb")
                     if (this._aabbDirty) {
-
                         if (!this._aabb) {
                             this._aabb = xeogl.math.AABB3();
                         }
-
                         var xmin = xeogl.math.MAX_DOUBLE;
                         var ymin = xeogl.math.MAX_DOUBLE;
                         var zmin = xeogl.math.MAX_DOUBLE;
                         var xmax = -xeogl.math.MAX_DOUBLE;
                         var ymax = -xeogl.math.MAX_DOUBLE;
                         var zmax = -xeogl.math.MAX_DOUBLE;
-
                         var aabb;
-
                         var meshes = this.meshes;
                         var mesh;
-
                         for (var meshId in meshes) {
                             if (meshes.hasOwnProperty(meshId)) {
-
                                 mesh = meshes[meshId];
-
                                 if (!mesh.collidable) {
                                     continue;
                                 }
-
                                 aabb = mesh.aabb;
-
-                                if (!aabb) {
-                                    this.error("internal error: mesh without aabb: " + meshId);
-                                    continue;
-                                }
-
                                 if (aabb[0] < xmin) {
                                     xmin = aabb[0];
                                 }
@@ -16608,27 +16706,24 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
                                 }
                             }
                         }
-
                         this._aabb[0] = xmin;
                         this._aabb[1] = ymin;
                         this._aabb[2] = zmin;
                         this._aabb[3] = xmax;
                         this._aabb[4] = ymax;
                         this._aabb[5] = zmax;
-
                         this._aabbDirty = false;
                     }
-
                     return this._aabb;
                 }
             }
         },
 
         _setBoundaryDirty: function () {
-            if (!this._aabbDirty) {
-                this._aabbDirty = true;
-                this.fire("boundary");
-            }
+            //if (!this._aabbDirty) {
+            this._aabbDirty = true;
+            this.fire("boundary");
+            // }
         },
 
         /**
@@ -17161,6 +17256,33 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
         },
 
         /**
+         Convenience method that destroys all light sources.
+
+         Removes all {{#crossLink "AmbientLight"}}AmbientLights{{/crossLink}}, {{#crossLink "PointLight"}}PointLights{{/crossLink}},
+         {{#crossLink "DirLight"}}DirLights{{/crossLink}} and {{#crossLink "SpotLight"}}SpotLights{{/crossLink}}.
+
+         @method clearLights
+         */
+        clearLights: function () {
+            var ids = Object.keys(this.lights);
+            for (var i = 0, len = ids.length; i < len; i++) {
+                this.lights[ids[i]].destroy();
+            }
+        },
+
+        /**
+         Convenience method that destroys all {{#crossLink "Clip"}}Clips{{/crossLink}}.
+
+         @method clearClips
+         */
+        clearClips: function () {
+            var ids = Object.keys(this.clips);
+            for (var i = 0, len = ids.length; i < len; i++) {
+                this.clips[ids[i]].destroy();
+            }
+        },
+
+        /**
          Shows or hides a batch of {{#crossLink "Object"}}Objects{{/crossLink}}, specified by their IDs, GUIDs and/or entity types.
 
          Each Object indicates its visibility status in its {{#crossLink "Object/visibility:property"}}{{/crossLink}} property.
@@ -17371,13 +17493,41 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
         })(),
 
         /**
+         Sets a batch of {{#crossLink "Object"}}Objects{{/crossLink}} pickable or unpickable, specified by their IDs, GUIDs and/or entity types.
+
+         Picking is done via calls to {{#crossLink "Scene/pick:method"}}Scene#pick(){{/crossLink}}.
+
+         @method setPickable
+         @param ids {Array} Array of  {{#crossLink "Object"}}{{/crossLink}} IDs, GUIDs or entity types.
+         @param pickable {Float32Array} Whether to ghost or un-ghost.
+         @returns {Boolean} True if any {{#crossLink "Object"}}Objects{{/crossLink}} changed pickable state, else false if all updates were redundant and not applied.
+         */
+        setPickable: (function () {
+            var newValue;
+
+            function callback(object) {
+                var changed = (object.pickable != newValue);
+                object.pickable = newValue;
+                return changed;
+            }
+
+            return function (ids, pickable) {
+                newValue = pickable;
+                return this.withObjects(ids, callback);
+            };
+        })(),
+
+        /**
          Iterates with a callback over {{#crossLink "Object"}}Objects{{/crossLink}}, specified by their IDs, GUIDs and/or entity types.
 
          @method withObjects
-         @param ids {Array} Array of  {{#crossLink "Object"}}{{/crossLink}} IDs, GUIDs or entity types.
+         @param ids {String|Array} One or more {{#crossLink "Object"}}{{/crossLink}} IDs, GUIDs or entity types.
          @param callback {Function} The callback, which takes each object as its argument.
          */
         withObjects: function (ids, callback) {
+            if (xeogl._isString(ids)) {
+                ids = [ids];
+            }
             var changed = false;
             for (var i = 0, len = ids.length; i < len; i++) {
                 var id = ids[i];
@@ -17612,6 +17762,7 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
  * {{#crossLink "Object/highlighted:property"}}highlighted{{/crossLink}}
  * {{#crossLink "Object/ghosted:property"}}ghosted{{/crossLink}}
  * {{#crossLink "Object/selected:property"}}selected{{/crossLink}}
+ * {{#crossLink "Object/edges:property"}}edges{{/crossLink}}
  * {{#crossLink "Object/colorize:property"}}colorize{{/crossLink}}
  * {{#crossLink "Object/opacity:property"}}opacity{{/crossLink}}
  * {{#crossLink "Object/clippable:property"}}clippable{{/crossLink}}
@@ -17986,29 +18137,6 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
  var isYellowLegHighlighted = scene.highlightedEntities["yellowLeg"];
  ````
 
- We can also update or remove entity classes dynamically, for example:
-
- ````javascript
- var tableTop = scene.entities["tableTop"];
- tableTop.entityType = "workSurface";
- ````
-
- Now our table top Mesh can be found with its new class:
-
- ````javascript
- var workSurfaceEntities = scene.entityTypes["workSurface"];
- var tableTop = workSurfaceEntities["tableTop"];
- ````
-
- And we can remove its class altogether:
-
- ````javascript
- tableTop.entityType = null;
- ````
-
- That will remove this entity Mesh from the {{#crossLink "Scene"}}Scene{{/crossLink}}'s visibility and
- highlighted maps. Restoring a class will register it with those maps again, since the Mesh is currently visible and highlighted.
-
  * [Example](../../examples/#objects_entities)
 
  #### Limitations with state inheritance
@@ -18060,8 +18188,8 @@ xeogl.renderer.RenderBuffer.prototype.destroy = function () {
  @param [cfg.ghosted=false] {Boolean}       Indicates if ghosted.
  @param [cfg.highlighted=false] {Boolean}   Indicates if highlighted.
  @param [cfg.selected=false] {Boolean}      Indicates if selected.
+ @param [cfg.edges=false] {Boolean}         Indicates if edges are emphasized.
  @param [cfg.aabbVisible=false] {Boolean}   Indicates if axis-aligned World-space bounding box is visible.
- @param [cfg.obbVisible=false] {Boolean}    Indicates if oriented World-space bounding box is visible.
  @param [cfg.colorize=[1.0,1.0,1.0]] {Float32Array}  RGB colorize color, multiplies by the rendered fragment colors.
  @param [cfg.opacity=1.0] {Number}          Opacity factor, multiplies by the rendered fragment alpha.
  @param [cfg.children] {Array(Object)}      Children to add. Children must be in the same {{#crossLink "Scene"}}{{/crossLink}} and will be removed from whatever parents they may already have.
@@ -18093,15 +18221,13 @@ xeogl.Object = xeogl.Component.extend({
 
         this._aabb = null;
         this._aabbDirty = true;
-        this._obb = null;
-        this._obbDirty = true;
+        this.scene._aabbDirty = true;
 
         this._scale = math.vec3();
         this._quaternion = math.identityQuaternion();
         this._rotation = math.vec3();
         this._position = math.vec3();
 
-        this._localMatrix = math.identityMat4();
         this._worldMatrix = math.identityMat4();
         this._worldNormalMatrix = math.identityMat4();
 
@@ -18110,7 +18236,6 @@ xeogl.Object = xeogl.Component.extend({
         this._worldNormalMatrixDirty = true;
 
         this._guid = cfg.guid;
-        this.entityType = cfg.entityType;
 
         if (cfg.matrix) {
             this.matrix = cfg.matrix;
@@ -18143,10 +18268,10 @@ xeogl.Object = xeogl.Component.extend({
         this.ghosted = cfg.ghosted;
         this.highlighted = cfg.highlighted;
         this.selected = cfg.selected;
+        this.edges = cfg.edges;
         this.colorize = cfg.colorize;
         this.opacity = cfg.opacity;
         this.aabbVisible = cfg.aabbVisible;
-        this.obbVisible = cfg.obbVisible;
 
         // Add children, which inherit state from this Object
 
@@ -18160,22 +18285,33 @@ xeogl.Object = xeogl.Component.extend({
         if (cfg.parent) {
             cfg.parent.addChild(this);
         }
+
+        this._entityType = cfg.entityType;
+        if (this._entityType) {
+            this.scene._entityTypeAssigned(this, this._entityType);
+            if (this.visible) {
+                this.scene._entityVisibilityUpdated(this, true);
+            }
+            if (this.ghosted) {
+                this.scene._entityGhostedUpdated(this, true);
+            }
+            if (this.selected) {
+                this.scene._entitySelectedUpdated(this, true);
+            }
+            if (this.highlighted) {
+                this.scene._entityHighlightedUpdated(this, true);
+            }
+        }
     },
 
-    //------------------------------------------------------------------------------------------------------------------
-    // Transform management
-    //------------------------------------------------------------------------------------------------------------------
-
-    _setLocalMatrixDirty: function () { // Invalidates Local matrix of the Object and invalidates World matrix of child Objects
+    _setLocalMatrixDirty: function () {
         this._localMatrixDirty = true;
         this._setWorldMatrixDirty();
     },
 
-    _setWorldMatrixDirty: function () { // Invalidates World matrix of the Object and child Objects
+    _setWorldMatrixDirty: function () {
         this._worldMatrixDirty = true;
         this._worldNormalMatrixDirty = true;
-        this._aabbDirty = true;
-        this._obbDirty = true;
         if (this._childList) {
             for (var i = 0, len = this._childList.length; i < len; i++) {
                 this._childList[i]._setWorldMatrixDirty();
@@ -18183,27 +18319,19 @@ xeogl.Object = xeogl.Component.extend({
         }
     },
 
-    _buildLocalMatrix: function () { // Rebuilds and validates the Object's Local matrix
-        xeogl.math.composeMat4(this._position, this._quaternion, this._scale, this._localMatrix);
-        this._localMatrixDirty = false;
-    },
-
-    _buildWorldMatrix: function () { // Rebuilds and validates Local matrix of the Object, then rebuilds and validates World matrices of the Object and parent Objects
-        if (this._localMatrixDirty) {
-            this._buildLocalMatrix();
-        }
+    _buildWorldMatrix: function () {
+        var localMatrix = this.matrix;
         if (!this._parent) {
-            for (var i = 0, len = this._localMatrix.length; i < len; i++) {
-                this._worldMatrix[i] = this._localMatrix[i];
+            for (var i = 0, len = localMatrix.length; i < len; i++) {
+                this._worldMatrix[i] = localMatrix[i];
             }
         } else {
-            xeogl.math.mulMat4(this._parent.worldMatrix, this._localMatrix, this._worldMatrix);
-            //  xeogl.math.mulMat4(this._localMatrix, this._parent.worldMatrix, this._worldMatrix);
+            xeogl.math.mulMat4(this._parent.worldMatrix, localMatrix, this._worldMatrix);
         }
         this._worldMatrixDirty = false;
     },
 
-    _buildWorldNormalMatrix: function () { // Rebuilds and validates World matrix of the Object, then builds and revalidates World normal matrix of the Object
+    _buildWorldNormalMatrix: function () {
         if (this._worldMatrixDirty) {
             this._buildWorldMatrix();
         }
@@ -18215,85 +18343,51 @@ xeogl.Object = xeogl.Component.extend({
         this._worldNormalMatrixDirty = false;
     },
 
-    //------------------------------------------------------------------------------------------------------------------
-    // Boundary methods
-    //------------------------------------------------------------------------------------------------------------------
+    _setAABBDirty: (function () {
 
-    _setBoundaryDirty: (function () {
-
-        var notifications = [];
-        var lenNotifications = 0;
-
-        function setParentBoundariesDirty(object) {
-            for (; object; object = object._parent) {
-                if (object._aabbDirty) {
-                    object._aabbDirty = true;
-                    object._obbDirty = true;
-                    notifications[lenNotifications++] = object;
-                }
-            }
-        }
-
-        function setSubtreeBoundariesDirty(object) {
+        function setSubtreeAABBsDirty(object) {
+            object._aabbDirty = true;
             if (object._childList) {
                 for (var i = 0, len = object._childList.length; i < len; i++) {
-                    setSubtreeBoundariesDirty(object._childList[i]);
+                    setSubtreeAABBsDirty(object._childList[i]);
                 }
-            }
-            if (object._aabbDirty) {
-                object._aabbDirty = true;
-                object._obbDirty = true;
-                notifications[lenNotifications++] = object;
             }
         }
 
-        return function () { // Invalidates AABB and OBB boundaries of the Object and parent Objects
-            lenNotifications = 0;
-            setSubtreeBoundariesDirty(this);
-            setParentBoundariesDirty(this);
-            for (var i = 0; i < lenNotifications; i++) {
-                notifications[i].fire("boundary");
+        return function () {
+            setSubtreeAABBsDirty(this);
+            if (this.collidable) {
+                for (var object = this; object; object = object._parent) {
+                    object._aabbDirty = true;
+                }
             }
         };
     })(),
 
-
     _updateAABB: function () {
+        this.scene._aabbDirty = true;
         if (!this._aabb) {
             this._aabb = xeogl.math.AABB3();
-            this._aabbDirty = true;
         }
-        if (this._aabbDirty) {
+        if (this._buildMeshAABB) {
+            this._buildMeshAABB(this.worldMatrix, this._aabb); // Geometry
+        } else { // Object | Group | Model
             xeogl.math.collapseAABB3(this._aabb);
+            var object;
             for (var i = 0, len = this._childList.length; i < len; i++) {
-                xeogl.math.expandAABB3(this._aabb, this._childList[i].aabb);
+                object = this._childList[i];
+                if (!object.collidable) {
+                    continue;
+                }
+                xeogl.math.expandAABB3(this._aabb, object.aabb);
             }
             if (!this._aabbCenter) {
                 this._aabbCenter = new Float32Array(3);
             }
             xeogl.math.getAABB3Center(this._aabb, this._aabbCenter);
-            this._aabbDirty = false;
         }
+        this._aabbDirty = false;
     },
-
-    _updateOBB: function () {
-        if (!this._obb) {
-            this._obb = xeogl.math.OBB3();
-            this._obbDirty = true;
-        }
-        if (this._obbDirty) {
-            if (this._childList.length === 1) {
-                this._obb.set(this._childList[0].obb);
-            } else {
-                xeogl.math.AABB3ToOBB3(this.aabb, this._obb);
-            }
-            this._obbDirty = false;
-        }
-    },
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Child management methods
-    //------------------------------------------------------------------------------------------------------------------
 
     /**
      Adds a child.
@@ -18305,11 +18399,11 @@ xeogl.Object = xeogl.Component.extend({
      Does nothing if already a child.
 
      @param {Object|String} object Instance or ID of the child to add.
-     @param [inheritStates=true] Indicates if the child should inherit state from this parent as it is added. State includes
+     @param [inheritStates=false] Indicates if the child should inherit state from this parent as it is added. State includes
      {{#crossLink "Object/visible:property"}}{{/crossLink}}, {{#crossLink "Object/culled:property"}}{{/crossLink}}, {{#crossLink "Object/pickable:property"}}{{/crossLink}},
      {{#crossLink "Object/clippable:property"}}{{/crossLink}}, {{#crossLink "Object/castShadow:property"}}{{/crossLink}}, {{#crossLink "Object/receiveShadow:property"}}{{/crossLink}},
      {{#crossLink "Object/outlined:property"}}{{/crossLink}}, {{#crossLink "Object/ghosted:property"}}{{/crossLink}}, {{#crossLink "Object/highlighted:property"}}{{/crossLink}},
-     {{#crossLink "Object/selected:property"}}{{/crossLink}}, {{#crossLink "Object/colorize:property"}}{{/crossLink}} and {{#crossLink "Object/opacity:property"}}{{/crossLink}}.
+     {{#crossLink "Object/selected:property"}}{{/crossLink}}, {{#crossLink "Object/edges:property"}}{{/crossLink}}, {{#crossLink "Object/colorize:property"}}{{/crossLink}} and {{#crossLink "Object/opacity:property"}}{{/crossLink}}.
      @returns {Object} The child object.
      */
     addChild: function (object, inheritStates) {
@@ -18321,6 +18415,7 @@ xeogl.Object = xeogl.Component.extend({
                 return;
             }
         } else if (xeogl._isObject(object)) {
+            throw "addChild( * ) not implemented";
             var cfg = object;
             // object = new xeogl.Group(this.scene, cfg);
             if (!object) {
@@ -18341,20 +18436,21 @@ xeogl.Object = xeogl.Component.extend({
         }
         var id = object.id;
         if (object.scene.id !== this.scene.id) {
-            this.error("Object not in same Scene: " + id);
+            this.error("Object not in same Scene: " + object.id);
             return;
         }
-        delete this.scene.rootObjects[id];
+        delete this.scene.rootObjects[object.id];
         this._childList.push(object);
-        this._childMap[id] = object;
+        this._childMap[object.id] = object;
         this._childIDs = null;
         object._parent = this;
-        if (inheritStates !== false) {
+        if (!!inheritStates) {
             object.visible = this.visible;
             object.culled = this.culled;
             object.ghosted = this.ghosted;
             object.highlited = this.highlighted;
             object.selected = this.selected;
+            object.edges = this.edges;
             object.outlined = this.outlined;
             object.clippable = this.clippable;
             object.pickable = this.pickable;
@@ -18365,7 +18461,7 @@ xeogl.Object = xeogl.Component.extend({
             object.opacity = this.opacity;
         }
         object._setWorldMatrixDirty();
-        object._setBoundaryDirty(); // Propagates up to this as parent
+        object._setAABBDirty();
         return object;
     },
 
@@ -18376,17 +18472,16 @@ xeogl.Object = xeogl.Component.extend({
      @param {Object} object Child to remove.
      */
     removeChild: function (object) {
-        var id = object.id;
         for (var i = 0, len = this._childList.length; i < len; i++) {
-            if (this._childList[i].id === id) {
+            if (this._childList[i].id === object.id) {
                 object._parent = null;
                 this._childList = this._childList.splice(i, 1);
-                delete this._childMap[id];
+                delete this._childMap[object.id];
                 this._childIDs = null;
                 this.scene.rootObjects[object.id] = object;
                 object._setWorldMatrixDirty();
-                object._setBoundaryDirty();
-                this._setBoundaryDirty();
+                object._setAABBDirty();
+                this._setAABBDirty();
                 return;
             }
         }
@@ -18404,12 +18499,12 @@ xeogl.Object = xeogl.Component.extend({
             object._parent = null;
             this.scene.rootObjects[object.id] = object;
             object._setWorldMatrixDirty();
-            object._setBoundaryDirty();
+            object._setAABBDirty();
         }
         this._childList = [];
         this._childMap = {};
         this._childIDs = null;
-        this._setBoundaryDirty();
+        this._setAABBDirty();
     },
 
     /**
@@ -18432,7 +18527,7 @@ xeogl.Object = xeogl.Component.extend({
             xeogl.math.mulQuaternions(this.quaternion, q1, q2);
             this.quaternion = q2;
             this._setLocalMatrixDirty();
-            this._setBoundaryDirty();
+            this._setAABBDirty();
             this._renderer.imageDirty();
             return this;
         };
@@ -18514,7 +18609,7 @@ xeogl.Object = xeogl.Component.extend({
             xeogl.math.mulVec3Scalar(veca, distance, vecb);
             xeogl.math.addVec3(this.position, vecb, this.position);
             this._setLocalMatrixDirty();
-            this._setBoundaryDirty();
+            this._setAABBDirty();
             this._renderer.imageDirty();
             return this;
         };
@@ -18586,37 +18681,9 @@ xeogl.Object = xeogl.Component.extend({
          @property entityType
          @default null
          @type String
+         @final
          */
         entityType: {
-            set: function (newEntityType) {
-                if (this._entityType !== newEntityType) {
-                    var scene = this.scene;
-                    if (this._entityType) {
-                        scene._entityTypeRemoved(this, this._entityType);
-                    }
-                    this._entityType = newEntityType;
-                    if (newEntityType) {
-                        scene._entityTypeAssigned(this, this._entityType);
-                        if (this._visible) {
-                            scene._entityVisibilityUpdated(this, true);
-                        }
-                        if (this._ghosted) {
-                            scene._entityGhostedUpdated(this, true);
-                        }
-                        if (this._selected) {
-                            scene._entitySelectedUpdated(this, true);
-                        }
-                        if (this._highlighted) {
-                            scene._entityHighlightedUpdated(this, true);
-                        }
-                    } else {
-                        scene._entityVisibilityUpdated(this, false);
-                        scene._entityGhostedUpdated(this, false);
-                        scene._entitySelectedUpdated(this, false);
-                        scene._entityHighlightedUpdated(this, false);
-                    }
-                }
-            },
             get: function () {
                 return this._entityType;
             }
@@ -18730,7 +18797,7 @@ xeogl.Object = xeogl.Component.extend({
             set: function (value) {
                 this._position.set(value || [0, 0, 0]);
                 this._setLocalMatrixDirty();
-                this._setBoundaryDirty();
+                this._setAABBDirty();
                 this._renderer.imageDirty();
             },
             get: function () {
@@ -18750,7 +18817,7 @@ xeogl.Object = xeogl.Component.extend({
                 this._rotation.set(value || [0, 0, 0]);
                 xeogl.math.eulerToQuaternion(this._rotation, "XYZ", this._quaternion);
                 this._setLocalMatrixDirty();
-                this._setBoundaryDirty();
+                this._setAABBDirty();
                 this._renderer.imageDirty();
             },
             get: function () {
@@ -18770,7 +18837,7 @@ xeogl.Object = xeogl.Component.extend({
                 this._quaternion.set(value || [0, 0, 0, 1]);
                 xeogl.math.quaternionToEuler(this._quaternion, "XYZ", this._rotation);
                 this._setLocalMatrixDirty();
-                this._setBoundaryDirty();
+                this._setAABBDirty();
                 this._renderer.imageDirty();
             },
             get: function () {
@@ -18789,7 +18856,7 @@ xeogl.Object = xeogl.Component.extend({
             set: function (value) {
                 this._scale.set(value || [1, 1, 1]);
                 this._setLocalMatrixDirty();
-                this._setBoundaryDirty();
+                this._setAABBDirty();
                 this._renderer.imageDirty();
             },
             get: function () {
@@ -18808,19 +18875,26 @@ xeogl.Object = xeogl.Component.extend({
             set: (function () {
                 var identityMat = xeogl.math.identityMat4();
                 return function (value) {
-                    this._localMatrix.set(value || identityMat);
-                    xeogl.math.decomposeMat4(this._localMatrix, this._position, this._quaternion, this._scale);
+                    if (!this.__localMatrix) {
+                        this.__localMatrix = xeogl.math.identityMat4();
+                    }
+                    this.__localMatrix.set(value || identityMat);
+                    xeogl.math.decomposeMat4(this.__localMatrix, this._position, this._quaternion, this._scale);
                     this._localMatrixDirty = false;
                     this._setWorldMatrixDirty();
-                    this._setBoundaryDirty();
+                    this._setAABBDirty();
                     this._renderer.imageDirty();
                 };
             })(),
             get: function () {
                 if (this._localMatrixDirty) {
-                    this._buildLocalMatrix();
+                    if (!this.__localMatrix) {
+                        this.__localMatrix = xeogl.math.identityMat4();
+                    }
+                    xeogl.math.composeMat4(this._position, this._quaternion, this._scale, this.__localMatrix);
+                    this._localMatrixDirty = false;
                 }
-                return this._localMatrix;
+                return this.__localMatrix;
             }
         },
 
@@ -18927,28 +19001,9 @@ xeogl.Object = xeogl.Component.extend({
         aabb: {
             get: function () {
                 if (this._aabbDirty) {
-                    this._updateAABB();  // Could be xeogl.Mesh._updateAABB()
+                    this._updateAABB();
                 }
                 return this._aabb;
-            }
-        },
-
-        /**
-         World-space 3D oriented bounding box (OBB).
-
-         Represented by a 32-element Float32Array containing the eight vertices of the box,
-         where each vertex is a homogeneous coordinate having [x,y,z,w] elements.
-
-         @property obb
-         @final
-         @type {Float32Array}
-         */
-        obb: {
-            get: function () {
-                if (this._obbDirty) {
-                    this._updateOBB(); // Could be xeogl.Mesh._updateAABB()
-                }
-                return this._obb;
             }
         },
 
@@ -19076,6 +19131,26 @@ xeogl.Object = xeogl.Component.extend({
             },
             get: function () {
                 return this._selected;
+            }
+        },
+
+        /**
+         Indicates if edges are emphasized.
+
+         @property edges
+         @default false
+         @type Boolean
+         */
+        edges: {
+            set: function (edges) {
+                edges = !!edges;
+                this._edges = edges;
+                for (var i = 0, len = this._childList.length; i < len; i++) {
+                    this._childList[i].edges = edges;
+                }
+            },
+            get: function () {
+                return this._edges;
             }
         },
 
@@ -19315,37 +19390,6 @@ xeogl.Object = xeogl.Component.extend({
             get: function () {
                 return this._aabbHelper ? this._aabbHelper.visible : false;
             }
-        },
-
-        /**
-         Indicates if the World-space 3D object-aligned bounding box (OBB) is visible.
-
-         @property obbVisible
-         @default false
-         @type {Boolean}
-         */
-        obbVisible: {
-            set: function (show) {
-                if (!show && !this._obbHelper) {
-                    return;
-                }
-                if (!this._obbHelper) {
-                    this._obbHelper = new xeogl.Mesh(this, {
-                        geometry: new xeogl.OBBGeometry(this, {
-                            target: this
-                        }),
-                        material: new xeogl.PhongMaterial(this, {
-                            diffuse: [0.5, 1.0, 0.5],
-                            emissive: [0.5, 1.0, 0.5],
-                            lineWidth: 2
-                        })
-                    });
-                }
-                this._obbHelper.visible = show;
-            },
-            get: function () {
-                return this._obbHelper ? this._obbHelper.visible : false;
-            }
         }
     },
 
@@ -19357,28 +19401,21 @@ xeogl.Object = xeogl.Component.extend({
         }
         if (this._entityType) {
             var scene = this.scene;
-            var id = this.id;
-            var objectsOfType = scene.entityTypes[this._entityType];
-            if (objectsOfType) {
-                delete objectsOfType[id];
-                // TODO remove submap if now empty
+            scene._entityTypeRemoved(this, this._entityType);
+            if (this._visible) {
+                scene._entityVisibilityUpdated(this, false);
             }
-            if (this._entityType) {
-                scene._entityTypeRemoved(this, this._entityType);
-                if (this._visible) {
-                    scene._entityVisibilityUpdated(this, false);
-                }
-                if (this._ghosted) {
-                    scene._entityGhostedUpdated(this, false);
-                }
-                if (this._selected) {
-                    scene._entitySelectedUpdated(this, false);
-                }
-                if (this._highlighted) {
-                    scene._entityHighlightedUpdated(this, false);
-                }
+            if (this._ghosted) {
+                scene._entityGhostedUpdated(this, false);
+            }
+            if (this._selected) {
+                scene._entitySelectedUpdated(this, false);
+            }
+            if (this._highlighted) {
+                scene._entityHighlightedUpdated(this, false);
             }
         }
+        this.scene._aabbDirty = true;
     }
 });;/**
  A **Group** is an {{#crossLink "Object"}}{{/crossLink}} that groups other Objects.
@@ -19413,6 +19450,7 @@ xeogl.Object = xeogl.Component.extend({
  @param [cfg.ghosted=false] {Boolean}       Indicates if rendered as ghosted.
  @param [cfg.highlighted=false] {Boolean}   Indicates if rendered as highlighted.
  @param [cfg.selected=false] {Boolean}      Indicates if rendered as selected.
+ @param [cfg.edges=false] {Boolean}         Indicates if edges are emphasized.
  @param [cfg.aabbVisible=false] {Boolean}   Indicates if axis-aligned World-space bounding box is visible.
  @param [cfg.obbVisible=false] {Boolean}    Indicates if oriented World-space bounding box is visible.
  @param [cfg.colorize=[1.0,1.0,1.0]] {Float32Array}  RGB colorize color, multiplies by the rendered fragment colors.
@@ -20017,6 +20055,7 @@ xeogl.Group = xeogl.Object.extend({
                 ghosted: false,
                 highlighted: false,
                 selected: false,
+                edges: false,
                 layer: null,
                 billboard: this._checkBillboard(cfg.billboard),
                 stationary: !!cfg.stationary,
@@ -20050,12 +20089,10 @@ xeogl.Group = xeogl.Object.extend({
             this._outlineMaterial = cfg.outlineMaterial ? this._checkComponent("xeogl.EmphasisMaterial", cfg.outlineMaterial) : this.scene.outlineMaterial;
             this._highlightMaterial = cfg.highlightMaterial ? this._checkComponent("xeogl.EmphasisMaterial", cfg.highlightMaterial) : this.scene.highlightMaterial;
             this._selectedMaterial = cfg.selectedMaterial ? this._checkComponent("xeogl.EmphasisMaterial", cfg.selectedMaterial) : this.scene.selectedMaterial;
+            this._edgeMaterial = cfg.edgeMaterial ? this._checkComponent("xeogl.EdgeMaterial", cfg.edgeMaterial) : this.scene.edgeMaterial;
 
             this._makeHash(); // Mesh is immutable, only make once
             this._compile();
-
-            // xeogl.Mesh overrides xeogl.Object's state properties, (eg. visible, ghosted etc)
-            // and those redefined properties are being set here through the super constructor.
 
             this._super(cfg); // Call xeogl.Object._init()
         },
@@ -20101,14 +20138,11 @@ xeogl.Group = xeogl.Object.extend({
                 this._outlineMaterial._state,
                 this._highlightMaterial._state,
                 this._selectedMaterial._state,
+                this._edgeMaterial._state,
                 this._geometry._getVertexBufs(),
                 this._geometry._state,
                 this._modelTransformState,
                 this._state);
-            if (this._loading) {
-                this._loading = false;
-                this.fire("loaded", true);
-            }
             if (result.objectId) {
                 this._objectId = result.objectId;
             } else if (result.errors) {
@@ -20118,32 +20152,14 @@ xeogl.Group = xeogl.Object.extend({
             }
         },
 
-        _updateAABB: function () { // Overrides xeogl.Object._updateAABB
-            if (this._aabbDirty) {
-                var math = xeogl.math;
-                var geometry = this._geometry;
-                if (!this._aabb) {
-                    this._aabb = math.AABB3();
-                }
-                if (!this._obb) {
-                    this._obb = math.OBB3();
-                }
-                math.transformOBB3(this.worldMatrix, geometry.obb, this._obb);
-                math.OBB3ToAABB3(this._obb, this._aabb);
-                this._aabbDirty = false;
-            }
-        },
-
-        _updateOBB: function () { // Overrides xeogl.Object._updateOBB
-            if (this._obbDirty) {
-                var geometry = this._geometry;
-                if (!this._obb) {
-                    this._obb = xeogl.math.OBB3();
-                }
-                xeogl.math.transformOBB3(this.worldMatrix, geometry.obb, this._obb);
-                this._obbDirty = false;
-            }
-        },
+        _buildMeshAABB: (function () {
+            var math = xeogl.math;
+            var obb = math.OBB3();
+            return function (worldMatrix, aabb) { // TODO: factor out into class member
+                math.transformOBB3(worldMatrix, this._geometry.obb, obb);
+                math.OBB3ToAABB3(obb, aabb);
+            };
+        })(),
 
         _props: {
 
@@ -20241,6 +20257,18 @@ xeogl.Group = xeogl.Object.extend({
                 }
             },
 
+            /**
+             Defines surface appearance when edges are shown.
+
+             @property edgeMaterial
+             @type EdgeMaterial
+             */
+            edgeMaterial: {
+                get: function () {
+                    return this._edgeMaterial;
+                }
+            },
+            
             /**
              Defines surface appearance when outlined.
 
@@ -20368,6 +20396,29 @@ xeogl.Group = xeogl.Object.extend({
                 },
                 get: function () {
                     return this._state.selected;
+                }
+            },
+
+            /**
+             Indicates if edges are shown.
+
+             The edges appearance is configured by {{#crossLink "Mesh/edgeMaterial:property"}}edgeMaterial{{/crossLink}}.
+
+             @property edges
+             @default false
+             @type Boolean
+             */
+            edges: {
+                set: function (edges) {
+                    edges = !!edges;
+                    if (edges === this._state.edges) {
+                        return;
+                    }
+                    this._state.edges = edges;
+                    this._renderer.imageDirty();
+                },
+                get: function () {
+                    return this._state.edges;
                 }
             },
 
@@ -20656,8 +20707,7 @@ xeogl.Group = xeogl.Object.extend({
             }
         }
     });
-})();
-;/**
+})();;/**
  * Components for animating state within Scenes.
  *
  * @module xeogl
@@ -20948,7 +20998,7 @@ xeogl.Group = xeogl.Object.extend({
                     aabb = component.aabb || this.scene.aabb;
                 }
 
-                var offset = params.offset;
+                var poi = params.poi;
 
                 if (aabb) {
 
@@ -20972,19 +21022,14 @@ xeogl.Group = xeogl.Object.extend({
                         //this._aabbHelper.visible = true;
                     }
 
+                    aabb = aabb.slice();
+
                     var aabbCenter = math.getAABB3Center(aabb);
-
-                    this._look2 = params.look || aabbCenter;
-
-                    if (offset) {
-                        this._look2[0] += offset[0];
-                        this._look2[1] += offset[1];
-                        this._look2[2] += offset[2];
-                    }
+                    this._look2 = poi ||  aabbCenter;
 
                     var eyeLookVec = math.subVec3(this._eye1, this._look1, tempVec3);
                     var eyeLookVecNorm = math.normalizeVec3(eyeLookVec);
-                    var diag = (params.look && false) ? math.getAABB3DiagPoint(aabb, params.look) : math.getAABB3Diag(aabb);
+                    var diag = poi ? math.getAABB3DiagPoint(aabb, poi) : math.getAABB3Diag(aabb);
                     var fitFOV = params.fitFOV || this._fitFOV;
                     var sca = Math.abs(diag / Math.tan(fitFOV * xeogl.math.DEGTORAD));
 
@@ -21119,7 +21164,7 @@ xeogl.Group = xeogl.Object.extend({
                     aabb = component.aabb || this.scene.aabb;
                 }
 
-                var offset = params.offset;
+                var poi = params.poi;
 
                 if (aabb) {
 
@@ -21131,8 +21176,8 @@ xeogl.Group = xeogl.Object.extend({
                         return;
                     }
 
-                    diag = math.getAABB3Diag(aabb);
-                    math.getAABB3Center(aabb, newLook);
+                    var diag = poi ? math.getAABB3DiagPoint(aabb, poi) : math.getAABB3Diag(aabb);
+                    newLook = poi || math.getAABB3Center(aabb, newLook);
 
                     if (this._trail) {
                         math.subVec3(camera.look, newLook, newLookEyeVec);
@@ -22169,8 +22214,6 @@ xeogl.Group = xeogl.Object.extend({
     // Ensures lazy-injected CSS only injected once  
     var spinnerCSSInjected = false;
 
-    var imageSrc = "data:image/gif;base64,R0lGODlhqgCqAIABAP///////yH/C05FVFNDQVBFMi4wAwEAAAAh/wtYTVAgRGF0YVhNUDw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQwIDc5LjE2MDQ1MSwgMjAxNy8wNS8wNi0wMTowODoyMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTggKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6REMyNUFCN0Q1Nzk1MTFFODhBRkVBQTRCRkJCRTQ4NDQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6REMyNUFCN0U1Nzk1MTFFODhBRkVBQTRCRkJCRTQ4NDQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpEQzI1QUI3QjU3OTUxMUU4OEFGRUFBNEJGQkJFNDg0NCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpEQzI1QUI3QzU3OTUxMUU4OEFGRUFBNEJGQkJFNDg0NCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PgH//v38+/r5+Pf29fTz8vHw7+7t7Ovq6ejn5uXk4+Lh4N/e3dzb2tnY19bV1NPS0dDPzs3My8rJyMfGxcTD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";
-
     xeogl.Spinner = xeogl.Component.extend({
 
         type: "xeogl.Spinner",
@@ -22189,8 +22232,6 @@ xeogl.Group = xeogl.Object.extend({
             var style = div.style;
 
             style["z-index"] = "9000";
-            style["background"] = "black";
-
             style.position = "absolute";
 
             div.innerHTML = '<div class="sk-fading-circle">\
@@ -22206,9 +22247,7 @@ xeogl.Group = xeogl.Object.extend({
                 <div class="sk-circle10 sk-circle"></div>\
                 <div class="sk-circle11 sk-circle"></div>\
                 <div class="sk-circle12 sk-circle"></div>\
-                </div><p>LOADING</p>';
-
-            //div.innerHTML = '<img src="' + imageSrc + '">';
+                </div>';
 
             this._canvas.parentElement.appendChild(div);
             this._element = div;
@@ -22330,7 +22369,7 @@ xeogl.Group = xeogl.Object.extend({
         },
 
         _spinnerCSS: ".sk-fading-circle {\
-        background: black;\
+        background: transparent;\
         margin: 20px auto;\
         width: 50px;\
         height:50px;\
@@ -22579,6 +22618,7 @@ xeogl.Group = xeogl.Object.extend({
             active: {
                 set: function (value) {
                     this._state.active = value !== false;
+                    this._renderer.imageDirty();
 
                     /**
                      Fired whenever this Clip's {{#crossLink "Clip/active:property"}}{{/crossLink}} property changes.
@@ -23557,9 +23597,7 @@ xeogl.Group = xeogl.Object.extend({
                         if (!self._active) {
                             return;
                         }
-                        if (!over) {
-                            return;
-                        }
+                        over = true;
                         switch (e.which) {
                             case 1: // Left button
                                 mouseDownLeft = true;
@@ -24475,7 +24513,7 @@ xeogl.Group = xeogl.Object.extend({
 
  ### Geometry compression
 
- Geometries are automatically quantized to reduce memory and GPU bus usage. Usually, geometry attributes such as positions
+ Geometries may be automatically quantized to reduce memory and GPU bus usage. Usually, geometry attributes such as positions
  and normals are stored as 32-bit floating-point numbers. Quantization compresses those attributes to 16-bit integers
  represented on a scale between the minimum and maximum values. Decompression is then done on the GPU, via a simple
  matrix multiplication in the vertex shader.
@@ -24496,7 +24534,7 @@ xeogl.Group = xeogl.Object.extend({
  // Disable compression when creating a Geometry
  var mesh = new xeogl.Mesh({
     geometry: new xeogl.TeapotGeometry({
-        quantized: false // Default is true
+        quantized: false // Default is false
     }),
     material: new xeogl.PhongMaterial({
         diffuse: [0.2, 0.2, 1.0]
@@ -24525,7 +24563,7 @@ xeogl.Group = xeogl.Object.extend({
  // Disable VBO combination for an individual Geometry
  var mesh = new xeogl.Mesh({
     geometry: new xeogl.TeapotGeometry({
-        combined: false // Default is true
+        combined: false // Default is false
     }),
     material: new xeogl.PhongMaterial({
         diffuse: [0.2, 0.2, 1.0]
@@ -24551,11 +24589,11 @@ xeogl.Group = xeogl.Object.extend({
  @param [cfg.indices] {Array of Number} Indices array.
  @param [cfg.autoVertexNormals=false] {Boolean} Set true to automatically generate normal vectors from the positions and
  indices, if those are supplied.
- @param [cfg.quantized=true] {Boolean} Stores positions, colors, normals and UVs in quantized and oct-encoded formats
+ @param [cfg.quantized=false] {Boolean} Stores positions, colors, normals and UVs in quantized and oct-encoded formats
  for reduced memory footprint and GPU bus usage.
  @param [cfg.combined=false] {Boolean} Combines positions, colors, normals and UVs into the same WebGL vertex buffers
  with other Geometries, in order to reduce the number of buffer binds performed per frame.
- @param [cfg.ghostEdgeThreshold=2] {Number} When a {{#crossLink "Mesh"}}{{/crossLink}} renders this Geometry as wireframe,
+ @param [cfg.edgeThreshold=2] {Number} When a {{#crossLink "Mesh"}}{{/crossLink}} renders this Geometry as wireframe,
  this indicates the threshold angle (in degrees) between the face normals of adjacent triangles below which the edge is discarded.
  @extends Component
  */
@@ -24912,7 +24950,7 @@ xeogl.Group = xeogl.Object.extend({
                 }
             });
 
-            this._ghostEdgeThreshold = cfg.ghostEdgeThreshold || 2.0;
+            this._edgeThreshold = cfg.edgeThreshold || 2.0;
 
             // Lazy-generated VBOs
 
@@ -24922,7 +24960,6 @@ xeogl.Group = xeogl.Object.extend({
 
             // Local-space Boundary3D
 
-            this._localBoundary = null;
             this._boundaryDirty = true;
 
             this._aabb = null;
@@ -25094,7 +25131,7 @@ xeogl.Group = xeogl.Object.extend({
             }
             var gl = this.scene.canvas.gl;
             var indicesOffset = state.combined ? this._sceneVertexBufs.getIndicesOffset(state) : 0;
-            var edgesIndices = buildEdgesIndices(state.positions, state.indices, state.positionsDecodeMatrix, indicesOffset, this._ghostEdgeThreshold);
+            var edgesIndices = buildEdgesIndices(state.positions, state.indices, state.positionsDecodeMatrix, indicesOffset, this._edgeThreshold);
             this._edgesIndicesBuf = new xeogl.renderer.ArrayBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, edgesIndices, edgesIndices.length, 1, gl.STATIC_DRAW);
             memoryStats.indices += this._edgesIndicesBuf.numItems;
         },
@@ -25459,9 +25496,6 @@ xeogl.Group = xeogl.Object.extend({
             this._boundaryDirty = true;
             this._aabbDirty = true;
             this._obbDirty = true;
-            if (this._localBoundary) {
-                this._localBoundary.fire("updated", true);
-            }
 
             /**
              Fired whenever this Geometry's boundary changes.
@@ -25507,9 +25541,6 @@ xeogl.Group = xeogl.Object.extend({
             if (this._pickVertexColorsBuf) {
                 this._pickVertexColorsBuf.destroy();
             }
-            if (this._localBoundary) {
-                this._localBoundary.destroy();
-            }
             if (this._state.combined) {
                 this._sceneVertexBufs.removeGeometry(state);
             }
@@ -25538,6 +25569,7 @@ xeogl.Group = xeogl.Object.extend({
         };
     }
 
+    // http://cg.postech.ac.kr/research/mesh_comp_mobile/mesh_comp_mobile_conference.pdf
     var quantizeVec3 = (function () {
         var math = xeogl.math;
         var translate = math.mat4();
@@ -25601,6 +25633,7 @@ xeogl.Group = xeogl.Object.extend({
         };
     })();
 
+    // http://jcgt.org/published/0003/02/01/
     function octEncode(array) {
         var encoded = new Int8Array(array.length * 2 / 3);
         var oct, dec, best, currentCos, bestCos;
@@ -25756,9 +25789,9 @@ xeogl.Group = xeogl.Object.extend({
         // }
 
         function mergeVertices(positions, indices) {
-
             var positionsMap = {}; // Hashmap for looking up vertices by position coordinates (and making sure they are unique)
             var indicesLookup = [];
+            var indicesReverseLookup = [];
             var uniquePositions = [];
             var indices2 = [];
             var vx;
@@ -25769,28 +25802,27 @@ xeogl.Group = xeogl.Object.extend({
             var precision = Math.pow(10, precisionPoints);
             var i;
             var len;
-
             for (i = 0, len = positions.length; i < len; i += 3) {
                 vx = positions[i];
                 vy = positions[i + 1];
                 vz = positions[i + 2];
                 key = Math.round(vx * precision) + '_' + Math.round(vy * precision) + '_' + Math.round(vz * precision);
                 if (positionsMap[key] === undefined) {
-                    positionsMap[key] = i / 3;
+                    positionsMap[key] = uniquePositions.length / 3;
                     uniquePositions.push(vx);
                     uniquePositions.push(vy);
                     uniquePositions.push(vz);
                 }
                 indicesLookup[i / 3] = positionsMap[key];
             }
-
             for (i = 0, len = indices.length; i < len; i++) {
                 indices2[i] = indicesLookup[indices[i]];
+                indicesReverseLookup[indices2[i]] = indices[i];
             }
-
             return {
                 positions: uniquePositions,
-                indices: indices2
+                indices: indices2,
+                indicesReverseLookup: indicesReverseLookup
             };
         }
 
@@ -25867,19 +25899,31 @@ xeogl.Group = xeogl.Object.extend({
             }
         }
 
-        return function (positions, indices, positionsDecodeMatrix, indicesOffset, ghostEdgeThreshold) {
+        function logPositions(positions) {
+            var str = "";
+            for (var i = 0, len = positions.length; i < len; i++) {
+                str += positions[i].toFixed(2);
+                if (i < len - 1) {
+                    str += ", ";
+                }
+            }
+            return str;
+        }
+
+        return function (positions, indices, positionsDecodeMatrix, indicesOffset, edgeThreshold) {
 
             var math = xeogl.math;
 
-            // var merged = mergeVertices(positions, indices);
-            //
-            // positions = merged.positions;
-            // indices = merged.indices;
+            var merged = mergeVertices(positions, indices);
+
+            positions = merged.positions;
+            indices = merged.indices;
+            var indicesReverseLookup = merged.indicesReverseLookup;
 
             buildFaces(positions, indices, positionsDecodeMatrix);
 
             var edgeIndices = [];
-            var thresholdDot = Math.cos(xeogl.math.DEGTORAD * ghostEdgeThreshold);
+            var thresholdDot = Math.cos(xeogl.math.DEGTORAD * edgeThreshold);
             var edges = {};
             var edge1;
             var edge2;
@@ -25890,6 +25934,7 @@ xeogl.Group = xeogl.Object.extend({
             var a = math.vec3();
             var b = math.vec3();
 
+            //     for (var z = 0; z < 2; z++) {
             for (var i = 0, len = indices.length; i < len; i += 3) {
 
                 var faceIndex = i / 3;
@@ -25915,6 +25960,7 @@ xeogl.Group = xeogl.Object.extend({
                         edges[key].face2 = faceIndex;
                     }
                 }
+                //  }
             }
 
             var largeIndex = false;
@@ -25944,9 +25990,13 @@ xeogl.Group = xeogl.Object.extend({
                     largeIndex = true;
                 }
 
-                edgeIndices.push(ia);
-                edgeIndices.push(ib);
+                edgeIndices.push(indicesReverseLookup[ia]);
+                edgeIndices.push(indicesReverseLookup[ib]);
             }
+
+            //////////////////////////////////////////
+            // TODO: Need to map the indices back to the pre-merged positions
+            /////////////////////////////////////////
 
             return largeIndex ? new Uint32Array(edgeIndices) : new Uint16Array(edgeIndices);
         }
@@ -26668,6 +26718,8 @@ xeogl.Group = xeogl.Object.extend({
         _init: function (cfg) {
 
             this._super(xeogl._apply(cfg, {
+                combined: true,
+                quantized: false, // Quantized geometry is immutable
                 primitive: cfg.primitive || "lines",
                 positions: cfg.positions || [1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0,
                     1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0],
@@ -26854,7 +26906,8 @@ xeogl.Group = xeogl.Object.extend({
 
             this._super(xeogl._apply(cfg, {
 
-                // combined: true,
+                combined: true,
+                quantized: false, // Quantized geometry is immutable
 
                 primitive: cfg.primitive || "lines",
                 indices: [
@@ -29051,14 +29104,15 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
 
  ## Overview
 
- * AmbientLights are grouped, along with other light source types, within a {{#crossLink "Lights"}}Lights{{/crossLink}} component,
- which belongs to a {{#crossLink "Scene"}}{{/crossLink}}.
- * When the {{#crossLink "Mesh"}}Meshes{{/crossLink}} have {{#crossLink "PhongMaterial"}}PhongMaterials{{/crossLink}},
+ * When {{#crossLink "Mesh"}}Meshes{{/crossLink}} have {{#crossLink "PhongMaterial"}}PhongMaterials{{/crossLink}},
  AmbientLight {{#crossLink "AmbientLight/color:property"}}color{{/crossLink}} is multiplied by
  PhongMaterial {{#crossLink "PhongMaterial/ambient:property"}}{{/crossLink}} at each rendered fragment of the {{#crossLink "Geometry"}}{{/crossLink}} surface.
  * When the Meshes have {{#crossLink "LambertMaterial"}}LambertMaterials{{/crossLink}},
  AmbientLight {{#crossLink "AmbientLight/color:property"}}color{{/crossLink}} is multiplied by
  LambertMaterial {{#crossLink "LambertMaterial/ambient:property"}}{{/crossLink}} for each rendered triangle of the Geometry surface (ie. flat shaded).
+ * {{#crossLink "AmbientLight"}}{{/crossLink}}, {{#crossLink "DirLight"}}{{/crossLink}},
+ {{#crossLink "SpotLight"}}{{/crossLink}} and {{#crossLink "PointLight"}}{{/crossLink}} instances are registered by ID
+ on {{#crossLink "Scene/lights:property"}}Scene#lights{{/crossLink}} for convenient access.
 
  ## Examples
 
@@ -29070,38 +29124,23 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
  DirLights, then create a Phong-shaded box mesh.
 
  ````javascript
+ new xeogl.AmbientLight({
+    color: [0.8, 0.8, 0.8],
+    intensity: 0.5
+ });
 
- // We're using the default xeogl Scene
- // Get Scene's Lights
- var lights = xeogl.scene.lights;
+ new xeogl.DirLight({
+    dir: [-0.8, -0.4, -0.4],
+    color: [0.4, 0.4, 0.5],
+    intensity: 0.5,
+    space: "view"
+ });
 
- // Customize the light sources
- lights.lights = [
-    new xeogl.AmbientLight({
-        color: [0.8, 0.8, 0.8],
-        intensity: 0.5
-    }),
-    new xeogl.DirLight({
-        dir: [-0.8, -0.4, -0.4],
-        color: [0.4, 0.4, 0.5],
-        intensity: 0.5,
-        space: "view"
-    }),
-    new xeogl.DirLight({
-        dir: [0.2, -0.8, 0.8],
-        color: [0.8, 0.8, 0.8],
-        intensity: 0.5,
-        space: "view"
-    })
- ];
-
- // Create box mesh
- new xeogl.Mesh({
-    material: new xeogl.PhongMaterial({
-        ambient: [0.5, 0.5, 0.5],
-        diffuse: [1,0.3,0.3]
-    }),
-    geometry: new xeogl.BoxGeometry()
+ new xeogl.DirLight({
+    dir: [0.2, -0.8, 0.8],
+    color: [0.8, 0.8, 0.8],
+    intensity: 0.5,
+    space: "view"
  });
  ````
 
@@ -29134,6 +29173,8 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
             };
             this.color = cfg.color;
             this.intensity = cfg.intensity;
+
+            this._renderer.lights.addLight(this._state);
         },
 
         _props: {
@@ -29171,6 +29212,10 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
                     return this._state.intensity;
                 }
             }
+        },
+
+        _destroy: function () {
+            this._renderer.lights.removeLight(this._state);
         }
     });
 
@@ -29188,6 +29233,9 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
  When in View-space, their direction is relative to the View coordinate system, and will behave as if fixed to the viewer's
  head as the {{#crossLink "Camera"}}{{/crossLink}} moves.
  * A DirLight can also have a {{#crossLink "Shadow"}}{{/crossLink}} component, to configure it to cast a shadow.
+ * {{#crossLink "AmbientLight"}}{{/crossLink}}, {{#crossLink "DirLight"}}{{/crossLink}},
+ {{#crossLink "SpotLight"}}{{/crossLink}} and {{#crossLink "PointLight"}}{{/crossLink}} instances are registered by ID
+ on {{#crossLink "Scene/lights:property"}}Scene#lights{{/crossLink}} for convenient access.
 
  ## Examples
 
@@ -29425,6 +29473,9 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
  head as the {{#crossLink "Camera"}}{{/crossLink}} moves.
  * PointLights have {{#crossLink "PointLight/constantAttenuation:property"}}{{/crossLink}}, {{#crossLink "PointLight/linearAttenuation:property"}}{{/crossLink}} and
  {{#crossLink "PointLight/quadraticAttenuation:property"}}{{/crossLink}} factors, which indicate how their intensity attenuates over distance.
+ * {{#crossLink "AmbientLight"}}{{/crossLink}}, {{#crossLink "DirLight"}}{{/crossLink}},
+ {{#crossLink "SpotLight"}}{{/crossLink}} and {{#crossLink "PointLight"}}{{/crossLink}} instances are registered by ID
+ on {{#crossLink "Scene/lights:property"}}Scene#lights{{/crossLink}} for convenient access.
 
  ## Examples
 
@@ -29723,7 +29774,9 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
  * SpotLights have {{#crossLink "SpotLight/constantAttenuation:property"}}{{/crossLink}}, {{#crossLink "SpotLight/linearAttenuation:property"}}{{/crossLink}} and
  {{#crossLink "SpotLight/quadraticAttenuation:property"}}{{/crossLink}} factors, which indicate how their intensity attenuates over distance.
  * A SpotLight can also have a {{#crossLink "Shadow"}}{{/crossLink}} component, to configure it to cast a shadow.
-
+ * {{#crossLink "AmbientLight"}}{{/crossLink}}, {{#crossLink "DirLight"}}{{/crossLink}},
+ {{#crossLink "SpotLight"}}{{/crossLink}} and {{#crossLink "PointLight"}}{{/crossLink}} instances are registered by ID
+ on {{#crossLink "Scene/lights:property"}}Scene#lights{{/crossLink}} for convenient access.
  ## Examples
 
  TODO
@@ -29735,31 +29788,31 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
 
  ````javascript
  new xeogl.AmbientLight({
-         color: [0.8, 0.8, 0.8],
-         intensity: 0.5
-     });
+     color: [0.8, 0.8, 0.8],
+     intensity: 0.5
+ });
 
  new xeogl.SpotLight({
-         pos: [0, 100, 100],
-         dir: [0, -1, 0],
-         color: [0.5, 0.7, 0.5],
-         intensity: 1
-         constantAttenuation: 0,
-         linearAttenuation: 0,
-         quadraticAttenuation: 0,
-         space: "view"
-     });
+     pos: [0, 100, 100],
+     dir: [0, -1, 0],
+     color: [0.5, 0.7, 0.5],
+     intensity: 1
+     constantAttenuation: 0,
+     linearAttenuation: 0,
+     quadraticAttenuation: 0,
+     space: "view"
+ });
 
  new xeogl.PointLight({
-         pos: [0, 100, 100],
-         dir: [0, -1, 0],
-         color: [0.5, 0.7, 0.5],
-         intensity: 1
-         constantAttenuation: 0,
-         linearAttenuation: 0,
-         quadraticAttenuation: 0,
-         space: "view"
-     });
+     pos: [0, 100, 100],
+     dir: [0, -1, 0],
+     color: [0.5, 0.7, 0.5],
+     intensity: 1
+     constantAttenuation: 0,
+     linearAttenuation: 0,
+     quadraticAttenuation: 0,
+     space: "view"
+ });
 
  // Create box mesh
  new xeogl.Mesh({
@@ -30450,6 +30503,7 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
  @param [cfg.ghosted=false] {Boolean}       Indicates if rendered as ghosted.
  @param [cfg.highlighted=false] {Boolean}   Indicates if rendered as highlighted.
  @param [cfg.selected=false] {Boolean}      Indicates if rendered as selected.
+ @param [cfg.edges=false] {Boolean}         Indicates if edges are emphasized.
  @param [cfg.aabbVisible=false] {Boolean}   Indicates if axis-aligned World-space bounding box is visible.
  @param [cfg.obbVisible=false] {Boolean}    Indicates if oriented World-space bounding box is visible.
  @param [cfg.colorize=[1.0,1.0,1.0]] {Float32Array}  RGB colorize color, multiplies by the rendered fragment colors.
@@ -30614,6 +30668,7 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
             this.types = {};
             this.objects = {};
             this.meshes = {};
+            this.entities = {};
         },
 
         /**
@@ -30646,6 +30701,7 @@ xeogl.PathGeometry = xeogl.Geometry.extend({
  * {{#crossLink "LambertMaterial"}}{{/crossLink}} - material for fast, flat-shaded CAD rendering without textures. Use
  this for navigating huge CAD or BIM models interactively. This material gives the best rendering performance and uses the least memory.
  * {{#crossLink "EmphasisMaterial"}}{{/crossLink}} - defines the appearance of Meshes when "ghosted" or "highlighted".
+ * {{#crossLink "EdgeMaterial"}}{{/crossLink}} - defines the appearance of Meshes when edges are emphasized.
  * {{#crossLink "OutlineMaterial"}}{{/crossLink}} - defines the appearance of outlines drawn around Meshes.
 
  A {{#crossLink "Scene"}}Scene{{/crossLink}} is allowed to contain a mixture of these material types.
@@ -31998,17 +32054,17 @@ TODO
  var scene = plasteredSphere.scene;
 
  scene.lights.lights = [
-     new xeogl.DirLight({
+ new xeogl.DirLight({
          dir: [0.8, -0.6, -0.8],
          color: [0.8, 0.8, 0.8],
          space: "view"
      }),
-     new xeogl.DirLight({
+ new xeogl.DirLight({
          dir: [-0.8, -0.4, -0.4],
          color: [0.4, 0.4, 0.5],
          space: "view"
      }),
-     new xeogl.DirLight({
+ new xeogl.DirLight({
          dir: [0.2, -0.8, 0.8],
          color: [0.8, 0.8, 0.8],
          space: "view"
@@ -32478,9 +32534,16 @@ TODO
              @property glossiness
              @default 1.0
              @type Number
-             @final
              */
             glossiness: {
+                set: function (value) {
+                    value = (value !== undefined && value !== null) ? value : 1.0;
+                    if (this._state.glossiness === value) {
+                        return;
+                    }
+                    this._state.glossiness = value;
+                    this._renderer.imageDirty();
+                },
                 get: function () {
                     return this._state.glossiness;
                 }
@@ -33741,7 +33804,7 @@ TODO
  ````javascript
  var mesh = new xeogl.Mesh({
     geometry: new xeogl.TeapotGeometry({
-        ghostEdgeThreshold: 1
+        edgeThreshold: 1
     }),
     material: new xeogl.PhongMaterial({
         diffuse: [0.2, 0.2, 1.0]
@@ -33763,9 +33826,9 @@ TODO
  });
  ````
 
- Note the **ghostEdgeThreshold** configuration on the {{#crossLink "Geometry"}}{{/crossLink}} we've created for our
+ Note the **edgeThreshold** configuration on the {{#crossLink "Geometry"}}{{/crossLink}} we've created for our
  Mesh. Our EmphasisMaterial is configured to draw a wireframe representation of the Geometry, which will have inner edges (ie. edges between
- adjacent co-planar triangles) removed for visual clarity. The ````ghostEdgeThreshold```` configuration indicates
+ adjacent co-planar triangles) removed for visual clarity. The ````edgeThreshold```` configuration indicates
  that, for this particular Geometry, an inner edge is one where the angle between the surface normals of adjacent triangles is not
  greater than ````5```` degrees. That's set to ````2```` by default, but we can override it to tweak the effect as needed for particular Geometries.
 
@@ -33775,7 +33838,7 @@ TODO
  ````javascript
  var mesh = new xeogl.Mesh({
     geometry: new xeogl.TeapotGeometry({
-        ghostEdgeThreshold: 5
+        edgeThreshold: 5
     }),
     material: new xeogl.PhongMaterial({
         diffuse: [0.2, 0.2, 1.0]
@@ -33809,7 +33872,7 @@ TODO
  ````javascript
  var model = new xeogl.GLTFModel({
      src: "models/gltf/gearbox_conical/scene.gltf",
-     ghostEdgeThreshold: 10
+     edgeThreshold: 10
  });
 
  model.on("loaded", function() {
@@ -33899,7 +33962,7 @@ TODO
  ````javascript
  var mesh = new xeogl.Mesh({
     geometry: new xeogl.TeapotGeometry({
-        ghostEdgeThreshold: 5
+        edgeThreshold: 5
     }),
     material: new xeogl.PhongMaterial({
         diffuse: [0.2, 0.2, 1.0]
@@ -34495,6 +34558,380 @@ TODO
     xeogl.GhostMaterial = xeogl.EmphasisMaterial; // Backward compatibility
 
 })();;/**
+ An **EdgeMaterial** is a {{#crossLink "Material"}}{{/crossLink}} that defines the appearance of attached
+ {{#crossLink "Mesh"}}Meshes{{/crossLink}} when they are highlighted, selected or ghosted.
+
+ ## Examples
+
+ | <a href="../../examples/#effects_ghost"><img src="../../assets/images/screenshots/HighlightMaterial/teapot.png"></img></a> | <a href="../../examples/#effects_demo_housePlan"><img src="../../assets/images/screenshots/HighlightMaterial/house.png"></img></a> | <a href="../../examples/#effects_demo_gearbox"><img src="../../assets/images/screenshots/HighlightMaterial/gearbox.png"></img></a> | <a href="../../examples/#effects_demo_adam"><img src="../../assets/images/screenshots/HighlightMaterial/adam.png"></img></a>|
+ |:------:|:------:|:----:|:-----:|:-----:|
+ |[Example 1: Ghost effect](../../examples/#effects_ghost)|[Example 2: Ghost and highlight effects for architecture](../../examples/#effects_demo_housePlan)|[Example 3: Ghost and highlight effects for CAD](../../examples/#effects_demo_gearbox)| [Example 4: Ghost effect for CAD ](../../examples//#effects_demo_adam)|
+
+ ## Overview
+
+ * Ghost an {{#crossLink "Mesh"}}{{/crossLink}} by setting its {{#crossLink "Mesh/ghost:property"}}{{/crossLink}} property ````true````.
+ * When ghosted, a Mesh's appearance is controlled by its EdgeMaterial.
+ * An EdgeMaterial provides several preset configurations that you can set it to. Select a preset by setting {{#crossLink "EdgeMaterial/preset:property"}}{{/crossLink}} to the preset's ID. A map of available presets is provided in {{#crossLink "EdgeMaterial/presets:property"}}xeogl.EdgeMaterial.presets{{/crossLink}}.
+ * By default, a Mesh uses the {{#crossLink "Scene"}}{{/crossLink}}'s global EdgeMaterials, but you can give each Mesh its own EdgeMaterial when you want to customize the effect per-Mesh.
+ * Ghost all Meshes in a {{#crossLink "Model"}}{{/crossLink}} by setting the Model's {{#crossLink "Model/ghost:property"}}{{/crossLink}} property ````true````. Note that all Meshes in a Model have the Scene's global EdgeMaterial by default.
+ * Modify the Scene's global EdgeMaterial to customize it.
+
+ ## Usage
+
+ * [Ghosting](#ghosting)
+ * [Highlighting](#highlighting)
+
+ ### Ghosting
+
+ In the usage example below, we'll create a Mesh with a ghost effect applied to it. The Mesh gets its own EdgeMaterial for ghosting, and
+ has its {{#crossLink "Mesh/ghost:property"}}{{/crossLink}} property set ````true```` to activate the effect.
+
+ <a href="../../examples/#effects_ghost"><img src="../../assets/images/screenshots/HighlightMaterial/teapot.png"></img></a>
+
+ ````javascript
+ var mesh = new xeogl.Mesh({
+    geometry: new xeogl.TeapotGeometry({
+        edgeThreshold: 1
+    }),
+    material: new xeogl.PhongMaterial({
+        diffuse: [0.2, 0.2, 1.0]
+    }),
+    edgeMaterial: new xeogl.EdgeMaterial({
+        edges: true,
+        edgeColor: [0.2, 1.0, 0.2],
+        edgeAlpha: 1.0,
+        edgeWidth: 2,
+        vertices: true,
+        vertexColor: [0.6, 1.0, 0.6],
+        vertexAlpha: 1.0,
+        vertexSize: 8,
+        fill: true,
+        fillColor: [0, 0, 0],
+        fillAlpha: 0.7
+    }),
+    ghost: true
+ });
+ ````
+
+ Note the **edgeThreshold** configuration on the {{#crossLink "Geometry"}}{{/crossLink}} we've created for our
+ Mesh. Our EdgeMaterial is configured to draw a wireframe representation of the Geometry, which will have inner edges (ie. edges between
+ adjacent co-planar triangles) removed for visual clarity. The ````edgeThreshold```` configuration indicates
+ that, for this particular Geometry, an inner edge is one where the angle between the surface normals of adjacent triangles is not
+ greater than ````5```` degrees. That's set to ````2```` by default, but we can override it to tweak the effect as needed for particular Geometries.
+
+ Here's the example again, this time using the Scene's global EdgeMaterial by default. We'll also modify that EdgeMaterial
+ to customize the effect.
+
+ ````javascript
+ var mesh = new xeogl.Mesh({
+    geometry: new xeogl.TeapotGeometry({
+        edgeThreshold: 5
+    }),
+    material: new xeogl.PhongMaterial({
+        diffuse: [0.2, 0.2, 1.0]
+    }),
+    ghost: true
+ });
+
+ var edgeMaterial = mesh.scene.edgeMaterial;
+
+ edgeMaterial.edges = true;
+ edgeMaterial.edgeColor = [0.2, 1.0, 0.2];
+ edgeMaterial.edgeAlpha = 1.0;
+ edgeMaterial.edgeWidth = 2;
+ ````
+
+ ### Highlighting
+
+ In the next example, we'll use a ghosting in conjunction with highlighting, to emphasise a couple of objects within
+ a gearbox {{#crossLink "Model"}}{{/crossLink}}. We'll load the Model from glTF, then ghost all of its Meshes except for two gears, which we'll highlight instead. The ghosted
+ Meshes have the Scene's global ghosting EdgeMaterial, which we'll modify. The  highlighted Meshes also have the Scene's global highlighting EdgeMaterial, which we'll modify as well.
+
+ <a href="../../examples/#effects_demo_gearbox"><img src="../../assets/images/screenshots/HighlightMaterial/gearbox.png"></img></a>
+
+ ````javascript
+ var model = new xeogl.GLTFModel({
+     src: "models/gltf/gearbox_conical/scene.gltf",
+     edgeThreshold: 10
+ });
+
+ model.on("loaded", function() {
+
+    model.meshes["gearbox#77.0"].highlight = true;
+    model.meshes["gearbox#79.0"].highlight = true;
+
+    var edgeMaterial = model.scene.edgeMaterial;
+
+    edgeMaterial.edgeColor = [0.4, 0.4, 1.6];
+    edgeMaterial.edgeAlpha = 0.8;
+    edgeMaterial.edgeWidth = 3;
+
+    var highlightMaterial = model.scene.highlightMaterial;
+
+    highlightMaterial.color = [1.0, 1.0, 1.0];
+    highlightMaterial.alpha = 1.0;
+ });
+ ````
+
+ ## Presets
+
+ For convenience, an EdgeMaterial provides several preset configurations that you can set it to, which are provided in
+ {{#crossLink "EdgeMaterial/presets:property"}}xeogl.EdgeMaterial.presets{{/crossLink}}:
+
+ ````javascript
+ var presets = xeogl.EdgeMaterial.presets;
+ ````
+
+ The presets look something like this:
+
+ ````json
+ {
+        "default": {
+            edgeColor: [0.2, 0.2, 0.2],
+            edgeAlpha: 1.0,
+            edgeWidth: 1
+        },
+
+         "sepia": {
+            edgeColor: [0.45, 0.45, 0.41],
+            edgeAlpha: 1.0,
+            edgeWidth: 1
+        },
+
+        //...
+ }
+ ````
+
+ Let's switch the Scene's global default  EdgeMaterial over to the "sepia" preset used in <a href="/examples/#effects_demo_adam">Example 4: Ghost effect for CAD</a>.
+
+ ````javascript
+ scene.edgeMaterial.preset = "sepia";
+ ````
+
+ You can also just create an EdgeMaterial from a preset:
+
+ ````javascript
+ var mesh = new xeogl.Mesh({
+    geometry: new xeogl.TeapotGeometry({
+        edgeThreshold: 5
+    }),
+    material: new xeogl.PhongMaterial({
+        diffuse: [0.2, 0.2, 1.0]
+    }),
+    edgeMaterial: new xeogl.EdgeMaterial({
+        preset: "sepia"
+    });
+    ghost: true
+ });
+ ````
+
+ Note that applying a preset just sets the EdgeMaterial's property values, which you are then free to modify afterwards.
+
+ @class EdgeMaterial
+ @module xeogl
+ @submodule materials
+ @constructor
+ @extends Material
+ @param [scene] {Scene} Parent {{#crossLink "Scene"}}Scene{{/crossLink}}, creates this EdgeMaterial within the
+ default {{#crossLink "Scene"}}Scene{{/crossLink}} when omitted
+ @param [cfg] {*} The EdgeMaterial configuration
+ @param [cfg.id] {String} Optional ID, unique among all components in the parent {{#crossLink "Scene"}}Scene{{/crossLink}}, generated automatically when omitted.
+ @param [cfg.meta=null] {String:Object} Metadata to attach to this EdgeMaterial.
+
+ @param [cfg.edgeColor=[0.2,0.2,0.2]] {Array of Number}  RGB color of ghost edges.
+ @param [cfg.edgeAlpha=1.0] {Number} Transparency of ghost edges. A value of 0.0 indicates fully transparent, 1.0 is fully opaque.
+ @param [cfg.edgeWidth=1] {Number}  Width of ghost edges, in pixels.
+
+ @param [cfg.preset] {String} Selects a preset EdgeMaterial configuration - see {{#crossLink "EdgeMaterial/preset:method"}}EdgeMaterial#preset(){{/crossLink}}.
+ */
+(function () {
+
+    "use strict";
+
+    xeogl.EdgeMaterial = xeogl.Material.extend({
+
+        type: "xeogl.EdgeMaterial",
+
+        _init: function (cfg) {
+
+            this._super(cfg);
+
+            this._state = new xeogl.renderer.EdgeMaterial({
+                type: "EdgeMaterial",
+                edgeColor: null,
+                edgeAlpha: null,
+                edgeWidth: null
+            });
+
+            this._preset = "default";
+
+            if (cfg.preset) {
+                this.preset = cfg.preset;
+                if (cfg.edgeColor)  this.edgeColor = cfg.edgeColor;
+                if (cfg.edgeAlpha !== undefined) this.edgeAlpha = cfg.edgeAlpha;
+                if (cfg.edgeWidth !== undefined) this.edgeWidth = cfg.edgeWidth;
+            } else {
+                this.edgeColor = cfg.edgeColor;
+                this.edgeAlpha = cfg.edgeAlpha;
+                this.edgeWidth = cfg.edgeWidth;
+            }
+        },
+
+        _props: {
+
+            /**
+             RGB color of ghost edges.
+
+             @property edgeColor
+             @default [0.2, 0.2, 0.2]
+             @type Float32Array
+             */
+            edgeColor: {
+                set: function (value) {
+                    var edgeColor = this._state.edgeColor;
+                    if (!edgeColor) {
+                        edgeColor = this._state.edgeColor = new Float32Array(3);
+                    } else if (value && edgeColor[0] === value[0] && edgeColor[1] === value[1] && edgeColor[2] === value[2]) {
+                        return;
+                    }
+                    if (value) {
+                        edgeColor[0] = value[0];
+                        edgeColor[1] = value[1];
+                        edgeColor[2] = value[2];
+                    } else {
+                        edgeColor[0] = 0.2;
+                        edgeColor[1] = 0.2;
+                        edgeColor[2] = 0.2;
+                    }
+                    this._renderer.imageDirty();
+                },
+                get: function () {
+                    return this._state.edgeColor;
+                }
+            },
+
+            /**
+             Transparency of ghost edges.
+
+             A value of 0.0 indicates fully transparent, 1.0 is fully opaque.
+
+             @property edgeAlpha
+             @default 1.0
+             @type Number
+             */
+            edgeAlpha: {
+                set: function (value) {
+                    value = (value !== undefined && value !== null) ? value : 1.0;
+                    if (this._state.edgeAlpha === value) {
+                        return;
+                    }
+                    this._state.edgeAlpha = value;
+                    this._renderer.imageDirty();
+                },
+                get: function () {
+                    return this._state.edgeAlpha;
+                }
+            },
+
+            /**
+             Width of ghost edges, in pixels.
+
+             @property edgeWidth
+             @default 1.0
+             @type Number
+             */
+            edgeWidth: {
+                set: function (value) {
+                    this._state.edgeWidth = value || 1.0;
+                    this._renderer.imageDirty();
+                },
+                get: function () {
+                    return this._state.edgeWidth;
+                }
+            },
+
+
+            /**
+             Selects a preset EdgeMaterial configuration.
+
+             Available presets are:
+
+             * "default" - grey wireframe with translucent fill, for light backgrounds.
+             * "defaultLightBG" - grey wireframe with grey translucent fill, for light backgrounds.
+             * "defaultDarkBG" - grey wireframe with grey translucent fill, for dark backgrounds.
+             * "vectorscope" - green wireframe with glowing vertices and black translucent fill.
+             * "battlezone" - green wireframe with black opaque fill, giving a solid hidden-lines-removed effect.
+             * "sepia" - light red-grey wireframe with light sepia translucent fill - easy on the eyes.
+             * "gamegrid" - light blue wireframe with dark blue translucent fill - reminiscent of Tron.
+             * "yellowHighlight" - light yellow translucent fill - highlights while allowing underlying detail to show through.
+
+             @property preset
+             @default "default"
+             @type String
+             */
+            preset: {
+                set: function (value) {
+                    value = value || "default";
+                    if (this._preset === value) {
+                        return;
+                    }
+                    var preset = xeogl.EdgeMaterial.presets[value];
+                    if (!preset) {
+                        this.error("unsupported preset: '" + value + "' - supported values are " + Object.keys(xeogl.EdgeMaterial.presets).join(", "));
+                        return;
+                    }
+                    this.edgeColor = preset.edgeColor;
+                    this.edgeAlpha = preset.edgeAlpha;
+                    this.edgeWidth = preset.edgeWidth;
+                    this._preset = value;
+                },
+                get: function () {
+                    return this._preset;
+                }
+            }
+        },
+
+        _destroy: function () {
+            this._super();
+            this._state.destroy();
+        }
+    });
+
+    /**
+     Available EdgeMaterial presets.
+
+     @property presets
+     @type {Object}
+     @static
+     */
+    xeogl.EdgeMaterial.presets = {
+
+        "default": {
+            edgeColor: [0.0, 0.0, 0.0],
+            edgeAlpha: 1.0,
+            edgeWidth: 1
+        },
+
+        "defaultWhiteBG": {
+            edgeColor: [0.2, 0.2, 0.2],
+            edgeAlpha: 1.0,
+            edgeWidth: 1
+        },
+
+        "defaultLightBG": {
+            edgeColor: [0.2, 0.2, 0.2],
+            edgeAlpha: 1.0,
+            edgeWidth: 1
+        },
+
+        "defaultDarkBG": {
+            edgeColor: [0.5, 0.5, 0.5],
+            edgeAlpha: 1.0,
+            edgeWidth: 1
+        }
+    };
+
+})();;/**
  An **OutlineMaterial** is a {{#crossLink "Material"}}{{/crossLink}} that's applied to {{#crossLink "Mesh"}}Meshes{{/crossLink}}
  to render an outline around them.
 
@@ -34705,9 +35142,9 @@ TODO
                 hasMatrix: (cfg.translate && (cfg.translate[0] !== 0 || cfg.translate[1] !== 0)) || (!!cfg.rotate) || (cfg.scale && (cfg.scale[0] !== 0 || cfg.scale[1] !== 0)),
                 minFilter: this._checkMinFilter(cfg.minFilter),
                 magFilter: this._checkMagFilter(cfg.minFilter),
-                wrapS: this._checkWrapS(cfg.minFilter),
-                wrapT: this._checkWrapT(cfg.minFilter),
-                flipY: this._checkFlipY(cfg.minFilter),
+                wrapS: this._checkWrapS(cfg.wrapS),
+                wrapT: this._checkWrapT(cfg.wrapT),
+                flipY: this._checkFlipY(cfg.flipY),
                 encoding: this._checkEncoding(cfg.encoding)
             });
 
