@@ -145,7 +145,7 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, EventHandl
             var mesh = hit.mesh;
             var object = mesh.parent; // Assume flat object hierarchy
             var objectId = object.id;
-            var selected = !!self.scene.selectedObjects[objectId]; // Object currently selected?
+            var selected = !!self.scene.selectedEntities[objectId]; // Object currently selected?
             var shiftDown = self.scene.input.keyDown[self.scene.input.KEY_SHIFT]; // Shift key down?
             self.setSelection({
                 ids: [objectId],
@@ -491,8 +491,10 @@ define(deps, function (Notifier, Model, PreloadQuery, GeometryLoader, EventHandl
 
             return function (params) {
                 var notifier = new Notifier();
-                var bimServerApi = new BimServerApi(params.bimserver, notifier);
-                params.api = bimServerApi; // TODO: Make copy of params
+                if (!params.api) {
+                    var bimServerApi = new BimServerApi(params.bimserver, notifier);
+                    params.api = bimServerApi; // TODO: Make copy of params
+                }
                 return initApi(params)
                     .then(loginToServer)
                     .then(getRevisionFromServer)
