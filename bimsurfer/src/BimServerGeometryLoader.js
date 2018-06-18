@@ -122,7 +122,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                         field: "data"
                     }
                 };
-                o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin3", function (serializer) {
+                o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin3").then((serializer) => {
                     o.bimServerApi.call("ServiceInterface", "download", {
                         roids: [o.roid],
                         query: JSON.stringify(query),
@@ -194,6 +194,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             }
 
             o.protocolVersion = data.readByte();
+            console.log(o.protocolVersion);
 
             if (BIMSERVER_VERSION == "1.4") {
 	            if (version != 4 && version != 5 && version != 6) {

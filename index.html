@@ -8,6 +8,7 @@
 <div id="expserver"></div>
 <div id="localhost8080"></div>
 <div id="localhost8082"></div>
+<div id="lindsay"></div>
 <h3>Other BIMserver</h3>
 <a id="loadFromOtherBimServer" style="cursor: pointer">Load from other server</a>
 <div id="other" style="display: none">
@@ -52,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 							var a = document.createElement("a");
 							li.appendChild(a);
 							a.textContent = project.name;
-							a.setAttribute("href", "docs/example_BIMServer.html?address=" + encodeURIComponent(address) + "&token=" + client.token + "&poid=" + project.oid);
+							a.setAttribute("href", "bimsurfer2/docs/example_BIMServer.html?address=" + encodeURIComponent(address) + "&token=" + client.token + "&poid=" + project.oid);
 							ul.appendChild(li);
 							totalFound++;
 						}
@@ -104,6 +105,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		}
 		try {
 			loadFromBimserver("http://localhost:8080", "admin@bimserver.org", "admin", document.getElementById("localhost8080"));
+		} catch (e) {
+			console.log(e);
+		}
+		try {
+			loadFromBimserver("http://ec2-18-222-53-244.us-east-2.compute.amazonaws.com:8080", "admin@admin.admin", "admin", document.getElementById("lindsay"));
 		} catch (e) {
 			console.log(e);
 		}
