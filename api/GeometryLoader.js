@@ -462,12 +462,13 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 14) {
+		if (version != 15) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
 			o.state.version = version;
 		}
+		var multiplier = data.readFloat();
 		data.align8();
 		
 		var modelBounds = data.readDoubleArray(6);
@@ -604,7 +605,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 						field: "data"
 					}
 				};
-				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin3").then(function(serializer){
+				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin").then(function(serializer){
 					o.bimServerApi.call("ServiceInterface", "download", {
 						roids: o.options.roids,
 						serializerOid : serializer.oid,
