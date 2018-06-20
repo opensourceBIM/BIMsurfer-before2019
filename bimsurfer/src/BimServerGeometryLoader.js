@@ -13,11 +13,11 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
         o.todo = [];
         o.geometryIds = {};
         o.dataToInfo = {};
-
+        
         o.model = model;
         o.roid = roid;
-
-		console.log(globalTransformationMatrix);
+        
+        console.log(globalTransformationMatrix);
 
         this.addProgressListener = function (progressListener) {
             o.progressListeners.push(progressListener);
@@ -48,7 +48,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
         };
 
         this.setLoadOids = function (oids) {
-            o.options = { type: "oids", oids: oids };
+            o.options = {type: "oids", oids: oids};
         };
 
         /**
@@ -84,20 +84,20 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
                 for (var k in o.infoToOid) {
                     var oid = parseInt(o.infoToOid[k]);
-                    o.model.apiModel.get(oid, function (object) {
+                    o.model.apiModel.get(oid, function(object){
                         if (object.object._rgeometry != null) {
                             if (object.model.objects[object.object._rgeometry] != null) {
                                 // Only if this data is preloaded, otherwise just don't include any gi
-                                object.getGeometry(function (geometryInfo) {
-                                    obj.push({ gid: object.object._rgeometry, oid: object.oid, object: object, info: geometryInfo.object });
+                                object.getGeometry(function(geometryInfo){
+                                    obj.push({gid: object.object._rgeometry, oid: object.oid, object: object, info: geometryInfo.object});
                                 });
                             } else {
-                                obj.push({ gid: object.object._rgeometry, oid: object.oid, object: object });
+                                obj.push({gid: object.object._rgeometry, oid: object.oid, object: object});
                             }
                         }
                     });
                 }
-                obj.sort(function (a, b) {
+                obj.sort(function(a, b){
                     if (a.info != null && b.info != null) {
                         var topa = (a.info._emaxBounds.z + a.info._eminBounds.z) / 2;
                         var topb = (b.info._emaxBounds.z + b.info._eminBounds.z) / 2;
@@ -110,7 +110,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 });
 
                 var oids = [];
-                obj.forEach(function (wrapper) {
+                obj.forEach(function(wrapper){
                     oids.push(wrapper.object.object._rgeometry._i);
                 });
 
@@ -126,9 +126,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     o.bimServerApi.call("ServiceInterface", "download", {
                         roids: [o.roid],
                         query: JSON.stringify(query),
-                        serializerOid: serializer.oid,
-                        sync: false
-                    }, function (topicId) {
+                        serializerOid : serializer.oid,
+                        sync : false
+                    }, function(topicId){
                         o.topicId = topicId;
                         o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler);
                     });
@@ -179,10 +179,10 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
         };
 
         this._readEnd = function (data) {
-            o.progressListeners.forEach(function (progressListener) {
+            o.progressListeners.forEach(function(progressListener){
                 progressListener("done", o.state.nrObjectsRead, o.state.nrObjectsRead);
             });
-            o.bimServerApi.call("ServiceInterface", "cleanupLongAction", { topicId: o.topicId }, function () { });
+            o.bimServerApi.call("ServiceInterface", "cleanupLongAction", {topicId: o.topicId}, function(){});
         };
 
         this._readStart = function (data) {
@@ -223,7 +223,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 o.state.nrObjects = data.readInt();
             }
 
-            o.progressListeners.forEach(function (progressListener) {
+            o.progressListeners.forEach(function(progressListener){
                 progressListener("start", o.state.nrObjectsRead, o.state.nrObjectsRead);
             });
             //o._updateProgress();
@@ -260,15 +260,15 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     scale * ((ymax + ymin) / 2),
                     scale * ((zmax + zmin) / 2)
                 ];
-
-                var scaledGlobalTransformationMatrix = globalTransformationMatrix.slice();
-                scaledGlobalTransformationMatrix[12] = globalTransformationMatrix[12] * scale;
-                scaledGlobalTransformationMatrix[13] = globalTransformationMatrix[13] * scale;
-                scaledGlobalTransformationMatrix[14] = globalTransformationMatrix[14] * scale;
-
-                var transformedCenter = xeogl.math.mulMat4v4(scaledGlobalTransformationMatrix, new xeogl.math.vec4([center[0], center[1], center[2], 1]));
-                var finalCenter = [transformedCenter[0], transformedCenter[1], transformedCenter[2]];
-
+                
+                var scaledGlobalTransformationMatrix = globalTransformationMatrix.slice(); 
+                scaledGlobalTransformationMatrix[12] = globalTransformationMatrix[12] * scale; 
+                scaledGlobalTransformationMatrix[13] = globalTransformationMatrix[13] * scale; 
+                scaledGlobalTransformationMatrix[14] = globalTransformationMatrix[14] * scale; 
+ 
+                var transformedCenter = xeogl.math.mulMat4v4(scaledGlobalTransformationMatrix, new xeogl.math.vec4([center[0], center[1], center[2], 1])); 
+                var finalCenter = [transformedCenter[0], transformedCenter[1], transformedCenter[2]]; 
+ 
                 this.viewer.setCamera({
                     type: "persp",
                     target: finalCenter,
@@ -282,27 +282,27 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
         };
 
         this._updateProgress = function () {
-            //            if (o.state.nrObjectsRead < o.state.nrObjects) {
-            //                var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
-            //                if (progress != o.state.lastProgress) {
-            //                    o.progressListeners.forEach(function (progressListener) {
-            //                        progressListener(progress, o.state.nrObjectsRead, o.state.nrObjects);
-            //                    });
-            //                    // TODO: Add events
-            //                    // o.viewer.SYSTEM.events.trigger('progressChanged', [progress]);
-            //                    o.state.lastProgress = progress;
-            //                }
-            //            } else {
-            //                // o.viewer.SYSTEM.events.trigger('progressDone');
-            //                o.progressListeners.forEach(function (progressListener) {
-            //                    progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
-            //                });
-            //                // o.viewer.events.trigger('sceneLoaded', [o.viewer.scene.scene]);
-            //
-            //                var d = {};
-            //                d[BIMSERVER_VERSION == "1.4" ? "actionId" : "topicId"] = o.topicId;
-            //                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", d, function () {});
-            //            }
+//            if (o.state.nrObjectsRead < o.state.nrObjects) {
+//                var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
+//                if (progress != o.state.lastProgress) {
+//                    o.progressListeners.forEach(function (progressListener) {
+//                        progressListener(progress, o.state.nrObjectsRead, o.state.nrObjects);
+//                    });
+//                    // TODO: Add events
+//                    // o.viewer.SYSTEM.events.trigger('progressChanged', [progress]);
+//                    o.state.lastProgress = progress;
+//                }
+//            } else {
+//                // o.viewer.SYSTEM.events.trigger('progressDone');
+//                o.progressListeners.forEach(function (progressListener) {
+//                    progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
+//                });
+//                // o.viewer.events.trigger('sceneLoaded', [o.viewer.scene.scene]);
+//
+//                var d = {};
+//                d[BIMSERVER_VERSION == "1.4" ? "actionId" : "topicId"] = o.topicId;
+//                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", d, function () {});
+//            }
         };
 
         this._readObject = function (stream, geometryType) {
@@ -310,10 +310,10 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 stream.align8();
             }
 
-            //            var type = stream.readUTF8();
-            //            var roid = stream.readLong(); // TODO: Needed?
-            //            var objectId = stream.readLong();
-            //            var oid = objectId;
+//            var type = stream.readUTF8();
+//            var roid = stream.readLong(); // TODO: Needed?
+//            var objectId = stream.readLong();
+//            var oid = objectId;
 
             var geometryId;
             var numGeometries;
@@ -344,7 +344,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 if (o.protocolVersion >= 11) {
                     var b = stream.readInt();
                     if (b == 1) {
-                        var color = { r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat() };
+                        var color = {r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat()};
                     }
                 }
                 stream.align4();
@@ -358,7 +358,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 } else if (color != null) {
                     // Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
                     colors = new Array(numPositions * 4);
-                    for (var i = 0; i < numPositions; i++) {
+                    for (var i=0; i<numPositions; i++) {
                         colors[i * 4 + 0] = color.r;
                         colors[i * 4 + 1] = color.g;
                         colors[i * 4 + 2] = color.b;
@@ -368,9 +368,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
                 o.geometryIds[geometryId] = [geometryId];
                 this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
-
+                
                 if (o.dataToInfo[geometryId] != null) {
-                    o.dataToInfo[geometryId].forEach(function (oid) {
+                    o.dataToInfo[geometryId].forEach(function(oid){
                         var ob = o.viewer.getObject(o.roid + ":" + oid);
                         ob.add(geometryId);
                     });
@@ -385,7 +385,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 var geometryDataOid = stream.readLong();
                 numParts = stream.readInt();
                 o.geometryIds[geometryDataOid] = [];
-
+                
                 var geometryIds = [];
                 for (i = 0; i < numParts; i++) {
                     var partId = stream.readLong();
@@ -401,11 +401,11 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     if (o.protocolVersion >= 11) {
                         var b = stream.readInt();
                         if (b == 1) {
-                            var color = { r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat() };
+                            var color = {r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat()};
                         }
                     }
                     stream.align4();
-
+                    
                     numPositions = stream.readInt();
                     positions = stream.readFloatArray(numPositions);
                     numNormals = stream.readInt();
@@ -416,7 +416,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     } else if (color != null) {
                         // Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
                         colors = new Array(numPositions * 4);
-                        for (var i = 0; i < numPositions; i++) {
+                        for (var i=0; i<numPositions; i++) {
                             colors[i * 4 + 0] = color.r;
                             colors[i * 4 + 1] = color.g;
                             colors[i * 4 + 2] = color.b;
@@ -429,9 +429,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     this.viewer.createGeometry(geometryId, positions, normals, colors, indices);
                 }
                 if (o.dataToInfo[geometryDataOid] != null) {
-                    o.dataToInfo[geometryDataOid].forEach(function (oid) {
+                    o.dataToInfo[geometryDataOid].forEach(function(oid){
                         var ob = o.viewer.getObject(o.roid + ":" + oid);
-                        geometryIds.forEach(function (geometryId) {
+                        geometryIds.forEach(function(geometryId){
                             ob.add(geometryId);
                         });
                     });
@@ -465,7 +465,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                 if (oid == null) {
                     console.error("Not found", o.infoToOid, geometryInfoOid);
                 } else {
-                    o.model.apiModel.get(oid, function (object) {
+                    o.model.apiModel.get(oid, function(object){
                         object.gid = geometryInfoOid;
                         var modelId = o.roid; // TODO: set to the model ID
                         o._createObject(modelId, roid, oid, oid, geometryDataOids, object.getType(), matrix);
@@ -490,15 +490,15 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
 
             // o.models[roid].get(oid,
-            // function () {
-            if (o.viewer.createObject(modelId, roid, oid, objectId, geometryIds, type, matrix)) {
+                // function () {
+                    if (o.viewer.createObject(modelId, roid, oid, objectId, geometryIds, type, matrix)) {
 
-                // o.objectAddedListeners.forEach(function (listener) {
-                // listener(objectId);
+                        // o.objectAddedListeners.forEach(function (listener) {
+                        // listener(objectId);
+                        // });
+                    }
+
                 // });
-            }
-
-            // });
         };
     }
 
