@@ -440,7 +440,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
     			var objectBounds = stream.readDoubleArray(6);
     			var matrix = stream.readDoubleArray(16);
     			if (globalTransformationMatrix != null) {
-    				xeogl.math.mulMat4(matrix, matrix, globalTransformationMatrix);
+                    xeogl.math.mulMat4(globalTransformationMatrix, matrix, matrix);
     			}
     			var geometryDataOid = stream.readLong();
 				var geometryDataOids = o.geometryIds[geometryDataOid];
