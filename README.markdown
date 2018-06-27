@@ -20,7 +20,7 @@
 
 # Introduction
 
-BIMSurfer is a WebGL-based 3D viewer for [BIMServer]() that's built on [xeoEngine](http://xeoengine.org).
+BIMSurfer is a WebGL-based 3D viewer for [BIMServer]() that's built on [xeogl](https://github.com/xeolabs/xeogl).
  
 TODO: More info
      
