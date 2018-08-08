@@ -17,6 +17,10 @@ BIMSURFER.DataInputStreamReader = BIMSURFER.Class({
 		this.dataView = new DataView(this.arrayBuffer);
 		this.pos = 0;
 	},
+	
+	remaining: function() {
+		return this.arrayBuffer.byteLength - this.pos;
+	},
 
 	readUTF8: function() {
 		var length = this.dataView.getInt16(this.pos);

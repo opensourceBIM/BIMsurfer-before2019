@@ -265,10 +265,13 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var reused = data.readInt();
 			var type = data.readUTF8();
 			data.align8();
+			var roid = data.readLong();
+			var croid = data.readLong();
 			var hasTransparency = data.readLong() == 1;
 			var geometryDataOid = data.readLong();
 			var nrIndices = data.readInt();
 			var indices = data.readShortArray(nrIndices);
+			data.align4();
 			o.stats.nrPrimitives += nrIndices / 3;
 			if (o.state.version >= 11) {
 				var b = data.readInt();
@@ -276,7 +279,6 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 					var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
 				}
 			}
-			data.align4();
 			var nrVertices = data.readInt();
 			var vertices = data.readFloatArray(nrVertices);
 			o.stats.nrVertices += nrVertices;
@@ -462,7 +464,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 15) {
+		if (version != 16) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
@@ -540,18 +542,26 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 //		console.log("Nr Objects", o.state.nrObjects);
 	};
 	
+	this.processMessage = function(inputStream) {
+		var messageType = inputStream.readByte();
+		if (messageType == 0) {
+			o.readStart(inputStream);
+		} else if (messageType == 6) {
+			o.readEnd(inputStream);
+		} else {
+			o.readObject(inputStream, messageType);
+		}
+		inputStream.align8();
+		return inputStream.remaining() > 0;
+	}
+	
 	this.process = function(){
 		var data = o.todo.shift();
 		while (data != null) {
 			inputStream = new BIMSURFER.DataInputStreamReader(null, data);
 			var topicId = inputStream.readLong(); // Which we don't use here
-			var messageType = inputStream.readByte();
-			if (messageType == 0) {
-				o.readStart(inputStream);
-			} else if (messageType == 6) {
-				o.readEnd(inputStream);
-			} else {
-				o.readObject(inputStream, messageType);
+			while (o.processMessage(inputStream)) {
+				
 			}
 			data = o.todo.shift();
 		}
@@ -595,6 +605,11 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 					oids.push(object.gid);
 				}
 			});
+			
+			var fieldsToInclude = ["indices"];
+			fieldsToInclude.push("normals");
+			fieldsToInclude.push("vertices");
+			fieldsToInclude.push("colorsQuantized");
 
 			if (oids.length > 0) {
 				var query = {
@@ -602,7 +617,14 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 					oids: oids,
 					include: {
 						type: "GeometryInfo",
-						field: "data"
+						field: "data",
+						include: {
+							type: "GeometryData",
+							fieldsDirect: fieldsToInclude
+						}
+					},
+					loaderSettings: {
+						splitGeometry: false
 					}
 				};
 				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin").then(function(serializer){
