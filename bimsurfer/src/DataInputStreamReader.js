@@ -14,6 +14,10 @@ define(["../lib/StringView"], function(StringView) {
             this.pos += length;
             return result;
         };
+        
+        this.remaining = function() {
+    		return this.arrayBuffer.byteLength - this.pos;
+    	};
 
         this.align4 = function() {
             // Skips to the next alignment of 4 (source should have done the same!)
