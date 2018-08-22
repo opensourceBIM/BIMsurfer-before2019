@@ -193,7 +193,8 @@ define(["./EventHandler", "./Request", "./Utils"], function(EventHandler, Reques
             
             if (oid.indexOf(':') !== -1) {
                 oid = oid.split(':');
-                var o = models[oid[0]].model.objects[oid[1]];
+                var model = models[oid[0]].model || models[oid[0]].apiModel;
+                var o = model.objects[oid[1]];
             
                 renderAttributes(o);
                 

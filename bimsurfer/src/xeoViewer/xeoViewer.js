@@ -202,11 +202,15 @@ define([
 
                 var selected = !!selectedObjects[objectId]; // Object currently selected?
                 var shiftDown = scene.input.keyDown[input.KEY_SHIFT]; // Shift key down?
+                
+                var s = scale.xyz[0];
+                var clickPos = xeogl.math.mulVec3Scalar(hit.worldPos, 1. / s, xeogl.math.vec3());
 
                 self.setSelection({
                     ids: [objectId],
                     selected: !selected, // Picking an object toggles its selection status
-                    clear: !shiftDown // Clear selection first if shift not down
+                    clear: !shiftDown, // Clear selection first if shift not down
+                    clickPosition: clickPos
                 });
             });
 
@@ -710,8 +714,11 @@ define([
                     
                     objectId = ids[i];
                     var object_ = objects[objectId];
-                    if (!object_) objects_by_guid[objectId].forEach(fn)
-                    else fn(object_);
+                    if (!object_) {
+                        (objects_by_guid[objectId] || []).forEach(fn);
+                    } else {
+                        fn(object_);
+                    }
                         
                 }
             }
@@ -731,7 +738,7 @@ define([
                  * @event selection-changed
                  * @params Array of IDs of all currently-selected objects.
                  */
-                this.fire("selection-changed", [selectedObjectList]);
+                this.fire("selection-changed", [{objects:selectedObjectList, clickPosition: params.clickPosition}]);
             }
         };
 

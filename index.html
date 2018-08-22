@@ -18,10 +18,8 @@
 <button id="loadProjectsBtn">Load projects</button>
 <div id="otherProjects"></div>
 </div>
-<h3>glTF</h3>
-<a href="docs/example_glTF.html">glTF</a>
-<h3>Other</h3>
-<a href="docs/example_testModel.html">Test Model</a>
+<h1>glTF</h1>
+<a href="examples/gltf.html">glTF</a>
 <script>
 document.addEventListener("DOMContentLoaded", function(event) {
 	function loadFromBimserver(address, username, password, target) {
@@ -53,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 							var a = document.createElement("a");
 							li.appendChild(a);
 							a.textContent = project.name;
-							a.setAttribute("href", "bimsurfer2/docs/example_BIMServer.html?address=" + encodeURIComponent(address) + "&token=" + client.token + "&poid=" + project.oid);
+							a.setAttribute("href", "examples/bimserver.html?address=" + encodeURIComponent(address) + "&token=" + client.token + "&poid=" + project.oid);
 							ul.appendChild(li);
 							totalFound++;
 						}

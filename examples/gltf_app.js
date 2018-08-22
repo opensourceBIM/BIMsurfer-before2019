@@ -69,7 +69,7 @@ function (BimSurfer, StaticTreeRenderer, MetaDataRenderer, Request, Utils) {
     });
 
     bimSurfer.on("selection-changed", function(selected) {
-        data.setSelected(selected.map(function(id) {
+        data.setSelected(selected.objects.map(function(id) {
             return Utils.CompressGuid(id.split("#")[1].substr(8, 36).replace(/-/g, ""));
         }));
     });
