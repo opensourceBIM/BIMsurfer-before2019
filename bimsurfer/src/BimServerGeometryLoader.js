@@ -97,38 +97,60 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             obj.forEach(function(wrapper){
            		oids.push(wrapper.object.object._rgeometry._i);
             });
-
-			var fieldsToInclude = ["indices"];
-			fieldsToInclude.push("normals");
-			fieldsToInclude.push("vertices");
-			fieldsToInclude.push("colorsQuantized");
-
-            var query = {
+            
+            var serializerName = "org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin";
+            
+            var fieldsToInclude = ["indices"];
+            fieldsToInclude.push("normals");
+            fieldsToInclude.push("vertices");
+            fieldsToInclude.push("colorsQuantized");
+            
+            var newQuery = {
                 type: "GeometryInfo",
                 oids: oids,
                 include: {
-                	type: "GeometryInfo",
+                    type: "GeometryInfo",
                     field: "data",
                     include: {
-                    	type: "GeometryData",
-                    	fieldsDirect: fieldsToInclude
+                        type: "GeometryData",
+                        fieldsDirect: fieldsToInclude
                     }
                 },
                 loaderSettings: {
-					splitGeometry: false
-				}
+                    splitGeometry: false
+                }
             };
-            o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin").then((serializer) => {
+            
+            var oldQuery = {
+                type: "GeometryInfo",
+                oids: oids,
+                include: {
+                    type: "GeometryInfo",
+                    field: "data"
+                }
+            };
+
+            var useNewQuery = false;
+            
+            var pluginCallback = function (serializer) {
                 o.bimServerApi.call("ServiceInterface", "download", {
                     roids: [o.roid],
-                    query: JSON.stringify(query),
+                    query: JSON.stringify(useNewQuery ? newQuery : oldQuery),
                     serializerOid : serializer.oid,
                     sync : false
                 }, function(topicId){
                     o.topicId = topicId;
                     o.bimServerApi.registerProgressHandler(o.topicId, o._progressHandler);
                 });
-            });
+            };
+            
+            var promise = o.bimServerApi.getSerializerByPluginClassName(serializerName + "3", pluginCallback);
+            if (promise) {
+                // If this returns a promise (it'll never be cancelled btw. even in case of error) we're
+                // talking to a newer version of the plugin ecosystem and we can try the new query.
+                useNewQuery = true;
+                o.bimServerApi.getSerializerByPluginClassName(serializerName).then(pluginCallback);
+            }
         };
 
         this._progressHandler = function (topicId, state) {
@@ -189,13 +211,15 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             }
 
             o.protocolVersion = data.readByte();
-            console.log(o.protocolVersion);
+            console.log("Protocol version", o.protocolVersion);
 
-            if (o.protocolVersion != 16) {
+            if (o.protocolVersion != 10 && o.protocolVersion != 11 && o.protocolVersion != 16) {
                 console.error("Unimplemented version");
                 return false;
             }
-    		this.multiplierToMm = data.readFloat();
+            if (o.protocolVersion > 15) {
+                this.multiplierToMm = data.readFloat();
+            }
             data.align8();
 
             var boundary = data.readDoubleArray(6);
@@ -254,38 +278,9 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             }
         };
 
-        this._updateProgress = function () {
-//            if (o.state.nrObjectsRead < o.state.nrObjects) {
-//                var progress = Math.ceil(100 * o.state.nrObjectsRead / o.state.nrObjects);
-//                if (progress != o.state.lastProgress) {
-//                    o.progressListeners.forEach(function (progressListener) {
-//                        progressListener(progress, o.state.nrObjectsRead, o.state.nrObjects);
-//                    });
-//                    // TODO: Add events
-//                    // o.viewer.SYSTEM.events.trigger('progressChanged', [progress]);
-//                    o.state.lastProgress = progress;
-//                }
-//            } else {
-//                // o.viewer.SYSTEM.events.trigger('progressDone');
-//                o.progressListeners.forEach(function (progressListener) {
-//                    progressListener("done", o.state.nrObjectsRead, o.state.nrObjects);
-//                });
-//                // o.viewer.events.trigger('sceneLoaded', [o.viewer.scene.scene]);
-//
-//                var d = {};
-//                d[BIMSERVER_VERSION == "1.4" ? "actionId" : "topicId"] = o.topicId;
-//                o.bimServerApi.call("ServiceInterface", "cleanupLongAction", d, function () {});
-//            }
-        };
+        this._updateProgress = function () {};
 
         this._readObject = function (stream, geometryType) {
-//     		stream.align8();
-
-//            var type = stream.readUTF8();
-//            var roid = stream.readLong(); // TODO: Needed?
-//            var objectId = stream.readLong();
-//            var oid = objectId;
-
             var geometryId;
             var numGeometries;
             var numParts;
@@ -298,25 +293,42 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             var normals;
             var numColors;
             var colors = null;
-
+            var reused;
+            var type;
+            var roid;
+            var croid;
+            var hasTransparency;
+            
+            
             var i;
 
-            if (geometryType == 1) {
-    			var reused = stream.readInt();
-    			var type = stream.readUTF8();
-    			stream.align8();
+            if (o.protocolVersion < 16) {
+                stream.align8();
+            }
 
-    			var roid = stream.readLong();
-    			var croid = stream.readLong();
-           		var hasTransparency = stream.readLong() == 1;
+            if (geometryType == 1) {
+                if (o.protocolVersion > 15) {
+                    reused = stream.readInt();
+                    type = stream.readUTF8();
+                    stream.align8();
+                    
+                    roid = stream.readLong();
+                    croid = stream.readLong();
+                    hasTransparency = stream.readLong() == 1;
+                }
+
            		geometryId = stream.readLong();
                 numIndices = stream.readInt();
                	indices = stream.readShortArray(numIndices);
-               	stream.align4();
-            	var b = stream.readInt();
-				if (b == 1) {
-					var color = {r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat()};
-				}
+
+                if (o.protocolVersion >= 11) {
+                    stream.align4();
+                    var b = stream.readInt();
+                    if (b == 1) {
+                        var color = {r: stream.readFloat(), g: stream.readFloat(), b: stream.readFloat(), a: stream.readFloat()};
+                    }
+                }
+                
                 numPositions = stream.readInt();
                 positions = stream.readFloatArray(numPositions);
                 numNormals = stream.readInt();
@@ -348,9 +360,6 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             } else if (geometryType == 2) {
             	console.log("Unimplemented", 2);
             } else if (geometryType == 3) {
-            	if (o.protocolVersion == 12) {
-            		var hasTransparency = stream.readLong() == 1;
-            	}
      			var geometryDataOid = stream.readLong();
                 numParts = stream.readInt();
 				o.geometryIds[geometryDataOid] = [];
@@ -361,7 +370,11 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
                     geometryId = geometryDataOid + "_" + i;
                     numIndices = stream.readInt();
 
-                   	indices = stream.readIntArray(numIndices);
+                    if (o.protocolVersion > 15) {
+                        indices = stream.readIntArray(numIndices);
+                    } else {
+                        indices = stream.readShortArray(numIndices);
+                    }
 
                     if (o.protocolVersion >= 11) {
                     	var b = stream.readInt();
@@ -405,12 +418,19 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
             } else if (geometryType == 4) {
             	console.log("Unimplemented", 4);
             } else if (geometryType == 5) {
-    			var oid = stream.readLong();
-    			var type = stream.readUTF8();
-    			stream.align8();
+                if (o.protocolVersion > 15) {
+                    oid = stream.readLong();
+                    type = stream.readUTF8();
+                    stream.align8();
+                }
+
     			var roid = stream.readLong();
     			var geometryInfoOid = stream.readLong();
-    			var hasTransparency = stream.readLong() == 1;
+                
+                if (o.protocolVersion > 15) {
+                    var hasTransparency = stream.readLong() == 1;
+                }
+
     			var objectBounds = stream.readDoubleArray(6);
     			var matrix = stream.readDoubleArray(16);
     			if (globalTransformationMatrix != null) {
