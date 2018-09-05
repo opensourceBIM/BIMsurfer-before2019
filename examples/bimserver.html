@@ -84,6 +84,7 @@
     	                        });
     	                        
     	                        domtree.on("click", function (oid, selected) {
+                                    metadata.setSelected(selected);
     	                            // Clicking an explorer node fits the view to its object and selects
                                     if (selected.length) {
                                         bimSurfer.viewFit({

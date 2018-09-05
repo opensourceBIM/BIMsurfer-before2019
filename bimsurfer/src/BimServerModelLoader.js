@@ -41,7 +41,7 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
             oids.forEach(function(oid){
             	model.apiModel.get(oid, function(object){
             		if (object.object._rgeometry != null) {
-            			var gid = object.object._rgeometry._i;
+            			var gid = object.object._rgeometry;
             			var guid = object.object.GlobalId;
             			oidToGuid[oid] = guid;
             			guidToOid[guid] = oid;
