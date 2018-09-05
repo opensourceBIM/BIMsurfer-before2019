@@ -78,6 +78,9 @@ define(["../lib/StringView"], function(StringView) {
         };
         
         this.readFloatArray = function(length) {
+            if(parseInt(this.pos)%4 !== 0){
+                this.pos = (parseInt(this.pos) % 4 )+ this.pos;
+            }
             var result = new Float32Array(this.arrayBuffer, this.pos, length);
             this.pos += length * 4;
             return result;

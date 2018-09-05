@@ -95,7 +95,7 @@ define(["./DataInputStreamReader"], function (DataInputStreamReader) {
 
             var oids = [];
             obj.forEach(function(wrapper){
-           		oids.push(wrapper.object.object._rgeometry._i);
+           		oids.push(wrapper.object.object._rgeometry);
             });
             
             var serializerName = "org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin";
