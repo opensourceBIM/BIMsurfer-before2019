@@ -61,6 +61,7 @@ BIMSURFER.Constants.materials = {
 	IfcWindow: {r: 0.137255, g: 0.403922, b: 0.870588, a: 0.5},
 	IfcOpeningElement: {r: 0.137255, g: 0.403922, b: 0.870588, a: 0},
 	IfcRailing: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
+	IfcReinforcingBar: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
 	IfcColumn: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
 	IfcBeam: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
 	IfcBeamStandardCase: {r: 0.137255, g: 0.403922, b: 0.870588, a: 1.0},
