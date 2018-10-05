@@ -46,29 +46,10 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var geometryInfoOid = data.readLong();
 			var hasTransparency = data.readLong() == 1;
 			var objectBounds = data.readDoubleArray(6);
-//			if (objectBounds[0] < o.modelBounds.min.x) {
-//				o.modelBounds.min.x = objectBounds[0];
-//			}
-//			if (objectBounds[1] < o.modelBounds.min.y) {
-//				o.modelBounds.min.y = objectBounds[1];
-//			}
-//			if (objectBounds[2] < o.modelBounds.min.z) {
-//				o.modelBounds.min.z = objectBounds[2];
-//			}
-//			if (objectBounds[3] > o.modelBounds.max.x) {
-//				o.modelBounds.max.x = objectBounds[3];
-//			}
-//			if (objectBounds[4] > o.modelBounds.max.y) {
-//				o.modelBounds.max.y = objectBounds[4];
-//			}
-//			if (objectBounds[5] > o.modelBounds.max.z) {
-//				o.modelBounds.max.z = objectBounds[5];
-//			}
 			
 			var transformationMatrix = data.readDoubleArray(16);
 			var geometryDataOid = data.readLong();
 			var coreIds = [geometryDataOid];
-//			o.infoToData[geometryInfoOid] = geometryDataOid;
 			
 			if (o.state.mode == 0) {
 				console.log("Mode is still 0, should be 1");
@@ -132,28 +113,6 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 							type: "enable",
 							enabled: enabled,
 							nodes : [
-//								{
-//								type : "material",
-//								baseColor: material,
-//								alpha: 1,
-//								nodes : [{}]
-//								nodes : [{
-//									type: "translate",
-//									x: objectBounds[0] + (objectBounds[3] - objectBounds[0]) / 2,
-//									y: objectBounds[1] + (objectBounds[4] - objectBounds[1]) / 2,
-//									z: objectBounds[2] + (objectBounds[5] - objectBounds[2]) / 2,
-//									nodes : [{
-//										type: "scale",
-//										x: (objectBounds[3] - objectBounds[0]) / 2,
-//										y: (objectBounds[4] - objectBounds[1]) / 2,
-//										z: (objectBounds[5] - objectBounds[2]) / 2,
-//										nodes: [{
-//											type: "geometry/box",
-//											wire: true
-//										}]
-//									}]
-//								}]
-//							}, {
 							{
 								type : "material",
 								baseColor: material,
@@ -189,8 +148,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var coreIds = [];
 			var geometryDataOid = data.readLong();
 			var nrParts = data.readInt();
-			//var objectBounds = data.readFloatArray(6);
-			
+
 			for (var i=0; i<nrParts; i++) {
 				var partId = data.readLong();
 				var coreId = geometryDataOid + "_" + i;
@@ -198,6 +156,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				var nrIndices = data.readInt();
 				o.stats.nrPrimitives += nrIndices / 3;
 				var indices = data.readShortArray(nrIndices);
+				data.align4();
 				if (o.state.version >= 11) {
 					var b = data.readInt();
 					if (b == 1) {
@@ -223,11 +182,11 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				if (color != null) {
 					// Creating vertex colors here anyways (not transmitted over the line is a plus), should find a way to do this with scenejs without vertex-colors
 					geometry.colors = new Array(nrVertices * 4);
-					for (var i=0; i<nrVertices; i++) {
-						geometry.colors[i * 4 + 0] = color.r;
-						geometry.colors[i * 4 + 1] = color.g;
-						geometry.colors[i * 4 + 2] = color.b;
-						geometry.colors[i * 4 + 3] = color.a;
+					for (var j=0; j<nrVertices; j++) {
+						geometry.colors[j * 4 + 0] = color.r;
+						geometry.colors[j * 4 + 1] = color.g;
+						geometry.colors[j * 4 + 2] = color.b;
+						geometry.colors[j * 4 + 3] = color.a;
 					}
 				}
 				
@@ -246,6 +205,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				}
 				o.library.add("node", geometry);
 			}
+			data.align8();
 			o.loadedGeometry[geometryDataOid] = coreIds;
 			if (o.dataToInfo[geometryDataOid] != null) {
 				o.dataToInfo[geometryDataOid].forEach(function(geometryInfoId){
@@ -333,6 +293,8 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				});
 				delete o.dataToInfo[geometryDataOid];
 			}
+		} else {
+			console.log("Unimplemented geometryType", geometryType);
 		}
 
 		o.state.nrObjectsRead++;
@@ -447,8 +409,6 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 //			fovy: 37.8493
 //		});
 		
-		console.log(o.stats);
-		
 		o.viewer.SYSTEM.events.trigger('progressDone');
 		o.progressListeners.forEach(function(progressListener){
 			progressListener("done", o.state.nrObjectsRead, o.state.nrObjectsRead);
@@ -540,12 +500,15 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 //o.state.nrObjects = data.readInt();
 //		o.updateProgress();
 //		console.log("Nr Objects", o.state.nrObjects);
+		return true;
 	};
 	
 	this.processMessage = function(inputStream) {
 		var messageType = inputStream.readByte();
 		if (messageType == 0) {
-			o.readStart(inputStream);
+			if (!o.readStart(inputStream)) {
+				return false;
+			}
 		} else if (messageType == 6) {
 			o.readEnd(inputStream);
 		} else {
@@ -606,10 +569,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				}
 			});
 			
-			var fieldsToInclude = ["indices"];
-			fieldsToInclude.push("normals");
-			fieldsToInclude.push("vertices");
-			fieldsToInclude.push("colorsQuantized");
+			var fieldsToInclude = ["indices", "normals", "vertices", "colorsQuantized"];
 
 			if (oids.length > 0) {
 				var query = {
@@ -624,7 +584,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 						}
 					},
 					loaderSettings: {
-						splitGeometry: false
+						splitGeometry: true
 					}
 				};
 				o.bimServerApi.getSerializerByPluginClassName("org.bimserver.serializers.binarygeometry.BinaryGeometryMessagingStreamingSerializerPlugin").then(function(serializer){
