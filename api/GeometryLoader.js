@@ -39,8 +39,10 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 	
 	this.readObject = function(data, geometryType) {
 		if (geometryType == 5) {
+			data.readByte(); // Not used (inPreparedBuffer)
 			var oid = data.readLong();
 			var type = data.readUTF8();
+			var nrColors = data.readInt();
 			data.align8();
 			var roid = data.readLong();
 			var geometryInfoOid = data.readLong();
@@ -157,11 +159,9 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 				o.stats.nrPrimitives += nrIndices / 3;
 				var indices = data.readShortArray(nrIndices);
 				data.align4();
-				if (o.state.version >= 11) {
-					var b = data.readInt();
-					if (b == 1) {
-						var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
-					}
+				var b = data.readInt();
+				if (b == 1) {
+					var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
 				}
 				data.align4();
 				var nrVertices = data.readInt();
@@ -233,11 +233,9 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var indices = data.readShortArray(nrIndices);
 			data.align4();
 			o.stats.nrPrimitives += nrIndices / 3;
-			if (o.state.version >= 11) {
-				var b = data.readInt();
-				if (b == 1) {
-					var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
-				}
+			var b = data.readInt();
+			if (b == 1) {
+				var color = {r: data.readFloat(), g: data.readFloat(), b: data.readFloat(), a: data.readFloat()};
 			}
 			var nrVertices = data.readInt();
 			var vertices = data.readFloatArray(nrVertices);
@@ -424,7 +422,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 16) {
+		if (version != 17) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
