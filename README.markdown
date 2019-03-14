@@ -2,12 +2,12 @@
     Copyright 2018, bimsurfer.org
     BIM Surfer is licensed under the MIT License.
 
-#Outdated
+# Outdated
 
 This repo holds the BIM Surfer v1 and v2. This codebase is not maintained anymore. Find the new BIM Surfer on https://github.com/opensourceBIM/BIMsurfer
 
 
-#Table of Contents
+# Table of Contents
 
 - [Introduction](#introduction)
 - [Usage](#usage)
