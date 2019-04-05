@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.opensourcebim</groupId>
   <artifactId>bimsurfer</artifactId>
-  <version>0.0.65-SNAPSHOT</version>
+  <version>0.0.66-SNAPSHOT</version>
   <name>BIMsurfer</name>
   <description>BIMsurfer</description>
   <url>https://github.com/opensourceBIM/BIMsurfer</url>
@@ -55,7 +54,7 @@
     <dependency>
       <groupId>org.opensourcebim</groupId>
       <artifactId>pluginbase</artifactId>
-      <version>1.5.126-SNAPSHOT</version>
+      <version>1.5.131-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>
