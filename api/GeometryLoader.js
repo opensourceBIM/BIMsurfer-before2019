@@ -521,8 +521,13 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 		while (data != null) {
 			inputStream = new BIMSURFER.DataInputStreamReader(null, data);
 			var topicId = inputStream.readLong(); // Which we don't use here
-			while (o.processMessage(inputStream)) {
-				
+			var type = inputStream.readLong();
+			if (type == 0) {
+				while (o.processMessage(inputStream)) {
+					
+				}
+			} else if (type == 1) {
+				// End of stream
 			}
 			data = o.todo.shift();
 		}
