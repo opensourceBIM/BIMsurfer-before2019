@@ -422,7 +422,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			return false;
 		}
 		var version = data.readByte();
-		if (version != 17) {
+		if (version != 17 && version != 18) {
 			console.log("Unimplemented version");
 			return false;
 		} else {
