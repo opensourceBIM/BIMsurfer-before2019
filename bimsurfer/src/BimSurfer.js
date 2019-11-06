@@ -35,6 +35,14 @@ define(["./Notifier", "./BimServerModel", "./PreloadQuery", "./BimServerGeometry
         viewer.on("selection-changed", function() {
             self.fire("selection-changed", arguments);
         });
+
+        /**
+         * Fired when all models have finished loading
+         * @event loading-finished
+         */
+        viewer.on("loading-finished", function() {
+            self.fire("loading-finished", arguments);
+        });
         
         // This are arrays as multiple models might be loaded or unloaded.
         this._idMapping = {

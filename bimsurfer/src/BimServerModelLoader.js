@@ -2,7 +2,15 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
     
     function BimServerModelLoader(bimServerClient, bimSurfer) {
     	
-    	var o = this;
+		var o = this;
+		
+		// set default transformation matrix
+		this.globalTransformationMatrix = [
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		];
     	
     	this.loadFullModel = function(apiModel){
     		return new Promise(function(resolve, reject) {
@@ -58,7 +66,7 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
 	
     		viewer.createModel(model.apiModel.roid);
 	
-	        var loader = new BimServerGeometryLoader(model.api, viewer, model, model.apiModel.roid, o.globalTransformationMatrix);
+	        var loader = new BimServerGeometryLoader(model.apiModel.bimServerApi, viewer, model, model.apiModel.roid, o.globalTransformationMatrix);
 	
 	        loader.addProgressListener(function (progress, nrObjectsRead, totalNrObjects) {
 				if (progress == "start") {
@@ -66,7 +74,6 @@ define(["./BimServerModel", "./PreloadQuery", "./BimServerGeometryLoader", "./Bi
 //					self.fire("loading-started");
 				} else if (progress == "done") {
 					console.log("Finished loading geometries (" + totalNrObjects + " objects received)");
-//					self.fire("loading-finished");
 	                viewer.taskFinished();
 				}
 	        });
