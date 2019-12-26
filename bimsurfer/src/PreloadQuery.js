@@ -41,7 +41,7 @@ define({
 	    },
 	    {
 	    	type: "IfcRepresentation",
-	    	includeAllSubtypes: true
+	    	includeAllSubTypes: true
 	    },
 	    {
 	    	type: "IfcProductRepresentation"
@@ -51,7 +51,7 @@ define({
 	    },
 	    {
 	    	type: "IfcProduct",
-	    	includeAllSubtypes: true
+	    	includeAllSubTypes: true
 	    },
 	    {
 	    	type: "IfcProductDefinitionShape"
