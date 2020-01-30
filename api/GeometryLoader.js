@@ -576,6 +576,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 
 			if (oids.length > 0) {
 				var query = {
+					doublebuffer: false,
 					type: "GeometryInfo",
 					oids: oids,
 					include: {
