@@ -9,6 +9,7 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 	o.prepareReceived = false;
 	o.todo = [];
 	o.type = type;
+	o.multiplier = 1;
 	
 	if (o.type == null) {
 		o.type = "triangles";
@@ -50,6 +51,21 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 			var objectBounds = data.readDoubleArray(6);
 			
 			var transformationMatrix = data.readDoubleArray(16);
+
+			if (o.multiplier < 0.99 || o.multiplier > 1.01) {
+				// We need to change the matrix because the operations in the matrix
+				// are based on the original geometry (e.a. not scaled to the right
+				// unit: mm)
+                var scaleMatrix = BIMSURFER.Util.glMatrix.mat4.create()
+                BIMSURFER.Util.glMatrix.mat4.scale(scaleMatrix, scaleMatrix, [o.multiplier, o.multiplier, o.multiplier]);
+
+                var totalMatrix = BIMSURFER.Util.glMatrix.mat4.create();
+                BIMSURFER.Util.glMatrix.mat4.multiply(totalMatrix, totalMatrix, scaleMatrix);
+                BIMSURFER.Util.glMatrix.mat4.multiply(totalMatrix, totalMatrix, transformationMatrix);
+
+				transformationMatrix = totalMatrix;
+			}
+
 			var geometryDataOid = data.readLong();
 			var coreIds = [geometryDataOid];
 			
@@ -428,13 +444,13 @@ function GeometryLoader(bimServerApi, models, viewer, type) {
 		} else {
 			o.state.version = version;
 		}
-		var multiplier = data.readFloat();
+		o.multiplier = data.readFloat();
 		data.align8();
 		
 		var modelBounds = data.readDoubleArray(6);
 		o.modelBounds = {
-			min: {x: modelBounds[0], y: modelBounds[1], z: modelBounds[2]},
-			max: {x: modelBounds[3], y: modelBounds[4], z: modelBounds[5]}
+			min: {x: modelBounds[0] * o.multiplier, y: modelBounds[1] * o.multiplier, z: modelBounds[2] * o.multiplier},
+			max: {x: modelBounds[3] * o.multiplier, y: modelBounds[4] * o.multiplier, z: modelBounds[5] * o.multiplier}
 		};
 		o.center = {
 			x: (o.modelBounds.max.x + o.modelBounds.min.x) / 2,
